@@ -8,6 +8,7 @@
         private readonly List<IExpressionTranslator> _translators = new List<IExpressionTranslator>
         {
             new ArrayLengthExpressionTranslator(),
+            new BinaryExpressionTranslator(),
             new CastExpressionTranslator(),
             new ConstantExpressionTranslator(),
             new LambdaExpressionTranslator(),

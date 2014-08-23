@@ -84,6 +84,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAnEqualityExpression()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<int, int, bool>> intsAreEqual = (i1, i2) => i1 == i2;
+
+            var translated = intsAreEqual.ToReadableString();
+
+            Assert.AreEqual("(i1, i2) => i1 == i2", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
