@@ -2,6 +2,7 @@
 {
     using System;
     using System.Globalization;
+    using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -46,6 +47,16 @@
             var translated = intToFormattedString.ToReadableString();
 
             Assert.AreEqual("(i, ci) => i.ToString(ci)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAParameterlessExtensionMethodCall()
+        {
+            Expression<Func<string[], bool>> arrayIsEmpty = a => a.Any();
+
+            var translated = arrayIsEmpty.ToReadableString();
+
+            Assert.AreEqual("a => a.Any()", translated);
         }
 
         [TestMethod]

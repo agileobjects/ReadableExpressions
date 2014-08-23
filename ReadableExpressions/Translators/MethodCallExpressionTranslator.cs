@@ -1,8 +1,10 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
@@ -14,19 +16,44 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
             var methodCall = (MethodCallExpression)expression;
-            var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry);
+            IEnumerable<Expression> methodArguments;
+            var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry, out methodArguments);
 
-            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodCall.Arguments, translatorRegistry);
+            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodArguments, translatorRegistry);
         }
 
         private static string GetMethodCallSuject(
             MethodCallExpression methodCall,
-            IExpressionTranslatorRegistry translatorRegistry)
+            IExpressionTranslatorRegistry translatorRegistry,
+            out IEnumerable<Expression> arguments)
         {
-            return (methodCall.Object != null)
-                ? translatorRegistry.Translate(methodCall.Object)
-                // ReSharper disable once PossibleNullReferenceException
-                : methodCall.Method.DeclaringType.Name;
+            if (methodCall.Object != null)
+            {
+                arguments = methodCall.Arguments;
+
+                return translatorRegistry.Translate(methodCall.Object);
+            }
+
+            return GetStaticMethodCallSubject(methodCall, translatorRegistry, out arguments);
+        }
+
+        private static string GetStaticMethodCallSubject(
+            MethodCallExpression methodCall,
+            IExpressionTranslatorRegistry translatorRegistry,
+            out IEnumerable<Expression> arguments)
+        {
+            if (methodCall.Method.GetCustomAttributes(typeof(ExtensionAttribute), inherit: false).Any())
+            {
+                var subject = methodCall.Arguments.First();
+                arguments = methodCall.Arguments.Skip(1);
+
+                return translatorRegistry.Translate(subject);
+            }
+
+            arguments = methodCall.Arguments;
+
+            // ReSharper disable once PossibleNullReferenceException
+            return methodCall.Method.DeclaringType.Name;
         }
 
         internal static string GetMethodCall(
