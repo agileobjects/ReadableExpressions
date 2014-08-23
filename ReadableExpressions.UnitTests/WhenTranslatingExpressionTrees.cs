@@ -31,7 +31,6 @@
         [TestMethod]
         public void ShouldTranslateAnInstanceCallExpressionStaticMemberArgument()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<int, string>> intToFormattedString = i => i.ToString(CultureInfo.CurrentCulture);
 
             var translated = intToFormattedString.ToReadableString();
@@ -42,7 +41,6 @@
         [TestMethod]
         public void ShouldTranslateAnInstanceCallExpressionParameterArgument()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<int, CultureInfo, string>> intToFormattedString = (i, ci) => i.ToString(ci);
 
             var translated = intToFormattedString.ToReadableString();
@@ -64,7 +62,6 @@
         [TestMethod]
         public void ShouldTranslateACastExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<int, double>> intToDouble = i => (double)i;
 
             var translated = intToDouble.ToReadableString();
@@ -75,7 +72,6 @@
         [TestMethod]
         public void ShouldTranslateACastToNullableExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<long, long?>> longToNullable = l => (long?)l;
 
             var translated = longToNullable.ToReadableString();
@@ -86,7 +82,6 @@
         [TestMethod]
         public void ShouldTranslateAnEqualityExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<int, int, bool>> intsAreEqual = (i1, i2) => i1 == i2;
 
             var translated = intsAreEqual.ToReadableString();
@@ -95,9 +90,18 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAnLessThanOrEqualExpression()
+        {
+            Expression<Func<int, int, bool>> firstLessThanOrEqualToSecond = (i1, i2) => i1 <= i2;
+
+            var translated = firstLessThanOrEqualToSecond.ToReadableString();
+
+            Assert.AreEqual("(i1, i2) => i1 <= i2", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInequalityExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<int, int, bool>> intsAreNotEqual = (i1, i2) => i1 != i2;
 
             var translated = intsAreNotEqual.ToReadableString();
@@ -108,7 +112,6 @@
         [TestMethod]
         public void ShouldTranslateANegationExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
             Expression<Func<bool, bool>> negator = b => !b;
 
             var translated = negator.ToReadableString();

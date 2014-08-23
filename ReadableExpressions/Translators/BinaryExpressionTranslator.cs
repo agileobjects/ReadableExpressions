@@ -11,6 +11,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 { ExpressionType.Equal, "==" },
                 { ExpressionType.NotEqual, "!=" },
+                { ExpressionType.LessThanOrEqual, "<=" },
             };
 
         internal BinaryExpressionTranslator()
