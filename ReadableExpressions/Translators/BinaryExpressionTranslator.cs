@@ -10,8 +10,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             new Dictionary<ExpressionType, string>
             {
                 { ExpressionType.Equal, "==" },
-                { ExpressionType.NotEqual, "!=" },
+                { ExpressionType.GreaterThan, ">" },
+                { ExpressionType.GreaterThanOrEqual, ">=" },
+                { ExpressionType.LessThan, "<" },
                 { ExpressionType.LessThanOrEqual, "<=" },
+                { ExpressionType.NotEqual, "!=" },
             };
 
         internal BinaryExpressionTranslator()
