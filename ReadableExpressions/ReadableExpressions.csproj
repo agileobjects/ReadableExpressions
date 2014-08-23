@@ -53,6 +53,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Translators\IExpressionTranslatorRegistry.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.cs" />
+    <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.cs" />
+    <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.List.cs" />
+    <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Member.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
     <Compile Include="Translators\MethodCallExpressionTranslator.cs" />

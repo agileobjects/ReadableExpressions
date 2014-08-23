@@ -1,6 +1,8 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
@@ -13,25 +15,31 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var methodCall = (MethodCallExpression)expression;
             var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry);
-            
-            var parameters = TranslationHelper.GetParameters(
-                methodCall.Arguments, 
-                translatorRegistry,
-                encloseSingleParameterInBrackets: true);
 
-            return methodCallSubject + "." + methodCall.Method.Name + parameters;
+            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodCall.Arguments, translatorRegistry);
         }
 
         private static string GetMethodCallSuject(
             MethodCallExpression methodCall,
             IExpressionTranslatorRegistry translatorRegistry)
         {
-            if (methodCall.Object != null)
-            {
-                return translatorRegistry.Translate(methodCall.Object);
-            }
+            return (methodCall.Object != null)
+                ? translatorRegistry.Translate(methodCall.Object)
+                // ReSharper disable once PossibleNullReferenceException
+                : methodCall.Method.DeclaringType.Name;
+        }
 
-            return methodCall.Method.DeclaringType.Name;
+        internal static string GetMethodCall(
+            MethodInfo method,
+            IEnumerable<Expression> parameters,
+            IExpressionTranslatorRegistry translatorRegistry)
+        {
+            var parametersString = TranslationHelper.GetParameters(
+                parameters,
+                translatorRegistry,
+                encloseSingleParameterInBrackets: true);
+
+            return method.Name + parametersString;
         }
     }
 }
