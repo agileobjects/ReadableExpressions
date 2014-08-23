@@ -9,12 +9,16 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
             new Dictionary<ExpressionType, string>
             {
+                { ExpressionType.Add, "+" },
+                { ExpressionType.Divide, "/" },
                 { ExpressionType.Equal, "==" },
                 { ExpressionType.GreaterThan, ">" },
                 { ExpressionType.GreaterThanOrEqual, ">=" },
                 { ExpressionType.LessThan, "<" },
                 { ExpressionType.LessThanOrEqual, "<=" },
+                { ExpressionType.Multiply, "*" },
                 { ExpressionType.NotEqual, "!=" },
+                { ExpressionType.Subtract, "-" },
             };
 
         internal BinaryExpressionTranslator()
