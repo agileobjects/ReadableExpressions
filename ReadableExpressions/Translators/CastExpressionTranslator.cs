@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq.Expressions;
+    using Extensions;
 
     internal class CastExpressionTranslator : ExpressionTranslatorBase
     {
@@ -20,7 +21,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return conversionSubject;
             }
 
-            return "(" + conversion.Type.Name + ")" + conversionSubject;
+            return "(" + conversion.Type.GetFriendlyName() + ")" + conversionSubject;
         }
     }
 }

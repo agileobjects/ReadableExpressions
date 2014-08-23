@@ -43,6 +43,7 @@
     <Compile Include="ExpressionTranslatorRegistry.cs" />
     <Compile Include="ExpressionTranslatorRegistry.Translators.cs" />
     <Compile Include="ExpressionTranslators.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
     <Compile Include="Translators\CastExpressionTranslator.cs" />
     <Compile Include="Translators\ConstantExpressionTranslator.cs" />

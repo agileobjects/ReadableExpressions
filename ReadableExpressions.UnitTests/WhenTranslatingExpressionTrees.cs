@@ -73,6 +73,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateACastToNullableExpression()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<long, long?>> longToNullable = l => (long?)l;
+
+            var translated = longToNullable.ToReadableString();
+
+            Assert.AreEqual("l => (Long?)l", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
