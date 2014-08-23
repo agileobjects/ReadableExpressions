@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
@@ -57,6 +59,26 @@
             var translated = arrayIsEmpty.ToReadableString();
 
             Assert.AreEqual("a => a.Any()", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnExtensionMethodCallWithSimpleParameters()
+        {
+            Expression<Func<string[], IEnumerable<string>>> notTheFirstTwo = a => a.Skip(2);
+
+            var translated = notTheFirstTwo.ToReadableString();
+
+            Assert.AreEqual("a => a.Skip(2)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnExtensionMethodCallWithALambdaParameter()
+        {
+            Expression<Func<string[], bool>> noBlankStrings = a => a.All(i => i.Length != 0);
+
+            var translated = noBlankStrings.ToReadableString();
+
+            Assert.AreEqual("a => a.All(i => i.Length != 0)", translated);
         }
 
         [TestMethod]
