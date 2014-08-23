@@ -102,5 +102,15 @@
 
             Assert.AreEqual("() => DateTime.Today", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAParameterlessNewExpression()
+        {
+            Expression<Func<object>> createObject = () => new object();
+
+            var translated = createObject.ToReadableString();
+
+            Assert.AreEqual("() => new Object()", translated);
+        }
     }
 }

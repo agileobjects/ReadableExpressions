@@ -13,6 +13,7 @@
             new LambdaExpressionTranslator(),
             new MemberAccessExpressionTranslator(),
             new MethodCallExpressionTranslator(),
+            new NewExpressionTranslator(),
             new ParameterExpressionTranslator(),
         };
     }
