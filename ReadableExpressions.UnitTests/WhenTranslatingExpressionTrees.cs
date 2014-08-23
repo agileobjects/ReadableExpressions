@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq.Expressions;
-
-namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using System;
+    using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -32,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         public void ShouldTranslateAStaticCallExpression()
         {
             // ReSharper disable once ReferenceEqualsWithValueType
-            Expression<Func<bool>> oneEqualsTwo = () => object.ReferenceEquals(1, 2);
+            Expression<Func<bool>> oneEqualsTwo = () => ReferenceEquals(1, 2);
 
             var translated = oneEqualsTwo.ToReadableString();
 
