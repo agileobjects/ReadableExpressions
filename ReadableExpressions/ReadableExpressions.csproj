@@ -54,6 +54,7 @@
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
     <Compile Include="Translators\MethodCallExpressionTranslator.cs" />
+    <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
     <Compile Include="Translators\TranslationHelper.cs" />
   </ItemGroup>

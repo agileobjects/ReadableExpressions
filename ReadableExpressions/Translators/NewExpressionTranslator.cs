@@ -14,7 +14,12 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var newExpression = (NewExpression)expression;
 
-            return "new " + newExpression.Type.GetFriendlyName() + "()";
+            var parameters = TranslationHelper.GetParameters(
+                newExpression.Arguments,
+                translatorRegistry,
+                encloseSingleParameterInBrackets: true);
+
+            return "new " + expression.Type.GetFriendlyName() + parameters;
         }
     }
 }
