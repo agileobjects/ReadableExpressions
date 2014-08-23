@@ -42,22 +42,5 @@
 }";
             Assert.AreEqual(EXPECTED, translated);
         }
-
-        [TestMethod]
-        public void ShouldTranslateANewExpressionWithMultipleInitialisations()
-        {
-            Expression<Func<MemoryStream>> createToday =
-                () => new MemoryStream { Capacity = 10000, Position = 100 };
-
-            var translated = createToday.ToReadableString();
-
-            const string EXPECTED =
-@"() => new MemoryStream
-{
-    Capacity = 10000,
-    Position = 100
-}";
-            Assert.AreEqual(EXPECTED, translated);
-        }
     }
 }
