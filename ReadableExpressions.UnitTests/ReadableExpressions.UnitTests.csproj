@@ -50,8 +50,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="WhenTranslatingExpressionTrees.cs" />
+    <Compile Include="WhenTranslatingComparisons.cs" />
+    <Compile Include="WhenTranslatingConversions.cs" />
+    <Compile Include="WhenTranslatingObjectCreations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WhenTranslatingMemberAccesses.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
