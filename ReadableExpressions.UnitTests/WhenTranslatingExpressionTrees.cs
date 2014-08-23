@@ -40,6 +40,17 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateACastExpression()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<int, double>> intToDouble = i => (double)i;
+
+            var translated = intToDouble.ToReadableString();
+
+            Assert.AreEqual("i => (Double)i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
