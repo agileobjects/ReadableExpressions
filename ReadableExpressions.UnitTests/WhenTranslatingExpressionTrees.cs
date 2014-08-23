@@ -19,13 +19,23 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
-        public void ShouldTranslateAMemberExpression()
+        public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
 
             var translated = getDateDay.ToReadableString();
 
             Assert.AreEqual("d => d.Day", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAStaticMemberExpression()
+        {
+            Expression<Func<DateTime>> getToday = () => DateTime.Today;
+
+            var translated = getToday.ToReadableString();
+
+            Assert.AreEqual("() => DateTime.Today", translated);
         }
     }
 }
