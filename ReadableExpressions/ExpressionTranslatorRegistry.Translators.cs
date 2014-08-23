@@ -11,6 +11,7 @@
             new BinaryExpressionTranslator(),
             new CastExpressionTranslator(),
             new ConstantExpressionTranslator(),
+            new InitialisationExpressionTranslator(),
             new LambdaExpressionTranslator(),
             new MemberAccessExpressionTranslator(),
             new MethodCallExpressionTranslator(),
