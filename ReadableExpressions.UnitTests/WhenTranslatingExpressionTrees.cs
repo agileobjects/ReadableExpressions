@@ -106,6 +106,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateANegationExpression()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<bool, bool>> negator = b => !b;
+
+            var translated = negator.ToReadableString();
+
+            Assert.AreEqual("b => !b", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;

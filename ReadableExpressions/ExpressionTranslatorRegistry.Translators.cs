@@ -14,6 +14,7 @@
             new LambdaExpressionTranslator(),
             new MemberAccessExpressionTranslator(),
             new MethodCallExpressionTranslator(),
+            new NegationExpressionTranslator(),
             new NewExpressionTranslator(),
             new ParameterExpressionTranslator(),
         };
