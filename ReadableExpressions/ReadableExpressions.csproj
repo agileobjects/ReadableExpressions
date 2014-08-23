@@ -44,13 +44,17 @@
     <Compile Include="ExpressionTranslatorRegistry.Translators.cs" />
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
+    <Compile Include="Translators\CastExpressionTranslator.cs" />
+    <Compile Include="Translators\ConstantExpressionTranslator.cs" />
     <Compile Include="Translators\ExpressionTranslatorBase.cs" />
     <Compile Include="Translators\IExpressionTranslator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Translators\IExpressionTranslatorRegistry.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
+    <Compile Include="Translators\MethodCallExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
+    <Compile Include="Translators\TranslationHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

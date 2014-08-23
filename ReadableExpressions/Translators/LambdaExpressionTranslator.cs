@@ -15,31 +15,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var lambdaExpression = (LambdaExpression)expression;
 
-            var parameters = GetParameters(lambdaExpression, translatorRegistry);
+            var parameters = TranslationHelper.GetParameters(lambdaExpression.Parameters, translatorRegistry);
             var body = translatorRegistry.Translate(lambdaExpression.Body);
 
             return parameters + " => " + body;
-        }
-
-        private static string GetParameters(
-            LambdaExpression lambdaExpression,
-            IExpressionTranslatorRegistry translatorRegistry)
-        {
-            if (lambdaExpression.Parameters.Count == 0)
-            {
-                return "()";
-            }
-
-            var parameters = string.Join(
-                ", ",
-                lambdaExpression.Parameters.Select(translatorRegistry.Translate));
-
-            if (lambdaExpression.Parameters.Count > 1)
-            {
-                parameters = "(" + parameters + ")";
-            }
-
-            return parameters;
         }
     }
 }

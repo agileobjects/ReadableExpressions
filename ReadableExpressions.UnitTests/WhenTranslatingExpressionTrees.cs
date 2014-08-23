@@ -19,6 +19,27 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAnInstanceCallExpression()
+        {
+            Expression<Func<object, string>> objectToString = o => o.ToString();
+
+            var translated = objectToString.ToReadableString();
+
+            Assert.AreEqual("o => o.ToString()", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAStaticCallExpression()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<bool>> oneEqualsTwo = () => object.ReferenceEquals(1, 2);
+
+            var translated = oneEqualsTwo.ToReadableString();
+
+            Assert.AreEqual("() => Object.ReferenceEquals(1, 2)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
