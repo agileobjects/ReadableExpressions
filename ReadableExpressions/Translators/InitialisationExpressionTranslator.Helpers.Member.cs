@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -8,6 +9,12 @@
     {
         private class MemberInitExpressionHelper : InitExpressionHelperBase<MemberInitExpression, NewExpression>
         {
+            private static readonly Dictionary<MemberBindingType, Func<MemberBinding, IExpressionTranslatorRegistry, string>> _bindingTranslatorsByType =
+                new Dictionary<MemberBindingType, Func<MemberBinding, IExpressionTranslatorRegistry, string>>
+                {
+                    { MemberBindingType.Assignment, TranslateAssignmentBinding }
+                };
+
             protected override NewExpression GetNewExpression(MemberInitExpression expression)
             {
                 return expression.NewExpression;
@@ -22,20 +29,15 @@
                 MemberInitExpression expression,
                 IExpressionTranslatorRegistry translatorRegistry)
             {
-                return expression.Bindings.Select(b => GetMemberBinding(b, translatorRegistry));
+                return expression.Bindings.Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b, translatorRegistry));
             }
 
-            private static string GetMemberBinding(MemberBinding binding, IExpressionTranslatorRegistry translatorRegistry)
+            private static string TranslateAssignmentBinding(MemberBinding binding, IExpressionTranslatorRegistry translatorRegistry)
             {
-                if (binding.BindingType == MemberBindingType.Assignment)
-                {
-                    var assignment = (MemberAssignment)binding;
-                    var value = translatorRegistry.Translate(assignment.Expression);
+                var assignment = (MemberAssignment)binding;
+                var value = translatorRegistry.Translate(assignment.Expression);
 
-                    return assignment.Member.Name + " = " + value;
-                }
-
-                return null;
+                return assignment.Member.Name + " = " + value;
             }
         }
     }
