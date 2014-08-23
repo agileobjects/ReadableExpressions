@@ -8,7 +8,8 @@
     {
         internal static string GetParameters<TExpression>(
             IEnumerable<TExpression> parameters,
-            IExpressionTranslatorRegistry translatorRegistry)
+            IExpressionTranslatorRegistry translatorRegistry,
+            bool encloseSingleParameterInBrackets)
             where TExpression : Expression
         {
             if (!parameters.Any())
@@ -20,7 +21,7 @@
                 ", ",
                 parameters.Select(translatorRegistry.Translate));
 
-            if (parameters.Count() > 1)
+            if (encloseSingleParameterInBrackets || (parameters.Count() > 1))
             {
                 parametersString = "(" + parametersString + ")";
             }

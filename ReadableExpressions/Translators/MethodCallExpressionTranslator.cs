@@ -13,7 +13,11 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var methodCall = (MethodCallExpression)expression;
             var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry);
-            var parameters = TranslationHelper.GetParameters(methodCall.Arguments, translatorRegistry);
+            
+            var parameters = TranslationHelper.GetParameters(
+                methodCall.Arguments, 
+                translatorRegistry,
+                encloseSingleParameterInBrackets: true);
 
             return methodCallSubject + "." + methodCall.Method.Name + parameters;
         }

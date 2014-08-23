@@ -1,8 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System.Linq;
     using System.Linq.Expressions;
-    using System.Text;
 
     internal class LambdaExpressionTranslator : ExpressionTranslatorBase
     {
@@ -15,7 +13,11 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var lambdaExpression = (LambdaExpression)expression;
 
-            var parameters = TranslationHelper.GetParameters(lambdaExpression.Parameters, translatorRegistry);
+            var parameters = TranslationHelper.GetParameters(
+                lambdaExpression.Parameters,
+                translatorRegistry,
+                encloseSingleParameterInBrackets: false);
+
             var body = translatorRegistry.Translate(lambdaExpression.Body);
 
             return parameters + " => " + body;

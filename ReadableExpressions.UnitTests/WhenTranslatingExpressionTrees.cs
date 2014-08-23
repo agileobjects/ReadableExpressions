@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Globalization;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -25,6 +26,28 @@
             var translated = objectToString.ToReadableString();
 
             Assert.AreEqual("o => o.ToString()", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnInstanceCallExpressionStaticMemberArgument()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<int, string>> intToFormattedString = i => i.ToString(CultureInfo.CurrentCulture);
+
+            var translated = intToFormattedString.ToReadableString();
+
+            Assert.AreEqual("i => i.ToString(CultureInfo.CurrentCulture)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnInstanceCallExpressionParameterArgument()
+        {
+            // ReSharper disable once ReferenceEqualsWithValueType
+            Expression<Func<int, CultureInfo, string>> intToFormattedString = (i, ci) => i.ToString(ci);
+
+            var translated = intToFormattedString.ToReadableString();
+
+            Assert.AreEqual("(i, ci) => i.ToString(ci)", translated);
         }
 
         [TestMethod]
