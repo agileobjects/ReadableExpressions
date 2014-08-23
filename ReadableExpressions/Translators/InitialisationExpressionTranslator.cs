@@ -11,6 +11,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 { ExpressionType.ListInit, new ListInitExpressionHelper() },
                 { ExpressionType.MemberInit, new MemberInitExpressionHelper() },
+                { ExpressionType.NewArrayInit, new ArrayInitExpressionHelper() }
             };
 
         internal InitialisationExpressionTranslator()

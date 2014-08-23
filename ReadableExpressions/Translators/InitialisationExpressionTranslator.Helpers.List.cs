@@ -6,11 +6,16 @@
 
     internal partial class InitialisationExpressionTranslator
     {
-        private class ListInitExpressionHelper : InitExpressionHelperBase<ListInitExpression>
+        private class ListInitExpressionHelper : InitExpressionHelperBase<ListInitExpression, NewExpression>
         {
             protected override NewExpression GetNewExpression(ListInitExpression expression)
             {
                 return expression.NewExpression;
+            }
+
+            protected override bool ConstructorIsParameterless(NewExpression newExpression)
+            {
+                return !newExpression.Arguments.Any();
             }
 
             protected override IEnumerable<string> GetInitialisations(
@@ -25,7 +30,7 @@
                             initialisation.Arguments,
                             translatorRegistry);
 
-                        return "    " + listAddCall;
+                        return listAddCall;
                     });
             }
         }

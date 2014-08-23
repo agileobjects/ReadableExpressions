@@ -78,5 +78,23 @@
 }";
             Assert.AreEqual(EXPECTED, translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateANewArrayExpressionWithAdditions()
+        {
+            Expression<Func<float[]>> createList =
+                () => new[] { 1.00f, 2.00f, 3.00f };
+
+            var translated = createList.ToReadableString();
+
+            const string EXPECTED =
+@"() => new Single[3]
+{
+    1,
+    2,
+    3
+}";
+            Assert.AreEqual(EXPECTED, translated);
+        }
     }
 }

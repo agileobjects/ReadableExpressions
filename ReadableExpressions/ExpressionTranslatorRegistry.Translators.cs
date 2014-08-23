@@ -16,6 +16,7 @@
             new MemberAccessExpressionTranslator(),
             new MethodCallExpressionTranslator(),
             new NegationExpressionTranslator(),
+            new NewArrayExpressionTranslator(),
             new NewExpressionTranslator(),
             new ParameterExpressionTranslator(),
         };

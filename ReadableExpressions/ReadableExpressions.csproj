@@ -54,12 +54,14 @@
     <Compile Include="Translators\IExpressionTranslatorRegistry.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.cs" />
+    <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Array.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.List.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Member.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
     <Compile Include="Translators\MethodCallExpressionTranslator.cs" />
     <Compile Include="Translators\NegationExpressionTranslator.cs" />
+    <Compile Include="Translators\NewArrayExpressionTranslator.cs" />
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
     <Compile Include="Translators\TranslationHelper.cs" />
