@@ -21,7 +21,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return conversionSubject;
             }
 
-            return "(" + conversion.Type.GetFriendlyName() + ")" + conversionSubject;
+            return "((" + conversion.Type.GetFriendlyName() + ")" + conversionSubject + ")";
         }
     }
 }

@@ -28,6 +28,16 @@
         }
 
         [TestMethod]
+        public void ShouldUseParenthesisInCasting()
+        {
+            Expression<Func<object, int>> castDateTimeHour = o => ((DateTime)o).Hour;
+
+            var translated = castDateTimeHour.ToReadableString();
+
+            Assert.AreEqual("o => ((DateTime)o).Hour", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANegationExpression()
         {
             Expression<Func<bool, bool>> negator = b => !b;
