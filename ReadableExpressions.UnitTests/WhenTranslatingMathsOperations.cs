@@ -56,5 +56,15 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("(i1, i2) => i1 / i2", translated);
         }
+
+        [TestMethod]
+        public void ShouldMaintainExpressionParenthesis()
+        {
+            Expression<Func<int, int, int>> operationWithBrackets = (i1, i2) => (i1 / i2) * i1;
+
+            var translated = operationWithBrackets.ToReadableString();
+
+            Assert.AreEqual("(i1, i2) => (i1 / i2) * i1", translated);
+        }
     }
 }

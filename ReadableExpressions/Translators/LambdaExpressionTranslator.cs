@@ -20,6 +20,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var body = translatorRegistry.Translate(lambdaExpression.Body);
 
+            if ((body[0] == '(') && (body[body.Length - 1] == ')'))
+            {
+                body = body.Substring(1, body.Length - 2);
+            }
+
             return parameters + " => " + body;
         }
     }
