@@ -20,14 +20,18 @@
             {
                 var typedExpression = (TExpression)expression;
                 var newExpression = GetNewExpression(typedExpression, translatorRegistry);
+                var initialisations = GetInitialisations(typedExpression, translatorRegistry);
 
-                var initialisations = string.Join(
-                    "," + Environment.NewLine,
-                    GetInitialisations(typedExpression, translatorRegistry).Select(init => "    " + init));
+                if ((newExpression.Length + initialisations.Sum(init => init.Length+ 2)) <= 40)
+                {
+                    return newExpression + " { " + string.Join(", ", initialisations) + " }";
+                }
 
                 return newExpression + Environment.NewLine +
                     "{" + Environment.NewLine +
-                        initialisations +
+                        string.Join(
+                            "," + Environment.NewLine,
+                            initialisations.Select(init => "    " + init)) +
                     Environment.NewLine + "}";
             }
 

@@ -30,18 +30,13 @@
         }
 
         [TestMethod]
-        public void ShouldTranslateANewExpressionWithInitialisation()
+        public void ShouldTranslateANewExpressionWithASingleInitialisation()
         {
             Expression<Func<MemoryStream>> createMemoryStream = () => new MemoryStream { Position = 0 };
 
             var translated = createMemoryStream.ToReadableString();
 
-            const string EXPECTED =
-@"() => new MemoryStream
-{
-    Position = 0
-}";
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual("() => new MemoryStream { Position = 0 }", translated);
         }
 
         [TestMethod]
@@ -86,14 +81,7 @@
 
             var translated = createArray.ToReadableString();
 
-            const string EXPECTED =
-@"() => new Single[3]
-{
-    1,
-    2,
-    3
-}";
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual("() => new Single[3] { 1, 2, 3 }", translated);
         }
     }
 }
