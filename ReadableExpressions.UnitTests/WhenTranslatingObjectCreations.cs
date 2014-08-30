@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq.Expressions;
+    using System.Text;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -82,6 +83,48 @@
             var translated = createArray.ToReadableString();
 
             Assert.AreEqual("() => new Single[3] { 1, 2, 3 }", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAStringConstantConstructorParameter()
+        {
+            Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder("Hello!");
+
+            var translated = createStringBuilder.ToReadableString();
+
+            Assert.AreEqual("() => new StringBuilder(\"Hello!\")", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACharacterConstantConstructorParameter()
+        {
+            Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder('f');
+
+            var translated = createStringBuilder.ToReadableString();
+
+            // Constant character expressions have .Type Int32, so they 
+            // can't be differentiated from int constants :(
+            Assert.AreEqual("() => new StringBuilder(" + ((int)'f') + ")", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateConstantConstructorParameters()
+        {
+            Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder(1000, 10000);
+
+            var translated = createStringBuilder.ToReadableString();
+
+            Assert.AreEqual("() => new StringBuilder(1000, 10000)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAParameterConstructorParameter()
+        {
+            Expression<Func<string, StringBuilder>> createStringBuilder = str => new StringBuilder(str);
+
+            var translated = createStringBuilder.ToReadableString();
+
+            Assert.AreEqual("str => new StringBuilder(str)", translated);
         }
     }
 }

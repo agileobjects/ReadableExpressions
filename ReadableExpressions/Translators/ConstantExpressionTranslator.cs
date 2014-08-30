@@ -11,7 +11,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
-            return ((ConstantExpression)expression).Value.ToString();
+            var constant = (ConstantExpression)expression;
+
+            if (constant.Type == typeof(string))
+            {
+                return "\"" + constant.Value + "\"";
+            }
+
+            return constant.Value.ToString();
         }
     }
 }
