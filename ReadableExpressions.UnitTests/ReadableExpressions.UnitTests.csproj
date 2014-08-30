@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="WhenTranslatingComparisons.cs" />
     <Compile Include="WhenTranslatingConversions.cs" />
+    <Compile Include="WhenTranslatingLogicalOperations.cs" />
     <Compile Include="WhenTranslatingMathsOperations.cs" />
     <Compile Include="WhenTranslatingObjectCreations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

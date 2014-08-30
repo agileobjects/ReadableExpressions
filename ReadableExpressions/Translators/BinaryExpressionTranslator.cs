@@ -10,6 +10,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             new Dictionary<ExpressionType, string>
             {
                 { ExpressionType.Add, "+" },
+                { ExpressionType.And, "&" },
+                { ExpressionType.AndAlso, "&&" },
                 { ExpressionType.Divide, "/" },
                 { ExpressionType.Equal, "==" },
                 { ExpressionType.GreaterThan, ">" },
@@ -18,6 +20,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 { ExpressionType.LessThanOrEqual, "<=" },
                 { ExpressionType.Multiply, "*" },
                 { ExpressionType.NotEqual, "!=" },
+                { ExpressionType.Or, "|" },
+                { ExpressionType.OrElse, "||" },
                 { ExpressionType.Subtract, "-" },
             };
 
