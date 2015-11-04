@@ -1,28 +1,12 @@
 ﻿using System.Resources;
 using System.Reflection;
 
-// General Information about an assembly is controlled through the following 
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
 [assembly: AssemblyTitle("AgileObjects.ReadableExpressions")]
-[assembly: AssemblyDescription("AgileObjects.ReadableExpressions")]
-[assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AgileObjects Ltd")]
 [assembly: AssemblyProduct("AgileObjects.ReadableExpressions")]
+[assembly: AssemblyDescription("Provides an extension method to produce a readable string version of an expression tree.")]
 [assembly: AssemblyCopyright("Copyright © AgileObjects Ltd 2014")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
 [assembly: NeutralResourcesLanguage("en")]
 
-// Version information for an assembly consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.1.0.0")]
+[assembly: AssemblyFileVersion("0.1.0.0")]
