@@ -9,7 +9,7 @@
     <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Provides an extension method to produce a readable string version of an expression tree.</description>
-    <releaseNotes>Initial release.</releaseNotes>
+    <releaseNotes>Updated to target .NET 4 instead of 4.5.</releaseNotes>
     <copyright>Copyright 2015</copyright>
     <tags>Expression Trees, Debugging</tags>
   </metadata>
