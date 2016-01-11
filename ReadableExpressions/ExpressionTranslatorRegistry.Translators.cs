@@ -9,6 +9,7 @@
         {
             new ArrayLengthExpressionTranslator(),
             new BinaryExpressionTranslator(),
+            new BlockExpressionTranslator(),
             new CastExpressionTranslator(),
             new ConstantExpressionTranslator(),
             new InitialisationExpressionTranslator(),

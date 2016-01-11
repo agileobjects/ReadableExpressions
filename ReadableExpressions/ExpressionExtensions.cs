@@ -6,7 +6,7 @@
     {
         private static readonly ExpressionTranslatorRegistry _translatorRegistry = new ExpressionTranslatorRegistry();
 
-        public static string ToReadableString<T>(this Expression<T> expression)
+        public static string ToReadableString(this Expression expression)
         {
             return _translatorRegistry.Translate(expression);
         }

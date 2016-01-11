@@ -43,6 +43,7 @@
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
     <Compile Include="Translators\BinaryExpressionTranslator.cs" />
+    <Compile Include="Translators\BlockExpressionTranslator.cs" />
     <Compile Include="Translators\CastExpressionTranslator.cs" />
     <Compile Include="Translators\ConstantExpressionTranslator.cs" />
     <Compile Include="Translators\ExpressionTranslatorBase.cs" />
