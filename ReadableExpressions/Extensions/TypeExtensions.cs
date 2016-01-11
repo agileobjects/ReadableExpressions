@@ -35,7 +35,7 @@
                 type.Name.Insert(type.Name.IndexOf("`", StringComparison.Ordinal), "<") + ">";
 
             return typeGenericNameWithAngleBrackets.Replace(
-                "`" + typeGenericTypeArguments.Count(),
+                "`" + typeGenericTypeArguments.Length,
                 typeGenericTypeArgumentFriendlyNames);
         }
     }

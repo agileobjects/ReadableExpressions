@@ -12,10 +12,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             _nodeTypes = nodeTypes;
         }
 
-        public IEnumerable<ExpressionType> NodeTypes
-        {
-            get { return _nodeTypes; }
-        }
+        public IEnumerable<ExpressionType> NodeTypes => _nodeTypes;
 
         public abstract string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry);
     }
