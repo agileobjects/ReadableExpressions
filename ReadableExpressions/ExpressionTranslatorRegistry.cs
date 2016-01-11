@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -25,7 +26,15 @@
 
         public string Translate(Expression expression)
         {
-            return TranslatorsByType[expression.NodeType].Translate(expression, this);
+            IExpressionTranslator translator;
+
+            if (TranslatorsByType.TryGetValue(expression.NodeType, out translator))
+            {
+                return translator.Translate(expression, this);
+            }
+
+            throw new NotSupportedException(
+                $"Unable to translate Expression with NodeType {expression.NodeType}");
         }
     }
 }
