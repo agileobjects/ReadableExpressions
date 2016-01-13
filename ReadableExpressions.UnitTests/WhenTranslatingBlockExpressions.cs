@@ -27,18 +27,21 @@ Console.Beep();";
         }
 
         [TestMethod]
-        public void ShouldTranslateANoVariableBlockWithAReturnValue()
+        public void ShouldTranslateANoVariableBlockLambdaWithAReturnValue()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
             Expression<Func<int>> read = () => Console.Read();
 
             var consoleBlock = Expression.Block(writeLine.Body, read.Body);
+            var consoleLambda = Expression.Lambda<Func<int>>(consoleBlock);
 
-            var translated = consoleBlock.ToReadableString();
+            var translated = consoleLambda.ToReadableString();
 
-            const string EXPECTED = @"
-Console.WriteLine();
-return Console.Read();";
+            const string EXPECTED = @"() =>
+{
+    Console.WriteLine();
+    return Console.Read();
+}";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -47,17 +50,17 @@ return Console.Read();";
         public void ShouldTranslateAVariableBlockWithNoReturnValue()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
-            var countEqualsZero = Expression.Assign(countVariable, Expression.Constant(0));
+            var assignZeroToCount = Expression.Assign(countVariable, Expression.Constant(0));
             var incrementCount = Expression.Increment(countVariable);
             var returnVoid = Expression.Default(typeof(void));
 
-            var consoleBlock = Expression.Block(
+            var countBlock = Expression.Block(
                 new[] { countVariable },
-                countEqualsZero,
+                assignZeroToCount,
                 incrementCount,
                 returnVoid);
 
-            var translated = consoleBlock.ToReadableString();
+            var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
 var count = 0;
@@ -67,25 +70,54 @@ var count = 0;
         }
 
         [TestMethod]
-        public void ShouldTranslateAVariableBlockWithAReturnValue()
+        public void ShouldTranslateAVariableBlockLambdaWithNoReturnValue()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant(10));
+            var decrementCount = Expression.Decrement(countVariable);
+
+            var countBlock = Expression.Block(
+                new[] { countVariable },
+                assignTenToCount,
+                decrementCount);
+
+            var countLambda = Expression.Lambda<Action>(countBlock);
+
+            var translated = countLambda.ToReadableString();
+
+            const string EXPECTED = @"() =>
+{
+    var count = 10;
+    --count;
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAVariableBlockLambdaWithAReturnValue()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
             var countEqualsZero = Expression.Assign(countVariable, Expression.Constant(0));
             var incrementCount = Expression.Increment(countVariable);
             var returnCount = countVariable;
 
-            var consoleBlock = Expression.Block(
+            var countBlock = Expression.Block(
                 new[] { countVariable },
                 countEqualsZero,
                 incrementCount,
                 returnCount);
 
-            var translated = consoleBlock.ToReadableString();
+            var countLambda = Expression.Lambda<Func<int>>(countBlock);
 
-            const string EXPECTED = @"
-var count = 0;
-++count;
-return count;";
+            var translated = countLambda.ToReadableString();
+
+            const string EXPECTED = @"() =>
+{
+    var count = 0;
+    ++count;
+    return count;
+}";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

@@ -22,11 +22,6 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(t => t + ";")
                 .ToArray();
 
-            if (block.Type != typeof(void))
-            {
-                expressions[expressions.Length - 1] = "return " + expressions[expressions.Length - 1];
-            }
-
             return string.Join(Environment.NewLine, expressions);
         }
     }
