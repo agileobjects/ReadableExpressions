@@ -13,6 +13,12 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
             var defaultExpression = (DefaultExpression)expression;
+
+            if (defaultExpression.Type == typeof(void))
+            {
+                return null;
+            }
+
             var typeName = defaultExpression.Type.GetFriendlyName();
 
             return $"default({typeName})";

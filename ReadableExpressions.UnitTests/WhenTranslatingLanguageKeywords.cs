@@ -14,5 +14,14 @@
 
             Assert.AreEqual("default(Int32)", translated);
         }
+
+        [TestMethod]
+        public void ShouldIgnoreADefaultVoidExpression()
+        {
+            var defaultVoid = Expression.Default(typeof(void));
+            var translated = defaultVoid.ToReadableString();
+
+            Assert.IsNull(translated);
+        }
     }
 }

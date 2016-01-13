@@ -14,7 +14,13 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
             var block = (BlockExpression)expression;
-            var expressions = block.Expressions.Select(exp => translatorRegistry.Translate(exp) + ";").ToArray();
+
+            var expressions = block
+                .Expressions
+                .Select(translatorRegistry.Translate)
+                .Where(t => t != null)
+                .Select(t => t + ";")
+                .ToArray();
 
             if (block.Type != typeof(void))
             {
