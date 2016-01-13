@@ -16,6 +16,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             var block = (BlockExpression)expression;
             var expressions = block.Expressions.Select(exp => translatorRegistry.Translate(exp) + ";").ToArray();
 
+            if (block.Type != typeof(void))
+            {
+                expressions[expressions.Length - 1] = "return " + expressions[expressions.Length - 1];
+            }
+
             return string.Join(Environment.NewLine, expressions);
         }
     }

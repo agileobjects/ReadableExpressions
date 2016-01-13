@@ -25,5 +25,22 @@ Console.Beep();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateANoVariableBlockWithAReturnValue()
+        {
+            Expression<Action> writeLine = () => Console.WriteLine();
+            Expression<Func<int>> read = () => Console.Read();
+
+            var consoleBlock = Expression.Block(writeLine.Body, read.Body);
+
+            var translated = consoleBlock.ToReadableString();
+
+            const string EXPECTED = @"
+Console.WriteLine();
+return Console.Read();";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
