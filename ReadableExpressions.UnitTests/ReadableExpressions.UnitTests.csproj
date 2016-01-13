@@ -52,6 +52,8 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="WhenTranslatingLanguageKeywords.cs" />
+    <Compile Include="WhenTranslatingAssignments.cs" />
     <Compile Include="WhenTranslatingBlockExpressions.cs" />
     <Compile Include="WhenTranslatingComparisons.cs" />
     <Compile Include="WhenTranslatingConversions.cs" />

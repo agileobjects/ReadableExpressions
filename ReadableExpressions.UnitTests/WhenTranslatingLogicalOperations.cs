@@ -46,5 +46,15 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("(b1, b2) => b1 | b2", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateACoalesceOperation()
+        {
+            Expression<Func<bool?, bool, bool>> oneOrTwo = (b1, b2) => b1 ?? b2;
+
+            var translated = oneOrTwo.ToReadableString();
+
+            Assert.AreEqual("(b1, b2) => b1 ?? b2", translated);
+        }
     }
 }

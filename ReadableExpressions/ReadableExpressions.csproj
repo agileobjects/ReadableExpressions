@@ -42,6 +42,7 @@
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
+    <Compile Include="Translators\AssignmentExpressionTranslator.cs" />
     <Compile Include="Translators\BinaryExpressionTranslator.cs" />
     <Compile Include="Translators\BlockExpressionTranslator.cs" />
     <Compile Include="Translators\CastExpressionTranslator.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Array.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.List.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Member.cs" />
+    <Compile Include="Translators\DefaultExpressionTranslator.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
     <Compile Include="Translators\MethodCallExpressionTranslator.cs" />

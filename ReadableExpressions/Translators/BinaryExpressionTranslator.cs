@@ -12,6 +12,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 { ExpressionType.Add, "+" },
                 { ExpressionType.And, "&" },
                 { ExpressionType.AndAlso, "&&" },
+                { ExpressionType.Coalesce, "??" },
                 { ExpressionType.Divide, "/" },
                 { ExpressionType.Equal, "==" },
                 { ExpressionType.GreaterThan, ">" },
