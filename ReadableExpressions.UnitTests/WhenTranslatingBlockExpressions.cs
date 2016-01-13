@@ -49,19 +49,43 @@ return Console.Read();";
             var countVariable = Expression.Variable(typeof(int), "count");
             var countEqualsZero = Expression.Assign(countVariable, Expression.Constant(0));
             var incrementCount = Expression.Increment(countVariable);
-            var noReturnValue = Expression.Default(typeof(void));
+            var returnVoid = Expression.Default(typeof(void));
 
             var consoleBlock = Expression.Block(
                 new[] { countVariable },
                 countEqualsZero,
                 incrementCount,
-                noReturnValue);
+                returnVoid);
 
             var translated = consoleBlock.ToReadableString();
 
             const string EXPECTED = @"
 var count = 0;
 ++count;";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAVariableBlockWithAReturnValue()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var countEqualsZero = Expression.Assign(countVariable, Expression.Constant(0));
+            var incrementCount = Expression.Increment(countVariable);
+            var returnCount = countVariable;
+
+            var consoleBlock = Expression.Block(
+                new[] { countVariable },
+                countEqualsZero,
+                incrementCount,
+                returnCount);
+
+            var translated = consoleBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var count = 0;
+++count;
+return count;";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
