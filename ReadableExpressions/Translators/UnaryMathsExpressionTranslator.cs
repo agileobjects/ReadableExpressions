@@ -10,7 +10,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly Dictionary<ExpressionType, Func<string, string>> _operatorsByNodeType =
             new Dictionary<ExpressionType, Func<string, string>>
             {
-                { ExpressionType.Increment, o => "++" + o }
+                { ExpressionType.Decrement, o => "--" + o },
+                { ExpressionType.Increment, o => "++" + o },
+                { ExpressionType.PostDecrementAssign, o => o + "--" },
+                { ExpressionType.PostIncrementAssign, o => o + "++" }
             };
 
         public UnaryMathsExpressionTranslator()

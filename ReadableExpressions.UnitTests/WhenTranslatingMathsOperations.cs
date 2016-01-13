@@ -77,5 +77,38 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("++i", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAPostIncrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var postIncrement = Expression.PostIncrementAssign(intVariable);
+
+            var translated = postIncrement.ToReadableString();
+
+            Assert.AreEqual("i++", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADecrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var decrement = Expression.Decrement(intVariable);
+
+            var translated = decrement.ToReadableString();
+
+            Assert.AreEqual("--i", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAPostDecrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var postDecrement = Expression.PostDecrementAssign(intVariable);
+
+            var translated = postDecrement.ToReadableString();
+
+            Assert.AreEqual("i--", translated);
+        }
     }
 }
