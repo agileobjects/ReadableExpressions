@@ -65,6 +65,7 @@
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
     <Compile Include="Translators\TranslationHelper.cs" />
+    <Compile Include="Translators\UnaryMathsExpressionTranslator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadableExpressions.nuspec" />

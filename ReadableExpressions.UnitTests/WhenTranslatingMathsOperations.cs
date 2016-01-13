@@ -66,5 +66,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("(i1, i2) => (i1 / i2) * i1", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnIncrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var increment = Expression.Increment(intVariable);
+
+            var translated = increment.ToReadableString();
+
+            Assert.AreEqual("++i", translated);
+        }
     }
 }
