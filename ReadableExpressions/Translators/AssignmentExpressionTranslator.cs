@@ -1,11 +1,20 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
 
     internal class AssignmentExpressionTranslator : ExpressionTranslatorBase
     {
-        public AssignmentExpressionTranslator()
-            : base(ExpressionType.Assign)
+        private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
+            new Dictionary<ExpressionType, string>
+            {
+                { ExpressionType.AddAssign, "+=" },
+                { ExpressionType.Assign, "=" }
+            };
+
+        internal AssignmentExpressionTranslator()
+            : base(_symbolsByNodeType.Keys.ToArray())
         {
         }
 
@@ -13,9 +22,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var assignment = (BinaryExpression)expression;
             var target = translatorRegistry.Translate(assignment.Left);
+            var symbol = _symbolsByNodeType[expression.NodeType];
             var value = translatorRegistry.Translate(assignment.Right);
 
-            return $"var {target} = {value}";
+            return $"{target} {symbol} {value}";
         }
     }
 }

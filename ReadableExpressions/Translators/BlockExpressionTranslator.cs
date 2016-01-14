@@ -1,8 +1,10 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Text.RegularExpressions;
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
@@ -22,7 +24,34 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(t => t + ";")
                 .ToArray();
 
+            AddVariableDeclarations(block.Variables, expressions);
+
             return string.Join(Environment.NewLine, expressions);
+        }
+
+        private static void AddVariableDeclarations(
+            IEnumerable<ParameterExpression> variables,
+            IList<string> expressions)
+        {
+            foreach (var variable in variables)
+            {
+                var variableNameRegex = new Regex($"\\b{variable.Name}\\b");
+
+                var variableFirstUse = expressions
+                    .Select((exp, i) => new
+                    {
+                        Expression = exp,
+                        Index = i,
+                        Match = variableNameRegex.Match(exp)
+                    })
+                    .FirstOrDefault(exp => exp.Match.Success);
+
+                if (variableFirstUse != null)
+                {
+                    expressions[variableFirstUse.Index] =
+                        expressions[variableFirstUse.Index].Insert(variableFirstUse.Index, "var ");
+                }
+            }
         }
     }
 }

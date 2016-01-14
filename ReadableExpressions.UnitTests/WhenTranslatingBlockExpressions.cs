@@ -121,5 +121,26 @@ var count = 0;
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAMultipleAccessVariableBlockWithNoReturnValue()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant(10));
+            var addTwoToCount = Expression.AddAssign(countVariable, Expression.Constant(2));
+
+            var countBlock = Expression.Block(
+                new[] { countVariable },
+                assignTenToCount,
+                addTwoToCount);
+
+            var translated = countBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var count = 10;
+count += 2;";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
