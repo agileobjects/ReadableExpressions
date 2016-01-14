@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\NuGet\nuget" pack ReadableExpressions.csproj
