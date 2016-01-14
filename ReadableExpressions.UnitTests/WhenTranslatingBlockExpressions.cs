@@ -142,5 +142,24 @@ count += 2;";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateNestedBlocks()
+        {
+            Expression<Action> writeLine = () => Console.WriteLine();
+            Expression<Action> beep = () => Console.Beep();
+
+            var innerBlock = Expression.Block(writeLine.Body, beep.Body);
+            var outerBlock = Expression.Block(innerBlock, writeLine.Body);
+
+            var translated = outerBlock.ToReadableString();
+
+            const string EXPECTED = @"
+Console.WriteLine();
+Console.Beep();
+Console.WriteLine();";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

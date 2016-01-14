@@ -19,9 +19,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var expressions = block
                 .Expressions
-                .Select(translatorRegistry.Translate)
-                .Where(t => t != null)
-                .Select(t => t + ";")
+                .Select(exp => new
+                {
+                    Translation = translatorRegistry.Translate(exp),
+                    IsBlock = (exp.NodeType == ExpressionType.Block)
+                })
+                .Where(d => d.Translation != null)
+                .Select(d => d.Translation + (d.IsBlock ? null : ";"))
                 .ToArray();
 
             AddVariableDeclarations(block.Variables, expressions);
