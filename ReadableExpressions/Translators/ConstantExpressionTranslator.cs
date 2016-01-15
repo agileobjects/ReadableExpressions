@@ -15,7 +15,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 ?? TranslateConstant((ConstantExpression)expression);
         }
 
-        private string TranslateConstant(ConstantExpression constant)
+        private static string TranslateConstant(ConstantExpression constant)
         {
             if (constant.Type == typeof(string))
             {
