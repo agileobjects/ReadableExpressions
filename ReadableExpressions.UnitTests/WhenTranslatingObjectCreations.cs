@@ -15,9 +15,9 @@
         {
             Expression<Func<object>> createObject = () => new object();
 
-            var translated = createObject.ToReadableString();
+            var translated = createObject.Body.ToReadableString();
 
-            Assert.AreEqual("() => new Object()", translated);
+            Assert.AreEqual("new Object()", translated);
         }
 
         [TestMethod]
@@ -25,9 +25,9 @@
         {
             Expression<Func<DateTime>> createToday = () => new DateTime(2014, 08, 23);
 
-            var translated = createToday.ToReadableString();
+            var translated = createToday.Body.ToReadableString();
 
-            Assert.AreEqual("() => new DateTime(2014, 8, 23)", translated);
+            Assert.AreEqual("new DateTime(2014, 8, 23)", translated);
         }
 
         [TestMethod]
@@ -35,9 +35,9 @@
         {
             Expression<Func<MemoryStream>> createMemoryStream = () => new MemoryStream { Position = 0 };
 
-            var translated = createMemoryStream.ToReadableString();
+            var translated = createMemoryStream.Body.ToReadableString();
 
-            Assert.AreEqual("() => new MemoryStream { Position = 0 }", translated);
+            Assert.AreEqual("new MemoryStream { Position = 0 }", translated);
         }
 
         [TestMethod]
@@ -46,15 +46,15 @@
             Expression<Func<MemoryStream>> createMemoryStream =
                 () => new MemoryStream { Capacity = 10000, Position = 100 };
 
-            var translated = createMemoryStream.ToReadableString();
+            var translated = createMemoryStream.Body.ToReadableString();
 
-            const string EXPECTED =
-@"() => new MemoryStream
+            const string EXPECTED = @"
+new MemoryStream
 {
     Capacity = 10000,
     Position = 100
 }";
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]
@@ -63,16 +63,16 @@
             Expression<Func<List<decimal>>> createList =
                 () => new List<decimal> { 1.00m, 2.00m, 3.00m };
 
-            var translated = createList.ToReadableString();
+            var translated = createList.Body.ToReadableString();
 
-            const string EXPECTED =
-@"() => new List<Decimal>
+            const string EXPECTED = @"
+new List<Decimal>
 {
     Add(1.00),
     Add(2.00),
     Add(3.00)
 }";
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]
@@ -80,9 +80,9 @@
         {
             Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.00f, 3.00f };
 
-            var translated = createArray.ToReadableString();
+            var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("() => new Single[3] { 1, 2, 3 }", translated);
+            Assert.AreEqual("new Single[3] { 1, 2, 3 }", translated);
         }
 
         [TestMethod]
@@ -90,9 +90,9 @@
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder("Hello!");
 
-            var translated = createStringBuilder.ToReadableString();
+            var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("() => new StringBuilder(\"Hello!\")", translated);
+            Assert.AreEqual("new StringBuilder(\"Hello!\")", translated);
         }
 
         [TestMethod]
@@ -100,11 +100,11 @@
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder('f');
 
-            var translated = createStringBuilder.ToReadableString();
+            var translated = createStringBuilder.Body.ToReadableString();
 
             // Constant character expressions have .Type Int32, so they 
             // can't be differentiated from int constants :(
-            Assert.AreEqual("() => new StringBuilder(" + ((int)'f') + ")", translated);
+            Assert.AreEqual($"new StringBuilder({((int)'f')})", translated);
         }
 
         [TestMethod]
@@ -112,9 +112,9 @@
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder(1000, 10000);
 
-            var translated = createStringBuilder.ToReadableString();
+            var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("() => new StringBuilder(1000, 10000)", translated);
+            Assert.AreEqual("new StringBuilder(1000, 10000)", translated);
         }
 
         [TestMethod]
@@ -122,9 +122,9 @@
         {
             Expression<Func<string, StringBuilder>> createStringBuilder = str => new StringBuilder(str);
 
-            var translated = createStringBuilder.ToReadableString();
+            var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("str => new StringBuilder(str)", translated);
+            Assert.AreEqual("new StringBuilder(str)", translated);
         }
     }
 }

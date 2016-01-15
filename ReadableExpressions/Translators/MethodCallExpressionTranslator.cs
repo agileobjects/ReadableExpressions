@@ -9,17 +9,36 @@ namespace AgileObjects.ReadableExpressions.Translators
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
         internal MethodCallExpressionTranslator()
-            : base(ExpressionType.Call)
+            : base(ExpressionType.Call, ExpressionType.Invoke)
         {
         }
 
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
+            if (expression.NodeType == ExpressionType.Invoke)
+            {
+                return GetInvocation((InvocationExpression)expression, translatorRegistry);
+            }
+
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
             var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry, out methodArguments);
 
             return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodArguments, translatorRegistry);
+        }
+
+        private static string GetInvocation(
+            InvocationExpression invocation,
+            IExpressionTranslatorRegistry translatorRegistry)
+        {
+            var invocationSubject = translatorRegistry.Translate(invocation.Expression);
+
+            if (invocation.Expression.NodeType == ExpressionType.Lambda)
+            {
+                invocationSubject = $"({invocationSubject})";
+            }
+
+            return invocationSubject + "." + GetMethodCall("Invoke", invocation.Arguments, translatorRegistry);
         }
 
         private static string GetMethodCallSuject(
@@ -61,12 +80,20 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> parameters,
             IExpressionTranslatorRegistry translatorRegistry)
         {
+            return GetMethodCall(method.Name, parameters, translatorRegistry);
+        }
+
+        private static string GetMethodCall(
+            string methodName,
+            IEnumerable<Expression> parameters,
+            IExpressionTranslatorRegistry translatorRegistry)
+        {
             var parametersString = TranslationHelper.GetParameters(
                 parameters,
                 translatorRegistry,
                 encloseSingleParameterInBrackets: true);
 
-            return method.Name + parametersString;
+            return methodName + parametersString;
         }
     }
 }
