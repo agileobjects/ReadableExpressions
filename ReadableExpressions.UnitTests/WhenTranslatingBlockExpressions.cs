@@ -161,5 +161,22 @@ Console.WriteLine();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateABlockWithAComment()
+        {
+            var comment = ReadableExpression.Comment("Anyone listening?");
+            Expression<Action> beep = () => Console.Beep();
+
+            var commentedBeep = Expression.Block(comment, beep.Body);
+
+            var translated = commentedBeep.ToReadableString();
+
+            const string EXPECTED = @"
+// Anyone listening?
+Console.Beep();";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

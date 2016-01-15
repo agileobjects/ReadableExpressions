@@ -22,15 +22,20 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(exp => new
                 {
                     Translation = translatorRegistry.Translate(exp),
-                    IsBlock = (exp.NodeType == ExpressionType.Block)
+                    IsStatement = IsStatement(exp)
                 })
                 .Where(d => d.Translation != null)
-                .Select(d => d.Translation + (d.IsBlock ? null : ";"))
+                .Select(d => d.Translation + (d.IsStatement ? ";" : null))
                 .ToArray();
 
             AddVariableDeclarations(block.Variables, expressions);
 
             return string.Join(Environment.NewLine, expressions);
+        }
+
+        private static bool IsStatement(Expression expression)
+        {
+            return !((expression.NodeType == ExpressionType.Block) || (expression is CommentExpression));
         }
 
         private static void AddVariableDeclarations(

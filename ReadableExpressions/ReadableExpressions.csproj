@@ -36,11 +36,13 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="CommentExpression.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="ExpressionTranslatorRegistry.cs" />
     <Compile Include="ExpressionTranslatorRegistry.Translators.cs" />
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="ReadableExpression.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
     <Compile Include="Translators\AssignmentExpressionTranslator.cs" />
     <Compile Include="Translators\BinaryExpressionTranslator.cs" />
