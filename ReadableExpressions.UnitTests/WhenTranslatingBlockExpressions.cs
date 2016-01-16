@@ -144,6 +144,33 @@ count += 2;";
         }
 
         [TestMethod]
+        public void ShouldTranslateAMultipleVariableBlockWithNoReturnValue()
+        {
+            var countOneVariable = Expression.Variable(typeof(int), "countOne");
+            var countTwoVariable = Expression.Variable(typeof(int), "countTwo");
+            var countThreeVariable = Expression.Variable(typeof(int), "countThree");
+            var assignOneToCountOne = Expression.Assign(countOneVariable, Expression.Constant(1));
+            var assignTwoToCountTwo = Expression.Assign(countTwoVariable, Expression.Constant(2));
+            var addCounts = Expression.Add(countOneVariable, countTwoVariable);
+            var assignAddToCountThree = Expression.Assign(countThreeVariable, addCounts);
+
+            var countBlock = Expression.Block(
+                new[] { countOneVariable, countTwoVariable, countThreeVariable },
+                assignOneToCountOne,
+                assignTwoToCountTwo,
+                assignAddToCountThree);
+
+            var translated = countBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var countOne = 1;
+var countTwo = 2;
+var countThree = (countOne + countTwo);";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateNestedBlocks()
         {
             Expression<Action> writeLine = () => Console.WriteLine();

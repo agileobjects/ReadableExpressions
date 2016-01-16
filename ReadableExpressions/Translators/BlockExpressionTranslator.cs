@@ -58,7 +58,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 if (variableFirstUse != null)
                 {
                     expressions[variableFirstUse.Index] =
-                        expressions[variableFirstUse.Index].Insert(variableFirstUse.Index, "var ");
+                        expressions[variableFirstUse.Index].Insert(variableFirstUse.Match.Index, "var ");
                 }
             }
         }
