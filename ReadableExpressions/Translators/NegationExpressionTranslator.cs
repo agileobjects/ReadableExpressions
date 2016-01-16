@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private static readonly Dictionary<ExpressionType, string> _negationsByNodeType = new Dictionary<ExpressionType, string>
         {
-            { ExpressionType.Not, "!" },
-            { ExpressionType.Negate, "-" },
+            [ExpressionType.Not] = "!",
+            [ExpressionType.Negate] = "-"
         };
 
         internal NegationExpressionTranslator()

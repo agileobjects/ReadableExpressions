@@ -9,9 +9,9 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly Dictionary<ExpressionType, IInitExpressionHelper> _helpersByNodeType =
             new Dictionary<ExpressionType, IInitExpressionHelper>
             {
-                { ExpressionType.ListInit, new ListInitExpressionHelper() },
-                { ExpressionType.MemberInit, new MemberInitExpressionHelper() },
-                { ExpressionType.NewArrayInit, new ArrayInitExpressionHelper() }
+                [ExpressionType.ListInit] = new ListInitExpressionHelper(),
+                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(),
+                [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper()
             };
 
         internal InitialisationExpressionTranslator()

@@ -9,21 +9,21 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
             new Dictionary<ExpressionType, string>
             {
-                { ExpressionType.Add, "+" },
-                { ExpressionType.And, "&" },
-                { ExpressionType.AndAlso, "&&" },
-                { ExpressionType.Coalesce, "??" },
-                { ExpressionType.Divide, "/" },
-                { ExpressionType.Equal, "==" },
-                { ExpressionType.GreaterThan, ">" },
-                { ExpressionType.GreaterThanOrEqual, ">=" },
-                { ExpressionType.LessThan, "<" },
-                { ExpressionType.LessThanOrEqual, "<=" },
-                { ExpressionType.Multiply, "*" },
-                { ExpressionType.NotEqual, "!=" },
-                { ExpressionType.Or, "|" },
-                { ExpressionType.OrElse, "||" },
-                { ExpressionType.Subtract, "-" },
+                [ExpressionType.Add] = "+",
+                [ExpressionType.And] = "&",
+                [ExpressionType.AndAlso] = "&&",
+                [ExpressionType.Coalesce] = "??",
+                [ExpressionType.Divide] = "/",
+                [ExpressionType.Equal] = "==",
+                [ExpressionType.GreaterThan] = ">",
+                [ExpressionType.GreaterThanOrEqual] = ">=",
+                [ExpressionType.LessThan] = "<",
+                [ExpressionType.LessThanOrEqual] = "<=",
+                [ExpressionType.Multiply] = "*",
+                [ExpressionType.NotEqual] = "!=",
+                [ExpressionType.Or] = "|",
+                [ExpressionType.OrElse] = "||",
+                [ExpressionType.Subtract] = "-"
             };
 
         internal BinaryExpressionTranslator()

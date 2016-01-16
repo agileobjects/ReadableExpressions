@@ -9,8 +9,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
             new Dictionary<ExpressionType, string>
             {
-                { ExpressionType.AddAssign, "+=" },
-                { ExpressionType.Assign, "=" }
+                [ExpressionType.AddAssign] = "+=",
+                [ExpressionType.Assign] = "="
             };
 
         internal AssignmentExpressionTranslator()
