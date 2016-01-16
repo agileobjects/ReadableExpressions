@@ -18,6 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var parameters = TranslationHelper.GetParameters(
                 lambda.Parameters,
                 translatorRegistry,
+                placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);
 
             var body = TranslateBody(lambda, translatorRegistry);

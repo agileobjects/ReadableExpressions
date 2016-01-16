@@ -91,6 +91,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var parametersString = TranslationHelper.GetParameters(
                 parameters,
                 translatorRegistry,
+                placeLongListsOnMultipleLines: true,
                 encloseSingleParameterInBrackets: true);
 
             return methodName + parametersString;
