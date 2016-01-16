@@ -12,9 +12,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             Expression<Func<bool, bool, bool>> bothBoolsAreTheSame = (b1, b2) => b1 && b2;
 
-            var translated = bothBoolsAreTheSame.ToReadableString();
+            var translated = bothBoolsAreTheSame.Body.ToReadableString();
 
-            Assert.AreEqual("(b1, b2) => b1 && b2", translated);
+            Assert.AreEqual("(b1 && b2)", translated);
         }
 
         [TestMethod]
@@ -22,9 +22,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             Expression<Func<bool, bool, bool>> bitwiseAnd = (b1, b2) => b1 & b2;
 
-            var translated = bitwiseAnd.ToReadableString();
+            var translated = bitwiseAnd.Body.ToReadableString();
 
-            Assert.AreEqual("(b1, b2) => b1 & b2", translated);
+            Assert.AreEqual("(b1 & b2)", translated);
         }
 
         [TestMethod]
@@ -32,9 +32,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             Expression<Func<bool, bool, bool>> eitherBoolsIsTrue = (b1, b2) => b1 || b2;
 
-            var translated = eitherBoolsIsTrue.ToReadableString();
+            var translated = eitherBoolsIsTrue.Body.ToReadableString();
 
-            Assert.AreEqual("(b1, b2) => b1 || b2", translated);
+            Assert.AreEqual("(b1 || b2)", translated);
         }
 
         [TestMethod]
@@ -42,9 +42,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             Expression<Func<bool, bool, bool>> bitwiseOr = (b1, b2) => b1 | b2;
 
-            var translated = bitwiseOr.ToReadableString();
+            var translated = bitwiseOr.Body.ToReadableString();
 
-            Assert.AreEqual("(b1, b2) => b1 | b2", translated);
+            Assert.AreEqual("(b1 | b2)", translated);
         }
 
         [TestMethod]
@@ -52,9 +52,19 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             Expression<Func<bool?, bool, bool>> oneOrTwo = (b1, b2) => b1 ?? b2;
 
-            var translated = oneOrTwo.ToReadableString();
+            var translated = oneOrTwo.Body.ToReadableString();
 
-            Assert.AreEqual("(b1, b2) => b1 ?? b2", translated);
+            Assert.AreEqual("(b1 ?? b2)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAConditionalOperation()
+        {
+            Expression<Func<int, string>> whatSize = i => (i < 8) ? "Too small" : "Too big";
+
+            var translated = whatSize.Body.ToReadableString();
+
+            Assert.AreEqual("(i < 8) ? \"Too small\" : \"Too big\"", translated);
         }
     }
 }

@@ -12,6 +12,7 @@
             new BinaryExpressionTranslator(),
             new BlockExpressionTranslator(),
             new CastExpressionTranslator(),
+            new ConditionalExpressionTranslator(),
             new ConstantExpressionTranslator(),
             new InitialisationExpressionTranslator(),
             new DefaultExpressionTranslator(),
