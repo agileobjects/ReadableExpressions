@@ -36,6 +36,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="CommentExpression.cs" />
     <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="ExpressionTranslatorRegistry.cs" />

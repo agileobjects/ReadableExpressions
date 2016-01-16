@@ -52,6 +52,9 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="WhenTranslatingLambdaExpressions.cs" />
     <Compile Include="WhenTranslatingLanguageKeywords.cs" />
     <Compile Include="WhenTranslatingBlockExpressions.cs" />
