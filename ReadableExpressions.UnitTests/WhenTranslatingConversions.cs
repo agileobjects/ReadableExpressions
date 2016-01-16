@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.IO;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -45,6 +46,16 @@
             var translated = negator.ToReadableString();
 
             Assert.AreEqual("b => !b", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnAsCastExpression()
+        {
+            Expression<Func<Stream, IDisposable>> streamAsDisposable = stream => stream as IDisposable;
+
+            var translated = streamAsDisposable.Body.ToReadableString();
+
+            Assert.AreEqual("(stream as IDisposable)", translated);
         }
     }
 }
