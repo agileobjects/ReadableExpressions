@@ -1,10 +1,9 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Text.RegularExpressions;
+    using Extensions;
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
@@ -17,6 +16,11 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var block = (BlockExpression)expression;
 
+            var variables = block
+                .Variables
+                .GroupBy(v => v.Type)
+                .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
+
             var expressions = block
                 .Expressions
                 .Select(exp => new
@@ -25,42 +29,16 @@ namespace AgileObjects.ReadableExpressions.Translators
                     IsStatement = IsStatement(exp)
                 })
                 .Where(d => d.Translation != null)
-                .Select(d => d.Translation + (d.IsStatement ? ";" : null))
-                .ToArray();
+                .Select(d => d.Translation + (d.IsStatement ? ";" : null));
 
-            AddVariableDeclarations(block.Variables, expressions);
+            var blockContents = variables.Concat(expressions);
 
-            return string.Join(Environment.NewLine, expressions);
+            return string.Join(Environment.NewLine, blockContents);
         }
 
         private static bool IsStatement(Expression expression)
         {
             return !((expression.NodeType == ExpressionType.Block) || (expression is CommentExpression));
-        }
-
-        private static void AddVariableDeclarations(
-            IEnumerable<ParameterExpression> variables,
-            IList<string> expressions)
-        {
-            foreach (var variable in variables)
-            {
-                var variableNameRegex = new Regex($"\\b{variable.Name}\\b");
-
-                var variableFirstUse = expressions
-                    .Select((exp, i) => new
-                    {
-                        Expression = exp,
-                        Index = i,
-                        Match = variableNameRegex.Match(exp)
-                    })
-                    .FirstOrDefault(exp => exp.Match.Success);
-
-                if (variableFirstUse != null)
-                {
-                    expressions[variableFirstUse.Index] =
-                        expressions[variableFirstUse.Index].Insert(variableFirstUse.Match.Index, "var ");
-                }
-            }
         }
     }
 }

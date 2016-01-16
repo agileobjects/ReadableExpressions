@@ -63,7 +63,8 @@ Console.Beep();";
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-var count = 0;
+Int32 count;
+count = 0;
 ++count;";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
@@ -87,7 +88,8 @@ var count = 0;
 
             const string EXPECTED = @"() =>
 {
-    var count = 10;
+    Int32 count;
+    count = 10;
     --count;
 }";
 
@@ -114,7 +116,8 @@ var count = 0;
 
             const string EXPECTED = @"() =>
 {
-    var count = 0;
+    Int32 count;
+    count = 0;
     ++count;
     return count;
 }";
@@ -137,7 +140,8 @@ var count = 0;
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-var count = 10;
+Int32 count;
+count = 10;
 count += 2;";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
@@ -163,9 +167,10 @@ count += 2;";
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-var countOne = 1;
-var countTwo = 2;
-var countThree = (countOne + countTwo);";
+Int32 countOne, countTwo, countThree;
+countOne = 1;
+countTwo = 2;
+countThree = (countOne + countTwo);";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
