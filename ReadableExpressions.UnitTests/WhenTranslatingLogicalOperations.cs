@@ -66,5 +66,15 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("(i < 8) ? \"Too small\" : \"Too big\"", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnIsTypeExpression()
+        {
+            Expression<Func<object, bool>> objectIsDisposable = o => o is IDisposable;
+
+            var translated = objectIsDisposable.Body.ToReadableString();
+
+            Assert.AreEqual("(o is IDisposable)", translated);
+        }
     }
 }
