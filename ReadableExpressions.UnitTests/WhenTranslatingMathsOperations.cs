@@ -48,6 +48,18 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAMultiplicationPowerExpression()
+        {
+            var variableOne = Expression.Variable(typeof(double), "d1");
+            var variableTwo = Expression.Variable(typeof(double), "d2");
+            var varOneToThePowerOfVarTwo = Expression.Power(variableOne, variableTwo);
+
+            var translated = varOneToThePowerOfVarTwo.ToReadableString();
+
+            Assert.AreEqual("(d1 ** d2)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateADivisionExpression()
         {
             Expression<Func<int, int, int>> divideInts = (i1, i2) => i1 / i2;

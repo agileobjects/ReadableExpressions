@@ -24,6 +24,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.NotEqual] = "!=",
                 [ExpressionType.Or] = "|",
                 [ExpressionType.OrElse] = "||",
+                [ExpressionType.Power] = "**",
                 [ExpressionType.Subtract] = "-"
             };
 
