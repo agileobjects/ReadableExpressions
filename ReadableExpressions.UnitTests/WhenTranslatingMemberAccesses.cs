@@ -113,6 +113,16 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAStringIndexAccessExpression()
+        {
+            Expression<Func<string, char>> getFirstCharacter = str => str[0];
+
+            var translated = getFirstCharacter.Body.ToReadableString();
+
+            Assert.AreEqual("str[0]", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnArrayIndexAccessExpression()
         {
             Expression<Func<int[], int>> getFirstItem = items => items[0];

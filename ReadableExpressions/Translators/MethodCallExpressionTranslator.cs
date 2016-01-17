@@ -15,7 +15,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly SpecialCaseHandlerBase[] _specialCaseHandlers =
         {
             new InvocationExpressionHandler(),
-            new CollectionIndexerHandler()
+            new CollectionIndexerHandler(),
+            new StringIndexerHandler()
         };
 
         #endregion
@@ -182,6 +183,50 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var genericTypeDefinition = methodCall.Object.Type.GetGenericTypeDefinition();
 
                 return _collectionTypes.Contains(genericTypeDefinition);
+            }
+
+            private static string GetIndexerAccess(
+                Expression expression,
+                IExpressionTranslatorRegistry translatorRegistry)
+            {
+                var methodCall = (MethodCallExpression)expression;
+
+                return IndexAccessExpressionTranslator.TranslateIndexAccess(
+                    methodCall.Object,
+                    methodCall.Arguments.First(),
+                    translatorRegistry);
+            }
+        }
+
+        private class StringIndexerHandler : SpecialCaseHandlerBase
+        {
+            private static readonly Type[] _collectionTypes =
+            {
+                typeof(IDictionary<,>), typeof(Dictionary<,>),
+                typeof(Collection<>),
+                typeof(IList<>), typeof(List<>)
+            };
+
+            public StringIndexerHandler()
+                : base(IsStringIndexAccess, GetIndexerAccess)
+            {
+            }
+
+            private static bool IsStringIndexAccess(Expression expression)
+            {
+                var methodCall = (MethodCallExpression)expression;
+
+                if (methodCall.Object == null)
+                {
+                    return false;
+                }
+
+                if (methodCall.Object.Type != typeof(string))
+                {
+                    return false;
+                }
+
+                return methodCall.Method.Name == "get_Chars";
             }
 
             private static string GetIndexerAccess(
