@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
@@ -115,6 +116,56 @@
         public void ShouldTranslateAnArrayIndexAccessExpression()
         {
             Expression<Func<int[], int>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnIDictionaryIndexAccessExpression()
+        {
+            Expression<Func<IDictionary<int, string>, string>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADictionaryIndexAccessExpression()
+        {
+            Expression<Func<Dictionary<long, string>, string>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACollectionIndexAccessExpression()
+        {
+            Expression<Func<Collection<string>, string>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnIListIndexAccessExpression()
+        {
+            Expression<Func<IList<string>, string>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAListIndexAccessExpression()
+        {
+            Expression<Func<List<string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
