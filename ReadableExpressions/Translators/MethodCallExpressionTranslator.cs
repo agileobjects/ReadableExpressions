@@ -2,7 +2,6 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -15,8 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly SpecialCaseHandlerBase[] _specialCaseHandlers =
         {
             new InvocationExpressionHandler(),
-            new CollectionIndexerHandler(),
-            new StringIndexerHandler()
+            new IndexedPropertyHandler()
         };
 
         #endregion
@@ -147,42 +145,31 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
         }
 
-        private class CollectionIndexerHandler : SpecialCaseHandlerBase
+        private class IndexedPropertyHandler : SpecialCaseHandlerBase
         {
-            private static readonly Type[] _collectionTypes =
-            {
-                typeof(IDictionary<,>), typeof(Dictionary<,>),
-                typeof(Collection<>),
-                typeof(IList<>), typeof(List<>)
-            };
-
-            public CollectionIndexerHandler()
-                : base(IsCollectionIndexer, GetIndexerAccess)
+            public IndexedPropertyHandler()
+                : base(IsIndexedPropertyAccess, GetIndexerAccess)
             {
             }
 
-            private static bool IsCollectionIndexer(Expression expression)
+            private static bool IsIndexedPropertyAccess(Expression expression)
             {
                 var methodCall = (MethodCallExpression)expression;
 
-                if (methodCall.Object == null)
+                var property = methodCall
+                    .Object?
+                    .Type
+                    .GetProperties()
+                    .FirstOrDefault(p => p.GetAccessors().Contains(methodCall.Method));
+
+                if (property == null)
                 {
                     return false;
                 }
 
-                if (!methodCall.Object.Type.IsGenericType)
-                {
-                    return false;
-                }
+                var propertyIndexParameters = property.GetIndexParameters();
 
-                if ((methodCall.Method.Name != "get_Item") && (methodCall.Method.Name != "set_Item"))
-                {
-                    return false;
-                }
-
-                var genericTypeDefinition = methodCall.Object.Type.GetGenericTypeDefinition();
-
-                return _collectionTypes.Contains(genericTypeDefinition);
+                return propertyIndexParameters.Any();
             }
 
             private static string GetIndexerAccess(
@@ -193,51 +180,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 return IndexAccessExpressionTranslator.TranslateIndexAccess(
                     methodCall.Object,
-                    methodCall.Arguments.First(),
-                    translatorRegistry);
-            }
-        }
-
-        private class StringIndexerHandler : SpecialCaseHandlerBase
-        {
-            private static readonly Type[] _collectionTypes =
-            {
-                typeof(IDictionary<,>), typeof(Dictionary<,>),
-                typeof(Collection<>),
-                typeof(IList<>), typeof(List<>)
-            };
-
-            public StringIndexerHandler()
-                : base(IsStringIndexAccess, GetIndexerAccess)
-            {
-            }
-
-            private static bool IsStringIndexAccess(Expression expression)
-            {
-                var methodCall = (MethodCallExpression)expression;
-
-                if (methodCall.Object == null)
-                {
-                    return false;
-                }
-
-                if (methodCall.Object.Type != typeof(string))
-                {
-                    return false;
-                }
-
-                return methodCall.Method.Name == "get_Chars";
-            }
-
-            private static string GetIndexerAccess(
-                Expression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
-            {
-                var methodCall = (MethodCallExpression)expression;
-
-                return IndexAccessExpressionTranslator.TranslateIndexAccess(
-                    methodCall.Object,
-                    methodCall.Arguments.First(),
+                    methodCall.Arguments,
                     translatorRegistry);
             }
         }

@@ -113,6 +113,30 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAnIndexedPropertyAccessExpression()
+        {
+            Expression<Func<IndexedProperty, int, string>> getPropertyIndex = (p, index) => p[index];
+
+            var translated = getPropertyIndex.Body.ToReadableString();
+
+            Assert.AreEqual("p[index]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAManualIndexedPropertyAccessExpression()
+        {
+            var indexedProperty = Expression.Variable(typeof(IndexedProperty), "p");
+            var property = indexedProperty.Type.GetProperties().First();
+            var firstElement = Expression.Constant(1, typeof(int));
+
+            var indexerAccess = Expression.MakeIndex(indexedProperty, property, new[] { firstElement });
+
+            var translated = indexerAccess.ToReadableString();
+
+            Assert.AreEqual("p[1]", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAStringIndexAccessExpression()
         {
             Expression<Func<string, char>> getFirstCharacter = str => str[0];
@@ -181,5 +205,22 @@
 
             Assert.AreEqual("items[0]", translated);
         }
+
+        #region Helper Class
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class IndexedProperty
+        {
+            private readonly string[] _values;
+
+            public IndexedProperty(string[] values)
+            {
+                _values = values;
+            }
+
+            public string this[int index] => _values[index];
+        }
+
+        #endregion
     }
 }
