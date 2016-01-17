@@ -7,6 +7,7 @@
     {
         private readonly List<IExpressionTranslator> _translators = new List<IExpressionTranslator>
         {
+            new ArrayIndexAccessExpressionTranslator(),
             new ArrayLengthExpressionTranslator(),
             new AssignmentExpressionTranslator(),
             new BinaryExpressionTranslator(),

@@ -110,5 +110,15 @@
 
             Assert.AreEqual("() => DateTime.Today", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnArrayIndexAccessExpression()
+        {
+            Expression<Func<int[], int>> getFirstItem = items => items[0];
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("items[0]", translated);
+        }
     }
 }
