@@ -19,6 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.GreaterThanOrEqual] = ">=",
                 [ExpressionType.LessThan] = "<",
                 [ExpressionType.LessThanOrEqual] = "<=",
+                [ExpressionType.Modulo] = "%",
                 [ExpressionType.Multiply] = "*",
                 [ExpressionType.NotEqual] = "!=",
                 [ExpressionType.Or] = "|",

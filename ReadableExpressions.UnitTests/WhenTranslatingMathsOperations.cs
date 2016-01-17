@@ -58,6 +58,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAModuloExpression()
+        {
+            Expression<Func<int, int, int>> findModulo = (i1, i2) => i1 % i2;
+
+            var translated = findModulo.Body.ToReadableString();
+
+            Assert.AreEqual("(i1 % i2)", translated);
+        }
+
+        [TestMethod]
         public void ShouldMaintainExpressionParenthesis()
         {
             Expression<Func<int, int, int>> operationWithBrackets = (i1, i2) => (i1 / i2) * i1;
