@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq.Expressions;
+    using Extensions;
 
     internal class ConstantExpressionTranslator : ExpressionTranslatorBase
     {
@@ -20,6 +21,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (constant.Type == typeof(string))
             {
                 return "\"" + constant.Value + "\"";
+            }
+
+            if (constant.Type.IsEnum)
+            {
+                return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
 
             return constant.Value.ToString();
