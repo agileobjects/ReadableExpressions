@@ -19,8 +19,8 @@
             var translated = longArgumentListBlock.ToReadableString();
 
             var expected = $@"
-Int32 {longVariable.Name};
-Action<Int32, Int32, Int32> threeIntsAction;
+int {longVariable.Name};
+Action<int, int, int> threeIntsAction;
 threeIntsAction.Invoke(
     {longVariable.Name},
     {longVariable.Name},

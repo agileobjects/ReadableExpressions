@@ -9,10 +9,10 @@
         [TestMethod]
         public void ShouldTranslateADefaultExpression()
         {
-            var defaultInt = Expression.Default(typeof(int));
+            var defaultInt = Expression.Default(typeof(uint));
             var translated = defaultInt.ToReadableString();
 
-            Assert.AreEqual("default(Int32)", translated);
+            Assert.AreEqual("default(uint)", translated);
         }
 
         [TestMethod]

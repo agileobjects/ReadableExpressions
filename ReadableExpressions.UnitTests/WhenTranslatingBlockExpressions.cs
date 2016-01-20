@@ -63,7 +63,7 @@ Console.Beep();";
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-Int32 count;
+int count;
 count = 0;
 ++count;";
 
@@ -73,8 +73,8 @@ count = 0;
         [TestMethod]
         public void ShouldTranslateAVariableBlockLambdaWithNoReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant(10));
+            var countVariable = Expression.Variable(typeof(short), "count");
+            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant((short)10));
             var decrementCount = Expression.Decrement(countVariable);
 
             var countBlock = Expression.Block(
@@ -88,7 +88,7 @@ count = 0;
 
             const string EXPECTED = @"() =>
 {
-    Int32 count;
+    short count;
     count = 10;
     --count;
 }";
@@ -99,8 +99,8 @@ count = 0;
         [TestMethod]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var countEqualsZero = Expression.Assign(countVariable, Expression.Constant(0));
+            var countVariable = Expression.Variable(typeof(ushort), "count");
+            var countEqualsZero = Expression.Assign(countVariable, Expression.Constant((ushort)0));
             var incrementCount = Expression.Increment(countVariable);
             var returnCount = countVariable;
 
@@ -110,13 +110,13 @@ count = 0;
                 incrementCount,
                 returnCount);
 
-            var countLambda = Expression.Lambda<Func<int>>(countBlock);
+            var countLambda = Expression.Lambda<Func<ushort>>(countBlock);
 
             var translated = countLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
-    Int32 count;
+    ushort count;
     count = 0;
     ++count;
     return count;
@@ -128,9 +128,9 @@ count = 0;
         [TestMethod]
         public void ShouldTranslateAMultipleAccessVariableBlockWithNoReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant(10));
-            var addTwoToCount = Expression.AddAssign(countVariable, Expression.Constant(2));
+            var countVariable = Expression.Variable(typeof(ulong), "count");
+            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant((ulong)10));
+            var addTwoToCount = Expression.AddAssign(countVariable, Expression.Constant((ulong)2));
 
             var countBlock = Expression.Block(
                 new[] { countVariable },
@@ -140,7 +140,7 @@ count = 0;
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-Int32 count;
+ulong count;
 count = 10;
 count += 2;";
 
@@ -152,25 +152,27 @@ count += 2;";
         {
             var countOneVariable = Expression.Variable(typeof(int), "countOne");
             var countTwoVariable = Expression.Variable(typeof(int), "countTwo");
-            var countThreeVariable = Expression.Variable(typeof(int), "countThree");
+            var countThreeVariable = Expression.Variable(typeof(byte), "countThree");
             var assignOneToCountOne = Expression.Assign(countOneVariable, Expression.Constant(1));
             var assignTwoToCountTwo = Expression.Assign(countTwoVariable, Expression.Constant(2));
-            var addCounts = Expression.Add(countOneVariable, countTwoVariable);
-            var assignAddToCountThree = Expression.Assign(countThreeVariable, addCounts);
+            var sumCounts = Expression.Add(countOneVariable, countTwoVariable);
+            var castSumToBye = Expression.Convert(sumCounts, typeof(byte));
+            var assignSumToCountThree = Expression.Assign(countThreeVariable, castSumToBye);
 
             var countBlock = Expression.Block(
                 new[] { countOneVariable, countTwoVariable, countThreeVariable },
                 assignOneToCountOne,
                 assignTwoToCountTwo,
-                assignAddToCountThree);
+                assignSumToCountThree);
 
             var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
-Int32 countOne, countTwo, countThree;
+int countOne, countTwo;
+byte countThree;
 countOne = 1;
 countTwo = 2;
-countThree = (countOne + countTwo);";
+countThree = ((byte)(countOne + countTwo));";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

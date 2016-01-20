@@ -15,7 +15,7 @@
 
             var translated = intToDouble.ToReadableString();
 
-            Assert.AreEqual("i => (Double)i", translated);
+            Assert.AreEqual("i => (double)i", translated);
         }
 
         [TestMethod]
@@ -25,7 +25,7 @@
 
             var translated = longToNullable.ToReadableString();
 
-            Assert.AreEqual("l => (Long?)l", translated);
+            Assert.AreEqual("l => (long?)l", translated);
         }
 
         [TestMethod]

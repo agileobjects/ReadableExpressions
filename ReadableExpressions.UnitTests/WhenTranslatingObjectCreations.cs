@@ -66,7 +66,7 @@ new MemoryStream
             var translated = createList.Body.ToReadableString();
 
             const string EXPECTED = @"
-new List<Decimal>
+new List<decimal>
 {
     Add(1.00),
     Add(2.00),
@@ -82,7 +82,7 @@ new List<Decimal>
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new Single[3] { 1, 2, 3 }", translated);
+            Assert.AreEqual("new float[3] { 1, 2, 3 }", translated);
         }
 
         [TestMethod]

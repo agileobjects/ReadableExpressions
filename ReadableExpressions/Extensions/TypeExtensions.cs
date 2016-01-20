@@ -6,9 +6,20 @@
 
     public static class TypeExtensions
     {
-        private static readonly Dictionary<string, string> _typeNameSubstitutions = new Dictionary<string, string>
+        private static readonly Dictionary<Type, string> _typeNameSubstitutions = new Dictionary<Type, string>
         {
-            { "Int64", "Long" }
+            { typeof(byte), "byte" },
+            { typeof(sbyte), "sbyte" },
+            { typeof(short), "short" },
+            { typeof(ushort), "ushort" },
+            { typeof(int), "int" },
+            { typeof(uint), "uint" },
+            { typeof(long), "long" },
+            { typeof(ulong), "ulong" },
+            { typeof(float), "float" },
+            { typeof(decimal), "decimal" },
+            { typeof(double), "double" },
+            { typeof(string), "string" }
         };
 
         public static string GetFriendlyName(this Type type)
@@ -17,7 +28,7 @@
             {
                 string substitutedName;
 
-                return _typeNameSubstitutions.TryGetValue(type.Name, out substitutedName)
+                return _typeNameSubstitutions.TryGetValue(type, out substitutedName)
                     ? substitutedName : type.Name;
             }
 
