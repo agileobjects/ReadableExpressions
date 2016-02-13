@@ -18,6 +18,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Express
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Vs14ExpressionVisualizer", "ReadableExpressions.Vs14ExpressionVisualizer\ReadableExpressions.Vs14ExpressionVisualizer.csproj", "{A62B2409-1E63-41EB-A0CB-374B942903D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Vs12ExpressionVisualizer", "ReadableExpressions.Vs12ExpressionVisualizer\ReadableExpressions.Vs12ExpressionVisualizer.csproj", "{ABDE919F-9341-4633-A004-0CBDEAB22797}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Vs10ExpressionVisualizer", "ReadableExpressions.Vs10ExpressionVisualizer\ReadableExpressions.Vs10ExpressionVisualizer.csproj", "{19F8AD3E-61D6-41EC-828A-D51906014F8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,9 +41,11 @@ Global
 		{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{A62B2409-1E63-41EB-A0CB-374B942903D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A62B2409-1E63-41EB-A0CB-374B942903D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A62B2409-1E63-41EB-A0CB-374B942903D0}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{A62B2409-1E63-41EB-A0CB-374B942903D0}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{ABDE919F-9341-4633-A004-0CBDEAB22797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDE919F-9341-4633-A004-0CBDEAB22797}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F8AD3E-61D6-41EC-828A-D51906014F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19F8AD3E-61D6-41EC-828A-D51906014F8B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
