@@ -15,8 +15,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.Coalesce] = "??",
                 [ExpressionType.Divide] = "/",
                 [ExpressionType.Equal] = "==",
+                [ExpressionType.ExclusiveOr] = "^",
                 [ExpressionType.GreaterThan] = ">",
                 [ExpressionType.GreaterThanOrEqual] = ">=",
+                [ExpressionType.LeftShift] = "<<",
                 [ExpressionType.LessThan] = "<",
                 [ExpressionType.LessThanOrEqual] = "<=",
                 [ExpressionType.Modulo] = "%",
@@ -25,6 +27,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.Or] = "|",
                 [ExpressionType.OrElse] = "||",
                 [ExpressionType.Power] = "**",
+                [ExpressionType.RightShift] = ">>",
                 [ExpressionType.Subtract] = "-"
             };
 

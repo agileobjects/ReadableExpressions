@@ -48,6 +48,36 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateABitwiseExclusiveOrOperation()
+        {
+            Expression<Func<bool, bool, bool>> bitwiseExclusiveOr = (b1, b2) => b1 ^ b2;
+
+            var translated = bitwiseExclusiveOr.Body.ToReadableString();
+
+            Assert.AreEqual("(b1 ^ b2)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateABitwiseLeftShiftOperation()
+        {
+            Expression<Func<int, int, int>> bitwiseLeftShift = (i1, i2) => i1 << i2;
+
+            var translated = bitwiseLeftShift.Body.ToReadableString();
+
+            Assert.AreEqual("(i1 << i2)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateABitwiseRightShiftOperation()
+        {
+            Expression<Func<int, int, int>> bitwiseRightShift = (i1, i2) => i1 >> i2;
+
+            var translated = bitwiseRightShift.Body.ToReadableString();
+
+            Assert.AreEqual("(i1 >> i2)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateACoalesceOperation()
         {
             Expression<Func<bool?, bool, bool>> oneOrTwo = (b1, b2) => b1 ?? b2;
