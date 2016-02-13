@@ -1,17 +1,20 @@
 ﻿namespace AgileObjects.ReadableExpressions.ExpressionVisualizer
 {
+    using System;
     using System.IO;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.DebuggerVisualizers;
 
-    public class ExpressionVisualizerObjectSource : VisualizerObjectSource
+    public class ExpressionVisualizerObjectSource
     {
-        public override void GetData(object target, Stream outgoingData)
+        public static void GetData(
+            object target,
+            Stream outgoingData,
+            Action<Stream, string> serializer)
         {
             var expression = (Expression)target;
             var readableExpression = expression.ToReadableString();
 
-            Serialize(outgoingData, readableExpression);
+            serializer.Invoke(outgoingData, readableExpression);
         }
     }
 }
