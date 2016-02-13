@@ -43,7 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var @operator = _operatorsByNodeType[expression.NodeType];
             var right = translatorRegistry.Translate(binaryExpression.Right);
 
-            return "(" + left + " " + @operator + " " + right + ")";
+            return $"({left} {@operator} {right})";
         }
     }
 }

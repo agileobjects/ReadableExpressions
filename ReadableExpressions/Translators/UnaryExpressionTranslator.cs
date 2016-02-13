@@ -5,20 +5,22 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq;
     using System.Linq.Expressions;
 
-    internal class UnaryMathsExpressionTranslator : ExpressionTranslatorBase
+    internal class UnaryExpressionTranslator : ExpressionTranslatorBase
     {
         private static readonly Dictionary<ExpressionType, Func<string, string>> _operatorsByNodeType =
             new Dictionary<ExpressionType, Func<string, string>>
             {
                 [ExpressionType.Decrement] = o => "--" + o,
                 [ExpressionType.Increment] = o => "++" + o,
+                [ExpressionType.IsTrue] = o => $"({o} == true)",
+                [ExpressionType.IsFalse] = o => $"({o} == false)",
                 [ExpressionType.PostDecrementAssign] = o => o + "--",
                 [ExpressionType.PostIncrementAssign] = o => o + "++",
                 [ExpressionType.PreDecrementAssign] = o => "--" + o,
                 [ExpressionType.PreIncrementAssign] = o => "++" + o
             };
 
-        public UnaryMathsExpressionTranslator()
+        public UnaryExpressionTranslator()
             : base(_operatorsByNodeType.Keys.ToArray())
         {
         }

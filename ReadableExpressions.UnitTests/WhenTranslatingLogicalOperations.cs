@@ -106,5 +106,27 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("(o is IDisposable)", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnIsTrueExpression()
+        {
+            var boolVariable = Expression.Variable(typeof(bool), "b");
+            var boolIsTrue = Expression.IsTrue(boolVariable);
+
+            var translated = boolIsTrue.ToReadableString();
+
+            Assert.AreEqual("(b == true)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnIsFalseExpression()
+        {
+            var boolVariable = Expression.Variable(typeof(bool), "b");
+            var boolIsFalse = Expression.IsFalse(boolVariable);
+
+            var translated = boolIsFalse.ToReadableString();
+
+            Assert.AreEqual("(b == false)", translated);
+        }
     }
 }
