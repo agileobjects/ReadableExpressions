@@ -10,7 +10,17 @@ namespace AgileObjects.ReadableExpressions.Translators
             new Dictionary<ExpressionType, string>
             {
                 [ExpressionType.AddAssign] = "+=",
-                [ExpressionType.Assign] = "="
+                [ExpressionType.AndAssign] = "&=",
+                [ExpressionType.Assign] = "=",
+                [ExpressionType.DivideAssign] = "/=",
+                [ExpressionType.ExclusiveOrAssign] = "^=",
+                [ExpressionType.LeftShiftAssign] = "<<=",
+                [ExpressionType.ModuloAssign] = @"%=",
+                [ExpressionType.MultiplyAssign] = "*=",
+                [ExpressionType.OrAssign] = "|=",
+                [ExpressionType.PowerAssign] = "**=",
+                [ExpressionType.RightShiftAssign] = ">>=",
+                [ExpressionType.SubtractAssign] = "-="
             };
 
         internal AssignmentExpressionTranslator()

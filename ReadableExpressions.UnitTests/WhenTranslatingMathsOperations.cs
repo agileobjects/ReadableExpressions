@@ -101,6 +101,17 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAPreIncrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var preIncrement = Expression.PreIncrementAssign(intVariable);
+
+            var translated = preIncrement.ToReadableString();
+
+            Assert.AreEqual("++i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAPostIncrementExpression()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -118,6 +129,17 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var decrement = Expression.Decrement(intVariable);
 
             var translated = decrement.ToReadableString();
+
+            Assert.AreEqual("--i", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAPreDecrementExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var preDecrement = Expression.PreDecrementAssign(intVariable);
+
+            var translated = preDecrement.ToReadableString();
 
             Assert.AreEqual("--i", translated);
         }
