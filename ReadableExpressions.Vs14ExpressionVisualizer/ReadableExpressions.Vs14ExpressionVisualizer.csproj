@@ -38,6 +38,12 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ReadableExpressions.ExpressionVisualizer\CommonVisualizerAssemblyInfo.cs">
+      <Link>CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\VersionInfo.cs">
+      <Link>VersionInfo.cs</Link>
+    </Compile>
     <Compile Include="Vs14ExpressionVisualizerObjectSource.cs" />
     <Compile Include="Vs14ExpressionVisualizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

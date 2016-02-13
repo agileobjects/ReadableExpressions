@@ -1,4 +1,5 @@
-﻿using System.Resources;
+﻿using System;
+using System.Resources;
 using System.Reflection;
 
 [assembly: AssemblyCompany("AgileObjects Ltd")]
@@ -6,5 +7,4 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © AgileObjects Ltd 2016")]
 [assembly: NeutralResourcesLanguage("en")]
 
-[assembly: AssemblyVersion("0.5.1.0")]
-[assembly: AssemblyFileVersion("0.5.1.0")]
+[assembly: CLSCompliant(true)]
