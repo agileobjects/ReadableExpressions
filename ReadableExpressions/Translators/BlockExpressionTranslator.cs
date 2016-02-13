@@ -23,6 +23,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var expressions = block
                 .Expressions
+                .Where(exp => IncludeExpression(exp) || (exp == block.Result))
                 .Select(exp => new
                 {
                     Translation = translatorRegistry.Translate(exp),
@@ -34,6 +35,21 @@ namespace AgileObjects.ReadableExpressions.Translators
             var blockContents = variables.Concat(expressions);
 
             return string.Join(Environment.NewLine, blockContents);
+        }
+
+        private static bool IncludeExpression(Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.Parameter)
+            {
+                return false;
+            }
+
+            if (expression.NodeType != ExpressionType.Constant)
+            {
+                return true;
+            }
+
+            return expression is CommentExpression;
         }
 
         private static bool IsStatement(Expression expression)

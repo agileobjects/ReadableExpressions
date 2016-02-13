@@ -24,6 +24,7 @@
             new NewArrayExpressionTranslator(),
             new NewExpressionTranslator(),
             new ParameterExpressionTranslator(),
+            new TypeEqualExpressionTranslator(),
             new UnaryExpressionTranslator()
         };
     }

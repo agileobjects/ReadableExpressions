@@ -212,5 +212,22 @@ Console.Beep();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldIgnoreAVariableOnlyBlockStatement()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var @false = Expression.Constant(false, typeof(bool));
+
+            var countBlock = Expression.Block(countVariable, @false);
+
+            var countLambda = Expression.Lambda<Action>(countBlock);
+
+            var translated = countLambda.ToReadableString();
+
+            const string EXPECTED = @"() => false";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

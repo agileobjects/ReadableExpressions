@@ -50,6 +50,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             var block = translatorRegistry.Translate(lambdaBlock);
             var blockLines = block.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
+            if (blockLines.Length == 1)
+            {
+                return SingleBlockLine(blockLines.First());
+            }
+
             if (returnType != typeof(void))
             {
                 blockLines[blockLines.Length - 1] = "return " + blockLines[blockLines.Length - 1];
@@ -65,6 +70,16 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         }
 
+        private static string SingleBlockLine(string blockLine)
+        {
+            if (blockLine.EndsWith(";", StringComparison.Ordinal))
+            {
+                blockLine = blockLine.TrimEnd(';');
+            }
+
+            return SingleExpressionBody(blockLine);
+        }
+
         private static string TranslateSingle(Expression lambdaSingle, IExpressionTranslatorRegistry translatorRegistry)
         {
             var body = translatorRegistry.Translate(lambdaSingle);
@@ -74,7 +89,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 body = body.Substring(1, body.Length - 2);
             }
 
-            return " " + body;
+            return SingleExpressionBody(body);
+        }
+
+        private static string SingleExpressionBody(string expression)
+        {
+            return " " + expression;
         }
     }
 }

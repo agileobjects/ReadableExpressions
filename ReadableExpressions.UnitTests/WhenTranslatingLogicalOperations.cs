@@ -108,6 +108,50 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAValueTypeTypeEqualExpression()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
+
+            var translated = intIsLong.ToReadableString();
+
+            Assert.AreEqual("false", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateANullableValueTypeTypeEqualExpression()
+        {
+            var nullableLongVariable = Expression.Variable(typeof(long?), "l");
+            var nullableLongIsNullableLong = Expression.TypeEqual(nullableLongVariable, typeof(long?));
+
+            var translated = nullableLongIsNullableLong.ToReadableString();
+
+            Assert.AreEqual("(l != null)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAConstantTypeEqualExpression()
+        {
+            var intConstant = Expression.Constant(123, typeof(int));
+            var intConstantIsInt = Expression.TypeEqual(intConstant, typeof(int));
+
+            var translated = intConstantIsInt.ToReadableString();
+
+            Assert.AreEqual("true", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnObjectTypeEqualExpression()
+        {
+            var objectVariable = Expression.Variable(typeof(object), "o");
+            var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
+
+            var translated = objectIsString.ToReadableString();
+
+            Assert.AreEqual("((o != null) && (o.GetType() == typeof(string)))", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnIsTrueExpression()
         {
             var boolVariable = Expression.Variable(typeof(bool), "b");
