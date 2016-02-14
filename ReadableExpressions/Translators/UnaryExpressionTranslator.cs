@@ -17,7 +17,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.PostDecrementAssign] = o => o + "--",
                 [ExpressionType.PostIncrementAssign] = o => o + "++",
                 [ExpressionType.PreDecrementAssign] = o => "--" + o,
-                [ExpressionType.PreIncrementAssign] = o => "++" + o
+                [ExpressionType.PreIncrementAssign] = o => "++" + o,
+                [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
         public UnaryExpressionTranslator()
