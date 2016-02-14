@@ -89,6 +89,17 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateAOnesComplementOperation()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var onesComplement = Expression.OnesComplement(intVariable);
+
+            var translated = onesComplement.ToReadableString();
+
+            Assert.AreEqual("~i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateACoalesceOperation()
         {
             Expression<Func<bool?, bool, bool>> oneOrTwo = (b1, b2) => b1 ?? b2;
