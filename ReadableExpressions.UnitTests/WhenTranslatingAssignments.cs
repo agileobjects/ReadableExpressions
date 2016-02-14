@@ -81,7 +81,7 @@
 
             var translated = powerTwoAssign.ToReadableString();
 
-            Assert.AreEqual("d **= 2", translated);
+            Assert.AreEqual("d **= 2.00", translated);
         }
 
         [TestMethod]

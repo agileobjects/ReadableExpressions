@@ -29,24 +29,43 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
 
-            if (constant.Type == typeof(string))
+            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(constant.Type) ?? constant.Type))
             {
-                return "\"" + constant.Value + "\"";
+                case TypeCode.Boolean:
+                    return constant.Value.ToString().ToLowerInvariant();
+
+                case TypeCode.Decimal:
+                    return constant.Value + "m";
+
+                case TypeCode.Double:
+                    return FormatNumeric((double)constant.Value);
+
+                case TypeCode.Int64:
+                    return constant.Value + "L";
+
+                case TypeCode.Single:
+                    return FormatNumeric((float)constant.Value) + "f";
+
+                case TypeCode.String:
+                    return $"\"{constant.Value}\"";
             }
 
-            if (constant.Type == typeof(bool))
+            if (constant.Type == typeof(Type))
             {
-                return constant.Value.ToString().ToLowerInvariant();
-            }
-
-            var typeConstant = constant.Value as Type;
-
-            if (typeConstant != null)
-            {
-                return $"typeof({typeConstant.GetFriendlyName()})";
+                return $"typeof({((Type)constant.Value).GetFriendlyName()})";
             }
 
             return constant.Value.ToString();
+        }
+
+        private static string FormatNumeric(double value)
+        {
+            return (value % 1).Equals(0) ? value.ToString("0.00") : value.ToString();
+        }
+
+        private static string FormatNumeric(float value)
+        {
+            return (value % 1).Equals(0) ? value.ToString("0.00") : value.ToString();
         }
     }
 }

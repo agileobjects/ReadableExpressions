@@ -58,8 +58,8 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="WhenTranslatingConstants.cs" />
     <Compile Include="WhenTranslatingAssignments.cs" />
-    <Compile Include="WhenTranslatingEnums.cs" />
     <Compile Include="WhenFormattingCode.cs" />
     <Compile Include="WhenTranslatingLambdaExpressions.cs" />
     <Compile Include="WhenTranslatingLanguageKeywords.cs" />

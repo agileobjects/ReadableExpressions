@@ -173,7 +173,7 @@
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.AreEqual("items[0L]", translated);
         }
 
         [TestMethod]

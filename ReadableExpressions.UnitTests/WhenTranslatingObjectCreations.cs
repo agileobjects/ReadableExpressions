@@ -37,7 +37,7 @@
 
             var translated = createMemoryStream.Body.ToReadableString();
 
-            Assert.AreEqual("new MemoryStream { Position = 0 }", translated);
+            Assert.AreEqual("new MemoryStream { Position = 0L }", translated);
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@
 new MemoryStream
 {
     Capacity = 10000,
-    Position = 100
+    Position = 100L
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -68,9 +68,9 @@ new MemoryStream
             const string EXPECTED = @"
 new List<decimal>
 {
-    Add(1.00),
-    Add(2.00),
-    Add(3.00)
+    Add(1.00m),
+    Add(2.00m),
+    Add(3.00m)
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -78,11 +78,11 @@ new List<decimal>
         [TestMethod]
         public void ShouldTranslateANewArrayExpressionWithAdditions()
         {
-            Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.00f, 3.00f };
+            Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.3f, 3.00f };
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new float[3] { 1, 2, 3 }", translated);
+            Assert.AreEqual("new float[3] { 1.00f, 2.3f, 3.00f }", translated);
         }
 
         [TestMethod]
