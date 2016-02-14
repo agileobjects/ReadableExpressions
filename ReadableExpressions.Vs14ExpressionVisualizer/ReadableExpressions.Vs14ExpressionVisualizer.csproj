@@ -56,13 +56,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>rename $(TargetPath) $(TargetDir)_AgileObjects.ReadableExpressions.ExpressionVisualizer.dll
-"C:\Program Files (x86)\Microsoft\ILMerge\ILMerge.exe" /ndebug /targetplatform:v4 /lib:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:$(TargetPath) $(TargetDir)_AgileObjects.ReadableExpressions.ExpressionVisualizer.dll $(TargetDir)AgileObjects.ReadableExpressions.ExpressionVisualizer.dll $(TargetDir)AgileObjects.ReadableExpressions.dll
-del $(TargetDir)_AgileObjects.ReadableExpressions.ExpressionVisualizer.dll
-del $(TargetDir)AgileObjects.ReadableExpressions.ExpressionVisualizer.dll
-del $(TargetDir)AgileObjects.ReadableExpressions.dll
-del $(TargetDir)*.pdb
-copy $(TargetPath) "$(DevEnvDir)..\Packages\Debugger\Visualizers\$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>"C:\Program Files (x86)\Microsoft\ILMerge\ILMerge.exe" /ndebug /targetplatform:v4 /lib:"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0" /out:"$(DevEnvDir)..\Packages\Debugger\Visualizers\$(TargetFileName)" $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.ExpressionVisualizer.dll $(TargetDir)AgileObjects.ReadableExpressions.dll</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
