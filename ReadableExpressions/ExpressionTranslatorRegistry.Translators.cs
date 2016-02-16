@@ -18,6 +18,7 @@
             new InitialisationExpressionTranslator(),
             new DefaultExpressionTranslator(),
             new LambdaExpressionTranslator(),
+            new LoopExpressionTranslator(),
             new MemberAccessExpressionTranslator(),
             new MethodCallExpressionTranslator(),
             new NegationExpressionTranslator(),

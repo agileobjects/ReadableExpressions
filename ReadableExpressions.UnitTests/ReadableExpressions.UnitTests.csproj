@@ -58,6 +58,7 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="WhenTranslatingLoopExpressions.cs" />
     <Compile Include="WhenTranslatingConstants.cs" />
     <Compile Include="WhenTranslatingAssignments.cs" />
     <Compile Include="WhenFormattingCode.cs" />

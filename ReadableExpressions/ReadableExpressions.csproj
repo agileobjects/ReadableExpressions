@@ -68,6 +68,7 @@
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Member.cs" />
     <Compile Include="Translators\DefaultExpressionTranslator.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
+    <Compile Include="Translators\LoopExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
     <Compile Include="Translators\MethodCallExpressionTranslator.cs" />
     <Compile Include="Translators\NegationExpressionTranslator.cs" />
