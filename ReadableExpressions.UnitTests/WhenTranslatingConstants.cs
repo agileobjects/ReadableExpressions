@@ -58,13 +58,23 @@
         }
 
         [TestMethod]
-        public void ShouldTranslateAWholeNumberDecimal()
+        public void ShouldTranslateAWholeNumberNullableDecimal()
         {
-            var decimalConstant = Expression.Constant(456.00m, typeof(decimal));
+            var decimalConstant = Expression.Constant(456.00m, typeof(decimal?));
 
             var translated = decimalConstant.ToReadableString();
 
             Assert.AreEqual("456.00m", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateANonWholeNumberDecimal()
+        {
+            var decimalConstant = Expression.Constant(6373282.64738m, typeof(decimal));
+
+            var translated = decimalConstant.ToReadableString();
+
+            Assert.AreEqual("6373282.64738m", translated);
         }
 
         [TestMethod]
@@ -75,6 +85,16 @@
             var translated = doubleConstant.ToReadableString();
 
             Assert.AreEqual("999.00", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateANonWholeNumberDouble()
+        {
+            var doubleConstant = Expression.Constant(64739.7, typeof(double));
+
+            var translated = doubleConstant.ToReadableString();
+
+            Assert.AreEqual("64739.7", translated);
         }
 
         [TestMethod]
