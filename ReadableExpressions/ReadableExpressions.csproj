@@ -75,7 +75,7 @@
     <Compile Include="Translators\NewArrayExpressionTranslator.cs" />
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
-    <Compile Include="Translators\TranslationHelper.cs" />
+    <Compile Include="Translators\TranslatorRegistryExtensions.cs" />
     <Compile Include="Translators\TypeEqualExpressionTranslator.cs" />
     <Compile Include="Translators\UnaryExpressionTranslator.cs" />
   </ItemGroup>

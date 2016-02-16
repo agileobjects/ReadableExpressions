@@ -87,9 +87,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> parameters,
             IExpressionTranslatorRegistry translatorRegistry)
         {
-            var parametersString = TranslationHelper.GetParameters(
+            var parametersString = translatorRegistry.TranslateParameters(
                 parameters,
-                translatorRegistry,
                 placeLongListsOnMultipleLines: true,
                 encloseSingleParameterInBrackets: true);
 

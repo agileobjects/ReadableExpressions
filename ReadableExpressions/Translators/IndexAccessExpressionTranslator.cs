@@ -38,9 +38,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var indexedVariable = translatorRegistry.Translate(variable);
 
-            var indexValues = TranslationHelper.GetParameters(
+            var indexValues = translatorRegistry.TranslateParameters(
                 indexes,
-                translatorRegistry,
                 placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);
 

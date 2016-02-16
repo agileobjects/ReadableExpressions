@@ -14,9 +14,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var newExpression = (NewExpression)expression;
 
-            var parameters = TranslationHelper.GetParameters(
+            var parameters = translatorRegistry.TranslateParameters(
                 newExpression.Arguments,
-                translatorRegistry,
                 placeLongListsOnMultipleLines: true,
                 encloseSingleParameterInBrackets: true);
 
