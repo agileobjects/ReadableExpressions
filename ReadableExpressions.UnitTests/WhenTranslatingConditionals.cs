@@ -47,5 +47,29 @@ if (i < 1)
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnIfElseStatement()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var one = Expression.Constant(1, typeof(int));
+            var intVariableLessThanOne = Expression.LessThan(intVariable, one);
+            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");
+            var writeHelloOrGoodbye = Expression.IfThenElse(intVariableLessThanOne, writeHello.Body, writeGoodbye.Body);
+
+            var translated = writeHelloOrGoodbye.ToReadableString();
+
+            const string EXPECTED = @"
+if (i < 1)
+{
+    Console.WriteLine(""Hello"");
+}
+else
+{
+    Console.WriteLine(""Goodbye"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

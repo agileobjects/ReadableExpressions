@@ -25,11 +25,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return IfStatement(test, ifTrueBlock.WithBrackets());
             }
 
-            var ifFalseBlock = translatorRegistry.TranslateExpressionBody(
-                conditional.IfFalse,
-                conditional.IfFalse.Type);
+            var ifFalseBlock = translatorRegistry
+                .TranslateExpressionBody(conditional.IfFalse, conditional.IfFalse.Type);
 
-            return $"{test} ? {ifTrueBlock.WithoutBrackets()} : {ifFalseBlock.WithoutBrackets()}";
+            return (conditional.Type != typeof(void))
+                ? Ternary(test, ifTrueBlock, ifFalseBlock)
+                : IfElseStatement(test, ifTrueBlock, ifFalseBlock);
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)
@@ -40,7 +41,21 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string IfStatement(string test, string body)
         {
-            return $@"if {test}{body}";
+            return $"if {test}{body}";
+        }
+
+        private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        {
+            return $"{test} ? {ifTrue.WithoutBrackets()} : {ifFalse.WithoutBrackets()}";
+        }
+
+        private static string IfElseStatement(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        {
+            var ifElse = $@"
+if {test}{ifTrue.WithBrackets()}
+else{ifFalse.WithBrackets()}";
+
+            return ifElse.TrimStart();
         }
     }
 }
