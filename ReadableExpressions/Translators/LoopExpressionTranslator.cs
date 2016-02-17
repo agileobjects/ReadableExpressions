@@ -13,12 +13,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var loop = (LoopExpression)expression;
 
-            var loopBody = translatorRegistry
+            var loopBodyBlock = translatorRegistry
                 .TranslateExpressionBody(loop.Body, loop.Type);
 
-            var translated = $@"
-while (true){loopBody}";
-            return translated.TrimStart();
+            return $"while (true){loopBodyBlock.WithBrackets()}";
         }
     }
 }

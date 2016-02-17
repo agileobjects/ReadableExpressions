@@ -17,22 +17,19 @@ namespace AgileObjects.ReadableExpressions.Translators
             var test = translatorRegistry.Translate(conditional.Test);
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            var ifTrue = translatorRegistry.TranslateExpressionBody(
-                conditional.IfTrue,
-                conditional.IfTrue.Type,
-                encloseSingleStatementsInBrackets: hasNoElseCondition);
+            var ifTrueBlock = translatorRegistry
+                .TranslateExpressionBody(conditional.IfTrue, conditional.IfTrue.Type);
 
             if (hasNoElseCondition)
             {
-                return IfStatement(test, ifTrue);
+                return IfStatement(test, ifTrueBlock.WithBrackets());
             }
 
-            var ifFalse = translatorRegistry.TranslateExpressionBody(
+            var ifFalseBlock = translatorRegistry.TranslateExpressionBody(
                 conditional.IfFalse,
-                conditional.IfFalse.Type,
-                encloseSingleStatementsInBrackets: false);
+                conditional.IfFalse.Type);
 
-            return $"{test} ? {ifTrue} : {ifFalse}";
+            return $"{test} ? {ifTrueBlock.WithoutBrackets()} : {ifFalseBlock.WithoutBrackets()}";
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

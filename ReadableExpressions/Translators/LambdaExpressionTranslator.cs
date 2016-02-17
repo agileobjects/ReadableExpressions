@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Linq.Expressions;
 
     internal class LambdaExpressionTranslator : ExpressionTranslatorBase
@@ -19,15 +18,13 @@ namespace AgileObjects.ReadableExpressions.Translators
                 placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);
 
-            var body = translatorRegistry.TranslateExpressionBody(
+            var bodyBlock = translatorRegistry.TranslateExpressionBody(
                 lambda.Body,
-                lambda.ReturnType,
-                encloseSingleStatementsInBrackets: false);
+                lambda.ReturnType);
 
-            if (!body.Contains(Environment.NewLine))
-            {
-                body = " " + body;
-            }
+            var body = bodyBlock.IsASingleStatement
+                ? " " + bodyBlock.AsExpressionBody()
+                : bodyBlock.WithBrackets();
 
             return parameters + " =>" + body;
         }

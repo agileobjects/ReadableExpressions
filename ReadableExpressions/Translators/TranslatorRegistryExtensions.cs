@@ -37,29 +37,20 @@
             return parametersString;
         }
 
-        public static string TranslateExpressionBody(
+        public static CodeBlock TranslateExpressionBody(
             this IExpressionTranslatorRegistry translatorRegistry,
             Expression body,
-            Type returnType,
-            bool encloseSingleStatementsInBrackets = true)
+            Type returnType)
         {
-            var translatedBody = TranslateBlock(body as BlockExpression, returnType, translatorRegistry)
+            var codeBlock = TranslateBlock(body as BlockExpression, returnType, translatorRegistry)
                 ?? TranslateSingle(body, translatorRegistry);
 
-            if (!encloseSingleStatementsInBrackets && BodyIsASingleStatement(translatedBody))
-            {
-                translatedBody = translatedBody.Split(_newLines, StringSplitOptions.None)[2].TrimStart().TrimEnd(';');
-            }
-
-            return string.IsNullOrWhiteSpace(translatedBody) ? null : translatedBody;
+            return codeBlock;
         }
 
         #region TranslateExpressionBody
 
-        private static readonly string[] _newLines = { Environment.NewLine };
-        private const string Indent = "    ";
-
-        private static string TranslateBlock(
+        private static CodeBlock TranslateBlock(
             BlockExpression bodyBlock,
             Type returnType,
             IExpressionTranslatorRegistry translatorRegistry)
@@ -79,7 +70,7 @@
 
             if (blockLines.Length == 1)
             {
-                return SingleLine(blockLines.First());
+                return new CodeBlock(blockLines.First());
             }
 
             if (returnType != typeof(void))
@@ -87,12 +78,10 @@
                 blockLines[blockLines.Length - 1] = "return " + blockLines[blockLines.Length - 1];
             }
 
-            var indentedBlock = string.Join(Environment.NewLine, blockLines.Select(line => Indent + line));
-
-            return Bracketed(indentedBlock);
+            return new CodeBlock(blockLines);
         }
 
-        private static string TranslateSingle(
+        private static CodeBlock TranslateSingle(
             Expression bodySingle,
             IExpressionTranslatorRegistry translatorRegistry)
         {
@@ -107,30 +96,7 @@
                 }
             }
 
-            return SingleLine(body);
-        }
-
-        private static string SingleLine(string line)
-        {
-            if (!line.EndsWith(";", StringComparison.Ordinal))
-            {
-                line += ";";
-            }
-
-            return Bracketed(Indent + line);
-        }
-
-        private static string Bracketed(string body)
-        {
-            return $@"
-{{
-{body}
-}}";
-        }
-
-        private static bool BodyIsASingleStatement(string body)
-        {
-            return body.IndexOf(';') == body.LastIndexOf(';');
+            return new CodeBlock(body);
         }
 
         #endregion
