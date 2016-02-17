@@ -70,7 +70,7 @@
 
             if (blockLines.Length == 1)
             {
-                return new CodeBlock(blockLines.First());
+                return new CodeBlock(returnType, blockLines.First());
             }
 
             if (returnType != typeof(void))
@@ -78,7 +78,7 @@
                 blockLines[blockLines.Length - 1] = "return " + blockLines[blockLines.Length - 1];
             }
 
-            return new CodeBlock(blockLines);
+            return new CodeBlock(returnType, blockLines);
         }
 
         private static CodeBlock TranslateSingle(
@@ -96,7 +96,7 @@
                 }
             }
 
-            return new CodeBlock(body);
+            return new CodeBlock(bodySingle.Type, body);
         }
 
         #endregion

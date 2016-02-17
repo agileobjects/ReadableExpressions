@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Linq.Expressions;
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
@@ -28,7 +27,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var ifFalseBlock = translatorRegistry
                 .TranslateExpressionBody(conditional.IfFalse, conditional.IfFalse.Type);
 
-            return (conditional.Type != typeof(void))
+            return IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock)
                 ? Ternary(test, ifTrueBlock, ifFalseBlock)
                 : IfElseStatement(test, ifTrueBlock, ifFalseBlock);
         }
@@ -44,6 +43,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"if {test}{body}";
         }
 
+        private static bool IsSuitableForTernary(Expression conditional, CodeBlock ifTrue, CodeBlock ifFalse)
+        {
+            return (conditional.Type != typeof(void)) &&
+                   ifTrue.IsASingleStatement &&
+                   ifFalse.IsASingleStatement;
+        }
+
         private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
             return $"{test} ? {ifTrue.WithoutBrackets()} : {ifFalse.WithoutBrackets()}";
@@ -51,11 +57,23 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string IfElseStatement(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
-            var ifElse = $@"
+            string ifElseBlock;
+
+            if (ifTrue.ReturnType != typeof(void))
+            {
+                ifElseBlock = $@"
+if {test}{ifTrue.WithBrackets()}
+
+{ifFalse.WithoutBrackets()}";
+            }
+            else
+            {
+                ifElseBlock = $@"
 if {test}{ifTrue.WithBrackets()}
 else{ifFalse.WithBrackets()}";
+            }
 
-            return ifElse.TrimStart();
+            return ifElseBlock.TrimStart();
         }
     }
 }

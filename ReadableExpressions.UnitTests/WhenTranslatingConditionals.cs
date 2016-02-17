@@ -99,5 +99,34 @@ else
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAMultipleLineConditional()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var zero = Expression.Constant(0, typeof(int));
+            var intVariableEqualsZero = Expression.Equal(intVariable, zero);
+            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");
+            var helloThenGoodbye = Expression.Block(writeHello.Body, writeGoodbye.Body, intVariable);
+            var goodbyeThenHello = Expression.Block(writeGoodbye.Body, writeHello.Body, intVariable);
+            var writeHelloAndGoodbye = Expression.Condition(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
+
+            var translated = writeHelloAndGoodbye.ToReadableString();
+
+            const string EXPECTED = @"
+if (i == 0)
+{
+    Console.WriteLine(""Hello"");
+    Console.WriteLine(""Goodbye"");
+    return i;
+}
+
+Console.WriteLine(""Goodbye"");
+Console.WriteLine(""Hello"");
+return i;
+";
+            Assert.AreEqual(EXPECTED.Trim(), translated);
+        }
     }
 }

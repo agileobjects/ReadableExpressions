@@ -10,10 +10,13 @@
 
         private readonly IEnumerable<string> _blockLines;
 
-        public CodeBlock(params string[] blockLines)
+        public CodeBlock(Type returnType, params string[] blockLines)
         {
+            ReturnType = returnType;
             _blockLines = blockLines;
         }
+
+        public Type ReturnType { get; }
 
         public bool IsASingleStatement => _blockLines.Count() == 1;
 
@@ -26,7 +29,7 @@
                 expression = expression.TrimEnd(';');
             }
 
-            return new CodeBlock(expression).WithoutBrackets();
+            return new CodeBlock(ReturnType, expression).WithoutBrackets();
         }
 
         public string WithoutBrackets()
