@@ -52,7 +52,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
-            return $"{test} ? {ifTrue.WithoutBrackets()} : {ifFalse.WithoutBrackets()}";
+            return $"{test} ? {ifTrue.AsExpressionBody()} : {ifFalse.AsExpressionBody()}";
         }
 
         private static string IfElseStatement(string test, CodeBlock ifTrue, CodeBlock ifFalse)

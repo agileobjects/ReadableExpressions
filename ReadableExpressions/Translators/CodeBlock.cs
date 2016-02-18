@@ -1,14 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     internal class CodeBlock
     {
-        private const string Indent = "    ";
+        public const string Indent = "    ";
 
-        private readonly IEnumerable<string> _blockLines;
+        private readonly string[] _blockLines;
 
         public CodeBlock(Type returnType, params string[] blockLines)
         {
@@ -18,7 +17,7 @@
 
         public Type ReturnType { get; }
 
-        public bool IsASingleStatement => _blockLines.Count() == 1;
+        public bool IsASingleStatement => _blockLines.Length == 1;
 
         public string AsExpressionBody()
         {
@@ -29,19 +28,24 @@
                 expression = expression.TrimEnd(';');
             }
 
-            return new CodeBlock(ReturnType, expression).WithoutBrackets();
+            return expression;
+        }
+
+        public CodeBlock Indented()
+        {
+            return new CodeBlock(
+                ReturnType,
+                _blockLines.Select(line => Indent + line).ToArray());
         }
 
         public string WithoutBrackets()
         {
-            return GetCodeBlock(_blockLines);
+            return GetCodeBlock();
         }
 
         public string WithBrackets()
         {
-            var codeBlock = GetCodeBlock(_blockLines
-                .Select(line => line.EndsWith(";", StringComparison.Ordinal) ? line : line + ";")
-                .Select(line => Indent + line));
+            var codeBlock = Indented().GetCodeBlock();
 
             return $@"
 {{
@@ -49,9 +53,20 @@
 }}";
         }
 
-        private static string GetCodeBlock(IEnumerable<string> lines)
+        private string GetCodeBlock()
         {
-            return string.Join(Environment.NewLine, lines);
+            AddSemiColonIfRequired();
+
+            return string.Join(Environment.NewLine, _blockLines);
+        }
+
+        private void AddSemiColonIfRequired()
+        {
+            if (IsASingleStatement &&
+                !_blockLines[0].EndsWith(";", StringComparison.Ordinal))
+            {
+                _blockLines[0] += ";";
+            }
         }
 
         public override string ToString()

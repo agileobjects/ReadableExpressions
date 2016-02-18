@@ -128,5 +128,34 @@ return i;
 ";
             Assert.AreEqual(EXPECTED.Trim(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateASwitchStatement()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            Expression<Action> writeOne = () => Console.WriteLine("One");
+            Expression<Action> writeTwo = () => Console.WriteLine("Two");
+            Expression<Action> writeThree = () => Console.WriteLine("Three");
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                Expression.SwitchCase(writeOne.Body, Expression.Constant(1)),
+                Expression.SwitchCase(writeTwo.Body, Expression.Constant(2)),
+                Expression.SwitchCase(writeThree.Body, Expression.Constant(3)));
+
+            var translated = switchStatement.ToReadableString();
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 1:
+        Console.WriteLine(""One"");
+    case 2:
+        Console.WriteLine(""Two"");
+    case 3:
+        Console.WriteLine(""Three"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

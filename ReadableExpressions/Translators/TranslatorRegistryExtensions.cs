@@ -39,6 +39,13 @@
 
         public static CodeBlock TranslateExpressionBody(
             this IExpressionTranslatorRegistry translatorRegistry,
+            Expression body)
+        {
+            return translatorRegistry.TranslateExpressionBody(body, body.Type);
+        }
+
+        public static CodeBlock TranslateExpressionBody(
+            this IExpressionTranslatorRegistry translatorRegistry,
             Expression body,
             Type returnType)
         {
