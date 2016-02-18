@@ -24,9 +24,13 @@ namespace AgileObjects.ReadableExpressions.Translators
                     Tests = @case.TestValues.Select(value => $"case {translatorRegistry.Translate(value)}:"),
                     BodyBlock = translatorRegistry.TranslateExpressionBody(@case.Body)
                 })
-                .Select(@case => GetCaseStatement(@case.Tests, @case.BodyBlock));
+                .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
 
-            var switchCaseLines = string.Join(Environment.NewLine, switchCases);
+            switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, translatorRegistry);
+
+            var switchCaseLines = string.Join(
+                Environment.NewLine + Environment.NewLine,
+                switchCases);
 
             var @switch = $@"
 switch ({switchValue})
@@ -37,19 +41,42 @@ switch ({switchValue})
             return @switch.TrimStart();
         }
 
-        private static string GetCaseStatement(IEnumerable<string> tests, CodeBlock bodyBlock)
+        private static string GetCase(CodeBlock bodyBlock, params string[] labels)
         {
-            var body = bodyBlock.IsASingleStatement
-                ? bodyBlock.Indented().WithoutBrackets()
-                : bodyBlock.WithBrackets();
+            var caseBody = bodyBlock.Indented().WithoutBrackets();
 
             var caseBlock = new CodeBlock(
                 bodyBlock.ReturnType,
-                tests.Concat(new[] { body }).ToArray());
+                labels.Concat(new[] { caseBody }).ToArray());
 
-            var caseStatement = caseBlock.Indented().WithoutBrackets();
+            var @case = caseBlock.Indented().WithoutBrackets();
 
-            return caseStatement;
+            return @case;
+        }
+
+        private static IEnumerable<string> AppendDefaultCaseIfExists(
+            IEnumerable<string> switchCases,
+            Expression defaultBody,
+            IExpressionTranslatorRegistry translatorRegistry)
+        {
+            foreach (var switchCase in switchCases)
+            {
+                yield return switchCase;
+            }
+
+            if (defaultBody != null)
+            {
+                yield return GetDefaultCase(defaultBody, translatorRegistry);
+            }
+        }
+
+        private static string GetDefaultCase(
+            Expression defaultBody,
+            IExpressionTranslatorRegistry translatorRegistry)
+        {
+            var defaultCaseBody = translatorRegistry.TranslateExpressionBody(defaultBody);
+
+            return GetCase(defaultCaseBody, "default:");
         }
     }
 }

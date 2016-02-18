@@ -150,9 +150,82 @@ switch (i)
 {
     case 1:
         Console.WriteLine(""One"");
+
     case 2:
         Console.WriteLine(""Two"");
+
     case 3:
+        Console.WriteLine(""Three"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateASwitchStatementWithADefault()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            Expression<Action> writeOne = () => Console.WriteLine("One");
+            Expression<Action> writeTwo = () => Console.WriteLine("Two");
+            Expression<Action> writeThree = () => Console.WriteLine("Three");
+
+            var writeOneTwoThree = Expression.Block(writeOne.Body, writeTwo.Body, writeThree.Body);
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                writeOneTwoThree,
+                Expression.SwitchCase(writeOne.Body, Expression.Constant(1)),
+                Expression.SwitchCase(writeTwo.Body, Expression.Constant(2)),
+                Expression.SwitchCase(writeThree.Body, Expression.Constant(3)));
+
+            var translated = switchStatement.ToReadableString();
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 1:
+        Console.WriteLine(""One"");
+
+    case 2:
+        Console.WriteLine(""Two"");
+
+    case 3:
+        Console.WriteLine(""Three"");
+
+    default:
+        Console.WriteLine(""One"");
+        Console.WriteLine(""Two"");
+        Console.WriteLine(""Three"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateASwitchStatementWithMultiLineCases()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            Expression<Action> writeOne = () => Console.WriteLine("One");
+            Expression<Action> writeTwo = () => Console.WriteLine("Two");
+            Expression<Action> writeThree = () => Console.WriteLine("Three");
+
+            var writeOneTwo = Expression.Block(writeOne.Body, writeTwo.Body);
+            var writeTwoThree = Expression.Block(writeTwo.Body, writeThree.Body);
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                Expression.SwitchCase(writeOneTwo, Expression.Constant(12)),
+                Expression.SwitchCase(writeTwoThree, Expression.Constant(23)));
+
+            var translated = switchStatement.ToReadableString();
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 12:
+        Console.WriteLine(""One"");
+        Console.WriteLine(""Two"");
+
+    case 23:
+        Console.WriteLine(""Two"");
         Console.WriteLine(""Three"");
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);

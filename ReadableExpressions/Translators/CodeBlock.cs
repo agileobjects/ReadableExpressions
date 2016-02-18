@@ -5,7 +5,7 @@
 
     internal class CodeBlock
     {
-        public const string Indent = "    ";
+        private static readonly string[] _newLines = new[] { Environment.NewLine };
 
         private readonly string[] _blockLines;
 
@@ -33,9 +33,21 @@
 
         public CodeBlock Indented()
         {
-            return new CodeBlock(
-                ReturnType,
-                _blockLines.Select(line => Indent + line).ToArray());
+            return new CodeBlock(ReturnType, _blockLines.Select(Indent).ToArray());
+        }
+
+        private static string Indent(string line)
+        {
+            const string INDENT = "    ";
+
+            if (line.Contains(Environment.NewLine))
+            {
+                return string.Join(
+                    Environment.NewLine,
+                    line.Split(_newLines, StringSplitOptions.None).Select(l => INDENT + l));
+            }
+
+            return INDENT + line;
         }
 
         public string WithoutBrackets()
