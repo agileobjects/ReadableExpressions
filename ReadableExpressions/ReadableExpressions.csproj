@@ -50,6 +50,7 @@
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="ReadableExpression.cs" />
     <Compile Include="Translators\CodeBlock.cs" />
+    <Compile Include="Translators\GotoExpressionTranslator.cs" />
     <Compile Include="Translators\IndexAccessExpressionTranslator.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
     <Compile Include="Translators\AssignmentExpressionTranslator.cs" />

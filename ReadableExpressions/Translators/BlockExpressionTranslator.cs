@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
@@ -21,23 +22,25 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .GroupBy(v => v.Type)
                 .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
 
-            var expressions = block
+            var lines = block
                 .Expressions
-                .Where(exp => IncludeExpression(exp) || (exp == block.Result))
+                .Where(exp => Include(exp) || (exp == block.Result))
                 .Select(exp => new
                 {
-                    Translation = translatorRegistry.Translate(exp),
-                    IsStatement = IsStatement(exp)
+                    Expression = exp,
+                    Translation = translatorRegistry.Translate(exp)
                 })
                 .Where(d => d.Translation != null)
-                .Select(d => d.Translation + (d.IsStatement ? ";" : null));
+                .Select(d => GetTerminatedStatement(d.Translation, d.Expression));
 
-            var blockContents = variables.Concat(expressions);
+            lines = InsertBlockSpacing(lines.ToArray());
+
+            var blockContents = variables.Concat(lines);
 
             return string.Join(Environment.NewLine, blockContents);
         }
 
-        private static bool IncludeExpression(Expression expression)
+        private static bool Include(Expression expression)
         {
             if (expression.NodeType == ExpressionType.Parameter)
             {
@@ -52,9 +55,32 @@ namespace AgileObjects.ReadableExpressions.Translators
             return expression is CommentExpression;
         }
 
-        private static bool IsStatement(Expression expression)
+        private static string GetTerminatedStatement(string translation, Expression expression)
         {
-            return !((expression.NodeType == ExpressionType.Block) || (expression is CommentExpression));
+            if ((expression.NodeType == ExpressionType.Block) ||
+                translation.EndsWith(";", StringComparison.Ordinal) ||
+                translation.EndsWith("}", StringComparison.Ordinal) ||
+                (expression is CommentExpression))
+            {
+                return translation;
+            }
+
+            return translation + ";";
+        }
+
+        private static IEnumerable<string> InsertBlockSpacing(IList<string> lines)
+        {
+            for (var i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+
+                yield return line;
+
+                if ((i < lines.Count) && (line.EndsWith("}", StringComparison.Ordinal)))
+                {
+                    yield return string.Empty;
+                }
+            }
         }
     }
 }

@@ -40,6 +40,11 @@
         {
             const string INDENT = "    ";
 
+            if (string.IsNullOrEmpty(line))
+            {
+                return line;
+            }
+
             if (line.Contains(Environment.NewLine))
             {
                 return string.Join(
