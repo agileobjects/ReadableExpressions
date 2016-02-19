@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class WhenTranslatingLoopExpressions
+    public class WhenTranslatingLoops
     {
         [TestMethod]
         public void ShouldTranslateAnInfiniteLoop()

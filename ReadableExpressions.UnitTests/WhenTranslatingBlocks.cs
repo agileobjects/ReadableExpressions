@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class WhenTranslatingBlockExpressions
+    public class WhenTranslatingBlocks
     {
         [TestMethod]
         public void ShouldTranslateANoVariableBlockWithNoReturnValue()

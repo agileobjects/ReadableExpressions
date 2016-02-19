@@ -59,13 +59,13 @@
       <Link>VersionInfo.cs</Link>
     </Compile>
     <Compile Include="WhenTranslatingConditionals.cs" />
-    <Compile Include="WhenTranslatingLoopExpressions.cs" />
+    <Compile Include="WhenTranslatingLoops.cs" />
     <Compile Include="WhenTranslatingConstants.cs" />
     <Compile Include="WhenTranslatingAssignments.cs" />
     <Compile Include="WhenFormattingCode.cs" />
-    <Compile Include="WhenTranslatingLambdaExpressions.cs" />
+    <Compile Include="WhenTranslatingLambdas.cs" />
     <Compile Include="WhenTranslatingLanguageKeywords.cs" />
-    <Compile Include="WhenTranslatingBlockExpressions.cs" />
+    <Compile Include="WhenTranslatingBlocks.cs" />
     <Compile Include="WhenTranslatingComparisons.cs" />
     <Compile Include="WhenTranslatingConversions.cs" />
     <Compile Include="WhenTranslatingLogicalOperations.cs" />

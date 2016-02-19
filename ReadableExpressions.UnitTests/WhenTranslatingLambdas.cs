@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class WhenTranslatingLambdaExpressions
+    public class WhenTranslatingLambdas
     {
         [TestMethod]
         public void ShouldTranslateAParameterlessLambda()
