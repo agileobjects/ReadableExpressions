@@ -58,8 +58,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string GetTerminatedStatement(string translation, Expression expression)
         {
             if ((expression.NodeType == ExpressionType.Block) ||
-                translation.EndsWith(";", StringComparison.Ordinal) ||
-                translation.EndsWith("}", StringComparison.Ordinal) ||
+                translation.IsTerminated() ||
                 (expression is CommentExpression))
             {
                 return translation;
@@ -70,17 +69,22 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static IEnumerable<string> InsertBlockSpacing(IList<string> lines)
         {
-            for (var i = 0; i < lines.Count; i++)
-            {
-                var line = lines[i];
+            var finalLine = lines.Last();
 
+            foreach (var line in lines)
+            {
                 yield return line;
 
-                if ((i < lines.Count) && (line.EndsWith("}", StringComparison.Ordinal)))
+                if ((line != finalLine) && LeaveBlankLineAfter(line))
                 {
                     yield return string.Empty;
                 }
             }
+        }
+
+        private static bool LeaveBlankLineAfter(string line)
+        {
+            return line.EndsWith("}", StringComparison.Ordinal);
         }
     }
 }

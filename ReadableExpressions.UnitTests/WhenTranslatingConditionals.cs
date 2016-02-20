@@ -11,7 +11,7 @@
         public void ShouldTranslateASingleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var one = Expression.Constant(1, typeof(int));
+            var one = Expression.Constant(1);
             var intVariableLessThanOne = Expression.LessThan(intVariable, one);
             Expression<Action> writeLessThan = () => Console.Write("Less than");
             var ifLessThanOneThenWrite = Expression.IfThen(intVariableLessThanOne, writeLessThan.Body);
@@ -30,7 +30,7 @@ if (i < 1)
         public void ShouldTranslateAMultipleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var one = Expression.Constant(1, typeof(int));
+            var one = Expression.Constant(1);
             var intVariableLessThanOne = Expression.LessThan(intVariable, one);
             Expression<Action> writeHello = () => Console.WriteLine("Hello");
             Expression<Action> writeThere = () => Console.WriteLine("There");
@@ -52,7 +52,7 @@ if (i < 1)
         public void ShouldTranslateAnIfElseStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var one = Expression.Constant(1, typeof(int));
+            var one = Expression.Constant(1);
             var intVariableLessThanOne = Expression.LessThan(intVariable, one);
             Expression<Action> writeHello = () => Console.WriteLine("Hello");
             Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");
@@ -73,10 +73,35 @@ else
         }
 
         [TestMethod]
+        public void ShouldTranslateAnIfElseIfStatement()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intEqualsOne = Expression.Equal(intVariable, Expression.Constant(1));
+            var intEqualsTwo = Expression.Equal(intVariable, Expression.Constant(2));
+            Expression<Action> writeOne = () => Console.WriteLine("One");
+            Expression<Action> writeTwo = () => Console.WriteLine("Two");
+            var ifTwoWriteTwo = Expression.IfThen(intEqualsTwo, writeTwo.Body);
+            var writeOneOrTwo = Expression.IfThenElse(intEqualsOne, writeOne.Body, ifTwoWriteTwo);
+
+            var translated = writeOneOrTwo.ToReadableString();
+
+            const string EXPECTED = @"
+if (i == 1)
+{
+    Console.WriteLine(""One"");
+}
+else if (i == 2)
+{
+    Console.WriteLine(""Two"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateMultipleLineIfElseStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var zero = Expression.Constant(0, typeof(int));
+            var zero = Expression.Constant(0);
             var intVariableEqualsZero = Expression.Equal(intVariable, zero);
             Expression<Action> writeHello = () => Console.WriteLine("Hello");
             Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");
@@ -104,7 +129,7 @@ else
         public void ShouldTranslateAMultipleLineConditional()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var zero = Expression.Constant(0, typeof(int));
+            var zero = Expression.Constant(0);
             var intVariableEqualsZero = Expression.Equal(intVariable, zero);
             Expression<Action> writeHello = () => Console.WriteLine("Hello");
             Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");

@@ -79,8 +79,7 @@
 
         private void AddSemiColonIfRequired()
         {
-            if (IsASingleStatement &&
-                !_blockLines[0].EndsWith(";", StringComparison.Ordinal))
+            if (IsASingleStatement && !_blockLines[0].IsTerminated())
             {
                 _blockLines[0] += ";";
             }

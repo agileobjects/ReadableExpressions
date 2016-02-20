@@ -69,6 +69,7 @@
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.List.cs" />
     <Compile Include="Translators\InitialisationExpressionTranslator.Helpers.Member.cs" />
     <Compile Include="Translators\DefaultExpressionTranslator.cs" />
+    <Compile Include="Translators\LabelExpressionTranslator.cs" />
     <Compile Include="Translators\LambdaExpressionTranslator.cs" />
     <Compile Include="Translators\LoopExpressionTranslator.cs" />
     <Compile Include="Translators\MemberAccessExpressionTranslator.cs" />
@@ -77,6 +78,7 @@
     <Compile Include="Translators\NewArrayExpressionTranslator.cs" />
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
+    <Compile Include="Translators\StringExtensions.cs" />
     <Compile Include="Translators\SwitchExpressionTranslator.cs" />
     <Compile Include="Translators\TranslatorRegistryExtensions.cs" />
     <Compile Include="Translators\TypeEqualExpressionTranslator.cs" />

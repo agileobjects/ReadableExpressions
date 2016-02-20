@@ -29,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             return IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock)
                 ? Ternary(test, ifTrueBlock, ifFalseBlock)
-                : IfElseStatement(test, ifTrueBlock, ifFalseBlock);
+                : IfElseStatement(test, ifTrueBlock, ifFalseBlock, IsElseIf(conditional));
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)
@@ -55,7 +55,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"{test} ? {ifTrue.AsExpressionBody()} : {ifFalse.AsExpressionBody()}";
         }
 
-        private static string IfElseStatement(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        private static bool IsElseIf(ConditionalExpression conditional)
+        {
+            return conditional.IfFalse.NodeType == ExpressionType.Conditional;
+        }
+
+        private static string IfElseStatement(
+            string test,
+            CodeBlock ifTrue,
+            CodeBlock ifFalse,
+            bool isElseIf)
         {
             string ifElseBlock;
 
@@ -68,9 +77,13 @@ if {test}{ifTrue.WithBrackets()}
             }
             else
             {
+                var ifFalseBlock = isElseIf
+                    ? " " + ifFalse.WithoutBrackets()
+                    : ifFalse.WithBrackets();
+
                 ifElseBlock = $@"
 if {test}{ifTrue.WithBrackets()}
-else{ifFalse.WithBrackets()}";
+else{ifFalseBlock}";
             }
 
             return ifElseBlock.TrimStart();

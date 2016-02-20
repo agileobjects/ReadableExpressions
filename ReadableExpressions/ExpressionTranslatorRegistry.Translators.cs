@@ -18,6 +18,7 @@
             new GotoExpressionTranslator(),
             new IndexAccessExpressionTranslator(),
             new InitialisationExpressionTranslator(),
+            new LabelExpressionTranslator(),
             new LambdaExpressionTranslator(),
             new LoopExpressionTranslator(),
             new MemberAccessExpressionTranslator(),

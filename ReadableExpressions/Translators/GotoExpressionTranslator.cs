@@ -13,7 +13,11 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var gotoExpression = (GotoExpression)expression;
 
-            return gotoExpression.Kind.ToString().ToLowerInvariant();
+            var gotoKeyword = gotoExpression.Kind.ToString().ToLowerInvariant();
+
+            return (gotoExpression.Kind != GotoExpressionKind.Goto)
+                ? gotoKeyword
+                : $"goto {gotoExpression.Target.Name};";
         }
     }
 }
