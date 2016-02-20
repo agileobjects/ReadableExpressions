@@ -12,9 +12,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
         {
             var label = (LabelExpression)expression;
+            var labelName = label.Target.Name.Unindented();
 
             return $@"
-{label.Target.Name}:";
+{labelName}:";
         }
     }
 }

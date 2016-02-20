@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System.Linq.Expressions;
+    using Translators;
 
     public static class ExpressionExtensions
     {
@@ -8,7 +9,9 @@
 
         public static string ToReadableString(this Expression expression)
         {
-            return _translatorRegistry.Translate(expression);
+            return _translatorRegistry
+                .Translate(expression)?
+                .WithoutUnindents();
         }
     }
 }

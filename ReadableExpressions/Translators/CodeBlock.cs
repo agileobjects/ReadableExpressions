@@ -38,21 +38,24 @@
 
         private static string Indent(string line)
         {
-            const string INDENT = "    ";
-
             if (string.IsNullOrEmpty(line))
             {
                 return line;
+            }
+
+            if (line.IsUnindented())
+            {
+                return line.WithoutUnindent();
             }
 
             if (line.Contains(Environment.NewLine))
             {
                 return string.Join(
                     Environment.NewLine,
-                    line.Split(_newLines, StringSplitOptions.None).Select(l => INDENT + l));
+                    line.Split(_newLines, StringSplitOptions.None).Select(Indent));
             }
 
-            return INDENT + line;
+            return "    " + line;
         }
 
         public string WithoutBrackets()
@@ -63,6 +66,11 @@
         public string WithBrackets()
         {
             var codeBlock = Indented().GetCodeBlock();
+
+            if (codeBlock.StartsWith(Environment.NewLine, StringComparison.Ordinal))
+            {
+                codeBlock = codeBlock.Substring(Environment.NewLine.Length);
+            }
 
             return $@"
 {{

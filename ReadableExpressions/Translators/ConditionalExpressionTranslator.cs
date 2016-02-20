@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
@@ -13,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = translatorRegistry.Translate(conditional.Test);
+            var test = GetTest(translatorRegistry.Translate(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
             var ifTrueBlock = translatorRegistry
@@ -30,6 +31,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             return IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock)
                 ? Ternary(test, ifTrueBlock, ifFalseBlock)
                 : IfElseStatement(test, ifTrueBlock, ifFalseBlock, IsElseIf(conditional));
+        }
+
+        private static string GetTest(string test)
+        {
+            return test.StartsWith("(", StringComparison.Ordinal) ? test : $"({test})";
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

@@ -62,5 +62,34 @@ Console.Write(""Two"");
 ";
             Assert.AreEqual(EXPECTED.Trim(), translated);
         }
+
+        [TestMethod]
+        public void ShouldUnindentGotoTargetLabels()
+        {
+            var labelTargetOne = Expression.Label(typeof(void), "One");
+            var labelOne = Expression.Label(labelTargetOne);
+            var gotoOne = Expression.Goto(labelTargetOne);
+
+            var labelTargetTwo = Expression.Label(typeof(void), "Two");
+            var labelTwo = Expression.Label(labelTargetTwo);
+            var gotoTwo = Expression.Goto(labelTargetTwo);
+
+            var gotoBlock = Expression.Block(labelOne, gotoTwo, labelTwo, gotoOne);
+
+            var ifTrueGoto = Expression.IfThen(Expression.Constant(true), gotoBlock);
+
+            var translated = ifTrueGoto.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+One:
+    goto Two;
+
+Two:
+    goto One;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
