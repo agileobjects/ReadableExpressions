@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions
 {
-    using System;
     using System.Linq;
 
     internal static class StringExtensions
@@ -13,6 +12,12 @@ namespace AgileObjects.ReadableExpressions
         }
 
         private const string UnindentPlaceholder = "*unindent*";
+        private const string Indent = "    ";
+
+        public static string Indented(this string line)
+        {
+            return Indent + line;
+        }
 
         public static string Unindented(this string line)
         {
@@ -21,17 +26,14 @@ namespace AgileObjects.ReadableExpressions
 
         public static string WithoutUnindents(this string code)
         {
+            if (code.Contains(UnindentPlaceholder))
+            {
+                return code
+                    .Replace(Indent + UnindentPlaceholder, null)
+                    .Replace(UnindentPlaceholder, null);
+            }
+
             return code.Replace(UnindentPlaceholder, null);
-        }
-
-        public static bool IsUnindented(this string line)
-        {
-            return line.StartsWith(UnindentPlaceholder, StringComparison.Ordinal);
-        }
-
-        public static string WithoutUnindent(this string line)
-        {
-            return line.Substring(UnindentPlaceholder.Length);
         }
     }
 }

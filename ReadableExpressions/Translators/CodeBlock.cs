@@ -43,11 +43,6 @@
                 return line;
             }
 
-            if (line.IsUnindented())
-            {
-                return line.WithoutUnindent();
-            }
-
             if (line.Contains(Environment.NewLine))
             {
                 return string.Join(
@@ -55,7 +50,7 @@
                     line.Split(_newLines, StringSplitOptions.None).Select(Indent));
             }
 
-            return "    " + line;
+            return line.Indented();
         }
 
         public string WithoutBrackets()
