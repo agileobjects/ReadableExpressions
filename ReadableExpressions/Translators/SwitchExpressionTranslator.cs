@@ -28,9 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, translatorRegistry);
 
-            var switchCaseLines = string.Join(
-                Environment.NewLine + Environment.NewLine,
-                switchCases);
+            var switchCaseLines = string.Join(Environment.NewLine + Environment.NewLine, switchCases);
 
             var @switch = $@"
 switch ({switchValue})
@@ -44,11 +42,7 @@ switch ({switchValue})
         private static string GetCase(CodeBlock bodyBlock, params string[] labels)
         {
             var caseBody = bodyBlock.Indented().WithoutBrackets();
-
-            var caseBlock = new CodeBlock(
-                bodyBlock.ReturnType,
-                labels.Concat(new[] { caseBody }).ToArray());
-
+            var caseBlock = new CodeBlock(labels.Concat(new[] { caseBody }).ToArray());
             var @case = caseBlock.Indented().WithoutBrackets();
 
             return @case;

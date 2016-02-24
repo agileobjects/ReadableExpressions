@@ -28,9 +28,17 @@ namespace AgileObjects.ReadableExpressions.Translators
             var ifFalseBlock = translatorRegistry
                 .TranslateExpressionBody(conditional.IfFalse, conditional.IfFalse.Type);
 
-            return IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock)
-                ? Ternary(test, ifTrueBlock, ifFalseBlock)
-                : IfElseStatement(test, ifTrueBlock, ifFalseBlock, IsElseIf(conditional));
+            if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
+            {
+                return Ternary(test, ifTrueBlock, ifFalseBlock);
+            }
+
+            if (conditional.IfTrue.Type != typeof(void))
+            {
+                return ShortCircuitingIf(test, ifTrueBlock, ifFalseBlock);
+            }
+
+            return IfElse(test, ifTrueBlock, ifFalseBlock, IsElseIf(conditional));
         }
 
         private static string GetTest(string test)
@@ -61,36 +69,35 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"{test} ? {ifTrue.AsExpressionBody()} : {ifFalse.AsExpressionBody()}";
         }
 
+        private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        {
+            var ifElseBlock = $@"
+if {test}{ifTrue.WithBrackets()}
+
+{ifFalse.WithoutBrackets()}";
+
+            return ifElseBlock.TrimStart();
+        }
+
         private static bool IsElseIf(ConditionalExpression conditional)
         {
             return conditional.IfFalse.NodeType == ExpressionType.Conditional;
         }
 
-        private static string IfElseStatement(
+        private static string IfElse(
             string test,
             CodeBlock ifTrue,
             CodeBlock ifFalse,
             bool isElseIf)
         {
-            string ifElseBlock;
+            var ifFalseBlock = isElseIf
+                ? " " + ifFalse.WithoutBrackets()
+                : ifFalse.WithBrackets();
 
-            if (ifTrue.ReturnType != typeof(void))
-            {
-                ifElseBlock = $@"
-if {test}{ifTrue.WithBrackets()}
-
-{ifFalse.WithoutBrackets()}";
-            }
-            else
-            {
-                var ifFalseBlock = isElseIf
-                    ? " " + ifFalse.WithoutBrackets()
-                    : ifFalse.WithBrackets();
-
-                ifElseBlock = $@"
+            string ifElseBlock = $@"
 if {test}{ifTrue.WithBrackets()}
 else{ifFalseBlock}";
-            }
+
 
             return ifElseBlock.TrimStart();
         }

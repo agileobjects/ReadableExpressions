@@ -5,17 +5,14 @@
 
     internal class CodeBlock
     {
-        private static readonly string[] _newLines = new[] { Environment.NewLine };
+        private static readonly string[] _newLines = { Environment.NewLine };
 
         private readonly string[] _blockLines;
 
-        public CodeBlock(Type returnType, params string[] blockLines)
+        public CodeBlock(params string[] blockLines)
         {
-            ReturnType = returnType;
             _blockLines = blockLines;
         }
-
-        public Type ReturnType { get; }
 
         public bool IsASingleStatement => _blockLines.Length == 1;
 
@@ -33,7 +30,7 @@
 
         public CodeBlock Indented()
         {
-            return new CodeBlock(ReturnType, _blockLines.Select(Indent).ToArray());
+            return new CodeBlock(_blockLines.Select(Indent).ToArray());
         }
 
         private static string Indent(string line)
