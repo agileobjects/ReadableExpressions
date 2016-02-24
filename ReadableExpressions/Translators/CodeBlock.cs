@@ -11,7 +11,7 @@
 
         public CodeBlock(params string[] blockLines)
         {
-            _blockLines = blockLines;
+            _blockLines = blockLines.Where(line => line != null).ToArray();
         }
 
         public bool IsASingleStatement => _blockLines.Length == 1;
@@ -37,7 +37,7 @@
         {
             if (string.IsNullOrEmpty(line))
             {
-                return line;
+                return string.Empty;
             }
 
             if (line.Contains(Environment.NewLine))
@@ -57,6 +57,13 @@
 
         public string WithBrackets()
         {
+            if (_blockLines.Length == 0)
+            {
+                return @"
+{
+}";
+            }
+
             var codeBlock = Indented().GetCodeBlock();
 
             if (codeBlock.StartsWith(Environment.NewLine, StringComparison.Ordinal))

@@ -28,6 +28,7 @@
             new NewExpressionTranslator(),
             new ParameterExpressionTranslator(),
             new SwitchExpressionTranslator(),
+            new TryCatchExpressionTranslator(),
             new TypeEqualExpressionTranslator(),
             new UnaryExpressionTranslator()
         };
