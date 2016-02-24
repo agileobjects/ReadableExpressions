@@ -75,11 +75,6 @@
             var block = translatorRegistry.Translate(bodyBlock);
             var blockLines = block.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-            if (returnType != typeof(void))
-            {
-                blockLines[blockLines.Length - 1] = "return " + blockLines[blockLines.Length - 1];
-            }
-
             return new CodeBlock(blockLines);
         }
 

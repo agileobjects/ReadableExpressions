@@ -91,5 +91,43 @@ Two:
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAReturnStatementWithAValue()
+        {
+            var returnTarget = Expression.Label(typeof(int));
+
+            var returnOne = Expression.Return(returnTarget, Expression.Constant(1));
+            var returnTwo = Expression.Return(returnTarget, Expression.Constant(2));
+
+            var numberParameter = Expression.Parameter(typeof(string), "i");
+            var numberEqualsOne = Expression.Equal(numberParameter, Expression.Constant("One"));
+
+            var ifOneReturnOneElseTwo = Expression.IfThenElse(numberEqualsOne, returnOne, returnTwo);
+
+            var returnLabel = Expression.Label(returnTarget, Expression.Constant(0));
+            var gotoBlock = Expression.Block(ifOneReturnOneElseTwo, returnLabel);
+
+            var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
+            gotoLambda.Compile();
+
+            var translated = gotoLambda.ToReadableString();
+
+            const string EXPECTED = @"
+i =>
+{
+    if (i == ""One"")
+    {
+        return 1;
+    }
+    else
+    {
+        return 2;
+    }
+
+    return 0;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

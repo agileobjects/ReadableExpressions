@@ -33,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Where(d => d.Translation != null)
                 .Select(d => GetTerminatedStatement(d.Translation, d.Expression));
 
-            lines = InsertBlockSpacing(lines.ToArray());
+            lines = ProcessBlockContents(lines.ToArray(), block.Expressions.Last());
 
             var blockContents = variables.Concat(lines);
 
@@ -67,24 +67,35 @@ namespace AgileObjects.ReadableExpressions.Translators
             return translation + ";";
         }
 
-        private static IEnumerable<string> InsertBlockSpacing(IList<string> lines)
+        private static IEnumerable<string> ProcessBlockContents(IList<string> lines, Expression finalExpression)
         {
-            var finalLine = lines.Last();
+            var finalLineIndex = lines.Count - 1;
 
-            foreach (var line in lines)
+            for (var i = 0; i < lines.Count; i++)
             {
-                yield return line;
+                var line = lines[i];
 
-                if ((line != finalLine) && LeaveBlankLineAfter(line))
+                if (i != finalLineIndex)
                 {
-                    yield return string.Empty;
+                    yield return line;
+
+                    if (LeaveBlankLineAfter(line, lines[i + 1]))
+                    {
+                        yield return string.Empty;
+                    }
+
+                    continue;
                 }
+
+                yield return (finalExpression.NodeType != ExpressionType.Parameter)
+                    ? line : "return " + line;
             }
         }
 
-        private static bool LeaveBlankLineAfter(string line)
+        private static bool LeaveBlankLineAfter(string line, string nextLine)
         {
-            return line.EndsWith("}", StringComparison.Ordinal);
+            return line.EndsWith("}", StringComparison.Ordinal) &&
+                !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWith(Environment.NewLine));
         }
     }
 }

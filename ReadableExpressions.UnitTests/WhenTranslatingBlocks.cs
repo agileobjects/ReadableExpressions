@@ -31,8 +31,9 @@ Console.Beep();";
         {
             Expression<Action> writeLine = () => Console.WriteLine();
             Expression<Func<int>> read = () => Console.Read();
+            var returnReadResult = Expression.Return(Expression.Label(typeof(int)), read.Body, typeof(int));
 
-            var consoleBlock = Expression.Block(writeLine.Body, read.Body);
+            var consoleBlock = Expression.Block(writeLine.Body, returnReadResult);
             var consoleLambda = Expression.Lambda<Func<int>>(consoleBlock);
 
             var translated = consoleLambda.ToReadableString();
