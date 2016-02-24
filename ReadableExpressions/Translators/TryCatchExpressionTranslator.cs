@@ -60,6 +60,7 @@ try{tryBody.WithBrackets()}
         private class ExceptionUsageFinder : ExpressionVisitor
         {
             private readonly CatchBlock _catchHandler;
+            private bool _rethrowFound;
             private bool _usageFound;
 
             private ExceptionUsageFinder(CatchBlock catchHandler)
@@ -75,11 +76,25 @@ try{tryBody.WithBrackets()}
                 return visitor._usageFound;
             }
 
+            protected override Expression VisitUnary(UnaryExpression node)
+            {
+                _rethrowFound = node.NodeType == ExpressionType.Throw;
+
+                return base.VisitUnary(node);
+            }
+
             protected override Expression VisitParameter(ParameterExpression node)
             {
-                if (node == _catchHandler.Variable)
+                if (!_rethrowFound)
                 {
-                    _usageFound = true;
+                    if (node == _catchHandler.Variable)
+                    {
+                        _usageFound = true;
+                    }
+                }
+                else
+                {
+                    _rethrowFound = false;
                 }
 
                 return base.VisitParameter(node);

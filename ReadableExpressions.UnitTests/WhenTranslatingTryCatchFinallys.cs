@@ -30,6 +30,50 @@ catch
         }
 
         [TestMethod]
+        public void ShouldTranslateATryAndCatch()
+        {
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            var exception = Expression.Variable(typeof(TimeoutException), "timeoutEx");
+            var timeoutCatch = Expression.Catch(exception, Expression.Empty());
+            var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
+
+            var translated = tryCatch.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+catch (TimeoutException)
+{
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATryAndGlobalCatchWithExceptionRethrow()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            var rethrow = Expression.Throw(exception);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
+
+            var translated = tryCatch.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateATryAndGlobalCatchWithExceptionUseAndRethrow()
         {
             Expression<Action<Exception>> writeException = ex => Console.Write(ex);
