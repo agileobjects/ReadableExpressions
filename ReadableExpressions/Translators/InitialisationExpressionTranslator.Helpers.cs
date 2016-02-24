@@ -9,20 +9,27 @@
     {
         private interface IInitExpressionHelper
         {
-            string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry);
+            string Translate(Expression expression);
         }
 
         private abstract class InitExpressionHelperBase<TExpression, TNewExpression> : IInitExpressionHelper
             where TExpression : Expression
             where TNewExpression : Expression
         {
-            public string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+            protected InitExpressionHelperBase(IExpressionTranslatorRegistry registry)
+            {
+                Registry = registry;
+            }
+
+            protected IExpressionTranslatorRegistry Registry { get; }
+
+            public string Translate(Expression expression)
             {
                 var typedExpression = (TExpression)expression;
-                var newExpression = GetNewExpression(typedExpression, translatorRegistry);
-                var initialisations = GetInitialisations(typedExpression, translatorRegistry);
+                var newExpression = GetNewExpressionString(typedExpression);
+                var initialisations = GetInitialisations(typedExpression);
 
-                if ((newExpression.Length + initialisations.Sum(init => init.Length+ 2)) <= 40)
+                if ((newExpression.Length + initialisations.Sum(init => init.Length + 2)) <= 40)
                 {
                     return newExpression + " { " + string.Join(", ", initialisations) + " }";
                 }
@@ -35,12 +42,10 @@
                     Environment.NewLine + "}";
             }
 
-            private string GetNewExpression(
-                TExpression initialisation,
-                IExpressionTranslatorRegistry translatorRegistry)
+            private string GetNewExpressionString(TExpression initialisation)
             {
                 var newExpression = GetNewExpression(initialisation);
-                var newExpressionString = translatorRegistry.Translate(newExpression);
+                var newExpressionString = Registry.Translate(newExpression);
 
                 if (ConstructorIsParameterless(newExpression))
                 {
@@ -55,9 +60,7 @@
 
             protected abstract bool ConstructorIsParameterless(TNewExpression newExpression);
 
-            protected abstract IEnumerable<string> GetInitialisations(
-                TExpression expression,
-                IExpressionTranslatorRegistry translatorRegistry);
+            protected abstract IEnumerable<string> GetInitialisations(TExpression expression);
         }
     }
 }

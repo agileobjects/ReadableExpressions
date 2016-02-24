@@ -9,11 +9,16 @@
     {
         private class MemberInitExpressionHelper : InitExpressionHelperBase<MemberInitExpression, NewExpression>
         {
-            private static readonly Dictionary<MemberBindingType, Func<MemberBinding, IExpressionTranslatorRegistry, string>> _bindingTranslatorsByType =
-                new Dictionary<MemberBindingType, Func<MemberBinding, IExpressionTranslatorRegistry, string>>
+            private readonly Dictionary<MemberBindingType, Func<MemberBinding, string>> _bindingTranslatorsByType;
+
+            public MemberInitExpressionHelper(IExpressionTranslatorRegistry registry)
+                : base(registry)
+            {
+                _bindingTranslatorsByType = new Dictionary<MemberBindingType, Func<MemberBinding, string>>
                 {
                     { MemberBindingType.Assignment, TranslateAssignmentBinding }
                 };
+            }
 
             protected override NewExpression GetNewExpression(MemberInitExpression expression)
             {
@@ -26,16 +31,15 @@
             }
 
             protected override IEnumerable<string> GetInitialisations(
-                MemberInitExpression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
+                MemberInitExpression expression)
             {
-                return expression.Bindings.Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b, translatorRegistry));
+                return expression.Bindings.Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b));
             }
 
-            private static string TranslateAssignmentBinding(MemberBinding binding, IExpressionTranslatorRegistry translatorRegistry)
+            private string TranslateAssignmentBinding(MemberBinding binding)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = translatorRegistry.Translate(assignment.Expression);
+                var value = Registry.Translate(assignment.Expression);
 
                 return assignment.Member.Name + " = " + value;
             }

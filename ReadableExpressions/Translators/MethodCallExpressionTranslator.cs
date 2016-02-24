@@ -11,53 +11,54 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         #region Special Cases
 
-        private static readonly SpecialCaseHandlerBase[] _specialCaseHandlers =
-        {
-            new InvocationExpressionHandler(),
-            new IndexedPropertyHandler()
-        };
+        private readonly SpecialCaseHandlerBase[] _specialCaseHandlers;
 
         #endregion
 
-        internal MethodCallExpressionTranslator()
-            : base(ExpressionType.Call, ExpressionType.Invoke)
+        internal MethodCallExpressionTranslator(
+            IndexAccessExpressionTranslator indexAccessTranslator,
+            IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Call, ExpressionType.Invoke)
         {
+            _specialCaseHandlers = new SpecialCaseHandlerBase[]
+            {
+                new InvocationExpressionHandler(GetMethodCall, registry),
+                new IndexedPropertyHandler(indexAccessTranslator)
+            };
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var specialCaseHandler = _specialCaseHandlers.FirstOrDefault(sch => sch.AppliesTo(expression));
 
             if (specialCaseHandler != null)
             {
-                return specialCaseHandler.Translate(expression, translatorRegistry);
+                return specialCaseHandler.Translate(expression);
             }
 
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSuject(methodCall, translatorRegistry, out methodArguments);
+            var methodCallSubject = GetMethodCallSuject(methodCall, out methodArguments);
 
-            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodArguments, translatorRegistry);
+            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodArguments);
         }
 
-        private static string GetMethodCallSuject(
+        private string GetMethodCallSuject(
             MethodCallExpression methodCall,
-            IExpressionTranslatorRegistry translatorRegistry,
             out IEnumerable<Expression> arguments)
         {
-            if (methodCall.Object != null)
+            if (methodCall.Object == null)
             {
-                arguments = methodCall.Arguments;
-
-                return translatorRegistry.Translate(methodCall.Object);
+                return GetStaticMethodCallSubject(methodCall, out arguments);
             }
 
-            return GetStaticMethodCallSubject(methodCall, translatorRegistry, out arguments);
+            arguments = methodCall.Arguments;
+
+            return Registry.Translate(methodCall.Object);
         }
 
-        private static string GetStaticMethodCallSubject(
+        private string GetStaticMethodCallSubject(
             MethodCallExpression methodCall,
-            IExpressionTranslatorRegistry translatorRegistry,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Method.GetCustomAttributes(typeof(ExtensionAttribute), inherit: false).Any())
@@ -65,7 +66,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1);
 
-                return translatorRegistry.Translate(subject);
+                return Registry.Translate(subject);
             }
 
             arguments = methodCall.Arguments;
@@ -74,20 +75,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             return methodCall.Method.DeclaringType.Name;
         }
 
-        internal static string GetMethodCall(
-            MethodInfo method,
-            IEnumerable<Expression> parameters,
-            IExpressionTranslatorRegistry translatorRegistry)
+        internal string GetMethodCall(MethodInfo method, IEnumerable<Expression> parameters)
         {
-            return GetMethodCall(method.Name, parameters, translatorRegistry);
+            return GetMethodCall(method.Name, parameters);
         }
 
-        private static string GetMethodCall(
-            string methodName,
-            IEnumerable<Expression> parameters,
-            IExpressionTranslatorRegistry translatorRegistry)
+        private string GetMethodCall(string methodName, IEnumerable<Expression> parameters)
         {
-            var parametersString = translatorRegistry.TranslateParameters(
+            var parametersString = Registry.TranslateParameters(
                 parameters,
                 placeLongListsOnMultipleLines: true,
                 encloseSingleParameterInBrackets: true);
@@ -100,14 +95,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         private abstract class SpecialCaseHandlerBase
         {
             private readonly Func<Expression, bool> _applicabilityTester;
-            private readonly Func<Expression, IExpressionTranslatorRegistry, string> _translator;
 
-            protected SpecialCaseHandlerBase(
-                Func<Expression, bool> applicabilityTester,
-                Func<Expression, IExpressionTranslatorRegistry, string> translator)
+            protected SpecialCaseHandlerBase(Func<Expression, bool> applicabilityTester)
             {
                 _applicabilityTester = applicabilityTester;
-                _translator = translator;
             }
 
             public bool AppliesTo(Expression expression)
@@ -115,40 +106,45 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return _applicabilityTester.Invoke(expression);
             }
 
-            public string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
-            {
-                return _translator.Invoke(expression, translatorRegistry);
-            }
+            public abstract string Translate(Expression expression);
         }
 
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
-            public InvocationExpressionHandler()
-                : base(exp => exp.NodeType == ExpressionType.Invoke, GetInvocation)
+            private readonly Func<string, IEnumerable<Expression>, string> _methodCallTranslator;
+            private readonly IExpressionTranslatorRegistry _registry;
+
+            public InvocationExpressionHandler(
+                Func<string, IEnumerable<Expression>, string> methodCallTranslator,
+                IExpressionTranslatorRegistry registry)
+                : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
+                _methodCallTranslator = methodCallTranslator;
+                _registry = registry;
             }
 
-            private static string GetInvocation(
-                Expression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
+            public override string Translate(Expression expression)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = translatorRegistry.Translate(invocation.Expression);
+                var invocationSubject = _registry.Translate(invocation.Expression);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {
                     invocationSubject = $"({invocationSubject})";
                 }
 
-                return invocationSubject + "." + GetMethodCall("Invoke", invocation.Arguments, translatorRegistry);
+                return invocationSubject + "." + _methodCallTranslator.Invoke("Invoke", invocation.Arguments);
             }
         }
 
         private class IndexedPropertyHandler : SpecialCaseHandlerBase
         {
-            public IndexedPropertyHandler()
-                : base(IsIndexedPropertyAccess, GetIndexerAccess)
+            private readonly IndexAccessExpressionTranslator _indexAccessTranslator;
+
+            public IndexedPropertyHandler(IndexAccessExpressionTranslator indexAccessTranslator)
+                : base(IsIndexedPropertyAccess)
             {
+                _indexAccessTranslator = indexAccessTranslator;
             }
 
             private static bool IsIndexedPropertyAccess(Expression expression)
@@ -171,16 +167,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return propertyIndexParameters.Any();
             }
 
-            private static string GetIndexerAccess(
-                Expression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
+            public override string Translate(Expression expression)
             {
                 var methodCall = (MethodCallExpression)expression;
 
-                return IndexAccessExpressionTranslator.TranslateIndexAccess(
-                    methodCall.Object,
-                    methodCall.Arguments,
-                    translatorRegistry);
+                return _indexAccessTranslator
+                    .TranslateIndexAccess(methodCall.Object, methodCall.Arguments);
             }
         }
 

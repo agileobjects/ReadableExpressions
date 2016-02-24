@@ -5,19 +5,19 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
     {
-        public ConditionalExpressionTranslator()
-            : base(ExpressionType.Conditional)
+        public ConditionalExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Conditional)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = GetTest(translatorRegistry.Translate(conditional.Test));
+            var test = GetTest(Registry.Translate(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            var ifTrueBlock = translatorRegistry
+            var ifTrueBlock = Registry
                 .TranslateExpressionBody(conditional.IfTrue, conditional.IfTrue.Type);
 
             if (hasNoElseCondition)
@@ -25,7 +25,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return IfStatement(test, ifTrueBlock.WithBrackets());
             }
 
-            var ifFalseBlock = translatorRegistry
+            var ifFalseBlock = Registry
                 .TranslateExpressionBody(conditional.IfFalse, conditional.IfFalse.Type);
 
             if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))

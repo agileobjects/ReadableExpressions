@@ -12,16 +12,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.Negate] = "-"
         };
 
-        internal NegationExpressionTranslator()
-            : base(_negationsByNodeType.Keys.ToArray())
+        internal NegationExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, _negationsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var negation = (UnaryExpression)expression;
 
-            return _negationsByNodeType[expression.NodeType] + translatorRegistry.Translate(negation.Operand);
+            return _negationsByNodeType[expression.NodeType] + Registry.Translate(negation.Operand);
         }
     }
 }

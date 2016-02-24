@@ -8,6 +8,16 @@
     {
         private class ListInitExpressionHelper : InitExpressionHelperBase<ListInitExpression, NewExpression>
         {
+            private readonly MethodCallExpressionTranslator _methodCallTranslator;
+
+            public ListInitExpressionHelper(
+                MethodCallExpressionTranslator methodCallTranslator,
+                IExpressionTranslatorRegistry registry)
+                : base(registry)
+            {
+                _methodCallTranslator = methodCallTranslator;
+            }
+
             protected override NewExpression GetNewExpression(ListInitExpression expression)
             {
                 return expression.NewExpression;
@@ -18,17 +28,13 @@
                 return !newExpression.Arguments.Any();
             }
 
-            protected override IEnumerable<string> GetInitialisations(
-                ListInitExpression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
+            protected override IEnumerable<string> GetInitialisations(ListInitExpression expression)
             {
                 return expression.Initializers
                     .Select(initialisation =>
                     {
-                        var listAddCall = MethodCallExpressionTranslator.GetMethodCall(
-                            initialisation.AddMethod,
-                            initialisation.Arguments,
-                            translatorRegistry);
+                        var listAddCall = _methodCallTranslator
+                            .GetMethodCall(initialisation.AddMethod, initialisation.Arguments);
 
                         return listAddCall;
                     });

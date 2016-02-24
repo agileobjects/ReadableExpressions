@@ -5,16 +5,16 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class NewExpressionTranslator : ExpressionTranslatorBase
     {
-        internal NewExpressionTranslator()
-            : base(ExpressionType.New)
+        internal NewExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.New)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var newExpression = (NewExpression)expression;
 
-            var parameters = translatorRegistry.TranslateParameters(
+            var parameters = Registry.TranslateParameters(
                 newExpression.Arguments,
                 placeLongListsOnMultipleLines: true,
                 encloseSingleParameterInBrackets: true);

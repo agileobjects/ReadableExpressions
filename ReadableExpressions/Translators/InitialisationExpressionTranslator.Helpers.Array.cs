@@ -8,6 +8,11 @@
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
+            public ArrayInitExpressionHelper(IExpressionTranslatorRegistry registry)
+                : base(registry)
+            {
+            }
+
             protected override NewArrayExpression GetNewExpression(NewArrayExpression expression)
             {
                 var arrayElementType = expression.Type.GetElementType();
@@ -22,11 +27,9 @@
                 return false;
             }
 
-            protected override IEnumerable<string> GetInitialisations(
-                NewArrayExpression expression,
-                IExpressionTranslatorRegistry translatorRegistry)
+            protected override IEnumerable<string> GetInitialisations(NewArrayExpression expression)
             {
-                return expression.Expressions.Select(translatorRegistry.Translate);
+                return expression.Expressions.Select(Registry.Translate);
             }
         }
     }

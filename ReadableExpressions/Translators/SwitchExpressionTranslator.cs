@@ -7,26 +7,26 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
     {
-        public SwitchExpressionTranslator()
-            : base(ExpressionType.Switch)
+        public SwitchExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Switch)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var switchStatement = (SwitchExpression)expression;
 
-            var switchValue = translatorRegistry.Translate(switchStatement.SwitchValue);
+            var switchValue = Registry.Translate(switchStatement.SwitchValue);
 
             var switchCases = switchStatement.Cases
                 .Select(@case => new
                 {
-                    Tests = @case.TestValues.Select(value => $"case {translatorRegistry.Translate(value)}:"),
-                    BodyBlock = translatorRegistry.TranslateExpressionBody(@case.Body)
+                    Tests = @case.TestValues.Select(value => $"case {Registry.Translate(value)}:"),
+                    BodyBlock = Registry.TranslateExpressionBody(@case.Body)
                 })
                 .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
 
-            switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, translatorRegistry);
+            switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody);
 
             var switchCaseLines = string.Join(Environment.NewLine + Environment.NewLine, switchCases);
 
@@ -48,10 +48,9 @@ switch ({switchValue})
             return @case;
         }
 
-        private static IEnumerable<string> AppendDefaultCaseIfExists(
+        private IEnumerable<string> AppendDefaultCaseIfExists(
             IEnumerable<string> switchCases,
-            Expression defaultBody,
-            IExpressionTranslatorRegistry translatorRegistry)
+            Expression defaultBody)
         {
             foreach (var switchCase in switchCases)
             {
@@ -60,15 +59,13 @@ switch ({switchValue})
 
             if (defaultBody != null)
             {
-                yield return GetDefaultCase(defaultBody, translatorRegistry);
+                yield return GetDefaultCase(defaultBody);
             }
         }
 
-        private static string GetDefaultCase(
-            Expression defaultBody,
-            IExpressionTranslatorRegistry translatorRegistry)
+        private string GetDefaultCase(Expression defaultBody)
         {
-            var defaultCaseBody = translatorRegistry.TranslateExpressionBody(defaultBody);
+            var defaultCaseBody = Registry.TranslateExpressionBody(defaultBody);
 
             return GetCase(defaultCaseBody, "default:");
         }

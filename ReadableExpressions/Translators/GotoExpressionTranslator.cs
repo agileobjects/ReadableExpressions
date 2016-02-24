@@ -6,48 +6,41 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class GotoExpressionTranslator : ExpressionTranslatorBase
     {
-        private static readonly Dictionary<GotoExpressionKind, Func<GotoExpression, IExpressionTranslatorRegistry, string>>
-            _gotoKindHandlers = new Dictionary<GotoExpressionKind, Func<GotoExpression, IExpressionTranslatorRegistry, string>>
+        private readonly Dictionary<GotoExpressionKind, Func<GotoExpression, string>> _gotoKindHandlers;
+
+        public GotoExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Goto)
+        {
+            _gotoKindHandlers = new Dictionary<GotoExpressionKind, Func<GotoExpression, string>>
             {
                 [GotoExpressionKind.Break] = TranslateBreak,
                 [GotoExpressionKind.Continue] = TranslateContinue,
                 [GotoExpressionKind.Goto] = TranslateGoto,
                 [GotoExpressionKind.Return] = TranslateReturn,
             };
-
-        public GotoExpressionTranslator()
-            : base(ExpressionType.Goto)
-        {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var gotoExpression = (GotoExpression)expression;
 
-            return _gotoKindHandlers[gotoExpression.Kind].Invoke(gotoExpression, translatorRegistry);
+            return _gotoKindHandlers[gotoExpression.Kind].Invoke(gotoExpression);
         }
 
-        private static string TranslateBreak(
-            GotoExpression gotoExpression,
-            IExpressionTranslatorRegistry translatorRegistry) => "break;";
+        private static string TranslateBreak(GotoExpression gotoExpression) => "break;";
 
-        private static string TranslateContinue(
-            GotoExpression gotoExpression,
-            IExpressionTranslatorRegistry translatorRegistry) => "continue;";
+        private static string TranslateContinue(GotoExpression gotoExpression) => "continue;";
 
+        private static string TranslateGoto(GotoExpression gotoExpression) => $"goto {gotoExpression.Target.Name};";
 
-        private static string TranslateGoto(
-            GotoExpression gotoExpression,
-            IExpressionTranslatorRegistry translatorRegistry) => $"goto {gotoExpression.Target.Name};";
-
-        private static string TranslateReturn(GotoExpression gotoExpression, IExpressionTranslatorRegistry translatorRegistry)
+        private string TranslateReturn(GotoExpression gotoExpression)
         {
             if (gotoExpression.Value == null)
             {
                 return "return;";
             }
 
-            var value = translatorRegistry.Translate(gotoExpression.Value);
+            var value = Registry.Translate(gotoExpression.Value);
 
             return $"return {value}";
         }

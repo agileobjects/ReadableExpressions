@@ -8,12 +8,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator()
-            : base(ExpressionType.Block)
+        public BlockExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Block)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var block = (BlockExpression)expression;
 
@@ -28,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(exp => new
                 {
                     Expression = exp,
-                    Translation = translatorRegistry.Translate(exp)
+                    Translation = Registry.Translate(exp)
                 })
                 .Where(d => d.Translation != null)
                 .Select(d => GetTerminatedStatement(d.Translation, d.Expression));

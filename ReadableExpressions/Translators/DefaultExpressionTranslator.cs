@@ -5,12 +5,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class DefaultExpressionTranslator : ExpressionTranslatorBase
     {
-        public DefaultExpressionTranslator()
-            : base(ExpressionType.Default)
+        public DefaultExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Default)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var defaultExpression = (DefaultExpression)expression;
 

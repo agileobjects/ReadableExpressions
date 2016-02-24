@@ -23,17 +23,17 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssign] = "-="
             };
 
-        internal AssignmentExpressionTranslator()
-            : base(_symbolsByNodeType.Keys.ToArray())
+        internal AssignmentExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, _symbolsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var assignment = (BinaryExpression)expression;
-            var target = translatorRegistry.Translate(assignment.Left);
+            var target = Registry.Translate(assignment.Left);
             var symbol = _symbolsByNodeType[expression.NodeType];
-            var value = translatorRegistry.Translate(assignment.Right);
+            var value = Registry.Translate(assignment.Right);
 
             return $"{target} {symbol} {value}";
         }

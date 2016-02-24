@@ -6,18 +6,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class NewArrayExpressionTranslator : ExpressionTranslatorBase
     {
-        internal NewArrayExpressionTranslator()
-            : base(ExpressionType.NewArrayBounds)
+        internal NewArrayExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.NewArrayBounds)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var newArrayExpression = (NewArrayExpression)expression;
 
             var bounds = string.Join(
                 string.Empty,
-                newArrayExpression.Expressions.Select(exp => "[" + translatorRegistry.Translate(exp) + "]"));
+                newArrayExpression.Expressions.Select(exp => "[" + Registry.Translate(exp) + "]"));
 
             return "new " + expression.Type.GetElementType().GetFriendlyName() + bounds;
         }

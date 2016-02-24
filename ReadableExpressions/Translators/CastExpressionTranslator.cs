@@ -2,68 +2,60 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
 
     internal class CastExpressionTranslator : ExpressionTranslatorBase
     {
-        private static readonly Dictionary<ExpressionType, ConversionHelper> _operatorsByNodeType =
-            new Dictionary<ExpressionType, ConversionHelper>
-            {
-                [ExpressionType.Convert] = new ConversionHelper(
-                    exp => ((UnaryExpression)exp).Operand,
-                    exp => exp.Type,
-                    (subject, typeName) => $"(({typeName}){subject})"),
-                [ExpressionType.TypeAs] = new ConversionHelper(
-                    exp => ((UnaryExpression)exp).Operand,
-                    exp => exp.Type,
-                    (subject, typeName) => $"({subject} as {typeName})"),
-                [ExpressionType.TypeIs] = new ConversionHelper(
-                    exp => ((TypeBinaryExpression)exp).Expression,
-                    exp => ((TypeBinaryExpression)exp).TypeOperand,
-                    (subject, typeName) => $"({subject} is {typeName})")
-            };
+        private readonly Dictionary<ExpressionType, Func<Expression, string>> _translatorsByType;
 
-        internal CastExpressionTranslator()
-            : base(_operatorsByNodeType.Keys.ToArray())
+        internal CastExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Convert, ExpressionType.TypeAs, ExpressionType.TypeIs)
         {
+            _translatorsByType = new Dictionary<ExpressionType, Func<Expression, string>>
+            {
+                [ExpressionType.Convert] = TranslateCast,
+                [ExpressionType.TypeAs] = TranslateTypeAs,
+                [ExpressionType.TypeIs] = TranslateTypeIs
+            };
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             if ((expression.NodeType == ExpressionType.Convert) && (expression.Type == typeof(object)))
             {
                 // Don't bother showing a boxing operation:
-                return translatorRegistry.Translate(((UnaryExpression)expression).Operand);
+                return Registry.Translate(((UnaryExpression)expression).Operand);
             }
 
-            return _operatorsByNodeType[expression.NodeType].Translate(expression, translatorRegistry);
+            return _translatorsByType[expression.NodeType].Invoke(expression);
         }
 
-        private class ConversionHelper
+        private string TranslateCast(Expression expression)
         {
-            private readonly Func<Expression, IExpressionTranslatorRegistry, string> _translator;
+            var cast = (UnaryExpression)expression;
+            var typeName = cast.Type.GetFriendlyName();
+            var subject = Registry.Translate(cast.Operand);
 
-            public ConversionHelper(
-                Func<Expression, Expression> subjectGetter,
-                Func<Expression, Type> conversionTypeGetter,
-                Func<string, string, string> formatter)
-            {
-                _translator = (expression, translatorRegistry) =>
-                {
-                    var subject = translatorRegistry.Translate(subjectGetter.Invoke(expression));
-                    var typeName = conversionTypeGetter.Invoke(expression).GetFriendlyName();
-                    var formatted = formatter.Invoke(subject, typeName);
+            return $"(({typeName}){subject})";
+        }
 
-                    return formatted;
-                };
-            }
+        private string TranslateTypeAs(Expression expression)
+        {
+            var typeAs = (UnaryExpression)expression;
+            var typeName = typeAs.Type.GetFriendlyName();
+            var subject = Registry.Translate(typeAs.Operand);
 
-            public string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
-            {
-                return _translator.Invoke(expression, translatorRegistry);
-            }
+            return $"({subject} as {typeName})";
+        }
+
+        private string TranslateTypeIs(Expression expression)
+        {
+            var typeIs = (TypeBinaryExpression)expression;
+            var typeName = typeIs.TypeOperand.GetFriendlyName();
+            var subject = Registry.Translate(typeIs.Expression);
+
+            return $"({subject} is {typeName})";
         }
     }
 }

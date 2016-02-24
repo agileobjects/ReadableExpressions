@@ -10,6 +10,6 @@
             get;
         }
 
-        string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry);
+        string Translate(Expression expression);
     }
 }

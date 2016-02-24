@@ -7,20 +7,20 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {
-        public TryCatchExpressionTranslator()
-            : base(ExpressionType.Try)
+        public TryCatchExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Try)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var tryCatchFinally = (TryExpression)expression;
 
-            var tryBody = translatorRegistry.TranslateExpressionBody(tryCatchFinally.Body);
+            var tryBody = Registry.TranslateExpressionBody(tryCatchFinally.Body);
 
             var catchBlocks = tryCatchFinally
                 .Handlers
-                .Select(catchHandler => GetCatchBlock(catchHandler, translatorRegistry));
+                .Select(catchHandler => GetCatchBlock(catchHandler));
 
             var catchBlocksCode = string.Join(Environment.NewLine, catchBlocks);
 
@@ -30,9 +30,9 @@ try{tryBody.WithBrackets()}
             return tryCatchFinallyBlock.TrimStart();
         }
 
-        private static string GetCatchBlock(CatchBlock catchHandler, IExpressionTranslatorRegistry translatorRegistry)
+        private string GetCatchBlock(CatchBlock catchHandler)
         {
-            var catchBody = translatorRegistry.TranslateExpressionBody(catchHandler.Body);
+            var catchBody = Registry.TranslateExpressionBody(catchHandler.Body);
 
             var exceptionClause = catchHandler.Variable.Type != typeof(Exception)
                 ? $" ({catchHandler.Variable.Type.GetFriendlyName()} {catchHandler.Variable.Name})"

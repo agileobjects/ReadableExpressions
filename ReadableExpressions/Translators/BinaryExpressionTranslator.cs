@@ -31,17 +31,17 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.Subtract] = "-"
             };
 
-        internal BinaryExpressionTranslator()
-            : base(_operatorsByNodeType.Keys.ToArray())
+        internal BinaryExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, _operatorsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var binaryExpression = (BinaryExpression)expression;
-            var left = translatorRegistry.Translate(binaryExpression.Left);
+            var left = Registry.Translate(binaryExpression.Left);
             var @operator = _operatorsByNodeType[expression.NodeType];
-            var right = translatorRegistry.Translate(binaryExpression.Right);
+            var right = Registry.Translate(binaryExpression.Right);
 
             return $"({left} {@operator} {right})";
         }

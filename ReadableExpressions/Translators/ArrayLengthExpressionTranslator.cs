@@ -4,14 +4,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ArrayLengthExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ArrayLengthExpressionTranslator()
-            : base(ExpressionType.ArrayLength)
+        internal ArrayLengthExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.ArrayLength)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
-            var arrayAccess = translatorRegistry.Translate(((UnaryExpression)expression).Operand);
+            var arrayAccess = Registry.Translate(((UnaryExpression)expression).Operand);
 
             return arrayAccess + ".Length";
         }

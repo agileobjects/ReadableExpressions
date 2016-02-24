@@ -4,25 +4,23 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        internal MemberAccessExpressionTranslator()
-            : base(ExpressionType.MemberAccess)
+        internal MemberAccessExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.MemberAccess)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var memberExpression = (MemberExpression)expression;
-            var memberSubject = GetMemberSubject(memberExpression, translatorRegistry);
+            var memberSubject = GetMemberSubject(memberExpression);
 
             return memberSubject + "." + memberExpression.Member.Name;
         }
 
-        private static string GetMemberSubject(
-            MemberExpression memberExpression,
-            IExpressionTranslatorRegistry translatorRegistry)
+        private string GetMemberSubject(MemberExpression memberExpression)
         {
             return (memberExpression.Expression != null)
-                ? translatorRegistry.Translate(memberExpression.Expression)
+                ? Registry.Translate(memberExpression.Expression)
                 : memberExpression.Type.Name;
         }
     }

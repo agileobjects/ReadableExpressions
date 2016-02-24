@@ -6,31 +6,59 @@
     using System.Linq.Expressions;
     using Translators;
 
-    internal partial class ExpressionTranslatorRegistry : IExpressionTranslatorRegistry
+    internal class ExpressionTranslatorRegistry : IExpressionTranslatorRegistry
     {
-        private Dictionary<ExpressionType, IExpressionTranslator> _translatorsByType;
+        private readonly Dictionary<ExpressionType, IExpressionTranslator> _translatorsByType;
 
-        private Dictionary<ExpressionType, IExpressionTranslator> TranslatorsByType
+        public ExpressionTranslatorRegistry()
         {
-            get
+            var indexAccessTranslator = new IndexAccessExpressionTranslator(this);
+            var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator, this);
+
+            var translators = new List<IExpressionTranslator>
             {
-                return _translatorsByType ?? (_translatorsByType = _translators
-                    .SelectMany(t => t.NodeTypes.Select(nt => new
-                    {
-                        NodeType = nt,
-                        Translator = t
-                    }))
-                    .ToDictionary(t => t.NodeType, t => t.Translator));
-            }
+                new ArrayLengthExpressionTranslator(this),
+                new AssignmentExpressionTranslator(this),
+                new BinaryExpressionTranslator(this),
+                new BlockExpressionTranslator(this),
+                new CastExpressionTranslator(this),
+                new ConditionalExpressionTranslator(this),
+                new ConstantExpressionTranslator(this),
+                new DefaultExpressionTranslator(this),
+                new GotoExpressionTranslator(this),
+                indexAccessTranslator,
+                new InitialisationExpressionTranslator(methodCallTranslator, this),
+                new LabelExpressionTranslator(this),
+                new LambdaExpressionTranslator(this),
+                new LoopExpressionTranslator(this),
+                new MemberAccessExpressionTranslator(this),
+                methodCallTranslator,
+                new NegationExpressionTranslator(this),
+                new NewArrayExpressionTranslator(this),
+                new NewExpressionTranslator(this),
+                new ParameterExpressionTranslator(this),
+                new SwitchExpressionTranslator(this),
+                new TryCatchExpressionTranslator(this),
+                new TypeEqualExpressionTranslator(this),
+                new UnaryExpressionTranslator(this)
+            };
+
+            _translatorsByType = translators
+                .SelectMany(t => t.NodeTypes.Select(nt => new
+                {
+                    NodeType = nt,
+                    Translator = t
+                }))
+                .ToDictionary(t => t.NodeType, t => t.Translator);
         }
 
         public string Translate(Expression expression)
         {
             IExpressionTranslator translator;
 
-            if (TranslatorsByType.TryGetValue(expression.NodeType, out translator))
+            if (_translatorsByType.TryGetValue(expression.NodeType, out translator))
             {
-                return translator.Translate(expression, this);
+                return translator.Translate(expression);
             }
 
             throw new NotSupportedException(

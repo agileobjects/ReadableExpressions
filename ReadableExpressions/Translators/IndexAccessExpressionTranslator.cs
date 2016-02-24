@@ -5,40 +5,37 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        public IndexAccessExpressionTranslator()
-            : base(ExpressionType.ArrayIndex, ExpressionType.Index)
+        public IndexAccessExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.ArrayIndex, ExpressionType.Index)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             if (expression.NodeType == ExpressionType.Index)
             {
-                return TranslateIndexedPropertyAccess(expression, translatorRegistry);
+                return TranslateIndexedPropertyAccess(expression);
             }
 
             var arrayAccess = (BinaryExpression)expression;
 
-            return TranslateIndexAccess(arrayAccess.Left, new[] { arrayAccess.Right }, translatorRegistry);
+            return TranslateIndexAccess(arrayAccess.Left, new[] { arrayAccess.Right });
         }
 
-        private static string TranslateIndexedPropertyAccess(
-            Expression expression,
-            IExpressionTranslatorRegistry translatorRegistry)
+        private string TranslateIndexedPropertyAccess(Expression expression)
         {
             var index = (IndexExpression)expression;
 
-            return TranslateIndexAccess(index.Object, index.Arguments, translatorRegistry);
+            return TranslateIndexAccess(index.Object, index.Arguments);
         }
 
-        internal static string TranslateIndexAccess(
+        internal string TranslateIndexAccess(
             Expression variable,
-            IEnumerable<Expression> indexes,
-            IExpressionTranslatorRegistry translatorRegistry)
+            IEnumerable<Expression> indexes)
         {
-            var indexedVariable = translatorRegistry.Translate(variable);
+            var indexedVariable = Registry.Translate(variable);
 
-            var indexValues = translatorRegistry.TranslateParameters(
+            var indexValues = Registry.TranslateParameters(
                 indexes,
                 placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);

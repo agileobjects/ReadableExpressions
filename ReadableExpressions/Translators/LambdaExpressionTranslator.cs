@@ -4,21 +4,21 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LambdaExpressionTranslator : ExpressionTranslatorBase
     {
-        internal LambdaExpressionTranslator()
-            : base(ExpressionType.Lambda)
+        internal LambdaExpressionTranslator(IExpressionTranslatorRegistry registry)
+            : base(registry, ExpressionType.Lambda)
         {
         }
 
-        public override string Translate(Expression expression, IExpressionTranslatorRegistry translatorRegistry)
+        public override string Translate(Expression expression)
         {
             var lambda = (LambdaExpression)expression;
 
-            var parameters = translatorRegistry.TranslateParameters(
+            var parameters = Registry.TranslateParameters(
                 lambda.Parameters,
                 placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);
 
-            var bodyBlock = translatorRegistry.TranslateExpressionBody(
+            var bodyBlock = Registry.TranslateExpressionBody(
                 lambda.Body,
                 lambda.ReturnType);
 
