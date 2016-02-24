@@ -19,6 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.PostIncrementAssign] = o => o + "++",
                 [ExpressionType.PreDecrementAssign] = o => "--" + o,
                 [ExpressionType.PreIncrementAssign] = o => "++" + o,
+                [ExpressionType.Throw] = o => "throw " + o,
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
