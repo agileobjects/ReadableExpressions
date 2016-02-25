@@ -10,6 +10,11 @@
             Comment = "// " + text;
         }
 
+        public static bool IsComment(string codeLine)
+        {
+            return codeLine.StartsWith("// ", StringComparison.Ordinal);
+        }
+
         public override ExpressionType NodeType => ExpressionType.Constant;
 
         public override Type Type => typeof(string);
