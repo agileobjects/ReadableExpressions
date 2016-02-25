@@ -9,7 +9,8 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool IsTerminated(this string codeLine)
         {
-            return _terminatingCharacters.Contains(codeLine[codeLine.Length - 1]);
+            return _terminatingCharacters.Contains(codeLine[codeLine.Length - 1]) ||
+                codeLine.EndsWith(Environment.NewLine, StringComparison.Ordinal);
         }
 
         private static readonly string[] _newLines = { Environment.NewLine };

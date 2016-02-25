@@ -24,6 +24,7 @@
                 new CastExpressionTranslator(this),
                 new ConditionalExpressionTranslator(this),
                 new ConstantExpressionTranslator(this),
+                new DebugInfoExpressionTranslator(this),
                 new DefaultExpressionTranslator(this),
                 new GotoExpressionTranslator(this),
                 indexAccessTranslator,

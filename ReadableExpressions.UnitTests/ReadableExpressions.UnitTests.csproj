@@ -58,6 +58,7 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="WhenTranslatingDebugInfo.cs" />
     <Compile Include="WhenTranslatingTryCatchFinallys.cs" />
     <Compile Include="WhenTranslatingGotos.cs" />
     <Compile Include="WhenTranslatingConditionals.cs" />
