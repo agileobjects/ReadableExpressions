@@ -18,11 +18,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var tryBody = Registry.TranslateExpressionBody(tryCatchFinally.Body);
             var catchBlocks = string.Join(Environment.NewLine, tryCatchFinally.Handlers.Select(GetCatchBlock));
+            var faultBlock = GetFaultBlock(tryCatchFinally.Fault);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally);
 
             var tryCatchFinallyBlock = $@"
 try{tryBody.WithBrackets()}
-{catchBlocks}{finallyBlock}";
+{catchBlocks}{faultBlock}{finallyBlock}";
 
             return tryCatchFinallyBlock.TrimStart();
         }
@@ -57,18 +58,28 @@ try{tryBody.WithBrackets()}
             return null;
         }
 
+        private string GetFaultBlock(Expression faultBlock)
+        {
+            return GetHandlerBlock(faultBlock, "fault");
+        }
+
         private string GetFinallyBlock(Expression finallyBlock)
         {
-            if (finallyBlock == null)
+            return GetHandlerBlock(finallyBlock, "finally");
+        }
+
+        private string GetHandlerBlock(Expression block, string keyword)
+        {
+            if (block == null)
             {
                 return null;
             }
 
-            var finallyBlockBody = Registry
-                .TranslateExpressionBody(finallyBlock)
+            var blockBody = Registry
+                .TranslateExpressionBody(block)
                 .WithBrackets();
 
-            return "finally" + finallyBlockBody;
+            return keyword + blockBody;
         }
 
         #region ExceptionUsageFinder

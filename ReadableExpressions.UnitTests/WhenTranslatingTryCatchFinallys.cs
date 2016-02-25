@@ -30,7 +30,7 @@ catch
         }
 
         [TestMethod]
-        public void ShouldTranslateATryAndCatch()
+        public void ShouldTranslateATryCatch()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
             var exception = Expression.Variable(typeof(TimeoutException), "timeoutEx");
@@ -100,7 +100,7 @@ catch (Exception ex)
         }
 
         [TestMethod]
-        public void ShouldTranslateATryAndFinally()
+        public void ShouldTranslateATryFinally()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
             Expression<Action> writeGoodbye = () => Console.Write("Goodbye");
@@ -116,6 +116,27 @@ try
 finally
 {
     Console.Write(""Goodbye"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATryFault()
+        {
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            Expression<Action> writeBoom = () => Console.Write("Boom");
+            var tryFault = Expression.TryFault(writeHello.Body, writeBoom.Body);
+
+            var translated = tryFault.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+fault
+{
+    Console.Write(""Boom"");
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
