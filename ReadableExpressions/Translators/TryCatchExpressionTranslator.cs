@@ -17,7 +17,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var tryCatchFinally = (TryExpression)expression;
 
             var tryBody = Registry.TranslateExpressionBody(tryCatchFinally.Body);
-            var catchBlocks = string.Join(Environment.NewLine, tryCatchFinally.Handlers.Select(GetCatchBlock));
+            var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(GetCatchBlock));
             var faultBlock = GetFaultBlock(tryCatchFinally.Fault);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally);
 
@@ -25,7 +25,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 try{tryBody.WithBrackets()}
 {catchBlocks}{faultBlock}{finallyBlock}";
 
-            return tryCatchFinallyBlock.TrimStart();
+            return tryCatchFinallyBlock.Trim();
         }
 
         private string GetCatchBlock(CatchBlock catchBlock)
@@ -38,7 +38,8 @@ try{tryBody.WithBrackets()}
                 .WithBrackets()
                 .Replace($"throw {catchBlock.Variable.Name};", "throw;");
 
-            return $"catch{exceptionClause}{catchBodyBlock}";
+            return $@"catch{exceptionClause}{catchBodyBlock}
+";
         }
 
         private static string GetExceptionClause(CatchBlock catchBlock)

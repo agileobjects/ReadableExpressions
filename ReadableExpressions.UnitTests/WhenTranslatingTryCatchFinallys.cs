@@ -140,5 +140,43 @@ fault
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateATryCatchFinally()
+        {
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            Expression<Action<NotSupportedException>> writeNotSupported = ex => Console.Write("NotSupported!");
+            var notSupportedCatchBlock = Expression.Catch(writeNotSupported.Parameters.First(), writeNotSupported.Body);
+            Expression<Action<Exception>> writeException = ex => Console.Write(ex);
+            var topLevelCatchBlock = Expression.Catch(writeException.Parameters.First(), writeException.Body);
+
+            Expression<Action> writeFinished = () => Console.WriteLine("Finished!");
+            Expression<Action> writeGoodbye = () => Console.Write("Goodbye");
+            var finallyBlock = Expression.Block(writeFinished.Body, writeGoodbye.Body);
+
+            var tryCatchFinally = Expression.TryCatchFinally(writeHello.Body, finallyBlock, notSupportedCatchBlock, topLevelCatchBlock);
+
+            var translated = tryCatchFinally.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+catch (NotSupportedException)
+{
+    Console.Write(""NotSupported!"");
+}
+catch (Exception ex)
+{
+    Console.Write(ex);
+}
+finally
+{
+    Console.WriteLine(""Finished!"");
+    Console.Write(""Goodbye"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
