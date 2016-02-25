@@ -42,13 +42,17 @@ try{tryBody.WithBrackets()}
 ";
         }
 
-        private static string GetExceptionClause(CatchBlock catchBlock)
+        private string GetExceptionClause(CatchBlock catchBlock)
         {
             var exceptionTypeName = catchBlock.Variable.Type.GetFriendlyName();
 
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
-                return $" ({exceptionTypeName} {catchBlock.Variable.Name})";
+                var filter = (catchBlock.Filter != null)
+                    ? " when " + Registry.Translate(catchBlock.Filter)
+                    : null;
+
+                return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;
             }
 
             if (catchBlock.Variable.Type != typeof(Exception))
@@ -99,7 +103,12 @@ try{tryBody.WithBrackets()}
             public static bool IsVariableUsed(CatchBlock catchHandler)
             {
                 var visitor = new ExceptionUsageFinder(catchHandler);
-                visitor.Visit(catchHandler.Body);
+                visitor.Visit(catchHandler.Filter);
+
+                if (!visitor._usageFound)
+                {
+                    visitor.Visit(catchHandler.Body);
+                }
 
                 return visitor._usageFound;
             }

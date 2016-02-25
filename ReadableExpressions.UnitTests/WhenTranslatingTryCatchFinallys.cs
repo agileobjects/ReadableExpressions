@@ -9,7 +9,7 @@
     public class WhenTranslatingTryCatchFinallys
     {
         [TestMethod]
-        public void ShouldTranslateATryAndGlobalCatch()
+        public void ShouldTranslateATryWithATopLevelGlobalCatch()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -51,7 +51,29 @@ catch (TimeoutException)
         }
 
         [TestMethod]
-        public void ShouldTranslateATryAndGlobalCatchWithExceptionRethrow()
+        public void ShouldTranslateATryWithAFilteredCatch()
+        {
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            Expression<Func<TimeoutException, bool>> filter = timeoutEx => timeoutEx.Data != null;
+            var exception = filter.Parameters.First();
+            var timeoutCatch = Expression.Catch(exception, Expression.Empty(), filter.Body);
+            var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
+
+            var translated = tryCatch.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
+{
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATryWithATopLevelCatchWithExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -74,7 +96,7 @@ catch
         }
 
         [TestMethod]
-        public void ShouldTranslateATryAndGlobalCatchWithExceptionUseAndRethrow()
+        public void ShouldTranslateATryWithATopLevelCatchWithExceptionUseAndRethrow()
         {
             Expression<Action<Exception>> writeException = ex => Console.Write(ex);
             var exception = writeException.Parameters.First();
