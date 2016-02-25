@@ -17,12 +17,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             var tryCatchFinally = (TryExpression)expression;
 
             var tryBody = Registry.TranslateExpressionBody(tryCatchFinally.Body);
-
             var catchBlocks = string.Join(Environment.NewLine, tryCatchFinally.Handlers.Select(GetCatchBlock));
+            var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally);
 
             var tryCatchFinallyBlock = $@"
 try{tryBody.WithBrackets()}
-{catchBlocks}";
+{catchBlocks}{finallyBlock}";
 
             return tryCatchFinallyBlock.TrimStart();
         }
@@ -56,6 +56,22 @@ try{tryBody.WithBrackets()}
 
             return null;
         }
+
+        private string GetFinallyBlock(Expression finallyBlock)
+        {
+            if (finallyBlock == null)
+            {
+                return null;
+            }
+
+            var finallyBlockBody = Registry
+                .TranslateExpressionBody(finallyBlock)
+                .WithBrackets();
+
+            return "finally" + finallyBlockBody;
+        }
+
+        #region ExceptionUsageFinder
 
         private class ExceptionUsageFinder : ExpressionVisitor
         {
@@ -100,5 +116,7 @@ try{tryBody.WithBrackets()}
                 return base.VisitParameter(node);
             }
         }
+
+        #endregion
     }
 }

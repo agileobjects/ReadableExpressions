@@ -98,5 +98,26 @@ catch (Exception ex)
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateATryAndFinally()
+        {
+            Expression<Action> writeHello = () => Console.Write("Hello");
+            Expression<Action> writeGoodbye = () => Console.Write("Goodbye");
+            var tryFinally = Expression.TryCatchFinally(writeHello.Body, writeGoodbye.Body);
+
+            var translated = tryFinally.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""Hello"");
+}
+finally
+{
+    Console.Write(""Goodbye"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
