@@ -15,7 +15,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
             {
                 [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator, registry),
-                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(registry),
+                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator, registry),
                 [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper(registry)
             };
         }

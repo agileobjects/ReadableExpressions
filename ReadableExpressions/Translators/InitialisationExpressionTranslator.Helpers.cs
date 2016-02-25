@@ -27,19 +27,9 @@
             {
                 var typedExpression = (TExpression)expression;
                 var newExpression = GetNewExpressionString(typedExpression);
-                var initialisations = GetInitialisations(typedExpression);
+                var initialisations = GetInitialisations(typedExpression).ToArray();
 
-                if ((newExpression.Length + initialisations.Sum(init => init.Length + 2)) <= 40)
-                {
-                    return newExpression + " { " + string.Join(", ", initialisations) + " }";
-                }
-
-                return newExpression + Environment.NewLine +
-                    "{" + Environment.NewLine +
-                        string.Join(
-                            "," + Environment.NewLine,
-                            initialisations.Select(init => "    " + init)) +
-                    Environment.NewLine + "}";
+                return GetInitialisations(initialisations, newExpression);
             }
 
             private string GetNewExpressionString(TExpression initialisation)
@@ -61,6 +51,25 @@
             protected abstract bool ConstructorIsParameterless(TNewExpression newExpression);
 
             protected abstract IEnumerable<string> GetInitialisations(TExpression expression);
+
+            protected static string GetInitialisations(string[] initialisations, string newExpression = null)
+            {
+                if ((newExpression?.Length + initialisations.Sum(init => init.Length + 2)) <= 40)
+                {
+                    return $"{newExpression} {{ {string.Join(", ", initialisations)} }}";
+                }
+
+                var initialisationBlock = string.Join(
+                    "," + Environment.NewLine,
+                    initialisations.Select(init => init.Indented()));
+
+                var initialisation = $@"
+{newExpression}
+{{
+{initialisationBlock}
+}}";
+                return initialisation.TrimStart();
+            }
         }
     }
 }

@@ -5,8 +5,6 @@
 
     internal class CodeBlock
     {
-        private static readonly string[] _newLines = { Environment.NewLine };
-
         private readonly string[] _blockLines;
 
         public CodeBlock(params string[] blockLines)
@@ -30,24 +28,7 @@
 
         public CodeBlock Indented()
         {
-            return new CodeBlock(_blockLines.Select(Indent).ToArray());
-        }
-
-        private static string Indent(string line)
-        {
-            if (string.IsNullOrEmpty(line))
-            {
-                return string.Empty;
-            }
-
-            if (line.Contains(Environment.NewLine))
-            {
-                return string.Join(
-                    Environment.NewLine,
-                    line.Split(_newLines, StringSplitOptions.None).Select(Indent));
-            }
-
-            return line.Indented();
+            return new CodeBlock(_blockLines.Select(line => line.Indented()).ToArray());
         }
 
         public string WithoutBrackets()

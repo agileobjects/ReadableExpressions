@@ -58,6 +58,45 @@ new MemoryStream
         }
 
         [TestMethod]
+        public void ShouldTranslateANewExpressionWithANestedInitialisations()
+        {
+            Expression<Func<ContactDetails>> createContactDetails = () =>
+                new ContactDetails
+                {
+                    Name = "Kermit",
+                    Address =
+                    {
+                        HouseNumber = 1,
+                        Postcode = new Postcode("VX 3 9FX")
+                    },
+                    PhoneNumbers =
+                    {
+                        "01234567890",
+                        "07896543210"
+                    }
+                };
+
+            var translated = createContactDetails.Body.ToReadableString();
+
+            const string EXPECTED = @"
+new ContactDetails
+{
+    Name = ""Kermit"",
+    Address =
+    {
+        HouseNumber = 1,
+        Postcode = new Postcode(""VX 3 9FX"")
+    },
+    PhoneNumbers =
+    {
+        ""01234567890"",
+        ""07896543210""
+    }
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANewListExpressionWithAdditions()
         {
             Expression<Func<List<decimal>>> createList =
@@ -126,5 +165,44 @@ new List<decimal>
 
             Assert.AreEqual("new StringBuilder(str)", translated);
         }
+
+        #region Helper Classes
+
+        // ReSharper disable ClassNeverInstantiated.Local
+        // ReSharper disable UnusedAutoPropertyAccessor.Local
+        // ReSharper disable MemberCanBePrivate.Local
+
+        private class Postcode
+        {
+            public Postcode(string value)
+            {
+                Value = value;
+            }
+
+            public string Value { get; }
+        }
+
+        private class Address
+        {
+            public int HouseNumber { get; set; }
+
+            public Postcode Postcode { get; set; }
+        }
+
+        private class ContactDetails
+        {
+            public string Name { get; set; }
+
+            public Address Address { get; set; }
+
+            // ReSharper disable once CollectionNeverQueried.Local
+            public List<string> PhoneNumbers { get; set; }
+        }
+
+        // ReSharper restore MemberCanBePrivate.Local
+        // ReSharper restore UnusedAutoPropertyAccessor.Local
+        // ReSharper restore ClassNeverInstantiated.Local
+
+        #endregion
     }
 }
