@@ -19,6 +19,19 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateACheckedCastExpression()
+        {
+            var intParameter = Expression.Parameter(typeof(int), "i");
+            var checkedCast = Expression.ConvertChecked(intParameter, typeof(short));
+
+            var checkedCastLambda = Expression.Lambda<Func<int, short>>(checkedCast, intParameter);
+
+            var translated = checkedCastLambda.ToReadableString();
+
+            Assert.AreEqual("i => (short)i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateACastToNullableExpression()
         {
             Expression<Func<long, long?>> longToNullable = l => (long?)l;

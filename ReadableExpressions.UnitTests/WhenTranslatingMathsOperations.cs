@@ -18,6 +18,23 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateACheckedAdditionExpression()
+        {
+            var intParameter1 = Expression.Parameter(typeof(int), "a");
+            var intParameter2 = Expression.Parameter(typeof(int), "b");
+            var checkedAddition = Expression.AddChecked(intParameter1, intParameter2);
+
+            var checkedAdditionLambda = Expression.Lambda<Func<int, int, int>>(
+                checkedAddition,
+                intParameter1,
+                intParameter2);
+
+            var translated = checkedAdditionLambda.ToReadableString();
+
+            Assert.AreEqual("(a, b) => a + b", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateASubtractionExpression()
         {
             Expression<Func<int, int, int>> subtractInts = (i1, i2) => i1 - i2;
@@ -25,6 +42,23 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var translated = subtractInts.ToReadableString();
 
             Assert.AreEqual("(i1, i2) => i1 - i2", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACheckedSubtractionExpression()
+        {
+            var intParameter1 = Expression.Parameter(typeof(int), "a");
+            var intParameter2 = Expression.Parameter(typeof(int), "b");
+            var checkedSubtraction = Expression.SubtractChecked(intParameter1, intParameter2);
+
+            var checkedSubtractionLambda = Expression.Lambda<Func<int, int, int>>(
+                checkedSubtraction,
+                intParameter1,
+                intParameter2);
+
+            var translated = checkedSubtractionLambda.ToReadableString();
+
+            Assert.AreEqual("(a, b) => a - b", translated);
         }
 
         [TestMethod]
@@ -38,6 +72,18 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [TestMethod]
+        public void ShouldTranslateACheckedNegationExpression()
+        {
+            var intParameter = Expression.Parameter(typeof(int), "i");
+            var checkedNegation = Expression.NegateChecked(intParameter);
+            var checkedNegationLambda = Expression.Lambda<Func<int, int>>(checkedNegation, intParameter);
+
+            var translated = checkedNegationLambda.ToReadableString();
+
+            Assert.AreEqual("i => -i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMultiplicationExpression()
         {
             Expression<Func<int, int, int>> multiplyInts = (i1, i2) => i1 * i2;
@@ -45,6 +91,23 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var translated = multiplyInts.ToReadableString();
 
             Assert.AreEqual("(i1, i2) => i1 * i2", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACheckedMultiplicationExpression()
+        {
+            var intParameter1 = Expression.Parameter(typeof(int), "a");
+            var intParameter2 = Expression.Parameter(typeof(int), "b");
+            var checkedMultiplication = Expression.MultiplyChecked(intParameter1, intParameter2);
+
+            var checkedMultiplicationLambda = Expression.Lambda<Func<int, int, int>>(
+                checkedMultiplication,
+                intParameter1,
+                intParameter2);
+
+            var translated = checkedMultiplicationLambda.ToReadableString();
+
+            Assert.AreEqual("(a, b) => a * b", translated);
         }
 
         [TestMethod]

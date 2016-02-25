@@ -10,11 +10,17 @@ namespace AgileObjects.ReadableExpressions.Translators
         private readonly Dictionary<ExpressionType, Func<Expression, string>> _translatorsByType;
 
         internal CastExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Convert, ExpressionType.TypeAs, ExpressionType.TypeIs)
+            : base(
+                registry,
+                ExpressionType.Convert,
+                ExpressionType.ConvertChecked,
+                ExpressionType.TypeAs,
+                ExpressionType.TypeIs)
         {
             _translatorsByType = new Dictionary<ExpressionType, Func<Expression, string>>
             {
                 [ExpressionType.Convert] = TranslateCast,
+                [ExpressionType.ConvertChecked] = TranslateCast,
                 [ExpressionType.TypeAs] = TranslateTypeAs,
                 [ExpressionType.TypeIs] = TranslateTypeIs
             };

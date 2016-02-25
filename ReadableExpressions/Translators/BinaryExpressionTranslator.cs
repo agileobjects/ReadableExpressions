@@ -10,6 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             new Dictionary<ExpressionType, string>
             {
                 [ExpressionType.Add] = "+",
+                [ExpressionType.AddChecked] = "+",
                 [ExpressionType.And] = "&",
                 [ExpressionType.AndAlso] = "&&",
                 [ExpressionType.Coalesce] = "??",
@@ -23,12 +24,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.LessThanOrEqual] = "<=",
                 [ExpressionType.Modulo] = "%",
                 [ExpressionType.Multiply] = "*",
+                [ExpressionType.MultiplyChecked] = "*",
                 [ExpressionType.NotEqual] = "!=",
                 [ExpressionType.Or] = "|",
                 [ExpressionType.OrElse] = "||",
                 [ExpressionType.Power] = "**",
                 [ExpressionType.RightShift] = ">>",
-                [ExpressionType.Subtract] = "-"
+                [ExpressionType.Subtract] = "-",
+                [ExpressionType.SubtractChecked] = "-"
             };
 
         internal BinaryExpressionTranslator(IExpressionTranslatorRegistry registry)

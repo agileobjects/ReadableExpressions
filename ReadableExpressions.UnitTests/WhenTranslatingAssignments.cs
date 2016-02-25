@@ -29,6 +29,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateACheckedAdditionAssignment()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var addTenAndAssign = Expression.AddAssignChecked(intVariable, Expression.Constant(10));
+
+            var translated = addTenAndAssign.ToReadableString();
+
+            Assert.AreEqual("i += 10", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateASubtractionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -40,6 +51,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateACheckedSubtractionAssignment()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var substractOneAndAssign = Expression.SubtractAssignChecked(intVariable, Expression.Constant(1));
+
+            var translated = substractOneAndAssign.ToReadableString();
+
+            Assert.AreEqual("i -= 1", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMultiplicationAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -48,6 +70,17 @@
             var translated = tripleAndAssign.ToReadableString();
 
             Assert.AreEqual("i *= 3", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACheckedMultiplicationAssignment()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var doubleAndAssign = Expression.MultiplyAssignChecked(intVariable, Expression.Constant(2));
+
+            var translated = doubleAndAssign.ToReadableString();
+
+            Assert.AreEqual("i *= 2", translated);
         }
 
         [TestMethod]
@@ -76,7 +109,7 @@
         public void ShouldTranslateAPowerAssignment()
         {
             var doubleVariable = Expression.Variable(typeof(double), "d");
-            var doubleTwo = Expression.Constant(2.0, typeof (double));
+            var doubleTwo = Expression.Constant(2.0, typeof(double));
             var powerTwoAssign = Expression.PowerAssign(doubleVariable, doubleTwo);
 
             var translated = powerTwoAssign.ToReadableString();
