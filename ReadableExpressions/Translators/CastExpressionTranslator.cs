@@ -15,14 +15,16 @@ namespace AgileObjects.ReadableExpressions.Translators
                 ExpressionType.Convert,
                 ExpressionType.ConvertChecked,
                 ExpressionType.TypeAs,
-                ExpressionType.TypeIs)
+                ExpressionType.TypeIs,
+                ExpressionType.Unbox)
         {
             _translatorsByType = new Dictionary<ExpressionType, Func<Expression, string>>
             {
                 [ExpressionType.Convert] = TranslateCast,
                 [ExpressionType.ConvertChecked] = TranslateCast,
                 [ExpressionType.TypeAs] = TranslateTypeAs,
-                [ExpressionType.TypeIs] = TranslateTypeIs
+                [ExpressionType.TypeIs] = TranslateTypeIs,
+                [ExpressionType.Unbox] = TranslateCast,
             };
         }
 

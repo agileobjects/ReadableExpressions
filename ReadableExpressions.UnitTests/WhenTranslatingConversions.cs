@@ -70,5 +70,16 @@
 
             Assert.AreEqual("(stream as IDisposable)", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnUnboxExpression()
+        {
+            var objectVariable = Expression.Variable(typeof(object), "o");
+            var unboxObjectToInt = Expression.Unbox(objectVariable, typeof(int));
+
+            var translated = unboxObjectToInt.ToReadableString();
+
+            Assert.AreEqual("((int)o)", translated);
+        }
     }
 }
