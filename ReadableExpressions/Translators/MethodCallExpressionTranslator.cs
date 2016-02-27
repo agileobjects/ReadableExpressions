@@ -6,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+    using Extensions;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
@@ -72,7 +73,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             arguments = methodCall.Arguments;
 
             // ReSharper disable once PossibleNullReferenceException
-            return methodCall.Method.DeclaringType.Name;
+            return methodCall.Method.DeclaringType.GetFriendlyName();
         }
 
         internal string GetMethodCall(MethodInfo method, IEnumerable<Expression> parameters)

@@ -34,7 +34,7 @@
 
             var translated = convertStringsToInt.ToReadableString();
 
-            Assert.AreEqual("(str1, str2) => Int32.Parse(str1) + Int32.Parse(str2)", translated);
+            Assert.AreEqual("(str1, str2) => int.Parse(str1) + int.Parse(str2)", translated);
         }
 
         [TestMethod]
