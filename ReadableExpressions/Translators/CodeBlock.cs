@@ -18,6 +18,11 @@
         {
             var expression = _blockLines.First();
 
+            if (!expression.StartsWith(Environment.NewLine, StringComparison.Ordinal))
+            {
+                expression = " " + expression;
+            }
+
             if (expression.EndsWith(";", StringComparison.Ordinal))
             {
                 expression = expression.TrimEnd(';');

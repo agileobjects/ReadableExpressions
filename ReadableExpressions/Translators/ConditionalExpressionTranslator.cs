@@ -64,7 +64,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
-            return $"{test} ? {ifTrue.AsExpressionBody()} : {ifFalse.AsExpressionBody()}";
+            return $"{test} ?{ifTrue.AsExpressionBody()} :{ifFalse.AsExpressionBody()}";
         }
 
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)

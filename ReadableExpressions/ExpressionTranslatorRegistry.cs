@@ -42,6 +42,7 @@
                 new NewArrayExpressionTranslator(this),
                 new NewExpressionTranslator(this),
                 new ParameterExpressionTranslator(this),
+                new QuotedLambdaExpressionTranslator(this),
                 new SwitchExpressionTranslator(this),
                 new TryCatchExpressionTranslator(this),
                 new TypeEqualExpressionTranslator(this),

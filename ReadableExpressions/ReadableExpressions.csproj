@@ -81,6 +81,7 @@
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
     <Compile Include="StringExtensions.cs" />
+    <Compile Include="Translators\QuotedLambdaExpressionTranslator.cs" />
     <Compile Include="Translators\SwitchExpressionTranslator.cs" />
     <Compile Include="Translators\TranslatorRegistryExtensions.cs" />
     <Compile Include="Translators\TryCatchExpressionTranslator.cs" />

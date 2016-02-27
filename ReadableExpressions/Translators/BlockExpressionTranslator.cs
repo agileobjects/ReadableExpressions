@@ -58,6 +58,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string GetTerminatedStatement(string translation, Expression expression)
         {
             if ((expression.NodeType == ExpressionType.Block) ||
+                (expression.NodeType == ExpressionType.Lambda) ||
                 translation.IsTerminated() ||
                 (expression is CommentExpression))
             {

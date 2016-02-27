@@ -21,7 +21,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var bodyBlock = Registry.TranslateExpressionBody(lambda.Body);
 
             var body = bodyBlock.IsASingleStatement
-                ? " " + bodyBlock.AsExpressionBody()
+                ? bodyBlock.AsExpressionBody()
                 : bodyBlock.WithBrackets();
 
             return parameters + " =>" + body;
