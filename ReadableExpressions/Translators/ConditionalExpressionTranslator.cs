@@ -17,16 +17,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             var test = GetTest(Registry.Translate(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            var ifTrueBlock = Registry
-                .TranslateExpressionBody(conditional.IfTrue, conditional.IfTrue.Type);
+            var ifTrueBlock = Registry.TranslateExpressionBody(conditional.IfTrue);
 
             if (hasNoElseCondition)
             {
                 return IfStatement(test, ifTrueBlock.WithBrackets());
             }
 
-            var ifFalseBlock = Registry
-                .TranslateExpressionBody(conditional.IfFalse, conditional.IfFalse.Type);
+            var ifFalseBlock = Registry.TranslateExpressionBody(conditional.IfFalse);
 
             if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
             {

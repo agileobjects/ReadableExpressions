@@ -18,9 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 placeLongListsOnMultipleLines: false,
                 encloseSingleParameterInBrackets: false);
 
-            var bodyBlock = Registry.TranslateExpressionBody(
-                lambda.Body,
-                lambda.ReturnType);
+            var bodyBlock = Registry.TranslateExpressionBody(lambda.Body);
 
             var body = bodyBlock.IsASingleStatement
                 ? " " + bodyBlock.AsExpressionBody()

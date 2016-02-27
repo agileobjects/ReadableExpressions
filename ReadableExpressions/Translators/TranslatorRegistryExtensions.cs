@@ -41,15 +41,7 @@
             this IExpressionTranslatorRegistry translatorRegistry,
             Expression body)
         {
-            return translatorRegistry.TranslateExpressionBody(body, body.Type);
-        }
-
-        public static CodeBlock TranslateExpressionBody(
-            this IExpressionTranslatorRegistry translatorRegistry,
-            Expression body,
-            Type returnType)
-        {
-            var codeBlock = TranslateBlock(body as BlockExpression, returnType, translatorRegistry)
+            var codeBlock = TranslateBlock(body as BlockExpression, translatorRegistry)
                 ?? TranslateSingle(body, translatorRegistry);
 
             return codeBlock;
@@ -59,7 +51,6 @@
 
         private static CodeBlock TranslateBlock(
             BlockExpression bodyBlock,
-            Type returnType,
             IExpressionTranslatorRegistry translatorRegistry)
         {
             if (bodyBlock == null)

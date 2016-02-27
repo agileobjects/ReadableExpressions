@@ -13,8 +13,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var loop = (LoopExpression)expression;
 
-            var loopBodyBlock = Registry
-                .TranslateExpressionBody(loop.Body, loop.Type);
+            var loopBodyBlock = Registry.TranslateExpressionBody(loop.Body);
 
             return $"while (true){loopBodyBlock.WithBrackets()}";
         }
