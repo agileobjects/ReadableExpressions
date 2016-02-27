@@ -12,16 +12,21 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression)
         {
             var memberExpression = (MemberExpression)expression;
-            var memberSubject = GetMemberSubject(memberExpression);
+            var subject = GetSubject(memberExpression);
 
-            return memberSubject + "." + memberExpression.Member.Name;
+            return GetMemberAccess(subject, memberExpression.Member.Name);
         }
 
-        private string GetMemberSubject(MemberExpression memberExpression)
+        private string GetSubject(MemberExpression memberExpression)
         {
             return (memberExpression.Expression != null)
                 ? Registry.Translate(memberExpression.Expression)
                 : memberExpression.Type.Name;
+        }
+
+        internal string GetMemberAccess(string subject, string memberName)
+        {
+            return subject + "." + memberName;
         }
     }
 }

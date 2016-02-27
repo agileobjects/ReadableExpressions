@@ -40,7 +40,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> methodArguments;
             var methodCallSubject = GetMethodCallSuject(methodCall, out methodArguments);
 
-            return methodCallSubject + "." + GetMethodCall(methodCall.Method, methodArguments);
+            return GetMethodCall(methodCallSubject, methodCall.Method.Name, methodArguments);
         }
 
         private string GetMethodCallSuject(
@@ -80,7 +80,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             return GetMethodCall(method.Name, parameters);
         }
 
-        private string GetMethodCall(string methodName, IEnumerable<Expression> parameters)
+        internal string GetMethodCall(string subject, string methodName, IEnumerable<Expression> parameters)
+        {
+            return subject + "." + GetMethodCall(methodName, parameters);
+        }
+
+        internal string GetMethodCall(string methodName, IEnumerable<Expression> parameters)
         {
             var parametersString = Registry.TranslateParameters(
                 parameters,

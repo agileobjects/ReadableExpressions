@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -58,6 +59,7 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="WhenTranslatingDynamicOperations.cs" />
     <Compile Include="WhenTranslatingDebugInfo.cs" />
     <Compile Include="WhenTranslatingTryCatchFinallys.cs" />
     <Compile Include="WhenTranslatingGotos.cs" />

@@ -14,6 +14,12 @@ namespace AgileObjects.ReadableExpressions
         }
 
         private static readonly string[] _newLines = { Environment.NewLine };
+
+        public static string[] SplitToLines(this string line)
+        {
+            return line.Split(_newLines, StringSplitOptions.None);
+        }
+
         private const string Indent = "    ";
 
         public static string Indented(this string line)
@@ -27,7 +33,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 return string.Join(
                     Environment.NewLine,
-                    line.Split(_newLines, StringSplitOptions.None).Select(l => l.Indented()));
+                    line.SplitToLines().Select(l => l.Indented()));
             }
 
             return Indent + line;
