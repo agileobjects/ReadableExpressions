@@ -15,7 +15,7 @@
             return codeLine.StartsWith("// ", StringComparison.Ordinal);
         }
 
-        public override ExpressionType NodeType => ExpressionType.Constant;
+        public override ExpressionType NodeType => ExpressionType.Extension;
 
         public override Type Type => typeof(string);
 

@@ -28,6 +28,7 @@
                 new DebugInfoExpressionTranslator(this),
                 new DefaultExpressionTranslator(this),
                 new DynamicExpressionTranslator(memberAccessTranslator, methodCallTranslator, this),
+                new ExtensionExpressionTranslator(this),
                 new GotoExpressionTranslator(this),
                 indexAccessTranslator,
                 new InitialisationExpressionTranslator(methodCallTranslator, this),
