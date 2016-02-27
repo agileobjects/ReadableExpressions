@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Provides an extension method to produce a readable string version of an expression tree.</description>
     <releaseNotes>Updated to target .NET 4 instead of 4.5.</releaseNotes>
-    <copyright>Copyright 2015</copyright>
+    <copyright>Copyright 2016</copyright>
     <tags>Expression Trees, Debugging</tags>
   </metadata>
 </package>
