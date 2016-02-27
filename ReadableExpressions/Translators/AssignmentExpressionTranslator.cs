@@ -35,8 +35,17 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var assignment = (BinaryExpression)expression;
             var target = Registry.Translate(assignment.Left);
-            var symbol = _symbolsByNodeType[expression.NodeType];
-            var value = Registry.Translate(assignment.Right);
+
+            return GetAssignment(target, expression.NodeType, assignment.Right);
+        }
+
+        internal string GetAssignment(
+            string target,
+            ExpressionType assignmentType,
+            Expression right)
+        {
+            var symbol = _symbolsByNodeType[assignmentType];
+            var value = Registry.Translate(right);
 
             return $"{target} {symbol} {value}";
         }

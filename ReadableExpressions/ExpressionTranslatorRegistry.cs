@@ -13,6 +13,7 @@
         public ExpressionTranslatorRegistry()
         {
             var memberAccessTranslator = new MemberAccessExpressionTranslator(this);
+            var assignmentTranslator = new AssignmentExpressionTranslator(this);
             var indexAccessTranslator = new IndexAccessExpressionTranslator(this);
             var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator, this);
 
@@ -27,7 +28,7 @@
                 new ConstantExpressionTranslator(this),
                 new DebugInfoExpressionTranslator(this),
                 new DefaultExpressionTranslator(this),
-                new DynamicExpressionTranslator(memberAccessTranslator, methodCallTranslator, this),
+                new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator, this),
                 new ExtensionExpressionTranslator(this),
                 new GotoExpressionTranslator(this),
                 indexAccessTranslator,

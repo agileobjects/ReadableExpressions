@@ -11,13 +11,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public DynamicExpressionTranslator(
             MemberAccessExpressionTranslator memberAccessTranslator,
+            AssignmentExpressionTranslator assignmentTranslator,
             MethodCallExpressionTranslator methodCallTranslator,
             IExpressionTranslatorRegistry registry)
             : base(registry, ExpressionType.Dynamic)
         {
+            var dynamicMemberAccessTranslator = new DynamicMemberAccessTranslator(memberAccessTranslator, registry);
+
             _translators = new DynamicOperationTranslatorBase[]
             {
-                new DynamicMemberAccessTranslator(memberAccessTranslator, registry),
+                dynamicMemberAccessTranslator,
+                new DynamicMemberWriteTranslator(dynamicMemberAccessTranslator, assignmentTranslator, registry),
                 new DynamicMethodCallTranslator(methodCallTranslator, registry)
             };
         }
@@ -46,7 +50,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return operationDescription;
         }
 
-        #region Helper classes
+        #region Helper Classes
 
         private abstract class DynamicOperationTranslatorBase
         {
@@ -95,10 +99,40 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
             {
+                translated = GetMemberAccess(match, arguments);
+                return true;
+            }
+
+            internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments)
+            {
                 var subject = Registry.Translate(arguments.First());
                 var memberName = match.Groups["MemberName"].Value;
 
-                translated = _memberAccessTranslator.GetMemberAccess(subject, memberName);
+                return _memberAccessTranslator.GetMemberAccess(subject, memberName);
+            }
+        }
+
+        private class DynamicMemberWriteTranslator : DynamicOperationTranslatorBase
+        {
+            private readonly DynamicMemberAccessTranslator _memberAccessTranslator;
+            private readonly AssignmentExpressionTranslator _assignmentTranslator;
+
+            public DynamicMemberWriteTranslator(
+                DynamicMemberAccessTranslator memberAccessTranslator,
+                AssignmentExpressionTranslator assignmentTranslator,
+                IExpressionTranslatorRegistry registry)
+                : base(@"^SetMember (?<MemberName>[^\(]+)\(", registry)
+            {
+                _memberAccessTranslator = memberAccessTranslator;
+                _assignmentTranslator = assignmentTranslator;
+            }
+
+            protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
+            {
+                var target = _memberAccessTranslator.GetMemberAccess(match, arguments);
+                var value = arguments.Last();
+
+                translated = _assignmentTranslator.GetAssignment(target, ExpressionType.Assign, value);
                 return true;
             }
         }

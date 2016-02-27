@@ -2,6 +2,7 @@
 {
     using System;
     using System.Globalization;
+    using System.IO;
     using System.Linq.Expressions;
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,9 +11,9 @@
     public class WhenTranslatingDynamicOperations
     {
         [TestMethod]
-        public void ShouldTranslateAPropertyAccess()
+        public void ShouldTranslateAPropertyReadAccess()
         {
-            var arrayLengthAccessSiteBinder = Binder.GetMember(
+            var lengthGetterSiteBinder = Binder.GetMember(
                 CSharpBinderFlags.None,
                 "Length",
                 typeof(WhenTranslatingDynamicOperations),
@@ -20,19 +21,49 @@
 
             var dynamicParameter = Expression.Parameter(typeof(object), "obj");
 
-            var dynamicLengthAccess = Expression.Dynamic(
-                arrayLengthAccessSiteBinder,
+            var dynamicLengthGetter = Expression.Dynamic(
+                lengthGetterSiteBinder,
                 typeof(object),
                 dynamicParameter);
 
             var dynamicLengthLambda = Expression
-                .Lambda<Func<object, object>>(dynamicLengthAccess, dynamicParameter);
+                .Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
 
             dynamicLengthLambda.Compile();
 
             var translated = dynamicLengthLambda.ToReadableString();
 
             Assert.AreEqual("obj => obj.Length", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAPropertyWriteAccess()
+        {
+            var positionSetterSiteBinder = Binder.SetMember(
+                CSharpBinderFlags.ResultDiscarded,
+                "Position",
+                typeof(WhenTranslatingDynamicOperations),
+                new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
+
+            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+            var positionParameter = Expression.Parameter(typeof(long), "position");
+
+            var dynamicPositionSetter = Expression.Dynamic(
+                positionSetterSiteBinder,
+                typeof(object),
+                dynamicParameter,
+                positionParameter);
+
+            var dynamicPositionLambda = Expression.Lambda<Action<object, long>>(
+                dynamicPositionSetter,
+                dynamicParameter,
+                positionParameter);
+
+            dynamicPositionLambda.Compile();
+
+            var translated = dynamicPositionLambda.ToReadableString();
+
+            Assert.AreEqual("(obj, position) => obj.Position = position", translated);
         }
 
         [TestMethod]
