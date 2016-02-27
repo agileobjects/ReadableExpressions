@@ -86,5 +86,17 @@ a =>
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateRuntimeVariables()
+        {
+            var intVariable1 = Expression.Variable(typeof(int), "i1");
+            var intVariable2 = Expression.Variable(typeof(int), "i2");
+            var runtimeVariables = Expression.RuntimeVariables(intVariable1, intVariable2);
+
+            var translated = runtimeVariables.ToReadableString();
+
+            Assert.AreEqual("(i1, i2)", translated);
+        }
     }
 }

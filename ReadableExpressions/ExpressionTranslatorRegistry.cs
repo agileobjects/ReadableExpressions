@@ -43,6 +43,7 @@
                 new NewExpressionTranslator(this),
                 new ParameterExpressionTranslator(this),
                 new QuotedLambdaExpressionTranslator(this),
+                new RuntimeVariablesExpressionTranslator(this),
                 new SwitchExpressionTranslator(this),
                 new TryCatchExpressionTranslator(this),
                 new TypeEqualExpressionTranslator(this),
