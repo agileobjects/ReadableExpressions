@@ -1,75 +1,107 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Installer
 {
     using System;
-    using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using Microsoft.Win32;
 
     public static class VisualizerFinder
     {
-        public static IEnumerable<Visualizer> GetVisualizers()
+        public static Visualizer GetRelevantVisualizer(string currentDomainBaseDirectory)
         {
-            var visualizers = typeof(VisualizerFinder)
-                .Assembly
-                .GetManifestResourceNames()
-                .Select(visualizerResourceName => new Visualizer
-                {
-                    ResourceName = visualizerResourceName,
-                    InstallPath = GetVisualizerInstallPath(visualizerResourceName)
-                })
-                .Where(v => v.InstallPath != null)
-                .Where(v => !File.Exists(v.InstallPath))
-                .ToArray();
+            var executingVsVersion = GetExecutingVsVersion(currentDomainBaseDirectory);
 
-            return visualizers;
-        }
-
-        private static readonly Regex _installPathMatcher = new Regex(
-            @"[\/\\]Common7[\/\\]IDE[\/\\]?$",
-            RegexOptions.IgnoreCase);
-
-        private static string GetVisualizerInstallPath(string visualizerResourceName)
-        {
-            var vsVersionNumber = GetVsVersionNumber(visualizerResourceName);
-
-            if (vsVersionNumber == null)
+            if (executingVsVersion == null)
             {
                 return null;
             }
 
-            var registryKey = @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\VisualStudio\" + vsVersionNumber;
-            var installPath = (string)Registry.GetValue(registryKey, "InstallDir", defaultValue: null);
+            var visualizer = typeof(VisualizerFinder)
+                .Assembly
+                .GetManifestResourceNames()
+                .Select(visualizerResourceName =>
+                    GetVisualizer(currentDomainBaseDirectory, visualizerResourceName))
+                .Where(v => v.InstallPath != null)
+                .OrderBy(v => v.VsVersionNumber)
+                .FirstOrDefault(v => v.VsVersionNumber >= executingVsVersion);
 
-            if ((installPath != null) &&
-                Directory.Exists(installPath) &&
-                _installPathMatcher.IsMatch(installPath))
+            return visualizer;
+        }
+
+        private static int? GetExecutingVsVersion(string currentDomainBaseDirectory)
+        {
+            if (currentDomainBaseDirectory == null)
             {
-                var indexOfIde = installPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
-                var pathToCommon7 = installPath.Substring(0, indexOfIde);
-                var pathToVisualizers = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
-                var visualizerAssemblyName = visualizerResourceName.Substring(typeof(Program).Namespace.Length + 1);
-                var pathToVisualizer = Path.Combine(pathToVisualizers, visualizerAssemblyName);
+                return null;
+            }
 
-                return pathToVisualizer;
+            var path = Path.Combine(currentDomainBaseDirectory, "msenv.dll");
+
+            if (File.Exists(path))
+            {
+                return FileVersionInfo.GetVersionInfo(path).ProductMajorPart;
             }
 
             return null;
         }
 
+        private static Visualizer GetVisualizer(
+            string currentDomainBaseDirectory,
+            string visualizerResourceName)
+        {
+            var visualizer = new Visualizer { ResourceName = visualizerResourceName };
+
+            if (TryPopulateVsVersionNumber(visualizer))
+            {
+                PopulateVisualizerInstallPath(currentDomainBaseDirectory, visualizer);
+            }
+
+            return visualizer;
+        }
+
         private static readonly Regex _versionNumberMatcher =
             new Regex(@"Vs(?<VersionNumber>[\d]+)\.dll$", RegexOptions.IgnoreCase);
 
-        private static string GetVsVersionNumber(string assemblyName)
+        private static bool TryPopulateVsVersionNumber(Visualizer visualizer)
         {
-            var versionNumberMatch = _versionNumberMatcher.Match(assemblyName);
+            var versionNumberMatch = _versionNumberMatcher.Match(visualizer.ResourceName);
 
-            return versionNumberMatch.Success ? versionNumberMatch.Groups["VersionNumber"].Value + ".0" : null;
+            if (versionNumberMatch.Success)
+            {
+                visualizer.VsVersionNumber = int.Parse(versionNumberMatch.Groups["VersionNumber"].Value);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static readonly Regex _installPathMatcher =
+            new Regex(@"[\/\\]Common7[\/\\]IDE[\/\\]?$", RegexOptions.IgnoreCase);
+
+        private static void PopulateVisualizerInstallPath(
+            string currentDomainBaseDirectory,
+            Visualizer visualizer)
+        {
+            var installPath = currentDomainBaseDirectory;
+
+            if (!_installPathMatcher.IsMatch(currentDomainBaseDirectory))
+            {
+                return;
+            }
+
+            var indexOfIde = installPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
+            var pathToCommon7 = installPath.Substring(0, indexOfIde);
+            var pathToVisualizers = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
+            var visualizerAssemblyName = visualizer.ResourceName.Substring(typeof(Visualizer).Namespace.Length + 1);
+
+            visualizer.InstallPath = Path.Combine(pathToVisualizers, visualizerAssemblyName);
         }
 
         public class Visualizer
         {
+            public int VsVersionNumber { get; set; }
+
             public string ResourceName { get; set; }
 
             public string InstallPath { get; set; }

@@ -2,27 +2,35 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
 
     public class Program
     {
         public static void Main(string[] args)
         {
-            for (var i = 0; i < args.Length; i += 2)
-            {
-                try
-                {
-                    var visualizer = new VisualizerFinder.Visualizer
-                    {
-                        ResourceName = args[i],
-                        InstallPath = args[i + 1]
-                    };
+            var currentDomainBaseDirectory = args.FirstOrDefault();
 
-                    WriteVisualizerFile(visualizer);
-                }
-                catch (IOException ioEx)
-                {
-                    throw new InvalidOperationException("Unable to write Visualizer assembly", ioEx);
-                }
+            var visualizer = VisualizerFinder.GetRelevantVisualizer(currentDomainBaseDirectory);
+
+            if (visualizer == null)
+            {
+                return;
+            }
+
+            try
+            {
+                WriteVisualizerFile(visualizer);
+            }
+            catch (IOException ioEx)
+            {
+                throw new InvalidOperationException("Unable to write Visualizer assembly", ioEx);
+            }
+
+            var initializedFilePath = args.ElementAtOrDefault(1);
+
+            if (initializedFilePath != null)
+            {
+                File.WriteAllText(initializedFilePath, $"Visualizer installed for VS{visualizer.VsVersionNumber}.");
             }
         }
 
