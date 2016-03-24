@@ -4,18 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6540D443-BDE2-478E-895C-313F06C6029B}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Installer</RootNamespace>
-    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Installer</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Installer.Msi.Custom</RootNamespace>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Installer.Msi.Custom</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -25,7 +23,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -35,23 +32,35 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
+    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+      <Link>CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\VersionInfo.cs">
+      <Link>VersionInfo.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VisualizerFinder.cs" />
+    <Compile Include="Visualizer.cs" />
+    <Compile Include="VisualizerInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="VisualizerInstaller.Designer.cs">
+      <DependentUpon>VisualizerInstaller.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AgileObjects.ReadableExpressions.Visualizers.Vs10.dll" />
-    <EmbeddedResource Include="AgileObjects.ReadableExpressions.Visualizers.Vs12.dll" />
-    <EmbeddedResource Include="AgileObjects.ReadableExpressions.Visualizers.Vs14.dll" />
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs10.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs12.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs14.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.dll</Link>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

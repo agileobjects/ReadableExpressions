@@ -25,9 +25,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visuali
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Vs10", "ReadableExpressions.Visualizers.Vs10\ReadableExpressions.Visualizers.Vs10.csproj", "{19F8AD3E-61D6-41EC-828A-D51906014F8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Installer", "ReadableExpressions.Visualizers.Installer\ReadableExpressions.Visualizers.Installer.csproj", "{6540D443-BDE2-478E-895C-313F06C6029B}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ReadableExpressions.Visualizers.Installer.Msi", "ReadableExpressions.Visualizers.Installer.Msi\ReadableExpressions.Visualizers.Installer.Msi.vdproj", "{FDC2FA40-A258-4554-BD6C-81E88B6BCE5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Installer.Vsix", "ReadableExpressions.Visualizers.Installer.Vsix\ReadableExpressions.Visualizers.Installer.Vsix.csproj", "{5514430F-33BA-4249-AAFD-9D34B8E09A91}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Installer.Msi.Custom", "ReadableExpressions.Visualizers.Installer.Msi.Custom\ReadableExpressions.Visualizers.Installer.Msi.Custom.csproj", "{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,14 +53,13 @@ Global
 		{ABDE919F-9341-4633-A004-0CBDEAB22797}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{19F8AD3E-61D6-41EC-828A-D51906014F8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{19F8AD3E-61D6-41EC-828A-D51906014F8B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{6540D443-BDE2-478E-895C-313F06C6029B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6540D443-BDE2-478E-895C-313F06C6029B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6540D443-BDE2-478E-895C-313F06C6029B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6540D443-BDE2-478E-895C-313F06C6029B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5514430F-33BA-4249-AAFD-9D34B8E09A91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5514430F-33BA-4249-AAFD-9D34B8E09A91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5514430F-33BA-4249-AAFD-9D34B8E09A91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5514430F-33BA-4249-AAFD-9D34B8E09A91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDC2FA40-A258-4554-BD6C-81E88B6BCE5C}.Debug|Any CPU.ActiveCfg = Release
+		{FDC2FA40-A258-4554-BD6C-81E88B6BCE5C}.Release|Any CPU.ActiveCfg = Release
+		{FDC2FA40-A258-4554-BD6C-81E88B6BCE5C}.Release|Any CPU.Build.0 = Release
+		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
