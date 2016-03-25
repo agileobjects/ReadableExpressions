@@ -16,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var labelNamePart = string.IsNullOrWhiteSpace(label.Target.Name)
                 ? null
-                : $"{Environment.NewLine}{label.Target.Name.Unindented()}:";
+                : Environment.NewLine + label.Target.Name.Unindented() + ":";
 
             var labelValuePart = (label.DefaultValue != null)
                 ? $"{Environment.NewLine}return {Registry.Translate(label.DefaultValue)};"

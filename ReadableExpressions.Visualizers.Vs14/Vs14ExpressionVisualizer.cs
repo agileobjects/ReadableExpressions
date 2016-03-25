@@ -9,7 +9,9 @@
             IDialogVisualizerService windowService,
             IVisualizerObjectProvider objectProvider)
         {
-            ExpressionDialog.Show(objectProvider.GetObject().ToString());
+            windowService.ShowDialog(
+                ExpressionDialog.Instance.WithText(
+                    objectProvider.GetObject().ToString()));
         }
     }
 }

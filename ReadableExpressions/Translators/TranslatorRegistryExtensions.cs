@@ -64,7 +64,7 @@
             }
 
             var block = translatorRegistry.Translate(bodyBlock);
-            var blockLines = block.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var blockLines = block.SplitToLines();
 
             return new CodeBlock(blockLines);
         }

@@ -8,5 +8,10 @@ The extension method (in the namespace `AgileObjects.ReadableExpressions`) is us
 
     string readable = myExpression.ToReadableString();
 
+### Debugger Visualizers
+An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
+[the Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/2d5de770-50e9-4dcf-87e9-ea1ed1b43b68).
+
 ### Download
-You can download and install using [the NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions).
+You can download and install using [the NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), or 
+clone the repository [on GitHub](https://github.com/AgileObjects/ReadableExpressions).
