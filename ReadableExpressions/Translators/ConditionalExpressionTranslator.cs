@@ -64,7 +64,21 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
-            return $"{test} ?{ifTrue.AsExpressionBody()} :{ifFalse.AsExpressionBody()}";
+            var ifTrueString = "?" + ifTrue.AsExpressionBody();
+            var ifFalseString = ":" + ifFalse.AsExpressionBody();
+
+            if ((test.Length + ifTrueString.Length + ifFalseString.Length) > 100)
+            {
+                ifTrueString = Environment.NewLine + ifTrueString.Indented();
+                ifFalseString = Environment.NewLine + ifFalseString.Indented();
+            }
+            else
+            {
+                test += " ";
+                ifTrueString += " ";
+            }
+
+            return test + ifTrueString + ifFalseString;
         }
 
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)

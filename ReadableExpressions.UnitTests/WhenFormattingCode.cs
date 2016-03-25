@@ -18,15 +18,55 @@
 
             var translated = longArgumentListBlock.ToReadableString();
 
-            var expected = $@"
-int {longVariable.Name};
+            const string EXPECTED = @"
+int thisVariableReallyHasAVeryLongNameIndeed;
 Action<int, int, int> threeIntsAction;
 threeIntsAction.Invoke(
-    {longVariable.Name},
-    {longVariable.Name},
-    {longVariable.Name});";
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed);";
 
-            Assert.AreEqual(expected.TrimStart(), translated);
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldSplitLongTernariesOntoMultipleLines()
+        {
+            Expression<Func<int, int>> longTernary =
+                veryLongNamedVariable => veryLongNamedVariable > 10
+                    ? veryLongNamedVariable * veryLongNamedVariable
+                    : veryLongNamedVariable * veryLongNamedVariable * veryLongNamedVariable;
+
+            var translated = longTernary.ToReadableString();
+
+            const string EXPECTED = @"
+veryLongNamedVariable => (veryLongNamedVariable > 10)
+    ? veryLongNamedVariable * veryLongNamedVariable
+    : (veryLongNamedVariable * veryLongNamedVariable) * veryLongNamedVariable";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldSplitLongNestedTernariesOntoMultipleLines()
+        {
+            Expression<Func<int, int>> longTernary =
+                veryLongNamedVariable => (veryLongNamedVariable > 10)
+                    ? (veryLongNamedVariable > 100)
+                        ? veryLongNamedVariable * veryLongNamedVariable
+                        : veryLongNamedVariable - veryLongNamedVariable
+                    : veryLongNamedVariable * veryLongNamedVariable + veryLongNamedVariable;
+
+            var translated = longTernary.ToReadableString();
+
+            const string EXPECTED = @"
+veryLongNamedVariable => (veryLongNamedVariable > 10)
+    ? (veryLongNamedVariable > 100)
+        ? veryLongNamedVariable * veryLongNamedVariable
+        : veryLongNamedVariable - veryLongNamedVariable
+    : (veryLongNamedVariable * veryLongNamedVariable) + veryLongNamedVariable";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
 }
