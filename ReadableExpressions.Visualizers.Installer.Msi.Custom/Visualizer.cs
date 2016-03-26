@@ -7,5 +7,7 @@
         public string ResourceName { get; set; }
 
         public string InstallPath { get; set; }
+
+        public string VsixManifestPath { get; set; }
     }
 }
