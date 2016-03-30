@@ -7,16 +7,16 @@
 
     internal class ParameterSet : FormattableExpressionBase
     {
-        private readonly IEnumerable<FormattableExpressionBase> _parameters;
+        private readonly IEnumerable<Expression> _parameters;
+        private readonly IExpressionTranslatorRegistry _registry;
 
         public ParameterSet(IEnumerable<Expression> parameters, IExpressionTranslatorRegistry registry)
         {
-            _parameters = parameters
-                .Select(arg => new WrappedExpression(arg, registry))
-                .ToArray();
+            _parameters = parameters;
+            _registry = registry;
         }
 
-        protected override Func<string> SingleLineTranslationFactory => () => string.Join(", ", _parameters);
+        protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
 
         protected override Func<string> MultipleLineTranslationFactory
         {
@@ -24,10 +24,20 @@
             {
                 return () =>
                     Environment.NewLine +
-                    string.Join(
-                        "," + Environment.NewLine,
-                        _parameters.Select(arg => arg.ToString().Indent()));
+                    FormatParameters("," + Environment.NewLine, p => p.Indent());
             }
+        }
+
+        private string FormatParameters(
+            string separator,
+            Func<string, string> extraFormatter = null)
+        {
+            if (extraFormatter == null)
+            {
+                extraFormatter = s => s;
+            }
+
+            return string.Join(separator, _parameters.Select(_registry.Translate).Select(extraFormatter));
         }
 
         public string WithBracketsIfNecessary()

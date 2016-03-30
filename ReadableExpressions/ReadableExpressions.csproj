@@ -91,7 +91,6 @@
     <Compile Include="Translators\TryCatchExpressionTranslator.cs" />
     <Compile Include="Translators\TypeEqualExpressionTranslator.cs" />
     <Compile Include="Translators\UnaryExpressionTranslator.cs" />
-    <Compile Include="Translators\Formatting\WrappedExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadableExpressions.nuspec" />
