@@ -7,12 +7,11 @@
 
     internal static class TranslatorRegistryExtensions
     {
-        public static string TranslateParameters<TExpression>(
+        public static string TranslateParameters(
             this IExpressionTranslatorRegistry translatorRegistry,
-            IEnumerable<TExpression> parameters,
+            IEnumerable<Expression> parameters,
             bool placeLongListsOnMultipleLines,
             bool encloseSingleParameterInBrackets)
-            where TExpression : Expression
         {
             if (!parameters.Any())
             {
