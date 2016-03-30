@@ -1,29 +1,31 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Translators;
 
     [TestClass]
     public class WhenFormattingCode
     {
         [TestMethod]
-        public void ShouldSplitLongArgumentListsOntoMultipleLines()
+        public void ShouldSplitLongConstructorArgumentListsOntoMultipleLines()
         {
-            var intsMethod = typeof(WhenFormattingCode)
-                .GetMethod("GiveMeSomeInts", BindingFlags.NonPublic | BindingFlags.Static);
-
+            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
+            var helperConstructor = helperVariable.Type.GetConstructors().First();
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var intsMethodCall = Expression.Call(intsMethod, longVariable, longVariable, longVariable);
+            var newHelper = Expression.New(helperConstructor, longVariable, longVariable, longVariable);
+            var assignHelper = Expression.Assign(helperVariable, newHelper);
 
-            var longArgumentListBlock = Expression.Block(new[] { longVariable }, intsMethodCall);
+            var longArgumentListBlock = Expression.Block(new[] { helperVariable }, assignHelper);
 
             var translated = longArgumentListBlock.ToReadableString();
 
             const string EXPECTED = @"
-int thisVariableReallyHasAVeryLongNameIndeed;
-WhenFormattingCode.GiveMeSomeInts(
+HelperClass helper;
+helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
@@ -31,12 +33,26 @@ WhenFormattingCode.GiveMeSomeInts(
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
-        // ReSharper disable once UnusedMember.Local
-        // ReSharper disable UnusedParameter.Local
-        private static void GiveMeSomeInts(int intOne, int intTwo, int intThree)
+        [TestMethod]
+        public void ShouldSplitLongArgumentListsOntoMultipleLines()
         {
+            var intsMethod = typeof(HelperClass)
+                .GetMethod("GiveMeSomeInts", BindingFlags.Public | BindingFlags.Instance);
+
+            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
+            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var intsMethodCall = Expression.Call(helperVariable, intsMethod, longVariable, longVariable, longVariable);
+
+            var translated = intsMethodCall.ToReadableString();
+
+            const string EXPECTED = @"
+helper.GiveMeSomeInts(
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed)";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
-        // ReSharper restore UnusedParameter.Local
 
         [TestMethod]
         public void ShouldSplitLongInvokeArgumentListsOntoMultipleLines()
@@ -99,5 +115,25 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        #region Helper Class
+
+        // ReSharper disable UnusedMember.Local
+        // ReSharper disable UnusedParameter.Local
+        private class HelperClass
+        {
+            public HelperClass(int intOne, int intTwo, int intThree)
+            {
+
+            }
+
+            public void GiveMeSomeInts(int intOne, int intTwo, int intThree)
+            {
+            }
+        }
+        // ReSharper restore UnusedParameter.Local
+        // ReSharper restore UnusedMember.Local
+
+        #endregion
     }
 }
