@@ -116,6 +116,32 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
+        [TestMethod]
+        public void ShouldSplitLongTernaryOptionsOntoMultipleLines()
+        {
+            var oneEqualsTwo = Expression.Equal(Expression.Constant(1), Expression.Constant(2));
+
+            var defaultInt = Expression.Default(typeof(int));
+
+            var threeIntsFunc = Expression.Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
+            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var threeIntsCall = Expression.Invoke(threeIntsFunc, longVariable, longVariable, longVariable);
+
+            var ternary = Expression.Condition(oneEqualsTwo, defaultInt, threeIntsCall);
+
+            var translated = ternary.ToReadableString();
+
+            const string EXPECTED = @"
+(1 == 2)
+    ? default(int)
+    : threeIntsFunc.Invoke(
+        thisVariableReallyHasAVeryLongNameIndeed,
+        thisVariableReallyHasAVeryLongNameIndeed,
+        thisVariableReallyHasAVeryLongNameIndeed)";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
         #region Helper Class
 
         // ReSharper disable UnusedMember.Local
