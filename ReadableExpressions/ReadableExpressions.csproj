@@ -48,10 +48,12 @@
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="ReadableExpression.cs" />
-    <Compile Include="Translators\CodeBlock.cs" />
+    <Compile Include="Translators\Formatting\CodeBlock.cs" />
     <Compile Include="Translators\DebugInfoExpressionTranslator.cs" />
     <Compile Include="Translators\DynamicExpressionTranslator.cs" />
     <Compile Include="Translators\ExtensionExpressionTranslator.cs" />
+    <Compile Include="Translators\Formatting\FormattableExpressionBase.cs" />
+    <Compile Include="Translators\Formatting\FormattableTernaryExpression.cs" />
     <Compile Include="Translators\GotoExpressionTranslator.cs" />
     <Compile Include="Translators\IndexAccessExpressionTranslator.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
@@ -81,17 +83,20 @@
     <Compile Include="Translators\NewExpressionTranslator.cs" />
     <Compile Include="Translators\ParameterExpressionTranslator.cs" />
     <Compile Include="StringExtensions.cs" />
+    <Compile Include="Translators\Formatting\ParameterSet.cs" />
     <Compile Include="Translators\QuotedLambdaExpressionTranslator.cs" />
     <Compile Include="Translators\RuntimeVariablesExpressionTranslator.cs" />
     <Compile Include="Translators\SwitchExpressionTranslator.cs" />
-    <Compile Include="Translators\TranslatorRegistryExtensions.cs" />
+    <Compile Include="Translators\Formatting\TranslatorRegistryExtensions.cs" />
     <Compile Include="Translators\TryCatchExpressionTranslator.cs" />
     <Compile Include="Translators\TypeEqualExpressionTranslator.cs" />
     <Compile Include="Translators\UnaryExpressionTranslator.cs" />
+    <Compile Include="Translators\Formatting\WrappedExpression.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadableExpressions.nuspec" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

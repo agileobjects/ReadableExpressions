@@ -7,6 +7,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using Extensions;
+    using Formatting;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
@@ -88,10 +89,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal string GetMethodCall(string methodName, IEnumerable<Expression> parameters)
         {
-            var parametersString = Registry.TranslateParameters(
-                parameters,
-                placeLongListsOnMultipleLines: true,
-                encloseSingleParameterInBrackets: true);
+            var parametersString = Registry
+                .TranslateParameters(parameters)
+                .WithBrackets();
 
             return methodName + parametersString;
         }

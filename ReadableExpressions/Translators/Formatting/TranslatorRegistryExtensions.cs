@@ -1,39 +1,16 @@
-﻿namespace AgileObjects.ReadableExpressions.Translators
+﻿namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
 
-    internal static class TranslatorRegistryExtensions
+    internal static class FormattingExtensions
     {
-        public static string TranslateParameters(
+        public static ParameterSet TranslateParameters(
             this IExpressionTranslatorRegistry translatorRegistry,
-            IEnumerable<Expression> parameters,
-            bool placeLongListsOnMultipleLines,
-            bool encloseSingleParameterInBrackets)
+            IEnumerable<Expression> parameters)
         {
-            if (!parameters.Any())
-            {
-                return "()";
-            }
-
-            var parametersString = string.Join(
-                ", ",
-                parameters.Select(translatorRegistry.Translate));
-
-            if (placeLongListsOnMultipleLines && (parametersString.Length > 100))
-            {
-                var indent = Environment.NewLine + "    ";
-                parametersString = indent + parametersString.Replace(", ", "," + indent);
-            }
-
-            if (encloseSingleParameterInBrackets || (parameters.Count() > 1))
-            {
-                parametersString = "(" + parametersString + ")";
-            }
-
-            return parametersString;
+            return new ParameterSet(parameters, translatorRegistry);
         }
 
         public static CodeBlock TranslateExpressionBody(

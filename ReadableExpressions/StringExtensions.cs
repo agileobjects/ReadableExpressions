@@ -20,9 +20,9 @@ namespace AgileObjects.ReadableExpressions
             return line.Split(_newLines, StringSplitOptions.None);
         }
 
-        private const string Indent = "    ";
+        private const string IndentSpaces = "    ";
 
-        public static string Indented(this string line)
+        public static string Indent(this string line)
         {
             if (string.IsNullOrEmpty(line))
             {
@@ -33,10 +33,10 @@ namespace AgileObjects.ReadableExpressions
             {
                 return string.Join(
                     Environment.NewLine,
-                    line.SplitToLines().Select(l => l.Indented()));
+                    line.SplitToLines().Select(l => l.Indent()));
             }
 
-            return Indent + line;
+            return IndentSpaces + line;
         }
 
         private const string UnindentPlaceholder = "*unindent*";
@@ -51,7 +51,7 @@ namespace AgileObjects.ReadableExpressions
             if (code.Contains(UnindentPlaceholder))
             {
                 return code
-                    .Replace(Indent + UnindentPlaceholder, null)
+                    .Replace(IndentSpaces + UnindentPlaceholder, null)
                     .Replace(UnindentPlaceholder, null);
             }
 

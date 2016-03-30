@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq.Expressions;
     using Extensions;
+    using Formatting;
 
     internal class NewExpressionTranslator : ExpressionTranslatorBase
     {
@@ -14,10 +15,9 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var newExpression = (NewExpression)expression;
 
-            var parameters = Registry.TranslateParameters(
-                newExpression.Arguments,
-                placeLongListsOnMultipleLines: true,
-                encloseSingleParameterInBrackets: true);
+            var parameters = Registry
+                .TranslateParameters(newExpression.Arguments)
+                .WithBrackets();
 
             return "new " + expression.Type.GetFriendlyName() + parameters;
         }

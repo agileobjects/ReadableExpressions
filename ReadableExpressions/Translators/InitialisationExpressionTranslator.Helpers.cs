@@ -61,7 +61,7 @@
 
                 var initialisationBlock = string.Join(
                     "," + Environment.NewLine,
-                    initialisations.Select(init => init.Indented()));
+                    initialisations.Select(init => init.Indent()));
 
                 var initialisation = $@"
 {newExpression}

@@ -142,6 +142,28 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
+        [TestMethod]
+        public void ShouldSplitLongAssignmentsOntoMultipleLines()
+        {
+            var intVariable = Expression.Variable(typeof(int), "value");
+            var threeIntsFunc = Expression.Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
+            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var threeIntsSubCall = Expression.Invoke(threeIntsFunc, Expression.Constant(10), Expression.Constant(1), longVariable);
+            var threeIntsCall = Expression.Invoke(threeIntsFunc, longVariable, threeIntsSubCall, longVariable);
+
+            var assignment = Expression.Assign(intVariable, threeIntsCall);
+
+            var translated = assignment.ToReadableString();
+
+            const string EXPECTED = @"
+value = threeIntsFunc.Invoke(
+    thisVariableReallyHasAVeryLongNameIndeed,
+    threeIntsFunc.Invoke(10, 1, thisVariableReallyHasAVeryLongNameIndeed),
+    thisVariableReallyHasAVeryLongNameIndeed)";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
         #region Helper Class
 
         // ReSharper disable UnusedMember.Local

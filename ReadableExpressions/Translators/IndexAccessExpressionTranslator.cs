@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
     using System.Linq.Expressions;
+    using Formatting;
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {
@@ -29,16 +30,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             return TranslateIndexAccess(index.Object, index.Arguments);
         }
 
-        internal string TranslateIndexAccess(
-            Expression variable,
-            IEnumerable<Expression> indexes)
+        internal string TranslateIndexAccess(Expression variable, IEnumerable<Expression> indexes)
         {
             var indexedVariable = Registry.Translate(variable);
 
-            var indexValues = Registry.TranslateParameters(
-                indexes,
-                placeLongListsOnMultipleLines: false,
-                encloseSingleParameterInBrackets: false);
+            var indexValues = Registry
+                .TranslateParameters(indexes)
+                .WithoutBrackets();
 
             return $"{indexedVariable}[{indexValues}]";
         }

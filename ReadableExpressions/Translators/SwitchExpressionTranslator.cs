@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Formatting;
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
     {

@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translators
+﻿namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
     using System.Linq;
@@ -33,7 +33,7 @@
 
         public CodeBlock Indented()
         {
-            return new CodeBlock(_blockLines.Select(line => line.Indented()).ToArray());
+            return new CodeBlock(_blockLines.Select(line => line.Indent()).ToArray());
         }
 
         public string WithoutBrackets()

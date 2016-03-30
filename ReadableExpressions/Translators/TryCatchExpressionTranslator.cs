@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
+    using Formatting;
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {

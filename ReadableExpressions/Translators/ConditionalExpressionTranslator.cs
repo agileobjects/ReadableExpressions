@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Linq.Expressions;
+    using Formatting;
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
     {
@@ -28,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
             {
-                return Ternary(test, ifTrueBlock, ifFalseBlock);
+                return new FormattableTernaryExpression(test, ifTrueBlock, ifFalseBlock);
             }
 
             if (conditional.IfTrue.Type != typeof(void))
@@ -60,25 +61,6 @@ namespace AgileObjects.ReadableExpressions.Translators
             return (conditional.Type != typeof(void)) &&
                    ifTrue.IsASingleStatement &&
                    ifFalse.IsASingleStatement;
-        }
-
-        private static string Ternary(string test, CodeBlock ifTrue, CodeBlock ifFalse)
-        {
-            var ifTrueString = "?" + ifTrue.AsExpressionBody();
-            var ifFalseString = ":" + ifFalse.AsExpressionBody();
-
-            if ((test.Length + ifTrueString.Length + ifFalseString.Length) > 100)
-            {
-                ifTrueString = Environment.NewLine + ifTrueString.Indented();
-                ifFalseString = Environment.NewLine + ifFalseString.Indented();
-            }
-            else
-            {
-                test += " ";
-                ifTrueString += " ";
-            }
-
-            return test + ifTrueString + ifFalseString;
         }
 
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)

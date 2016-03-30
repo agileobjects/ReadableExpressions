@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Linq.Expressions;
+    using Formatting;
 
     internal class QuotedLambdaExpressionTranslator : ExpressionTranslatorBase
     {
