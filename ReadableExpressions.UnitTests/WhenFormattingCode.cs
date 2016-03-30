@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq.Expressions;
+    using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -9,6 +10,36 @@
     {
         [TestMethod]
         public void ShouldSplitLongArgumentListsOntoMultipleLines()
+        {
+            var intsMethod = typeof(WhenFormattingCode)
+                .GetMethod("GiveMeSomeInts", BindingFlags.NonPublic | BindingFlags.Static);
+
+            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var intsMethodCall = Expression.Call(intsMethod, longVariable, longVariable, longVariable);
+
+            var longArgumentListBlock = Expression.Block(new[] { longVariable }, intsMethodCall);
+
+            var translated = longArgumentListBlock.ToReadableString();
+
+            const string EXPECTED = @"
+int thisVariableReallyHasAVeryLongNameIndeed;
+WhenFormattingCode.GiveMeSomeInts(
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed,
+    thisVariableReallyHasAVeryLongNameIndeed);";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        // ReSharper disable UnusedParameter.Local
+        private static void GiveMeSomeInts(int intOne, int intTwo, int intThree)
+        {
+        }
+        // ReSharper restore UnusedParameter.Local
+
+        [TestMethod]
+        public void ShouldSplitLongInvokeArgumentListsOntoMultipleLines()
         {
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
             var threeIntsAction = Expression.Variable(typeof(Action<int, int, int>), "threeIntsAction");
