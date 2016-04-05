@@ -48,6 +48,7 @@
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="ReadableExpression.cs" />
+    <Compile Include="Translators\BclMethodInfoWrapper.cs" />
     <Compile Include="Translators\Formatting\CodeBlock.cs" />
     <Compile Include="Translators\DebugInfoExpressionTranslator.cs" />
     <Compile Include="Translators\DynamicExpressionTranslator.cs" />
@@ -55,6 +56,7 @@
     <Compile Include="Translators\Formatting\FormattableExpressionBase.cs" />
     <Compile Include="Translators\Formatting\FormattableTernaryExpression.cs" />
     <Compile Include="Translators\GotoExpressionTranslator.cs" />
+    <Compile Include="Translators\IMethodInfo.cs" />
     <Compile Include="Translators\IndexAccessExpressionTranslator.cs" />
     <Compile Include="Translators\ArrayLengthExpressionTranslator.cs" />
     <Compile Include="Translators\AssignmentExpressionTranslator.cs" />

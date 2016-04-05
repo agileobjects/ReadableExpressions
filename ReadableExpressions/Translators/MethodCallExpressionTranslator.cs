@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> methodArguments;
             var methodCallSubject = GetMethodCallSuject(methodCall, out methodArguments);
 
-            return GetMethodCall(methodCallSubject, methodCall.Method.Name, methodArguments);
+            return GetMethodCall(methodCallSubject, methodCall.Method, methodArguments);
         }
 
         private string GetMethodCallSuject(
@@ -77,23 +77,74 @@ namespace AgileObjects.ReadableExpressions.Translators
             return methodCall.Method.DeclaringType.GetFriendlyName();
         }
 
+        private string GetMethodCall(string subject, MethodInfo method, IEnumerable<Expression> parameters)
+        {
+            return GetMethodCall(subject, new BclMethodInfoWrapper(method), parameters);
+        }
+
+        internal string GetMethodCall(string subject, IMethodInfo method, IEnumerable<Expression> parameters)
+        {
+            return subject + "." + GetMethodCall(method, parameters);
+        }
+
         internal string GetMethodCall(MethodInfo method, IEnumerable<Expression> parameters)
         {
-            return GetMethodCall(method.Name, parameters);
+            return GetMethodCall(new BclMethodInfoWrapper(method), parameters);
         }
 
-        internal string GetMethodCall(string subject, string methodName, IEnumerable<Expression> parameters)
-        {
-            return subject + "." + GetMethodCall(methodName, parameters);
-        }
-
-        internal string GetMethodCall(string methodName, IEnumerable<Expression> parameters)
+        private string GetMethodCall(IMethodInfo method, IEnumerable<Expression> parameters)
         {
             var parametersString = Registry
                 .TranslateParameters(parameters)
                 .WithBrackets();
 
-            return methodName + parametersString;
+            var genericArguments = GetGenericArgumentsIfNecessary(method);
+
+            return method.Name + genericArguments + parametersString;
+        }
+
+        private static string GetGenericArgumentsIfNecessary(IMethodInfo method)
+        {
+            if (!method.IsGenericMethod)
+            {
+                return null;
+            }
+
+            var methodGenericDefinition = method.GetGenericMethodDefinition();
+            var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
+
+            RemoveSpecifiedGenericTypeParameters(
+                methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
+                genericParameterTypes);
+
+            if (!genericParameterTypes.Any())
+            {
+                return null;
+            }
+
+            var argumentNames = method
+                .GetGenericArguments()
+                .Select(a => a.GetFriendlyName());
+
+            return $"<{string.Join(", ", argumentNames)}>";
+        }
+
+        private static void RemoveSpecifiedGenericTypeParameters(
+            IEnumerable<Type> types,
+            ICollection<Type> genericParameterTypes)
+        {
+            foreach (var type in types)
+            {
+                if (type.IsGenericParameter && genericParameterTypes.Contains(type))
+                {
+                    genericParameterTypes.Remove(type);
+                }
+
+                if (type.IsGenericType)
+                {
+                    RemoveSpecifiedGenericTypeParameters(type.GetGenericArguments(), genericParameterTypes);
+                }
+            }
         }
 
         #region Helper Classes
@@ -117,11 +168,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
-            private readonly Func<string, IEnumerable<Expression>, string> _methodCallTranslator;
+            private readonly Func<string, MethodInfo, IEnumerable<Expression>, string> _methodCallTranslator;
             private readonly IExpressionTranslatorRegistry _registry;
 
             public InvocationExpressionHandler(
-                Func<string, IEnumerable<Expression>, string> methodCallTranslator,
+                Func<string, MethodInfo, IEnumerable<Expression>, string> methodCallTranslator,
                 IExpressionTranslatorRegistry registry)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
@@ -139,7 +190,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                     invocationSubject = $"({invocationSubject})";
                 }
 
-                return invocationSubject + "." + _methodCallTranslator.Invoke("Invoke", invocation.Arguments);
+                var invocationMethod = invocation.Expression.Type.GetMethod("Invoke");
+
+                return _methodCallTranslator
+                    .Invoke(invocationSubject, invocationMethod, invocation.Arguments);
             }
         }
 

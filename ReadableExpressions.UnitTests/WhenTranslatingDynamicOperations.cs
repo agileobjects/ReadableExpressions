@@ -94,6 +94,37 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateACallToAMissingMethod()
+        {
+            // Just because the method doesn't exist doesn't mean
+            // you can't build a dynamic call to it and that that
+            // call shouldn't be translated...
+
+            var objectYellHurrahCallSiteBinder = Binder.InvokeMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                "YellHurrah",
+                null,
+                typeof(WhenTranslatingDynamicOperations),
+                new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
+
+            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+
+            var dynamicYellHurrahCall = Expression.Dynamic(
+                objectYellHurrahCallSiteBinder,
+                typeof(object),
+                dynamicParameter);
+
+            var dynamicYellHurrahLambda = Expression
+                .Lambda<Func<object, object>>(dynamicYellHurrahCall, dynamicParameter);
+
+            dynamicYellHurrahLambda.Compile();
+
+            var translated = dynamicYellHurrahLambda.ToReadableString();
+
+            Assert.AreEqual("obj => obj.YellHurrah()", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAParameterisedMethodCall()
         {
             var objectToStringCallSiteBinder = Binder.InvokeMember(

@@ -1,8 +1,10 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Text.RegularExpressions;
 
     internal class DynamicExpressionTranslator : ExpressionTranslatorBase
@@ -151,15 +153,37 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
             {
-                var subject = Registry.Translate(arguments.First());
+                var subjectObject = arguments.First();
+                var subject = Registry.Translate(subjectObject);
                 var methodName = match.Groups["MethodName"].Value;
+                var method = subjectObject.Type.GetMethod(methodName);
+
+                var methodInfo = (method != null)
+                    ? new BclMethodInfoWrapper(method)
+                    : (IMethodInfo)new MissingMethodInfo(methodName);
 
                 translated = _methodCallTranslator.GetMethodCall(
                     subject,
-                    methodName,
+                    methodInfo,
                     arguments.Skip(1).ToArray());
 
                 return true;
+            }
+
+            private class MissingMethodInfo : IMethodInfo
+            {
+                public MissingMethodInfo(string name)
+                {
+                    Name = name;
+                }
+
+                public string Name { get; }
+
+                public bool IsGenericMethod => false;
+
+                public MethodInfo GetGenericMethodDefinition() => null;
+
+                public IEnumerable<Type> GetGenericArguments() => Enumerable.Empty<Type>();
             }
         }
 

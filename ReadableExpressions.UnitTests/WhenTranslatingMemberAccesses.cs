@@ -115,7 +115,7 @@
         [TestMethod]
         public void ShouldTranslateAnIndexedPropertyAccessExpression()
         {
-            Expression<Func<IndexedProperty, int, string>> getPropertyIndex = (p, index) => p[index];
+            Expression<Func<IndexedProperty, int, object>> getPropertyIndex = (p, index) => p[index];
 
             var translated = getPropertyIndex.Body.ToReadableString();
 
@@ -206,19 +206,43 @@
             Assert.AreEqual("items[0]", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateAMethodCallWithGenericArgumentIncluded()
+        {
+            Expression<Func<IndexedProperty, string>> getFirstItem = ip => ip.GetFirst<string>();
+
+            var translated = getFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("ip.GetFirst<string>()", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAMethodCallWithoutGenericArgumentIncluded()
+        {
+            Expression<Action<IndexedProperty, string>> setFirstItem = (ip, str) => ip.SetFirst(str);
+
+            var translated = setFirstItem.Body.ToReadableString();
+
+            Assert.AreEqual("ip.SetFirst(str)", translated);
+        }
+
         #region Helper Class
 
         // ReSharper disable once ClassNeverInstantiated.Local
         private class IndexedProperty
         {
-            private readonly string[] _values;
+            private readonly object[] _values;
 
-            public IndexedProperty(string[] values)
+            public IndexedProperty(object[] values)
             {
                 _values = values;
             }
 
-            public string this[int index] => _values[index];
+            public object this[int index] => _values[index];
+
+            public T GetFirst<T>() => (T)_values[0];
+
+            public void SetFirst<T>(T item) => _values[0] = item;
         }
 
         #endregion
