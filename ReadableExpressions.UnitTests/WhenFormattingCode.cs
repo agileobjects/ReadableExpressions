@@ -24,8 +24,7 @@
             var translated = longArgumentListBlock.ToReadableString();
 
             const string EXPECTED = @"
-HelperClass helper;
-helper = new HelperClass(
+var helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
@@ -160,6 +159,33 @@ value = threeIntsFunc.Invoke(
     thisVariableReallyHasAVeryLongNameIndeed,
     threeIntsFunc.Invoke(10, 1, thisVariableReallyHasAVeryLongNameIndeed),
     thisVariableReallyHasAVeryLongNameIndeed)";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldDeclareAVariableIfUsedBeforeInitialisation()
+        {
+            var nameVariable = Expression.Variable(typeof(string), "name");
+            var getNameVariable = Expression.Variable(typeof(Func<string>), "getName");
+            var getNameLambda = Expression.Lambda(nameVariable);
+            var getNameAssignment = Expression.Assign(getNameVariable, getNameLambda);
+            var nameAssignment = Expression.Assign(nameVariable, Expression.Constant("Fred"));
+            var getNameCall = Expression.Invoke(getNameVariable);
+
+            var block = Expression.Block(
+                new[] { nameVariable, getNameVariable },
+                getNameAssignment,
+                nameAssignment,
+                getNameCall);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+string name;
+var getName = () => name;
+name = ""Fred"";
+getName.Invoke();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
