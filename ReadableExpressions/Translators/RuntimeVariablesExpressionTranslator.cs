@@ -5,16 +5,16 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
     {
-        public RuntimeVariablesExpressionTranslator(Func<Expression, string> globalTranslator)
+        public RuntimeVariablesExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.RuntimeVariables)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var runtimeVariables = (RuntimeVariablesExpression)expression;
 
-            var translated = GetTranslatedParameters(runtimeVariables.Variables)
+            var translated = GetTranslatedParameters(runtimeVariables.Variables, context)
                 .WithBracketsIfNecessary();
 
             return translated;

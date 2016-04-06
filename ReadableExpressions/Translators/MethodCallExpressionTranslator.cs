@@ -18,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal MethodCallExpressionTranslator(
             IndexAccessExpressionTranslator indexAccessTranslator,
-            Func<Expression, string> globalTranslator)
+            Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Call, ExpressionType.Invoke)
         {
             _specialCaseHandlers = new SpecialCaseHandlerBase[]
@@ -28,38 +28,40 @@ namespace AgileObjects.ReadableExpressions.Translators
             };
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var specialCaseHandler = _specialCaseHandlers.FirstOrDefault(sch => sch.AppliesTo(expression));
 
             if (specialCaseHandler != null)
             {
-                return specialCaseHandler.Translate(expression);
+                return specialCaseHandler.Translate(expression, context);
             }
 
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSuject(methodCall, out methodArguments);
+            var methodCallSubject = GetMethodCallSuject(methodCall, context, out methodArguments);
 
-            return GetMethodCall(methodCallSubject, methodCall.Method, methodArguments);
+            return GetMethodCall(methodCallSubject, methodCall.Method, methodArguments, context);
         }
 
         private string GetMethodCallSuject(
             MethodCallExpression methodCall,
+            TranslationContext context,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Object == null)
             {
-                return GetStaticMethodCallSubject(methodCall, out arguments);
+                return GetStaticMethodCallSubject(methodCall, context, out arguments);
             }
 
             arguments = methodCall.Arguments;
 
-            return GetTranslation(methodCall.Object);
+            return GetTranslation(methodCall.Object, context);
         }
 
         private string GetStaticMethodCallSubject(
             MethodCallExpression methodCall,
+            TranslationContext context,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Method.GetCustomAttributes(typeof(ExtensionAttribute), inherit: false).Any())
@@ -67,7 +69,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1);
 
-                return GetTranslation(subject);
+                return GetTranslation(subject, context);
             }
 
             arguments = methodCall.Arguments;
@@ -76,24 +78,38 @@ namespace AgileObjects.ReadableExpressions.Translators
             return methodCall.Method.DeclaringType.GetFriendlyName();
         }
 
-        private string GetMethodCall(string subject, MethodInfo method, IEnumerable<Expression> parameters)
+        private string GetMethodCall(
+            string subject,
+            MethodInfo method,
+            IEnumerable<Expression> parameters,
+            TranslationContext context)
         {
-            return GetMethodCall(subject, new BclMethodInfoWrapper(method), parameters);
+            return GetMethodCall(subject, new BclMethodInfoWrapper(method), parameters, context);
         }
 
-        internal string GetMethodCall(string subject, IMethodInfo method, IEnumerable<Expression> parameters)
+        internal string GetMethodCall(
+            string subject,
+            IMethodInfo method,
+            IEnumerable<Expression> parameters,
+            TranslationContext context)
         {
-            return subject + "." + GetMethodCall(method, parameters);
+            return subject + "." + GetMethodCall(method, parameters, context);
         }
 
-        internal string GetMethodCall(MethodInfo method, IEnumerable<Expression> parameters)
+        internal string GetMethodCall(
+            MethodInfo method,
+            IEnumerable<Expression> parameters,
+            TranslationContext context)
         {
-            return GetMethodCall(new BclMethodInfoWrapper(method), parameters);
+            return GetMethodCall(new BclMethodInfoWrapper(method), parameters, context);
         }
 
-        private string GetMethodCall(IMethodInfo method, IEnumerable<Expression> parameters)
+        private string GetMethodCall(
+            IMethodInfo method,
+            IEnumerable<Expression> parameters,
+            TranslationContext context)
         {
-            var parametersString = GetTranslatedParameters(parameters).WithBrackets();
+            var parametersString = GetTranslatedParameters(parameters, context).WithBrackets();
             var genericArguments = GetGenericArgumentsIfNecessary(method);
 
             return method.Name + genericArguments + parametersString;
@@ -159,27 +175,27 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return _applicabilityTester.Invoke(expression);
             }
 
-            public abstract string Translate(Expression expression);
+            public abstract string Translate(Expression expression, TranslationContext context);
         }
 
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
-            private readonly Func<string, MethodInfo, IEnumerable<Expression>, string> _methodCallTranslator;
-            private readonly Func<Expression, string> _translator;
+            private readonly Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> _methodCallTranslator;
+            private readonly Func<Expression, TranslationContext, string> _translator;
 
             public InvocationExpressionHandler(
-                Func<string, MethodInfo, IEnumerable<Expression>, string> methodCallTranslator,
-                Func<Expression, string> translator)
+                Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> methodCallTranslator,
+                Func<Expression, TranslationContext, string> translator)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
                 _methodCallTranslator = methodCallTranslator;
                 _translator = translator;
             }
 
-            public override string Translate(Expression expression)
+            public override string Translate(Expression expression, TranslationContext context)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = _translator.Invoke(invocation.Expression);
+                var invocationSubject = _translator.Invoke(invocation.Expression, context);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {
@@ -189,7 +205,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var invocationMethod = invocation.Expression.Type.GetMethod("Invoke");
 
                 return _methodCallTranslator
-                    .Invoke(invocationSubject, invocationMethod, invocation.Arguments);
+                    .Invoke(invocationSubject, invocationMethod, invocation.Arguments, context);
             }
         }
 
@@ -223,12 +239,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return propertyIndexParameters.Any();
             }
 
-            public override string Translate(Expression expression)
+            public override string Translate(Expression expression, TranslationContext context)
             {
                 var methodCall = (MethodCallExpression)expression;
 
-                return _indexAccessTranslator
-                    .TranslateIndexAccess(methodCall.Object, methodCall.Arguments);
+                return _indexAccessTranslator.TranslateIndexAccess(
+                    methodCall.Object,
+                    methodCall.Arguments,
+                    context);
             }
         }
 

@@ -7,19 +7,19 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {
-        public TryCatchExpressionTranslator(Func<Expression, string> globalTranslator)
+        public TryCatchExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Try)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var tryCatchFinally = (TryExpression)expression;
 
-            var tryBody = GetTranslatedExpressionBody(tryCatchFinally.Body);
-            var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(GetCatchBlock));
-            var faultBlock = GetFaultBlock(tryCatchFinally.Fault);
-            var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally);
+            var tryBody = GetTranslatedExpressionBody(tryCatchFinally.Body, context);
+            var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(h => GetCatchBlock(h, context)));
+            var faultBlock = GetFaultBlock(tryCatchFinally.Fault, context);
+            var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally, context);
 
             var tryCatchFinallyBlock = $@"
 try{tryBody.WithBrackets()}
@@ -28,11 +28,11 @@ try{tryBody.WithBrackets()}
             return tryCatchFinallyBlock.Trim();
         }
 
-        private string GetCatchBlock(CatchBlock catchBlock)
+        private string GetCatchBlock(CatchBlock catchBlock, TranslationContext context)
         {
-            var catchBody = GetTranslatedExpressionBody(catchBlock.Body);
+            var catchBody = GetTranslatedExpressionBody(catchBlock.Body, context);
 
-            var exceptionClause = GetExceptionClause(catchBlock);
+            var exceptionClause = GetExceptionClause(catchBlock, context);
 
             var catchBodyBlock = catchBody
                 .WithBrackets()
@@ -42,14 +42,14 @@ try{tryBody.WithBrackets()}
 ";
         }
 
-        private string GetExceptionClause(CatchBlock catchBlock)
+        private string GetExceptionClause(CatchBlock catchBlock, TranslationContext context)
         {
             var exceptionTypeName = catchBlock.Variable.Type.GetFriendlyName();
 
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
                 var filter = (catchBlock.Filter != null)
-                    ? " when " + GetTranslation(catchBlock.Filter)
+                    ? " when " + GetTranslation(catchBlock.Filter, context)
                     : null;
 
                 return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;
@@ -63,24 +63,24 @@ try{tryBody.WithBrackets()}
             return null;
         }
 
-        private string GetFaultBlock(Expression faultBlock)
+        private string GetFaultBlock(Expression faultBlock, TranslationContext context)
         {
-            return GetHandlerBlock(faultBlock, "fault");
+            return GetHandlerBlock(faultBlock, "fault", context);
         }
 
-        private string GetFinallyBlock(Expression finallyBlock)
+        private string GetFinallyBlock(Expression finallyBlock, TranslationContext context)
         {
-            return GetHandlerBlock(finallyBlock, "finally");
+            return GetHandlerBlock(finallyBlock, "finally", context);
         }
 
-        private string GetHandlerBlock(Expression block, string keyword)
+        private string GetHandlerBlock(Expression block, string keyword, TranslationContext context)
         {
             if (block == null)
             {
                 return null;
             }
 
-            var blockBody = GetTranslatedExpressionBody(block).WithBrackets();
+            var blockBody = GetTranslatedExpressionBody(block, context).WithBrackets();
 
             return keyword + blockBody;
         }

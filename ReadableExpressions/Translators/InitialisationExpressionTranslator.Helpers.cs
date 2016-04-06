@@ -9,33 +9,33 @@
     {
         private interface IInitExpressionHelper
         {
-            string Translate(Expression expression);
+            string Translate(Expression expression, TranslationContext context);
         }
 
         private abstract class InitExpressionHelperBase<TExpression, TNewExpression> : IInitExpressionHelper
             where TExpression : Expression
             where TNewExpression : Expression
         {
-            protected InitExpressionHelperBase(Func<Expression, string> globalTranslator)
+            protected InitExpressionHelperBase(Func<Expression, TranslationContext, string> globalTranslator)
             {
                 GlobalTranslator = globalTranslator;
             }
 
-            protected Func<Expression, string> GlobalTranslator { get; }
+            protected Func<Expression, TranslationContext, string> GlobalTranslator { get; }
 
-            public string Translate(Expression expression)
+            public string Translate(Expression expression, TranslationContext context)
             {
                 var typedExpression = (TExpression)expression;
-                var newExpression = GetNewExpressionString(typedExpression);
-                var initialisations = GetInitialisations(typedExpression).ToArray();
+                var newExpression = GetNewExpressionString(typedExpression, context);
+                var initialisations = GetInitialisations(typedExpression, context).ToArray();
 
                 return GetInitialisations(initialisations, newExpression);
             }
 
-            private string GetNewExpressionString(TExpression initialisation)
+            private string GetNewExpressionString(TExpression initialisation, TranslationContext context)
             {
                 var newExpression = GetNewExpression(initialisation);
-                var newExpressionString = GlobalTranslator.Invoke(newExpression);
+                var newExpressionString = GlobalTranslator.Invoke(newExpression, context);
 
                 if (ConstructorIsParameterless(newExpression))
                 {
@@ -50,7 +50,7 @@
 
             protected abstract bool ConstructorIsParameterless(TNewExpression newExpression);
 
-            protected abstract IEnumerable<string> GetInitialisations(TExpression expression);
+            protected abstract IEnumerable<string> GetInitialisations(TExpression expression, TranslationContext context);
 
             protected static string GetInitialisations(string[] initialisations, string newExpression = null)
             {

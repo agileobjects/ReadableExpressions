@@ -8,18 +8,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator(Func<Expression, string> globalTranslator)
+        public BlockExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Block)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var block = (BlockExpression)expression;
 
             var joinedAssignments = JoinedAssignmentVisitor.GetAssignments(block);
             var variables = GetVariableDeclarations(block, joinedAssignments);
-            var lines = GetBlockLines(block, joinedAssignments);
+            var lines = GetBlockLines(block, joinedAssignments, context);
 
             lines = ProcessBlockContents(lines.ToArray(), block.Expressions.Last());
 
@@ -45,7 +45,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private IEnumerable<string> GetBlockLines(
             BlockExpression block,
-            IEnumerable<BinaryExpression> joinedAssignments)
+            IEnumerable<BinaryExpression> joinedAssignments,
+            TranslationContext context)
         {
             return block
                 .Expressions
@@ -53,7 +54,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(exp => new
                 {
                     Expression = exp,
-                    Translation = GetTerminatedStatementOrNull(exp, joinedAssignments)
+                    Translation = GetTerminatedStatementOrNull(exp, joinedAssignments, context)
                 })
                 .Where(d => d.Translation != null)
                 .Select(d => d.Translation);
@@ -76,9 +77,10 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private string GetTerminatedStatementOrNull(
             Expression expression,
-            IEnumerable<BinaryExpression> joinedAssignments)
+            IEnumerable<BinaryExpression> joinedAssignments,
+            TranslationContext context)
         {
-            var translation = GetTranslation(expression);
+            var translation = GetTranslation(expression, context);
 
             if (translation == null)
             {

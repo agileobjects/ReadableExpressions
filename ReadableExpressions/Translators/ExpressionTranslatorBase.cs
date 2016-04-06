@@ -7,11 +7,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal abstract class ExpressionTranslatorBase : IExpressionTranslator
     {
-        private readonly Func<Expression, string> _globalTranslator;
+        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
         private readonly ExpressionType[] _nodeTypes;
 
         protected ExpressionTranslatorBase(
-            Func<Expression, string> globalTranslator,
+            Func<Expression, TranslationContext, string> globalTranslator,
             params ExpressionType[] nodeTypes)
         {
             _nodeTypes = nodeTypes;
@@ -20,28 +20,32 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public IEnumerable<ExpressionType> NodeTypes => _nodeTypes;
 
-        public abstract string Translate(Expression expression);
+        public abstract string Translate(Expression expression, TranslationContext context);
 
-        protected string GetTranslation(Expression expression)
+        protected string GetTranslation(Expression expression, TranslationContext context)
         {
-            return _globalTranslator.Invoke(expression);
+            return _globalTranslator.Invoke(expression, context);
         }
 
-        protected ParameterSet GetTranslatedParameters(IEnumerable<Expression> parameters)
+        protected ParameterSet GetTranslatedParameters(
+            IEnumerable<Expression> parameters,
+            TranslationContext context)
         {
-            return new ParameterSet(parameters, _globalTranslator);
+            return new ParameterSet(parameters, context, _globalTranslator);
         }
 
-        protected CodeBlock GetTranslatedExpressionBody(Expression body)
+        protected CodeBlock GetTranslatedExpressionBody(
+            Expression body,
+            TranslationContext context)
         {
-            var codeBlock = TranslateBlock(body as BlockExpression) ?? TranslateSingle(body);
+            var codeBlock = TranslateBlock(body as BlockExpression, context) ?? TranslateSingle(body, context);
 
             return codeBlock;
         }
 
         #region TranslateExpressionBody
 
-        private CodeBlock TranslateBlock(BlockExpression bodyBlock)
+        private CodeBlock TranslateBlock(BlockExpression bodyBlock, TranslationContext context)
         {
             if (bodyBlock == null)
             {
@@ -50,18 +54,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (bodyBlock.Expressions.Count == 1)
             {
-                return TranslateSingle(bodyBlock);
+                return TranslateSingle(bodyBlock, context);
             }
 
-            var block = GetTranslation(bodyBlock);
+            var block = GetTranslation(bodyBlock, context);
             var blockLines = block.SplitToLines();
 
             return new CodeBlock(blockLines);
         }
 
-        private CodeBlock TranslateSingle(Expression bodySingle)
+        private CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
         {
-            var body = GetTranslation(bodySingle);
+            var body = GetTranslation(bodySingle, context);
 
             if ((body?.StartsWith("(", StringComparison.Ordinal) == true) &&
                 body.EndsWith(")", StringComparison.Ordinal))

@@ -5,16 +5,16 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LoopExpressionTranslator : ExpressionTranslatorBase
     {
-        public LoopExpressionTranslator(Func<Expression, string> globalTranslator)
+        public LoopExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Loop)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var loop = (LoopExpression)expression;
 
-            var loopBodyBlock = GetTranslatedExpressionBody(loop.Body);
+            var loopBodyBlock = GetTranslatedExpressionBody(loop.Body, context);
 
             return $"while (true){loopBodyBlock.WithBrackets()}";
         }

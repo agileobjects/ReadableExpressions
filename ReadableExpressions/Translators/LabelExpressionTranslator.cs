@@ -5,12 +5,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LabelExpressionTranslator : ExpressionTranslatorBase
     {
-        public LabelExpressionTranslator(Func<Expression, string> globalTranslator)
+        public LabelExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Label)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var label = (LabelExpression)expression;
 
@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : Environment.NewLine + label.Target.Name.Unindented() + ":";
 
             var labelValuePart = (label.DefaultValue != null)
-                ? $"{Environment.NewLine}return {GetTranslation(label.DefaultValue)};"
+                ? $"{Environment.NewLine}return {GetTranslation(label.DefaultValue, context)};"
                 : null;
 
             return $"{labelNamePart}{labelValuePart}";

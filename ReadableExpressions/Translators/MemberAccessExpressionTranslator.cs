@@ -5,31 +5,31 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        internal MemberAccessExpressionTranslator(Func<Expression, string> globalTranslator)
+        internal MemberAccessExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.MemberAccess)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var memberExpression = (MemberExpression)expression;
-            var subject = GetSubject(memberExpression);
+            var subject = GetSubject(memberExpression, context);
 
             return GetMemberAccess(subject, memberExpression.Member.Name);
         }
 
-        private string GetSubject(MemberExpression memberExpression)
+        private string GetSubject(MemberExpression memberExpression, TranslationContext context)
         {
             return (memberExpression.Expression != null)
-                ? GetInstanceMemberSubject(memberExpression)
+                ? GetInstanceMemberSubject(memberExpression, context)
                 : memberExpression.Type.Name;
         }
 
-        private string GetInstanceMemberSubject(MemberExpression memberExpression)
+        private string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)
         {
             return SubjectIsCapturedInstance(memberExpression)
                 ? null
-                : GetTranslation(memberExpression.Expression);
+                : GetTranslation(memberExpression.Expression, context);
         }
 
         private static bool SubjectIsCapturedInstance(MemberExpression memberExpression)

@@ -10,16 +10,16 @@
         private class MemberInitExpressionHelper : InitExpressionHelperBase<MemberInitExpression, NewExpression>
         {
             private readonly MethodCallExpressionTranslator _methodCallTranslator;
-            private readonly Dictionary<MemberBindingType, Func<MemberBinding, string>> _bindingTranslatorsByType;
+            private readonly Dictionary<MemberBindingType, Func<MemberBinding, TranslationContext, string>> _bindingTranslatorsByType;
 
             public MemberInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
                 : base(globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
 
-                _bindingTranslatorsByType = new Dictionary<MemberBindingType, Func<MemberBinding, string>>
+                _bindingTranslatorsByType = new Dictionary<MemberBindingType, Func<MemberBinding, TranslationContext, string>>
                 {
                     { MemberBindingType.Assignment, TranslateAssignmentBinding },
                     { MemberBindingType.ListBinding, TranslateListBinding },
@@ -37,44 +37,44 @@
                 return !newExpression.Arguments.Any();
             }
 
-            protected override IEnumerable<string> GetInitialisations(MemberInitExpression expression)
+            protected override IEnumerable<string> GetInitialisations(MemberInitExpression expression, TranslationContext context)
             {
-                return GetInitialisations(expression.Bindings);
+                return GetInitialisations(expression.Bindings, context);
             }
 
-            private string[] GetInitialisations(IEnumerable<MemberBinding> memberBindings)
+            private string[] GetInitialisations(IEnumerable<MemberBinding> memberBindings, TranslationContext context)
             {
                 return memberBindings
-                    .Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b))
+                    .Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b, context))
                     .ToArray();
             }
 
-            private string TranslateAssignmentBinding(MemberBinding binding)
+            private string TranslateAssignmentBinding(MemberBinding binding, TranslationContext context)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = GlobalTranslator.Invoke(assignment.Expression);
+                var value = GlobalTranslator.Invoke(assignment.Expression, context);
 
                 return assignment.Member.Name + " = " + value;
             }
 
-            private string TranslateMemberBinding(MemberBinding binding)
+            private string TranslateMemberBinding(MemberBinding binding, TranslationContext context)
             {
                 var memberBinding = (MemberMemberBinding)binding;
 
-                var subBindings = GetInitialisations(memberBinding.Bindings);
+                var subBindings = GetInitialisations(memberBinding.Bindings, context);
 
                 return GetInitialisations(subBindings, memberBinding.Member.Name + " =");
             }
 
-            private string TranslateListBinding(MemberBinding binding)
+            private string TranslateListBinding(MemberBinding binding, TranslationContext context)
             {
                 var listBinding = (MemberListBinding)binding;
 
                 var listInitialisers = listBinding
                     .Initializers
                     .Select(init => IsStandardAddMethod(init)
-                        ? GlobalTranslator.Invoke(init.Arguments.First())
-                        : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments))
+                        ? GlobalTranslator.Invoke(init.Arguments.First(), context)
+                        : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments, context))
                     .ToArray();
 
                 return GetInitialisations(listInitialisers, listBinding.Member.Name + " =");

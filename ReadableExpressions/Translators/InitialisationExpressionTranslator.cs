@@ -10,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal InitialisationExpressionTranslator(
             MethodCallExpressionTranslator methodCallTranslator,
-            Func<Expression, string> globalTranslator)
+            Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
         {
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
@@ -21,9 +21,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             };
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
-            return _helpersByNodeType[expression.NodeType].Translate(expression);
+            return _helpersByNodeType[expression.NodeType].Translate(expression, context);
         }
     }
 }

@@ -14,16 +14,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.NegateChecked] = "-"
         };
 
-        internal NegationExpressionTranslator(Func<Expression, string> globalTranslator)
+        internal NegationExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, _negationsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var negation = (UnaryExpression)expression;
 
-            return _negationsByNodeType[expression.NodeType] + GetTranslation(negation.Operand);
+            return _negationsByNodeType[expression.NodeType] + GetTranslation(negation.Operand, context);
         }
     }
 }

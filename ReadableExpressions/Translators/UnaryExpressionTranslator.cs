@@ -23,15 +23,15 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
-        public UnaryExpressionTranslator(Func<Expression, string> globalTranslator)
+        public UnaryExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var mathsOperation = (UnaryExpression)expression;
-            var operand = GetTranslation(mathsOperation.Operand);
+            var operand = GetTranslation(mathsOperation.Operand, context);
 
             return _operatorsByNodeType[expression.NodeType].Invoke(operand);
         }

@@ -9,7 +9,7 @@
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
-            public ArrayInitExpressionHelper(Func<Expression, string> globalTranslator)
+            public ArrayInitExpressionHelper(Func<Expression, TranslationContext, string> globalTranslator)
                 : base(globalTranslator)
             {
             }
@@ -28,9 +28,11 @@
                 return false;
             }
 
-            protected override IEnumerable<string> GetInitialisations(NewArrayExpression expression)
+            protected override IEnumerable<string> GetInitialisations(
+                NewArrayExpression expression,
+                TranslationContext context)
             {
-                return expression.Expressions.Select(GlobalTranslator.Invoke);
+                return expression.Expressions.Select(exp => GlobalTranslator.Invoke(exp, context));
             }
         }
     }

@@ -59,13 +59,13 @@
                 .ToDictionary(t => t.NodeType, t => t.Translator);
         }
 
-        public string Translate(Expression expression)
+        public string Translate(Expression expression, TranslationContext context)
         {
             IExpressionTranslator translator;
 
             if (_translatorsByType.TryGetValue(expression.NodeType, out translator))
             {
-                return translator.Translate(expression);
+                return translator.Translate(expression, context);
             }
 
             throw new NotSupportedException(

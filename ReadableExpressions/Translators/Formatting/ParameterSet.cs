@@ -8,11 +8,16 @@
     internal class ParameterSet : FormattableExpressionBase
     {
         private readonly IEnumerable<Expression> _parameters;
-        private readonly Func<Expression, string> _translator;
+        private readonly TranslationContext _context;
+        private readonly Func<Expression, TranslationContext, string> _translator;
 
-        public ParameterSet(IEnumerable<Expression> parameters, Func<Expression, string> translator)
+        public ParameterSet(
+            IEnumerable<Expression> parameters,
+            TranslationContext context,
+            Func<Expression, TranslationContext, string> translator)
         {
             _parameters = parameters;
+            _context = context;
             _translator = translator;
         }
 
@@ -37,7 +42,11 @@
                 extraFormatter = s => s;
             }
 
-            return string.Join(separator, _parameters.Select(_translator.Invoke).Select(extraFormatter));
+            return string.Join(
+                separator,
+                _parameters
+                    .Select(p => _translator.Invoke(p, _context))
+                    .Select(extraFormatter));
         }
 
         public string WithBracketsIfNecessary()

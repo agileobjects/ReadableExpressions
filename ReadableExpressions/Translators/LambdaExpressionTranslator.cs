@@ -5,18 +5,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LambdaExpressionTranslator : ExpressionTranslatorBase
     {
-        internal LambdaExpressionTranslator(Func<Expression, string> globalTranslator)
+        internal LambdaExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Lambda)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var lambda = (LambdaExpression)expression;
 
-            var parameters = GetTranslatedParameters(lambda.Parameters).WithBracketsIfNecessary();
+            var parameters = GetTranslatedParameters(lambda.Parameters, context).WithBracketsIfNecessary();
 
-            var bodyBlock = GetTranslatedExpressionBody(lambda.Body);
+            var bodyBlock = GetTranslatedExpressionBody(lambda.Body, context);
 
             var body = bodyBlock.IsASingleStatement
                 ? bodyBlock.AsExpressionBody()

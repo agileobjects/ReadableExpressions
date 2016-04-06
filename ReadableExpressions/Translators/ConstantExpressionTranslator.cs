@@ -6,12 +6,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConstantExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ConstantExpressionTranslator(Func<Expression, string> globalTranslator)
+        internal ConstantExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Constant)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             return (expression as CommentExpression)?.Comment
                 ?? TranslateConstant((ConstantExpression)expression);

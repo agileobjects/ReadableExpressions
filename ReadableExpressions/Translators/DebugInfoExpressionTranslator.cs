@@ -6,12 +6,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
     {
-        public DebugInfoExpressionTranslator(Func<Expression, string> globalTranslator)
+        public DebugInfoExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.DebugInfo)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var debugInfo = (DebugInfoExpression)expression;
 
@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var debugInfoComment = ReadableExpression.Comment(debugInfoText);
 
-            return GetTranslation(debugInfoComment);
+            return GetTranslation(debugInfoComment, context);
         }
     }
 }

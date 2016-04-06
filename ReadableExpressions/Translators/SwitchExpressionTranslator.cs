@@ -8,26 +8,26 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
     {
-        public SwitchExpressionTranslator(Func<Expression, string> globalTranslator)
+        public SwitchExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Switch)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var switchStatement = (SwitchExpression)expression;
 
-            var switchValue = GetTranslation(switchStatement.SwitchValue);
+            var switchValue = GetTranslation(switchStatement.SwitchValue, context);
 
             var switchCases = switchStatement.Cases
                 .Select(@case => new
                 {
-                    Tests = @case.TestValues.Select(value => $"case {GetTranslation(value)}:"),
-                    BodyBlock = GetTranslatedExpressionBody(@case.Body)
+                    Tests = @case.TestValues.Select(value => $"case {GetTranslation(value, context)}:"),
+                    BodyBlock = GetTranslatedExpressionBody(@case.Body, context)
                 })
                 .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
 
-            switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody);
+            switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, context);
 
             var switchCaseLines = string.Join(Environment.NewLine + Environment.NewLine, switchCases);
 
@@ -51,7 +51,8 @@ switch ({switchValue})
 
         private IEnumerable<string> AppendDefaultCaseIfExists(
             IEnumerable<string> switchCases,
-            Expression defaultBody)
+            Expression defaultBody,
+            TranslationContext context)
         {
             foreach (var switchCase in switchCases)
             {
@@ -60,13 +61,13 @@ switch ({switchValue})
 
             if (defaultBody != null)
             {
-                yield return GetDefaultCase(defaultBody);
+                yield return GetDefaultCase(defaultBody, context);
             }
         }
 
-        private string GetDefaultCase(Expression defaultBody)
+        private string GetDefaultCase(Expression defaultBody, TranslationContext context)
         {
-            var defaultCaseBody = GetTranslatedExpressionBody(defaultBody);
+            var defaultCaseBody = GetTranslatedExpressionBody(defaultBody, context);
 
             return GetCase(defaultCaseBody, "default:");
         }

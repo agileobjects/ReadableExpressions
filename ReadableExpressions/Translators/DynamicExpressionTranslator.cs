@@ -15,7 +15,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             MemberAccessExpressionTranslator memberAccessTranslator,
             AssignmentExpressionTranslator assignmentTranslator,
             MethodCallExpressionTranslator methodCallTranslator,
-            Func<Expression, string> globalTranslator)
+            Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Dynamic)
         {
             var dynamicMemberAccessTranslator = new DynamicMemberAccessTranslator(memberAccessTranslator, globalTranslator);
@@ -28,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             };
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var dynamicExpression = (DynamicExpression)expression;
 
@@ -43,7 +43,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 string translated;
 
-                if (translator.TryTranslate(operationDescription, dynamicExpression.Arguments, out translated))
+                if (translator.TryTranslate(
+                    operationDescription,
+                    dynamicExpression.Arguments,
+                    context,
+                    out translated))
                 {
                     return translated;
                 }
@@ -60,31 +64,36 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected DynamicOperationTranslatorBase(
                 string operationPattern,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
             {
                 GlobalTranslator = globalTranslator;
                 _operationMatcher = new Regex(operationPattern);
             }
 
-            protected Func<Expression, string> GlobalTranslator { get; }
+            protected Func<Expression, TranslationContext, string> GlobalTranslator { get; }
 
             public bool TryTranslate(
                 string operationDescription,
                 IEnumerable<Expression> arguments,
+                TranslationContext context,
                 out string translated)
             {
                 var match = _operationMatcher.Match(operationDescription);
 
                 if (match.Success)
                 {
-                    return DoTranslate(match, arguments, out translated);
+                    return DoTranslate(match, arguments, context, out translated);
                 }
 
                 translated = null;
                 return false;
             }
 
-            protected abstract bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated);
+            protected abstract bool DoTranslate(
+                Match match,
+                IEnumerable<Expression> arguments,
+                TranslationContext context,
+                out string translated);
         }
 
         private class DynamicMemberAccessTranslator : DynamicOperationTranslatorBase
@@ -93,21 +102,25 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             public DynamicMemberAccessTranslator(
                 MemberAccessExpressionTranslator memberAccessTranslator,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
                 : base(@"^GetMember (?<MemberName>[^\(]+)\(", globalTranslator)
             {
                 _memberAccessTranslator = memberAccessTranslator;
             }
 
-            protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
+            protected override bool DoTranslate(
+                Match match,
+                IEnumerable<Expression> arguments,
+                TranslationContext context,
+                out string translated)
             {
-                translated = GetMemberAccess(match, arguments);
+                translated = GetMemberAccess(match, arguments, context);
                 return true;
             }
 
-            internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments)
+            internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments, TranslationContext context)
             {
-                var subject = GlobalTranslator.Invoke(arguments.First());
+                var subject = GlobalTranslator.Invoke(arguments.First(), context);
                 var memberName = match.Groups["MemberName"].Value;
 
                 return _memberAccessTranslator.GetMemberAccess(subject, memberName);
@@ -122,19 +135,23 @@ namespace AgileObjects.ReadableExpressions.Translators
             public DynamicMemberWriteTranslator(
                 DynamicMemberAccessTranslator memberAccessTranslator,
                 AssignmentExpressionTranslator assignmentTranslator,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
                 : base(@"^SetMember (?<MemberName>[^\(]+)\(", globalTranslator)
             {
                 _memberAccessTranslator = memberAccessTranslator;
                 _assignmentTranslator = assignmentTranslator;
             }
 
-            protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
+            protected override bool DoTranslate(
+                Match match,
+                IEnumerable<Expression> arguments,
+                TranslationContext context,
+                out string translated)
             {
-                var target = _memberAccessTranslator.GetMemberAccess(match, arguments);
+                var target = _memberAccessTranslator.GetMemberAccess(match, arguments, context);
                 var value = arguments.Last();
 
-                translated = _assignmentTranslator.GetAssignment(target, ExpressionType.Assign, value);
+                translated = _assignmentTranslator.GetAssignment(target, ExpressionType.Assign, value, context);
                 return true;
             }
         }
@@ -145,16 +162,20 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             public DynamicMethodCallTranslator(
                 MethodCallExpressionTranslator methodCallTranslator,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
                 : base(@"^Call (?<MethodName>[^\(]+)\(", globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
             }
 
-            protected override bool DoTranslate(Match match, IEnumerable<Expression> arguments, out string translated)
+            protected override bool DoTranslate(
+                Match match,
+                IEnumerable<Expression> arguments,
+                TranslationContext context,
+                out string translated)
             {
                 var subjectObject = arguments.First();
-                var subject = GlobalTranslator.Invoke(subjectObject);
+                var subject = GlobalTranslator.Invoke(subjectObject, context);
                 var methodName = match.Groups["MethodName"].Value;
                 var method = subjectObject.Type.GetMethod(methodName);
 
@@ -165,7 +186,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 translated = _methodCallTranslator.GetMethodCall(
                     subject,
                     methodInfo,
-                    arguments.Skip(1).ToArray());
+                    arguments.Skip(1).ToArray(),
+                    context);
 
                 return true;
             }

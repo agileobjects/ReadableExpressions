@@ -10,6 +10,6 @@
             get;
         }
 
-        string Translate(Expression expression);
+        string Translate(Expression expression, TranslationContext context);
     }
 }

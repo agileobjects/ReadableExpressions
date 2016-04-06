@@ -8,7 +8,19 @@
 
         public static string ToReadableString(this Expression expression)
         {
-            return _translatorRegistry.Translate(expression)?.WithoutUnindents();
+            return _translatorRegistry
+                .Translate(expression, new TranslationContext(expression))?
+                .WithoutUnindents();
+        }
+    }
+
+    public class TranslationContext
+    {
+        private readonly Expression _rootExpression;
+
+        internal TranslationContext(Expression rootExpression)
+        {
+            _rootExpression = rootExpression;
         }
     }
 }

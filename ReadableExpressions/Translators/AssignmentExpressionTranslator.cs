@@ -27,26 +27,27 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssignChecked] = "-="
             };
 
-        internal AssignmentExpressionTranslator(Func<Expression, string> globalTranslator)
+        internal AssignmentExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, _symbolsByNodeType.Keys.ToArray())
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var assignment = (BinaryExpression)expression;
-            var target = GetTranslation(assignment.Left);
+            var target = GetTranslation(assignment.Left, context);
 
-            return GetAssignment(target, expression.NodeType, assignment.Right);
+            return GetAssignment(target, expression.NodeType, assignment.Right, context);
         }
 
         internal string GetAssignment(
             string target,
             ExpressionType assignmentType,
-            Expression right)
+            Expression right,
+            TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var value = GetTranslation(right);
+            var value = GetTranslation(right, context);
 
             return $"{target} {symbol} {value}";
         }

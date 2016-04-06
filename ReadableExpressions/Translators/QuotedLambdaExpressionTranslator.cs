@@ -5,18 +5,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class QuotedLambdaExpressionTranslator : ExpressionTranslatorBase
     {
-        public QuotedLambdaExpressionTranslator(Func<Expression, string> globalTranslator)
+        public QuotedLambdaExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Quote)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             var quote = (UnaryExpression)expression;
 
             var comment = ReadableExpression.Comment("Quoted to induce a closure:");
             var quotedLambdaBlock = Expression.Block(comment, quote.Operand);
-            var translatedLambda = GetTranslatedExpressionBody(quotedLambdaBlock);
+            var translatedLambda = GetTranslatedExpressionBody(quotedLambdaBlock, context);
 
             return Environment.NewLine + translatedLambda.Indented().WithoutBrackets();
         }

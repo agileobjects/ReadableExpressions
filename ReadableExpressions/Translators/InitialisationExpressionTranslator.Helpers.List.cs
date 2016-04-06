@@ -13,7 +13,7 @@
 
             public ListInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
-                Func<Expression, string> globalTranslator)
+                Func<Expression, TranslationContext, string> globalTranslator)
                 : base(globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
@@ -29,13 +29,17 @@
                 return !newExpression.Arguments.Any();
             }
 
-            protected override IEnumerable<string> GetInitialisations(ListInitExpression expression)
+            protected override IEnumerable<string> GetInitialisations(
+                ListInitExpression expression,
+                TranslationContext context)
             {
                 return expression.Initializers
                     .Select(initialisation =>
                     {
-                        var listAddCall = _methodCallTranslator
-                            .GetMethodCall(initialisation.AddMethod, initialisation.Arguments);
+                        var listAddCall = _methodCallTranslator.GetMethodCall(
+                            initialisation.AddMethod,
+                            initialisation.Arguments,
+                            context);
 
                         return listAddCall;
                     });

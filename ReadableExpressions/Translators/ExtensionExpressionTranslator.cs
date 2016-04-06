@@ -5,12 +5,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ExtensionExpressionTranslator : ExpressionTranslatorBase
     {
-        public ExtensionExpressionTranslator(Func<Expression, string> globalTranslator)
+        public ExtensionExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
             : base(globalTranslator, ExpressionType.Extension)
         {
         }
 
-        public override string Translate(Expression expression)
+        public override string Translate(Expression expression, TranslationContext context)
         {
             return expression.ToString();
         }
