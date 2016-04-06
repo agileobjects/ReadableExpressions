@@ -16,12 +16,12 @@
             where TExpression : Expression
             where TNewExpression : Expression
         {
-            protected InitExpressionHelperBase(IExpressionTranslatorRegistry registry)
+            protected InitExpressionHelperBase(Func<Expression, string> globalTranslator)
             {
-                Registry = registry;
+                GlobalTranslator = globalTranslator;
             }
 
-            protected IExpressionTranslatorRegistry Registry { get; }
+            protected Func<Expression, string> GlobalTranslator { get; }
 
             public string Translate(Expression expression)
             {
@@ -35,7 +35,7 @@
             private string GetNewExpressionString(TExpression initialisation)
             {
                 var newExpression = GetNewExpression(initialisation);
-                var newExpressionString = Registry.Translate(newExpression);
+                var newExpressionString = GlobalTranslator.Invoke(newExpression);
 
                 if (ConstructorIsParameterless(newExpression))
                 {

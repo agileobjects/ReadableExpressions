@@ -7,7 +7,6 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using Extensions;
-    using Formatting;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
@@ -19,12 +18,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal MethodCallExpressionTranslator(
             IndexAccessExpressionTranslator indexAccessTranslator,
-            IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Call, ExpressionType.Invoke)
+            Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Call, ExpressionType.Invoke)
         {
             _specialCaseHandlers = new SpecialCaseHandlerBase[]
             {
-                new InvocationExpressionHandler(GetMethodCall, registry),
+                new InvocationExpressionHandler(GetMethodCall, globalTranslator),
                 new IndexedPropertyHandler(indexAccessTranslator)
             };
         }
@@ -56,7 +55,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             arguments = methodCall.Arguments;
 
-            return Registry.Translate(methodCall.Object);
+            return GetTranslation(methodCall.Object);
         }
 
         private string GetStaticMethodCallSubject(
@@ -68,7 +67,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1);
 
-                return Registry.Translate(subject);
+                return GetTranslation(subject);
             }
 
             arguments = methodCall.Arguments;
@@ -94,10 +93,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private string GetMethodCall(IMethodInfo method, IEnumerable<Expression> parameters)
         {
-            var parametersString = Registry
-                .TranslateParameters(parameters)
-                .WithBrackets();
-
+            var parametersString = GetTranslatedParameters(parameters).WithBrackets();
             var genericArguments = GetGenericArgumentsIfNecessary(method);
 
             return method.Name + genericArguments + parametersString;
@@ -169,21 +165,21 @@ namespace AgileObjects.ReadableExpressions.Translators
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
             private readonly Func<string, MethodInfo, IEnumerable<Expression>, string> _methodCallTranslator;
-            private readonly IExpressionTranslatorRegistry _registry;
+            private readonly Func<Expression, string> _translator;
 
             public InvocationExpressionHandler(
                 Func<string, MethodInfo, IEnumerable<Expression>, string> methodCallTranslator,
-                IExpressionTranslatorRegistry registry)
+                Func<Expression, string> translator)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
                 _methodCallTranslator = methodCallTranslator;
-                _registry = registry;
+                _translator = translator;
             }
 
             public override string Translate(Expression expression)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = _registry.Translate(invocation.Expression);
+                var invocationSubject = _translator.Invoke(invocation.Expression);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {

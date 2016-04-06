@@ -1,13 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
-    using Formatting;
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        public IndexAccessExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.ArrayIndex, ExpressionType.Index)
+        public IndexAccessExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.ArrayIndex, ExpressionType.Index)
         {
         }
 
@@ -32,11 +32,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal string TranslateIndexAccess(Expression variable, IEnumerable<Expression> indexes)
         {
-            var indexedVariable = Registry.Translate(variable);
-
-            var indexValues = Registry
-                .TranslateParameters(indexes)
-                .WithoutBrackets();
+            var indexedVariable = GetTranslation(variable);
+            var indexValues = GetTranslatedParameters(indexes).WithoutBrackets();
 
             return $"{indexedVariable}[{indexValues}]";
         }

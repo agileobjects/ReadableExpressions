@@ -1,11 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        internal MemberAccessExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.MemberAccess)
+        internal MemberAccessExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.MemberAccess)
         {
         }
 
@@ -28,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return SubjectIsCapturedInstance(memberExpression)
                 ? null
-                : Registry.Translate(memberExpression.Expression);
+                : GetTranslation(memberExpression.Expression);
         }
 
         private static bool SubjectIsCapturedInstance(MemberExpression memberExpression)

@@ -8,12 +8,12 @@
     internal class ParameterSet : FormattableExpressionBase
     {
         private readonly IEnumerable<Expression> _parameters;
-        private readonly IExpressionTranslatorRegistry _registry;
+        private readonly Func<Expression, string> _translator;
 
-        public ParameterSet(IEnumerable<Expression> parameters, IExpressionTranslatorRegistry registry)
+        public ParameterSet(IEnumerable<Expression> parameters, Func<Expression, string> translator)
         {
             _parameters = parameters;
-            _registry = registry;
+            _translator = translator;
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
@@ -37,7 +37,7 @@
                 extraFormatter = s => s;
             }
 
-            return string.Join(separator, _parameters.Select(_registry.Translate).Select(extraFormatter));
+            return string.Join(separator, _parameters.Select(_translator.Invoke).Select(extraFormatter));
         }
 
         public string WithBracketsIfNecessary()

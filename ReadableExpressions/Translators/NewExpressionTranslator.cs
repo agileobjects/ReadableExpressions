@@ -1,25 +1,22 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
     using Extensions;
-    using Formatting;
 
     internal class NewExpressionTranslator : ExpressionTranslatorBase
     {
-        internal NewExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.New)
+        internal NewExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.New)
         {
         }
 
         public override string Translate(Expression expression)
         {
             var newExpression = (NewExpression)expression;
+            var parameters = GetTranslatedParameters(newExpression.Arguments).WithBrackets();
 
-            var parameters = Registry
-                .TranslateParameters(newExpression.Arguments)
-                .WithBrackets();
-
-            return "new " + expression.Type.GetFriendlyName() + parameters;
+            return "new " + newExpression.Type.GetFriendlyName() + parameters;
         }
     }
 }

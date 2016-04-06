@@ -6,48 +6,48 @@
     using System.Linq.Expressions;
     using Translators;
 
-    internal class ExpressionTranslatorRegistry : IExpressionTranslatorRegistry
+    internal class ExpressionTranslatorRegistry
     {
         private readonly Dictionary<ExpressionType, IExpressionTranslator> _translatorsByType;
 
         public ExpressionTranslatorRegistry()
         {
-            var memberAccessTranslator = new MemberAccessExpressionTranslator(this);
-            var assignmentTranslator = new AssignmentExpressionTranslator(this);
-            var indexAccessTranslator = new IndexAccessExpressionTranslator(this);
-            var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator, this);
+            var memberAccessTranslator = new MemberAccessExpressionTranslator(Translate);
+            var assignmentTranslator = new AssignmentExpressionTranslator(Translate);
+            var indexAccessTranslator = new IndexAccessExpressionTranslator(Translate);
+            var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator, Translate);
 
             var translators = new List<IExpressionTranslator>
             {
-                new ArrayLengthExpressionTranslator(this),
-                new AssignmentExpressionTranslator(this),
-                new BinaryExpressionTranslator(this),
-                new BlockExpressionTranslator(this),
-                new CastExpressionTranslator(this),
-                new ConditionalExpressionTranslator(this),
-                new ConstantExpressionTranslator(this),
-                new DebugInfoExpressionTranslator(this),
-                new DefaultExpressionTranslator(this),
-                new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator, this),
-                new ExtensionExpressionTranslator(this),
-                new GotoExpressionTranslator(this),
+                new ArrayLengthExpressionTranslator(Translate),
+                new AssignmentExpressionTranslator(Translate),
+                new BinaryExpressionTranslator(Translate),
+                new BlockExpressionTranslator(Translate),
+                new CastExpressionTranslator(Translate),
+                new ConditionalExpressionTranslator(Translate),
+                new ConstantExpressionTranslator(Translate),
+                new DebugInfoExpressionTranslator(Translate),
+                new DefaultExpressionTranslator(Translate),
+                new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator, Translate),
+                new ExtensionExpressionTranslator(Translate),
+                new GotoExpressionTranslator(Translate),
                 indexAccessTranslator,
-                new InitialisationExpressionTranslator(methodCallTranslator, this),
-                new LabelExpressionTranslator(this),
-                new LambdaExpressionTranslator(this),
-                new LoopExpressionTranslator(this),
+                new InitialisationExpressionTranslator(methodCallTranslator, Translate),
+                new LabelExpressionTranslator(Translate),
+                new LambdaExpressionTranslator(Translate),
+                new LoopExpressionTranslator(Translate),
                 memberAccessTranslator,
                 methodCallTranslator,
-                new NegationExpressionTranslator(this),
-                new NewArrayExpressionTranslator(this),
-                new NewExpressionTranslator(this),
-                new ParameterExpressionTranslator(this),
-                new QuotedLambdaExpressionTranslator(this),
-                new RuntimeVariablesExpressionTranslator(this),
-                new SwitchExpressionTranslator(this),
-                new TryCatchExpressionTranslator(this),
-                new TypeEqualExpressionTranslator(this),
-                new UnaryExpressionTranslator(this)
+                new NegationExpressionTranslator(Translate),
+                new NewArrayExpressionTranslator(Translate),
+                new NewExpressionTranslator(Translate),
+                new ParameterExpressionTranslator(Translate),
+                new QuotedLambdaExpressionTranslator(Translate),
+                new RuntimeVariablesExpressionTranslator(Translate),
+                new SwitchExpressionTranslator(Translate),
+                new TryCatchExpressionTranslator(Translate),
+                new TypeEqualExpressionTranslator(Translate),
+                new UnaryExpressionTranslator(Translate)
             };
 
             _translatorsByType = translators

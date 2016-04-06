@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Block)
+        public BlockExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Block)
         {
         }
 
@@ -53,7 +53,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(exp => new
                 {
                     Expression = exp,
-                    Translation = GetTerminatedStatementOrNull(Registry.Translate(exp), exp, joinedAssignments)
+                    Translation = GetTerminatedStatementOrNull(exp, joinedAssignments)
                 })
                 .Where(d => d.Translation != null)
                 .Select(d => d.Translation);
@@ -74,11 +74,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             return expression is CommentExpression;
         }
 
-        private static string GetTerminatedStatementOrNull(
-            string translation,
+        private string GetTerminatedStatementOrNull(
             Expression expression,
             IEnumerable<BinaryExpression> joinedAssignments)
         {
+            var translation = GetTranslation(expression);
+
             if (translation == null)
             {
                 return null;

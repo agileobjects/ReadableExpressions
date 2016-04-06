@@ -4,12 +4,11 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
-    using Formatting;
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {
-        public TryCatchExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Try)
+        public TryCatchExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Try)
         {
         }
 
@@ -17,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var tryCatchFinally = (TryExpression)expression;
 
-            var tryBody = Registry.TranslateExpressionBody(tryCatchFinally.Body);
+            var tryBody = GetTranslatedExpressionBody(tryCatchFinally.Body);
             var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(GetCatchBlock));
             var faultBlock = GetFaultBlock(tryCatchFinally.Fault);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally);
@@ -31,7 +30,7 @@ try{tryBody.WithBrackets()}
 
         private string GetCatchBlock(CatchBlock catchBlock)
         {
-            var catchBody = Registry.TranslateExpressionBody(catchBlock.Body);
+            var catchBody = GetTranslatedExpressionBody(catchBlock.Body);
 
             var exceptionClause = GetExceptionClause(catchBlock);
 
@@ -50,7 +49,7 @@ try{tryBody.WithBrackets()}
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
                 var filter = (catchBlock.Filter != null)
-                    ? " when " + Registry.Translate(catchBlock.Filter)
+                    ? " when " + GetTranslation(catchBlock.Filter)
                     : null;
 
                 return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;
@@ -81,9 +80,7 @@ try{tryBody.WithBrackets()}
                 return null;
             }
 
-            var blockBody = Registry
-                .TranslateExpressionBody(block)
-                .WithBrackets();
+            var blockBody = GetTranslatedExpressionBody(block).WithBrackets();
 
             return keyword + blockBody;
         }

@@ -9,9 +9,9 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly Dictionary<ExpressionType, Func<Expression, string>> _translatorsByType;
 
-        internal CastExpressionTranslator(IExpressionTranslatorRegistry registry)
+        internal CastExpressionTranslator(Func<Expression, string> globalTranslator)
             : base(
-                registry,
+                globalTranslator,
                 ExpressionType.Convert,
                 ExpressionType.ConvertChecked,
                 ExpressionType.TypeAs,
@@ -33,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             if ((expression.NodeType == ExpressionType.Convert) && (expression.Type == typeof(object)))
             {
                 // Don't bother showing a boxing operation:
-                return Registry.Translate(((UnaryExpression)expression).Operand);
+                return GetTranslation(((UnaryExpression)expression).Operand);
             }
 
             return _translatorsByType[expression.NodeType].Invoke(expression);
@@ -43,7 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var cast = (UnaryExpression)expression;
             var typeName = cast.Type.GetFriendlyName();
-            var subject = Registry.Translate(cast.Operand);
+            var subject = GetTranslation(cast.Operand);
 
             return $"(({typeName}){subject})";
         }
@@ -52,7 +52,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var typeAs = (UnaryExpression)expression;
             var typeName = typeAs.Type.GetFriendlyName();
-            var subject = Registry.Translate(typeAs.Operand);
+            var subject = GetTranslation(typeAs.Operand);
 
             return $"({subject} as {typeName})";
         }
@@ -61,7 +61,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var typeIs = (TypeBinaryExpression)expression;
             var typeName = typeIs.TypeOperand.GetFriendlyName();
-            var subject = Registry.Translate(typeIs.Expression);
+            var subject = GetTranslation(typeIs.Expression);
 
             return $"({subject} is {typeName})";
         }

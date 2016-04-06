@@ -1,11 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
 
     internal class ParameterExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ParameterExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Parameter)
+        internal ParameterExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Parameter)
         {
         }
 

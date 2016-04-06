@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -13,8 +14,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.NegateChecked] = "-"
         };
 
-        internal NegationExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, _negationsByNodeType.Keys.ToArray())
+        internal NegationExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, _negationsByNodeType.Keys.ToArray())
         {
         }
 
@@ -22,7 +23,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var negation = (UnaryExpression)expression;
 
-            return _negationsByNodeType[expression.NodeType] + Registry.Translate(negation.Operand);
+            return _negationsByNodeType[expression.NodeType] + GetTranslation(negation.Operand);
         }
     }
 }

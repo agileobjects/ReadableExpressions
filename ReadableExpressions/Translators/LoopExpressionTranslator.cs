@@ -1,12 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
-    using Formatting;
 
     internal class LoopExpressionTranslator : ExpressionTranslatorBase
     {
-        public LoopExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Loop)
+        public LoopExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Loop)
         {
         }
 
@@ -14,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var loop = (LoopExpression)expression;
 
-            var loopBodyBlock = Registry.TranslateExpressionBody(loop.Body);
+            var loopBodyBlock = GetTranslatedExpressionBody(loop.Body);
 
             return $"while (true){loopBodyBlock.WithBrackets()}";
         }

@@ -1,12 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Linq.Expressions;
-    using Formatting;
 
     internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
     {
-        public RuntimeVariablesExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.RuntimeVariables)
+        public RuntimeVariablesExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.RuntimeVariables)
         {
         }
 
@@ -14,8 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var runtimeVariables = (RuntimeVariablesExpression)expression;
 
-            var translated = Registry
-                .TranslateParameters(runtimeVariables.Variables)
+            var translated = GetTranslatedParameters(runtimeVariables.Variables)
                 .WithBracketsIfNecessary();
 
             return translated;

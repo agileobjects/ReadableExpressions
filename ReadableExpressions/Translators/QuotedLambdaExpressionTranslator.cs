@@ -2,12 +2,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Linq.Expressions;
-    using Formatting;
 
     internal class QuotedLambdaExpressionTranslator : ExpressionTranslatorBase
     {
-        public QuotedLambdaExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Quote)
+        public QuotedLambdaExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Quote)
         {
         }
 
@@ -17,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var comment = ReadableExpression.Comment("Quoted to induce a closure:");
             var quotedLambdaBlock = Expression.Block(comment, quote.Operand);
-            var translatedLambda = Registry.TranslateExpressionBody(quotedLambdaBlock);
+            var translatedLambda = GetTranslatedExpressionBody(quotedLambdaBlock);
 
             return Environment.NewLine + translatedLambda.Indented().WithoutBrackets();
         }

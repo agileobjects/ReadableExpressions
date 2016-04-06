@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -8,8 +9,8 @@
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
-            public ArrayInitExpressionHelper(IExpressionTranslatorRegistry registry)
-                : base(registry)
+            public ArrayInitExpressionHelper(Func<Expression, string> globalTranslator)
+                : base(globalTranslator)
             {
             }
 
@@ -29,7 +30,7 @@
 
             protected override IEnumerable<string> GetInitialisations(NewArrayExpression expression)
             {
-                return expression.Expressions.Select(Registry.Translate);
+                return expression.Expressions.Select(GlobalTranslator.Invoke);
             }
         }
     }

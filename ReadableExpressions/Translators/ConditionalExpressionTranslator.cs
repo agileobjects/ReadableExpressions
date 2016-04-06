@@ -6,8 +6,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
     {
-        public ConditionalExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.Conditional)
+        public ConditionalExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.Conditional)
         {
         }
 
@@ -15,17 +15,17 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = GetTest(Registry.Translate(conditional.Test));
+            var test = GetTest(GetTranslation(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            var ifTrueBlock = Registry.TranslateExpressionBody(conditional.IfTrue);
+            var ifTrueBlock = GetTranslatedExpressionBody(conditional.IfTrue);
 
             if (hasNoElseCondition)
             {
                 return IfStatement(test, ifTrueBlock.WithBrackets());
             }
 
-            var ifFalseBlock = Registry.TranslateExpressionBody(conditional.IfFalse);
+            var ifFalseBlock = GetTranslatedExpressionBody(conditional.IfFalse);
 
             if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
             {
@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTest(string test)
         {
-            return test.StartsWith("(", StringComparison.Ordinal) ? test : $"({test})";
+            return (test[0] == '(') ? test : $"({test})";
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

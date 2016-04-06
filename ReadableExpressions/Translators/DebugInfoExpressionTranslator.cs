@@ -1,12 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Globalization;
     using System.Linq.Expressions;
 
     internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
     {
-        public DebugInfoExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.DebugInfo)
+        public DebugInfoExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.DebugInfo)
         {
         }
 
@@ -34,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var debugInfoComment = ReadableExpression.Comment(debugInfoText);
 
-            return Registry.Translate(debugInfoComment);
+            return GetTranslation(debugInfoComment);
         }
     }
 }

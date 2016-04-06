@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -34,17 +35,17 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractChecked] = "-"
             };
 
-        internal BinaryExpressionTranslator(IExpressionTranslatorRegistry registry)
-            : base(registry, _operatorsByNodeType.Keys.ToArray())
+        internal BinaryExpressionTranslator(Func<Expression, string> globalTranslator)
+            : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
         {
         }
 
         public override string Translate(Expression expression)
         {
             var binaryExpression = (BinaryExpression)expression;
-            var left = Registry.Translate(binaryExpression.Left);
+            var left = GetTranslation(binaryExpression.Left);
             var @operator = _operatorsByNodeType[expression.NodeType];
-            var right = Registry.Translate(binaryExpression.Right);
+            var right = GetTranslation(binaryExpression.Right);
 
             return $"({left} {@operator} {right})";
         }

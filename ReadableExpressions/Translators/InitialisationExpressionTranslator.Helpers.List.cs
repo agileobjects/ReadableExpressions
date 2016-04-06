@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -12,8 +13,8 @@
 
             public ListInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
-                IExpressionTranslatorRegistry registry)
-                : base(registry)
+                Func<Expression, string> globalTranslator)
+                : base(globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
             }

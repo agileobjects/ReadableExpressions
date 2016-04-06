@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
 
@@ -9,14 +10,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal InitialisationExpressionTranslator(
             MethodCallExpressionTranslator methodCallTranslator,
-            IExpressionTranslatorRegistry registry)
-            : base(registry, ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
+            Func<Expression, string> globalTranslator)
+            : base(globalTranslator, ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
         {
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
             {
-                [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator, registry),
-                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator, registry),
-                [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper(registry)
+                [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator, globalTranslator),
+                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator, globalTranslator),
+                [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper(globalTranslator)
             };
         }
 

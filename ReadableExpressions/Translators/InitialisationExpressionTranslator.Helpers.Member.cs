@@ -14,8 +14,8 @@
 
             public MemberInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
-                IExpressionTranslatorRegistry registry)
-                : base(registry)
+                Func<Expression, string> globalTranslator)
+                : base(globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
 
@@ -52,7 +52,7 @@
             private string TranslateAssignmentBinding(MemberBinding binding)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = Registry.Translate(assignment.Expression);
+                var value = GlobalTranslator.Invoke(assignment.Expression);
 
                 return assignment.Member.Name + " = " + value;
             }
@@ -73,7 +73,7 @@
                 var listInitialisers = listBinding
                     .Initializers
                     .Select(init => IsStandardAddMethod(init)
-                        ? Registry.Translate(init.Arguments.First())
+                        ? GlobalTranslator.Invoke(init.Arguments.First())
                         : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments))
                     .ToArray();
 
