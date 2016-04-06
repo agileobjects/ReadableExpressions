@@ -183,9 +183,44 @@ value = threeIntsFunc.Invoke(
 
             const string EXPECTED = @"
 string name;
-var getName = () => name;
+Func<string> getName = () => name;
 name = ""Fred"";
 getName.Invoke();";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldNotVarAssignADeclaredVariable()
+        {
+            var nameVariable = Expression.Variable(typeof(string), "name");
+            var writeNameTwiceVariable = Expression.Variable(typeof(Action), "writeNameTwice");
+            Expression<Action> writeLine = () => Console.WriteLine(default(string));
+            var writeLineMethod = ((MethodCallExpression)writeLine.Body).Method;
+            var writeLineCall = Expression.Call(writeLineMethod, nameVariable);
+            var writeNameTwice = Expression.Block(writeLineCall, writeLineCall);
+            var writeNameTwiceLambda = Expression.Lambda(writeNameTwice);
+            var writeNameTwiceAssignment = Expression.Assign(writeNameTwiceVariable, writeNameTwiceLambda);
+            var nameAssignment = Expression.Assign(nameVariable, Expression.Constant("Alice"));
+            var writeNameTwiceCall = Expression.Invoke(writeNameTwiceVariable);
+
+            var block = Expression.Block(
+                new[] { nameVariable, writeNameTwiceVariable },
+                writeNameTwiceAssignment,
+                nameAssignment,
+                writeNameTwiceCall);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+string name;
+Action writeNameTwice = () =>
+{
+    Console.WriteLine(name);
+    Console.WriteLine(name);
+};
+name = ""Alice"";
+writeNameTwice.Invoke();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

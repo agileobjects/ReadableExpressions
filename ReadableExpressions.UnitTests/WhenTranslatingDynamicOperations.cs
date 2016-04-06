@@ -2,7 +2,6 @@
 {
     using System;
     using System.Globalization;
-    using System.IO;
     using System.Linq.Expressions;
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

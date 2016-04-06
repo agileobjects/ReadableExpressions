@@ -17,9 +17,9 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var block = (BlockExpression)expression;
 
-            var varAssignments = VarAssignmentVisitor.GetAssignments(block);
-            var variables = GetVariableDeclarations(block, varAssignments);
-            var lines = GetBlockLines(block, varAssignments);
+            var joinedAssignments = JoinedAssignmentVisitor.GetAssignments(block);
+            var variables = GetVariableDeclarations(block, joinedAssignments);
+            var lines = GetBlockLines(block, joinedAssignments);
 
             lines = ProcessBlockContents(lines.ToArray(), block.Expressions.Last());
 
@@ -30,22 +30,22 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static IEnumerable<string> GetVariableDeclarations(
             BlockExpression block,
-            IEnumerable<BinaryExpression> varAssignments)
+            IEnumerable<BinaryExpression> joinedAssignments)
         {
-            var variablesDeclaredWithVar = varAssignments
+            var joinedAssignmentVariables = joinedAssignments
                 .Select(a => a.Left)
                 .Cast<ParameterExpression>();
 
             return block
                 .Variables
-                .Except(variablesDeclaredWithVar)
+                .Except(joinedAssignmentVariables)
                 .GroupBy(v => v.Type)
                 .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
         }
 
         private IEnumerable<string> GetBlockLines(
             BlockExpression block,
-            IEnumerable<BinaryExpression> varAssignments)
+            IEnumerable<BinaryExpression> joinedAssignments)
         {
             return block
                 .Expressions
@@ -53,7 +53,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(exp => new
                 {
                     Expression = exp,
-                    Translation = GetTerminatedStatementOrNull(Registry.Translate(exp), exp, varAssignments)
+                    Translation = GetTerminatedStatementOrNull(Registry.Translate(exp), exp, joinedAssignments)
                 })
                 .Where(d => d.Translation != null)
                 .Select(d => d.Translation);
@@ -77,30 +77,55 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string GetTerminatedStatementOrNull(
             string translation,
             Expression expression,
-            IEnumerable<BinaryExpression> varAssignments)
+            IEnumerable<BinaryExpression> joinedAssignments)
         {
             if (translation == null)
             {
                 return null;
             }
 
-            if ((expression.NodeType == ExpressionType.Block) ||
-                (expression.NodeType == ExpressionType.Lambda) ||
-                translation.IsTerminated() ||
-                (expression is CommentExpression))
+            if (StatementIsTerminated(translation, expression))
             {
                 return translation;
             }
 
             translation += ";";
 
-            if ((expression.NodeType == ExpressionType.Assign) &&
-                varAssignments.Contains(expression))
+            if ((expression.NodeType != ExpressionType.Assign) || !joinedAssignments.Contains(expression))
             {
-                translation = "var " + translation;
+                return translation;
             }
 
-            return translation;
+            var typeName = GetVariableTypeName((BinaryExpression)expression);
+
+            return typeName + " " + translation;
+        }
+
+        private static bool StatementIsTerminated(string translation, Expression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Block:
+                case ExpressionType.Lambda:
+                    return true;
+
+                case ExpressionType.Assign:
+                    return false;
+            }
+
+            if (translation.IsTerminated())
+            {
+                return true;
+            }
+
+            return expression is CommentExpression;
+        }
+
+        private static string GetVariableTypeName(BinaryExpression assignment)
+        {
+            return assignment.Right.NodeType == ExpressionType.Lambda
+                ? assignment.Right.Type.GetFriendlyName()
+                : "var";
         }
 
         private static IEnumerable<string> ProcessBlockContents(IList<string> lines, Expression finalExpression)
@@ -136,13 +161,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         #region Helper Classes
 
-        private class VarAssignmentVisitor : ExpressionVisitor
+        private class JoinedAssignmentVisitor : ExpressionVisitor
         {
             private readonly List<Expression> _assignedVariables;
             private readonly List<Expression> _accessedVariables;
             private readonly List<BinaryExpression> _assignments;
 
-            private VarAssignmentVisitor()
+            private JoinedAssignmentVisitor()
             {
                 _assignedVariables = new List<Expression>();
                 _accessedVariables = new List<Expression>();
@@ -151,7 +176,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             public static IEnumerable<BinaryExpression> GetAssignments(Expression block)
             {
-                var visitor = new VarAssignmentVisitor();
+                var visitor = new JoinedAssignmentVisitor();
 
                 visitor.Visit(block);
 
