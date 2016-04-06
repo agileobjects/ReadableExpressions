@@ -226,7 +226,16 @@
             Assert.AreEqual("ip.SetFirst(str)", translated);
         }
 
-        #region Helper Class
+        [TestMethod]
+        public void ShouldNotIncludeCapturedInstanceNames()
+        {
+            var helper = new CapturedInstanceHelper(5);
+            var translated = helper.GetComparisonTranslation(3);
+
+            Assert.AreEqual("(_i == comparator)", translated);
+        }
+
+        #region Helper Classes
 
         // ReSharper disable once ClassNeverInstantiated.Local
         private class IndexedProperty
@@ -243,6 +252,23 @@
             public T GetFirst<T>() => (T)_values[0];
 
             public void SetFirst<T>(T item) => _values[0] = item;
+        }
+
+        internal class CapturedInstanceHelper
+        {
+            private readonly int _i;
+
+            public CapturedInstanceHelper(int i)
+            {
+                _i = i;
+            }
+
+            public string GetComparisonTranslation(int comparator)
+            {
+                Expression<Func<bool>> comparison = () => _i == comparator;
+
+                return comparison.Body.ToReadableString();
+            }
         }
 
         #endregion

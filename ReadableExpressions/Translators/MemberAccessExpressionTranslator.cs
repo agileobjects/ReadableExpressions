@@ -20,13 +20,37 @@ namespace AgileObjects.ReadableExpressions.Translators
         private string GetSubject(MemberExpression memberExpression)
         {
             return (memberExpression.Expression != null)
-                ? Registry.Translate(memberExpression.Expression)
+                ? GetInstanceMemberSubject(memberExpression)
                 : memberExpression.Type.Name;
+        }
+
+        private string GetInstanceMemberSubject(MemberExpression memberExpression)
+        {
+            return SubjectIsCapturedInstance(memberExpression)
+                ? null
+                : Registry.Translate(memberExpression.Expression);
+        }
+
+        private static bool SubjectIsCapturedInstance(MemberExpression memberExpression)
+        {
+            if (memberExpression.Expression.NodeType != ExpressionType.Constant)
+            {
+                return false;
+            }
+
+            var subjectType = ((ConstantExpression)memberExpression.Expression).Type;
+
+            return subjectType == memberExpression.Member.DeclaringType;
         }
 
         internal string GetMemberAccess(string subject, string memberName)
         {
-            return subject + "." + memberName;
+            if (subject != null)
+            {
+                subject += ".";
+            }
+
+            return subject + memberName;
         }
     }
 }
