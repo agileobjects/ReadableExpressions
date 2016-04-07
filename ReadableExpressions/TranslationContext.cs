@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions
+namespace AgileObjects.ReadableExpressions
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -6,19 +6,20 @@
 
     public class TranslationContext
     {
-        private IEnumerable<ParameterExpression> _joinedAssignmentVariables;
         private IEnumerable<BinaryExpression> _joinedAssignments;
+        private IEnumerable<ParameterExpression> _joinedAssignmentVariables;
 
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables
         {
             get
             {
                 return _joinedAssignmentVariables ??
-                    (_joinedAssignmentVariables = _joinedAssignments?
-                        .Select(assignment => assignment.Left)
-                        .Cast<ParameterExpression>()
-                        .ToArray()
-                    ?? Enumerable.Empty<ParameterExpression>());
+                       (_joinedAssignmentVariables =
+                            _joinedAssignments?
+                               .Select(assignment => assignment.Left)
+                               .Cast<ParameterExpression>()
+                               .ToArray()
+                            ?? Enumerable.Empty<ParameterExpression>());
             }
         }
 
