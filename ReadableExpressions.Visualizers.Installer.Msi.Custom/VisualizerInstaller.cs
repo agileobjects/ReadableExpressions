@@ -45,7 +45,10 @@
             // ReSharper disable once AssignNullToNotNullAttribute
             using (var streamReader = new StreamReader(resourceStream))
             {
-                return streamReader.ReadToEnd();
+                return streamReader
+                    .ReadToEnd()
+                    .Replace("$version$", _thisAssemblyVersion.FileVersion)
+                    .Replace("$author$", _thisAssemblyVersion.CompanyName);
             }
         }
 
@@ -65,7 +68,7 @@
             }
         }
 
-        private IEnumerable<Visualizer> GetRelevantVisualizers()
+        private static IEnumerable<Visualizer> GetRelevantVisualizers()
         {
             return _thisAssembly
                 .GetManifestResourceNames()
