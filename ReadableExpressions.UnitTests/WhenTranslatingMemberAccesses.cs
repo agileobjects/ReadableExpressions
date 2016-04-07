@@ -249,6 +249,20 @@
             Assert.AreEqual("ip.TryGet(1, out value)", translated);
         }
 
+        [TestMethod]
+        public void ShouldIncludeRefParameterKeywords()
+        {
+            var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
+            var three = Expression.Constant(3);
+            var valueVariable = Expression.Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetMethod("RefGet");
+            var tryGetCall = Expression.Call(helperVariable, tryGetMethod, three, valueVariable);
+
+            var translated = tryGetCall.ToReadableString();
+
+            Assert.AreEqual("ip.RefGet(3, ref value)", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -268,6 +282,15 @@
             {
                 value = _values.ElementAtOrDefault(index);
                 return value != null;
+            }
+
+            // ReSharper disable once UnusedMember.Local
+            public void RefGet(int index, ref object value)
+            {
+                if (value == null)
+                {
+                    value = _values.ElementAtOrDefault(index);
+                }
             }
 
             public T GetFirst<T>() => (T)_values[0];

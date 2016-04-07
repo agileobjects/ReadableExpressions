@@ -18,10 +18,23 @@
             TranslationContext context,
             Func<Expression, TranslationContext, string> globalTranslator)
         {
-            _parameterModifiers = method?.GetParameters().Select(p => p.IsOut ? "out " : null) ?? Enumerable.Empty<string>();
+            _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments;
             _context = context;
             _globalTranslator = globalTranslator;
+        }
+
+        private static IEnumerable<string> GetParameterModifers(IMethodInfo method)
+        {
+            if (method == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return method
+                .GetParameters()
+                .Select(p => p.IsOut ? "out " : p.ParameterType.IsByRef ? "ref " : null)
+                .ToArray();
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
