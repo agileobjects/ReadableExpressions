@@ -48,6 +48,7 @@
     <Compile Include="ExpressionTranslators.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="ReadableExpression.cs" />
+    <Compile Include="TranslationContext.cs" />
     <Compile Include="Translators\BclMethodInfoWrapper.cs" />
     <Compile Include="Translators\Formatting\CodeBlock.cs" />
     <Compile Include="Translators\DebugInfoExpressionTranslator.cs" />
