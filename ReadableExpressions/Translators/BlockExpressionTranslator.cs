@@ -17,9 +17,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var block = (BlockExpression)expression;
 
-            var joinedAssignments = JoinedAssignmentVisitor.GetAssignments(block);
-            var variables = GetVariableDeclarations(block, joinedAssignments);
-            var lines = GetBlockLines(block, joinedAssignments, context);
+            context.Process(block);
+
+            var variables = GetVariableDeclarations(block, context);
+            var lines = GetBlockLines(block, context);
 
             lines = ProcessBlockContents(lines.ToArray(), block.Expressions.Last());
 
@@ -30,31 +31,24 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static IEnumerable<string> GetVariableDeclarations(
             BlockExpression block,
-            IEnumerable<BinaryExpression> joinedAssignments)
+            TranslationContext context)
         {
-            var joinedAssignmentVariables = joinedAssignments
-                .Select(a => a.Left)
-                .Cast<ParameterExpression>();
-
             return block
                 .Variables
-                .Except(joinedAssignmentVariables)
+                .Except(context.JoinedAssignmentVariables)
                 .GroupBy(v => v.Type)
                 .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
         }
 
-        private IEnumerable<string> GetBlockLines(
-            BlockExpression block,
-            IEnumerable<BinaryExpression> joinedAssignments,
-            TranslationContext context)
+        private IEnumerable<string> GetBlockLines(BlockExpression block, TranslationContext context)
         {
             return block
                 .Expressions
-                .Where(exp => Include(exp) || (exp == block.Result))
+                .Where(exp => (exp == block.Result) || Include(exp))
                 .Select(exp => new
                 {
                     Expression = exp,
-                    Translation = GetTerminatedStatementOrNull(exp, joinedAssignments, context)
+                    Translation = GetTerminatedStatementOrNull(exp, context)
                 })
                 .Where(d => d.Translation != null)
                 .Select(d => d.Translation);
@@ -75,10 +69,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return expression is CommentExpression;
         }
 
-        private string GetTerminatedStatementOrNull(
-            Expression expression,
-            IEnumerable<BinaryExpression> joinedAssignments,
-            TranslationContext context)
+        private string GetTerminatedStatementOrNull(Expression expression, TranslationContext context)
         {
             var translation = GetTranslation(expression, context);
 
@@ -94,7 +85,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             translation += ";";
 
-            if ((expression.NodeType != ExpressionType.Assign) || !joinedAssignments.Contains(expression))
+            if (context.IsNotJoinedAssignment(expression))
             {
                 return translation;
             }
@@ -161,65 +152,5 @@ namespace AgileObjects.ReadableExpressions.Translators
             return line.EndsWith("}", StringComparison.Ordinal) &&
                 !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWith(Environment.NewLine));
         }
-
-        #region Helper Classes
-
-        private class JoinedAssignmentVisitor : ExpressionVisitor
-        {
-            private readonly List<Expression> _assignedVariables;
-            private readonly List<Expression> _accessedVariables;
-            private readonly List<BinaryExpression> _assignments;
-
-            private JoinedAssignmentVisitor()
-            {
-                _assignedVariables = new List<Expression>();
-                _accessedVariables = new List<Expression>();
-                _assignments = new List<BinaryExpression>();
-            }
-
-            public static IEnumerable<BinaryExpression> GetAssignments(Expression block)
-            {
-                var visitor = new JoinedAssignmentVisitor();
-
-                visitor.Visit(block);
-
-                return visitor._assignments;
-            }
-
-            protected override Expression VisitParameter(ParameterExpression variable)
-            {
-                if (VariableHasNotYetBeenAccessed(variable))
-                {
-                    _accessedVariables.Add(variable);
-                }
-
-                return base.VisitParameter(variable);
-            }
-
-            protected override Expression VisitBinary(BinaryExpression binaryExpression)
-            {
-                if ((binaryExpression.NodeType == ExpressionType.Assign) &&
-                    (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
-                    !_assignedVariables.Contains(binaryExpression.Left))
-                {
-                    var variable = binaryExpression.Left;
-
-                    if (VariableHasNotYetBeenAccessed(variable))
-                    {
-                        _assignments.Add(binaryExpression);
-                        _assignedVariables.Add(variable);
-                    }
-                }
-
-                return base.VisitBinary(binaryExpression);
-            }
-
-            private bool VariableHasNotYetBeenAccessed(Expression variable)
-            {
-                return !_accessedVariables.Contains(variable);
-            }
-        }
-
-        #endregion
     }
 }

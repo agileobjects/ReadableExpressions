@@ -191,7 +191,7 @@ getName.Invoke();";
         }
 
         [TestMethod]
-        public void ShouldNotVarAssignADeclaredVariable()
+        public void ShouldNotVarAssignAnOuterBlockDeclaredVariable()
         {
             var nameVariable = Expression.Variable(typeof(string), "name");
             var writeNameTwiceVariable = Expression.Variable(typeof(Action), "writeNameTwice");
@@ -206,9 +206,8 @@ getName.Invoke();";
 
             var block = Expression.Block(
                 new[] { nameVariable, writeNameTwiceVariable },
-                writeNameTwiceAssignment,
-                nameAssignment,
-                writeNameTwiceCall);
+                Expression.Block(writeNameTwiceAssignment),
+                Expression.Block(nameAssignment, writeNameTwiceCall));
 
             var translated = block.ToReadableString();
 
