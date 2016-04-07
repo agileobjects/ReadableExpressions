@@ -109,7 +109,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> parameters,
             TranslationContext context)
         {
-            var parametersString = GetTranslatedParameters(parameters, context).WithBrackets();
+            var parametersString = GetTranslatedParameters(parameters, context, method).WithBrackets();
             var genericArguments = GetGenericArgumentsIfNecessary(method);
 
             return method.Name + genericArguments + parametersString;

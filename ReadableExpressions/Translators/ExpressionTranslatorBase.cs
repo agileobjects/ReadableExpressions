@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
+    using System.Reflection;
     using Formatting;
 
     internal abstract class ExpressionTranslatorBase : IExpressionTranslator
@@ -29,9 +30,10 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         protected ParameterSet GetTranslatedParameters(
             IEnumerable<Expression> parameters,
-            TranslationContext context)
+            TranslationContext context,
+            IMethodInfo method = null)
         {
-            return new ParameterSet(parameters, context, _globalTranslator);
+            return new ParameterSet(method, parameters, context, _globalTranslator);
         }
 
         protected CodeBlock GetTranslatedExpressionBody(

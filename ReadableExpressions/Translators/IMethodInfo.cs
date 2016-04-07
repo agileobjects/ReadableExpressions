@@ -13,5 +13,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         MethodInfo GetGenericMethodDefinition();
 
         IEnumerable<Type> GetGenericArguments();
+
+        IEnumerable<ParameterInfo> GetParameters();
     }
 }

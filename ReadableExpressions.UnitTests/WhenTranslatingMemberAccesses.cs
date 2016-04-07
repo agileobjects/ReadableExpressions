@@ -235,6 +235,20 @@
             Assert.AreEqual("(_i == comparator)", translated);
         }
 
+        [TestMethod]
+        public void ShouldIncludeOutParameterKeywords()
+        {
+            var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
+            var one = Expression.Constant(1);
+            var valueVariable = Expression.Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetMethod("TryGet");
+            var tryGetCall = Expression.Call(helperVariable, tryGetMethod, one, valueVariable);
+
+            var translated = tryGetCall.ToReadableString();
+
+            Assert.AreEqual("ip.TryGet(1, out value)", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable once ClassNeverInstantiated.Local
@@ -248,6 +262,13 @@
             }
 
             public object this[int index] => _values[index];
+
+            // ReSharper disable once UnusedMember.Local
+            public bool TryGet(int index, out object value)
+            {
+                value = _values.ElementAtOrDefault(index);
+                return value != null;
+            }
 
             public T GetFirst<T>() => (T)_values[0];
 

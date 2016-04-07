@@ -7,18 +7,21 @@
 
     internal class ParameterSet : FormattableExpressionBase
     {
-        private readonly IEnumerable<Expression> _parameters;
+        private readonly IEnumerable<string> _parameterModifiers;
+        private readonly IEnumerable<Expression> _arguments;
         private readonly TranslationContext _context;
-        private readonly Func<Expression, TranslationContext, string> _translator;
+        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
 
         public ParameterSet(
-            IEnumerable<Expression> parameters,
+            IMethodInfo method,
+            IEnumerable<Expression> arguments,
             TranslationContext context,
-            Func<Expression, TranslationContext, string> translator)
+            Func<Expression, TranslationContext, string> globalTranslator)
         {
-            _parameters = parameters;
+            _parameterModifiers = method?.GetParameters().Select(p => p.IsOut ? "out " : null) ?? Enumerable.Empty<string>();
+            _arguments = arguments;
             _context = context;
-            _translator = translator;
+            _globalTranslator = globalTranslator;
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
@@ -29,7 +32,7 @@
             {
                 return () =>
                     Environment.NewLine +
-                    FormatParameters("," + Environment.NewLine, p => p.Indent());
+                    FormatParameters("," + Environment.NewLine, a => a.Indent());
             }
         }
 
@@ -44,14 +47,21 @@
 
             return string.Join(
                 separator,
-                _parameters
-                    .Select(p => _translator.Invoke(p, _context))
+                _arguments
+                    .Select(TranslateArgument)
                     .Select(extraFormatter));
+        }
+
+        private string TranslateArgument(Expression argument, int parameterIndex)
+        {
+            var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
+
+            return modifier + _globalTranslator.Invoke(argument, _context);
         }
 
         public string WithBracketsIfNecessary()
         {
-            return (_parameters.Count() == 1) ? WithoutBrackets() : WithBrackets();
+            return (_arguments.Count() == 1) ? WithoutBrackets() : WithBrackets();
         }
 
         public string WithoutBrackets()
@@ -61,7 +71,7 @@
 
         public string WithBrackets()
         {
-            return _parameters.Any() ? $"({ToString()})" : "()";
+            return _arguments.Any() ? $"({ToString()})" : "()";
         }
     }
 }
