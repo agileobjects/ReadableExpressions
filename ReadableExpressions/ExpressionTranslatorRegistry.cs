@@ -63,13 +63,9 @@
         {
             IExpressionTranslator translator;
 
-            if (_translatorsByType.TryGetValue(expression.NodeType, out translator))
-            {
-                return translator.Translate(expression, context);
-            }
-
-            throw new NotSupportedException(
-                $"Unable to translate Expression with NodeType {expression.NodeType}");
+            return _translatorsByType.TryGetValue(expression.NodeType, out translator)
+                ? translator.Translate(expression, context)
+                : expression.ToString();
         }
     }
 }

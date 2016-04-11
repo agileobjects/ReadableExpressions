@@ -224,7 +224,16 @@ writeNameTwice.Invoke();";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
-        #region Helper Class
+        [TestMethod]
+        public void ShouldTranslateAnUnknownExpressionType()
+        {
+            var unknown = new UnknownExpression();
+            var translated = unknown.ToReadableString();
+
+            Assert.AreEqual(unknown.ToString(), translated);
+        }
+
+        #region Helper Classes
 
         // ReSharper disable UnusedMember.Local
         // ReSharper disable UnusedParameter.Local
@@ -241,6 +250,16 @@ writeNameTwice.Invoke();";
         }
         // ReSharper restore UnusedParameter.Local
         // ReSharper restore UnusedMember.Local
+
+        private class UnknownExpression : Expression
+        {
+            public override ExpressionType NodeType => (ExpressionType)5346372;
+
+            public override string ToString()
+            {
+                return "You can't know me!";
+            }
+        }
 
         #endregion
     }
