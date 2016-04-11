@@ -55,7 +55,7 @@ namespace AgileObjects.ReadableExpressions
                     .Replace(UnindentPlaceholder, null);
             }
 
-            return code.Replace(UnindentPlaceholder, null);
+            return code;
         }
     }
 }
