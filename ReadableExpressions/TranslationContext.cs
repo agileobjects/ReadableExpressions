@@ -6,58 +6,59 @@ namespace AgileObjects.ReadableExpressions
 
     public class TranslationContext
     {
-        private IEnumerable<BinaryExpression> _joinedAssignments;
-        private IEnumerable<ParameterExpression> _joinedAssignmentVariables;
+        private ExpressionAnalysisVisitor _analyzer;
 
-        public IEnumerable<ParameterExpression> JoinedAssignmentVariables
-        {
-            get
-            {
-                return _joinedAssignmentVariables ??
-                       (_joinedAssignmentVariables =
-                            _joinedAssignments?
-                               .Select(assignment => assignment.Left)
-                               .Cast<ParameterExpression>()
-                               .ToArray()
-                            ?? Enumerable.Empty<ParameterExpression>());
-            }
-        }
+        public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
 
         public void Process(BlockExpression block)
         {
-            if (_joinedAssignments != null)
+            if (_analyzer != null)
             {
                 return;
             }
 
-            _joinedAssignments = JoinedAssignmentVisitor.GetAssignments(block);
+            _analyzer = ExpressionAnalysisVisitor.For(block);
         }
 
         public bool IsNotJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != ExpressionType.Assign) || !_joinedAssignments.Contains(expression);
+            return (expression.NodeType != ExpressionType.Assign) || 
+                !_analyzer.JoinedAssignments.Contains(expression);
         }
 
-        private class JoinedAssignmentVisitor : ExpressionVisitor
+        public bool IsReferencedByGoto(LabelTarget labelTarget)
         {
-            private readonly List<Expression> _assignedVariables;
-            private readonly List<Expression> _accessedVariables;
-            private readonly List<BinaryExpression> _assignments;
+            return _analyzer.NamedLabelTargets.Contains(labelTarget);
+        }
 
-            private JoinedAssignmentVisitor()
+        private class ExpressionAnalysisVisitor : ExpressionVisitor
+        {
+            private readonly List<ParameterExpression> _accessedVariables;
+            private readonly List<ParameterExpression> _assignedVariables;
+            private readonly List<BinaryExpression> _joinedAssignments;
+            private readonly List<LabelTarget> _namedLabelTargets;
+
+            private ExpressionAnalysisVisitor()
             {
-                _assignedVariables = new List<Expression>();
-                _accessedVariables = new List<Expression>();
-                _assignments = new List<BinaryExpression>();
+                _accessedVariables = new List<ParameterExpression>();
+                _assignedVariables = new List<ParameterExpression>();
+                _joinedAssignments = new List<BinaryExpression>();
+                _namedLabelTargets = new List<LabelTarget>();
             }
 
-            public static IEnumerable<BinaryExpression> GetAssignments(Expression block)
+            public IEnumerable<ParameterExpression> AssignedVariables => _assignedVariables;
+
+            public IEnumerable<BinaryExpression> JoinedAssignments => _joinedAssignments;
+
+            public IEnumerable<LabelTarget> NamedLabelTargets => _namedLabelTargets;
+
+            public static ExpressionAnalysisVisitor For(Expression block)
             {
-                var visitor = new JoinedAssignmentVisitor();
+                var visitor = new ExpressionAnalysisVisitor();
 
                 visitor.Visit(block);
 
-                return visitor._assignments;
+                return visitor;
             }
 
             protected override Expression VisitParameter(ParameterExpression variable)
@@ -76,11 +77,11 @@ namespace AgileObjects.ReadableExpressions
                     (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
                     !_assignedVariables.Contains(binaryExpression.Left))
                 {
-                    var variable = binaryExpression.Left;
+                    var variable = (ParameterExpression)binaryExpression.Left;
 
                     if (VariableHasNotYetBeenAccessed(variable))
                     {
-                        _assignments.Add(binaryExpression);
+                        _joinedAssignments.Add(binaryExpression);
                         _assignedVariables.Add(variable);
                     }
                 }
@@ -91,6 +92,16 @@ namespace AgileObjects.ReadableExpressions
             private bool VariableHasNotYetBeenAccessed(Expression variable)
             {
                 return !_accessedVariables.Contains(variable);
+            }
+
+            protected override Expression VisitGoto(GotoExpression @goto)
+            {
+                if (@goto.Kind == GotoExpressionKind.Goto)
+                {
+                    _namedLabelTargets.Add(@goto.Target);
+                }
+
+                return base.VisitGoto(@goto);
             }
         }
     }

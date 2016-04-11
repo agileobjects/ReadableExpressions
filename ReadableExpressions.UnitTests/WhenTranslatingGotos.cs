@@ -129,5 +129,33 @@ i =>
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldNotIncludeLabelNamesWithoutAGoto()
+        {
+            var returnLabelTarget = Expression.Label(typeof(bool), "ReturnTarget");
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var variableLessThanOne = Expression.LessThan(intVariable, Expression.Constant(1));
+            var returnTrue = Expression.Return(returnLabelTarget, Expression.Constant(true));
+
+            var ifLessThanOneReturnTrue = Expression.IfThen(variableLessThanOne, returnTrue);
+            
+            var testBlock = Expression.Block(
+                ifLessThanOneReturnTrue,
+                Expression.Label(returnLabelTarget, Expression.Constant(false)));
+
+            var translated = testBlock.ToReadableString();
+
+            const string EXPECTED = @"
+if (i < 1)
+{
+    return true;
+}
+
+return false;";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
