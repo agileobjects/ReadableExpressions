@@ -23,5 +23,36 @@
 
             Assert.IsNull(translated);
         }
+
+        [TestMethod]
+        public void ShouldEscapeAKeywordVariable()
+        {
+            VerifyIsEscaped("int");
+            VerifyIsEscaped("typeof");
+            VerifyIsEscaped("default");
+            VerifyIsEscaped("void");
+            VerifyIsEscaped("readonly");
+            VerifyIsEscaped("do");
+            VerifyIsEscaped("while");
+            VerifyIsEscaped("switch");
+            VerifyIsEscaped("if");
+            VerifyIsEscaped("else");
+            VerifyIsEscaped("try");
+            VerifyIsEscaped("catch");
+            VerifyIsEscaped("finally");
+            VerifyIsEscaped("throw");
+            VerifyIsEscaped("for");
+            VerifyIsEscaped("foreach");
+            VerifyIsEscaped("goto");
+            VerifyIsEscaped("return");
+        }
+
+        private static void VerifyIsEscaped(string keyword)
+        {
+            var variable = Expression.Variable(typeof(bool), keyword);
+            var translated = variable.ToReadableString();
+
+            Assert.AreEqual("@" + keyword, translated);
+        }
     }
 }

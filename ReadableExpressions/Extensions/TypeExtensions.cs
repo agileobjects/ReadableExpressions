@@ -22,6 +22,8 @@
             { typeof(string), "string" }
         };
 
+        internal static IEnumerable<string> TypeNames => _typeNameSubstitutions.Values;
+
         public static string GetFriendlyName(this Type type)
         {
             if (!type.IsGenericType)
