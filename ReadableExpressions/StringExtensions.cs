@@ -57,5 +57,16 @@ namespace AgileObjects.ReadableExpressions
 
             return code;
         }
+
+        public static string WithoutSurroundingParentheses(this string value)
+        {
+            if ((value?.StartsWith("(", StringComparison.Ordinal) == true) &&
+                value.EndsWith(")", StringComparison.Ordinal))
+            {
+                return value.Substring(1, value.Length - 2);
+            }
+
+            return value;
+        }
     }
 }

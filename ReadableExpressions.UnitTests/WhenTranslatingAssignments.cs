@@ -176,5 +176,17 @@
 
             Assert.AreEqual("i1 >>= i2", translated);
         }
+
+        [TestMethod]
+        public void ShouldNotWrapAnAssignmentValueInParentheses()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var oneMultipliedByTwo = Expression.Multiply(Expression.Constant(1), Expression.Constant(2));
+            var assignment = Expression.Assign(intVariable, oneMultipliedByTwo);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.AreEqual("i = 1 * 2", translated);
+        }
     }
 }

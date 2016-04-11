@@ -3,7 +3,6 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
-    using System.Reflection;
     using Formatting;
 
     internal abstract class ExpressionTranslatorBase : IExpressionTranslator
@@ -67,13 +66,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
         {
-            var body = GetTranslation(bodySingle, context);
-
-            if ((body?.StartsWith("(", StringComparison.Ordinal) == true) &&
-                body.EndsWith(")", StringComparison.Ordinal))
-            {
-                body = body.Substring(1, body.Length - 2);
-            }
+            var body = GetTranslation(bodySingle, context).WithoutSurroundingParentheses();
 
             return new CodeBlock(body);
         }

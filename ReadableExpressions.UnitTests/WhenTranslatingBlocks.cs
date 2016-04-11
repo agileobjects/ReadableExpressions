@@ -167,7 +167,7 @@ count += 2;";
             const string EXPECTED = @"
 var countOne = 1;
 var countTwo = 2;
-var countThree = ((byte)(countOne + countTwo));";
+var countThree = (byte)(countOne + countTwo);";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

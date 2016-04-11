@@ -47,7 +47,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var value = GetTranslation(right, context);
+            var value = GetTranslation(right, context).WithoutSurroundingParentheses();
 
             return $"{target} {symbol} {value}";
         }
