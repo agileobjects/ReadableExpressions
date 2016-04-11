@@ -39,12 +39,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSuject(methodCall, context, out methodArguments);
+            var methodCallSubject = GetMethodCallSubject(methodCall, context, out methodArguments);
 
             return GetMethodCall(methodCallSubject, methodCall.Method, methodArguments, context);
         }
 
-        private string GetMethodCallSuject(
+        private string GetMethodCallSubject(
             MethodCallExpression methodCall,
             TranslationContext context,
             out IEnumerable<Expression> arguments)
