@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
 {
+    using System;
     using System.Drawing;
     using System.Windows.Forms;
 
@@ -8,6 +9,7 @@
         public static readonly ExpressionDialog Instance = new ExpressionDialog();
 
         private readonly Label _label;
+        private readonly Size _maximumSize;
 
         private ExpressionDialog()
         {
@@ -16,16 +18,30 @@
 
             _label = new Label
             {
-                Dock = DockStyle.Fill,
                 Margin = new Padding(10, 15, 10, 12),
                 Font = new Font(FontFamily.GenericMonospace, 11.0f),
                 AutoSize = true
             };
 
+            _maximumSize = GetMaximumSize();
+
             Controls.Add(_label);
         }
 
+        private Size GetMaximumSize()
+        {
+            var screenSize = Screen.FromControl(this).Bounds.Size;
+
+            return new Size(
+                Convert.ToInt32(screenSize.Width * .9),
+                Convert.ToInt32(screenSize.Height * .8));
+        }
+
         public override bool AutoSize => true;
+
+        public override bool AutoScroll => true;
+
+        public override Size MaximumSize => _maximumSize;
 
         public override string Text => string.Empty;
 
