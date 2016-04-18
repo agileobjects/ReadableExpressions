@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Extensions;
 
     internal partial class InitialisationExpressionTranslator
     {
@@ -14,13 +15,27 @@
             {
             }
 
-            protected override NewArrayExpression GetNewExpression(NewArrayExpression expression)
+            protected override string GetNewExpressionString(NewArrayExpression initialisation, TranslationContext context)
             {
-                var arrayElementType = expression.Type.GetElementType();
+                var explicitType = GetExplicitArrayTypeIfRequired(initialisation);
 
-                return Expression.NewArrayBounds(
-                    arrayElementType,
-                    Expression.Constant(expression.Expressions.Count));
+                return "new" + explicitType + "[]";
+            }
+
+            private string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation)
+            {
+                var expressionTypes = initialisation
+                    .Expressions
+                    .Select(exp => exp.Type)
+                    .Distinct()
+                    .ToArray();
+
+                if (expressionTypes.Length == 1)
+                {
+                    return null;
+                }
+
+                return " " + initialisation.Type.GetElementType().GetFriendlyName();
             }
 
             protected override bool ConstructorIsParameterless(NewArrayExpression newExpression)
@@ -28,11 +43,11 @@
                 return false;
             }
 
-            protected override IEnumerable<string> GetInitialisations(
-                NewArrayExpression expression,
+            protected override IEnumerable<string> GetMemberInitialisations(
+                NewArrayExpression arrayInitialisation,
                 TranslationContext context)
             {
-                return expression.Expressions.Select(exp => GlobalTranslator.Invoke(exp, context));
+                return arrayInitialisation.Expressions.Select(exp => GlobalTranslator.Invoke(exp, context));
             }
         }
     }

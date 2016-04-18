@@ -15,7 +15,7 @@
             public MemberInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
                 Func<Expression, TranslationContext, string> globalTranslator)
-                : base(globalTranslator)
+                : base(globalTranslator, exp => exp.NewExpression)
             {
                 _methodCallTranslator = methodCallTranslator;
 
@@ -27,19 +27,14 @@
                 };
             }
 
-            protected override NewExpression GetNewExpression(MemberInitExpression expression)
-            {
-                return expression.NewExpression;
-            }
-
             protected override bool ConstructorIsParameterless(NewExpression newExpression)
             {
                 return !newExpression.Arguments.Any();
             }
 
-            protected override IEnumerable<string> GetInitialisations(MemberInitExpression expression, TranslationContext context)
+            protected override IEnumerable<string> GetMemberInitialisations(MemberInitExpression initialisation, TranslationContext context)
             {
-                return GetInitialisations(expression.Bindings, context);
+                return GetInitialisations(initialisation.Bindings, context);
             }
 
             private string[] GetInitialisations(IEnumerable<MemberBinding> memberBindings, TranslationContext context)
@@ -63,7 +58,7 @@
 
                 var subBindings = GetInitialisations(memberBinding.Bindings, context);
 
-                return GetInitialisations(subBindings, memberBinding.Member.Name + " =");
+                return GetInitialisation(memberBinding.Member.Name + " =", subBindings);
             }
 
             private string TranslateListBinding(MemberBinding binding, TranslationContext context)
@@ -77,7 +72,7 @@
                         : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments, context))
                     .ToArray();
 
-                return GetInitialisations(listInitialisers, listBinding.Member.Name + " =");
+                return GetInitialisation(listBinding.Member.Name + " =", listInitialisers);
             }
 
             private static bool IsStandardAddMethod(ElementInit init)

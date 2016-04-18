@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Linq.Expressions;
+    using Extensions;
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
@@ -22,7 +23,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return (memberExpression.Expression != null)
                 ? GetInstanceMemberSubject(memberExpression, context)
-                : memberExpression.Type.Name;
+                : memberExpression.Type.GetFriendlyName();
         }
 
         private string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)

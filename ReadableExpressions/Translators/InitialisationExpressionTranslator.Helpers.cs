@@ -16,8 +16,13 @@
             where TExpression : Expression
             where TNewExpression : Expression
         {
-            protected InitExpressionHelperBase(Func<Expression, TranslationContext, string> globalTranslator)
+            private readonly Func<TExpression, TNewExpression> _newExpressionFactory;
+
+            protected InitExpressionHelperBase(
+                Func<Expression, TranslationContext, string> globalTranslator,
+                Func<TExpression, TNewExpression> newExpressionFactory = null)
             {
+                _newExpressionFactory = newExpressionFactory;
                 GlobalTranslator = globalTranslator;
             }
 
@@ -27,14 +32,14 @@
             {
                 var typedExpression = (TExpression)expression;
                 var newExpression = GetNewExpressionString(typedExpression, context);
-                var initialisations = GetInitialisations(typedExpression, context).ToArray();
+                var memberInitialisations = GetMemberInitialisations(typedExpression, context).ToArray();
 
-                return GetInitialisations(initialisations, newExpression);
+                return GetInitialisation(newExpression, memberInitialisations);
             }
 
-            private string GetNewExpressionString(TExpression initialisation, TranslationContext context)
+            protected virtual string GetNewExpressionString(TExpression initialisation, TranslationContext context)
             {
-                var newExpression = GetNewExpression(initialisation);
+                var newExpression = _newExpressionFactory.Invoke(initialisation);
                 var newExpressionString = GlobalTranslator.Invoke(newExpression, context);
 
                 if (ConstructorIsParameterless(newExpression))
@@ -46,22 +51,20 @@
                 return newExpressionString;
             }
 
-            protected abstract TNewExpression GetNewExpression(TExpression expression);
-
             protected abstract bool ConstructorIsParameterless(TNewExpression newExpression);
 
-            protected abstract IEnumerable<string> GetInitialisations(TExpression expression, TranslationContext context);
+            protected abstract IEnumerable<string> GetMemberInitialisations(TExpression initialisation, TranslationContext context);
 
-            protected static string GetInitialisations(string[] initialisations, string newExpression = null)
+            protected static string GetInitialisation(string newExpression, string[] memberInitialisations)
             {
-                if ((newExpression?.Length + initialisations.Sum(init => init.Length + 2)) <= 40)
+                if ((newExpression.Length + memberInitialisations.Sum(init => init.Length + 2)) <= 40)
                 {
-                    return $"{newExpression} {{ {string.Join(", ", initialisations)} }}";
+                    return $"{newExpression} {{ {string.Join(", ", memberInitialisations)} }}";
                 }
 
                 var initialisationBlock = string.Join(
                     "," + Environment.NewLine,
-                    initialisations.Select(init => init.Indent()));
+                    memberInitialisations.Select(init => init.Indent()));
 
                 var initialisation = $@"
 {newExpression}

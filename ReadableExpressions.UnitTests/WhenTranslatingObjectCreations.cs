@@ -58,7 +58,7 @@ new MemoryStream
         }
 
         [TestMethod]
-        public void ShouldTranslateANewExpressionWithANestedInitialisations()
+        public void ShouldTranslateANewExpressionWithNestedInitialisations()
         {
             Expression<Func<ContactDetails>> createContactDetails = () =>
                 new ContactDetails
@@ -104,24 +104,38 @@ new ContactDetails
 
             var translated = createList.Body.ToReadableString();
 
-            const string EXPECTED = @"
-new List<decimal>
-{
-    Add(1.00m),
-    Add(2.00m),
-    Add(3.00m)
-}";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.AreEqual("new List<decimal> { 1.00m, 2.00m, 3.00m }", translated);
         }
 
         [TestMethod]
-        public void ShouldTranslateANewArrayExpressionWithAdditions()
+        public void ShouldTranslateAnImplicitTypeNewArrayExpressionWithAdditions()
         {
             Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.3f, 3.00f };
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new float[3] { 1.00f, 2.3f, 3.00f }", translated);
+            Assert.AreEqual("new[] { 1.00f, 2.3f, 3.00f }", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnExplicitTypeNewArrayExpressionWithAdditions()
+        {
+            Expression<Func<IDisposable[]>> createDisposables = () => new IDisposable[]
+            {
+                new StreamReader(string.Empty),
+                new MemoryStream()
+            };
+
+            var translated = createDisposables.Body.ToReadableString();
+
+            const string EXPECTED = @"
+new IDisposable[]
+{
+    new StreamReader(string.Empty),
+    new MemoryStream()
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]

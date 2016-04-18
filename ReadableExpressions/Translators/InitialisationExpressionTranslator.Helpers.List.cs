@@ -14,14 +14,9 @@
             public ListInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
                 Func<Expression, TranslationContext, string> globalTranslator)
-                : base(globalTranslator)
+                : base(globalTranslator, exp => exp.NewExpression)
             {
                 _methodCallTranslator = methodCallTranslator;
-            }
-
-            protected override NewExpression GetNewExpression(ListInitExpression expression)
-            {
-                return expression.NewExpression;
             }
 
             protected override bool ConstructorIsParameterless(NewExpression newExpression)
@@ -29,17 +24,20 @@
                 return !newExpression.Arguments.Any();
             }
 
-            protected override IEnumerable<string> GetInitialisations(
-                ListInitExpression expression,
+            protected override IEnumerable<string> GetMemberInitialisations(
+                ListInitExpression listInitialisation,
                 TranslationContext context)
             {
-                return expression.Initializers
+                return listInitialisation.Initializers
                     .Select(initialisation =>
                     {
-                        var listAddCall = _methodCallTranslator.GetMethodCall(
-                            initialisation.AddMethod,
-                            initialisation.Arguments,
-                            context);
+                        if (initialisation.Arguments.Count == 1)
+                        {
+                            return GlobalTranslator.Invoke(initialisation.Arguments.First(), context);
+                        }
+
+                        var listAddCall = _methodCallTranslator
+                            .GetMethodCall(initialisation.AddMethod, initialisation.Arguments, context);
 
                         return listAddCall;
                     });
