@@ -26,6 +26,8 @@
             _maximumSize = GetMaximumSize();
 
             Controls.Add(_label);
+
+            AddToolbar();
         }
 
         private Size GetMaximumSize()
@@ -35,6 +37,25 @@
             return new Size(
                 Convert.ToInt32(screenSize.Width * .9),
                 Convert.ToInt32(screenSize.Height * .8));
+        }
+
+        private void AddToolbar()
+        {
+            var copyButton = new ToolStripButton
+            {
+                Alignment = ToolStripItemAlignment.Right,
+                Text = "Copy",
+            };
+
+            copyButton.Click += (sender, args) => Clipboard.SetText(_label.Text);
+
+            var toolbar = new ToolStrip(copyButton)
+            {
+                Dock = DockStyle.Bottom,
+                GripStyle = ToolStripGripStyle.Hidden
+            };
+
+            Controls.Add(toolbar);
         }
 
         public override bool AutoSize => true;
@@ -58,8 +79,7 @@
 
         public ExpressionDialog WithText(string expression)
         {
-            Instance._label.Text = expression;
-
+            _label.Text = expression;
             return this;
         }
     }
