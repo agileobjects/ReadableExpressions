@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.PostIncrementAssign] = o => o + "++",
                 [ExpressionType.PreDecrementAssign] = o => "--" + o,
                 [ExpressionType.PreIncrementAssign] = o => "++" + o,
-                [ExpressionType.Throw] = o => "throw " + o,
+                [ExpressionType.Throw] = o => ("throw " + o).TrimEnd(),
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
@@ -30,8 +30,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, TranslationContext context)
         {
-            var mathsOperation = (UnaryExpression)expression;
-            var operand = GetTranslation(mathsOperation.Operand, context);
+            var unary = (UnaryExpression)expression;
+
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse - Operand 
+            // is null when using Expression.Rethrow():
+            var operand = (unary.Operand != null)
+                ? GetTranslation(unary.Operand, context) : null;
 
             return _operatorsByNodeType[expression.NodeType].Invoke(operand);
         }

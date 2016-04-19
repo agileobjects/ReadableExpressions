@@ -61,6 +61,11 @@
 
         public string Translate(Expression expression, TranslationContext context)
         {
+            if (expression == null)
+            {
+                return null;
+            }
+
             IExpressionTranslator translator;
 
             return _translatorsByType.TryGetValue(expression.NodeType, out translator)

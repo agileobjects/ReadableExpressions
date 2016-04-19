@@ -73,7 +73,7 @@ catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
         }
 
         [TestMethod]
-        public void ShouldTranslateATryWithATopLevelCatchWithExceptionRethrow()
+        public void ShouldTranslateATryWithATopLevelCatchWithAnExplicitExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -87,6 +87,30 @@ catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
 try
 {
     Console.Write(""Hello"");
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/1
+        [TestMethod]
+        public void ShouldTranslateATryWithATopLevelCatchWithAnImplicitExceptionRethrow()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            Expression<Action> writeHello = () => Console.WriteLine("Goodbye");
+            var rethrow = Expression.Rethrow();
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
+
+            var translated = tryCatch.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.WriteLine(""Goodbye"");
 }
 catch
 {
