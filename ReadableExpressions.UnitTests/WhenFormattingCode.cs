@@ -185,7 +185,7 @@ value = threeIntsFunc.Invoke(
 string name;
 Func<string> getName = () => name;
 name = ""Fred"";
-getName.Invoke();";
+return getName.Invoke();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

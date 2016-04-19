@@ -22,7 +22,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var variables = GetVariableDeclarations(block, context);
             var lines = GetBlockLines(block, context);
 
-            lines = ProcessBlockContents(lines.ToArray(), block.Expressions.Last());
+            lines = ProcessBlockContents(lines.ToArray(), block);
 
             var blockContents = variables.Concat(lines);
 
@@ -122,7 +122,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : "var";
         }
 
-        private static IEnumerable<string> ProcessBlockContents(IList<string> lines, Expression finalExpression)
+        private static IEnumerable<string> ProcessBlockContents(IList<string> lines, BlockExpression block)
         {
             var finalLineIndex = lines.Count - 1;
 
@@ -142,8 +142,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     continue;
                 }
 
-                yield return (finalExpression.NodeType != ExpressionType.Parameter)
-                    ? line : "return " + line;
+                yield return IncludeReturnStatement(block, lines) ? "return " + line : line;
             }
         }
 
@@ -151,6 +150,26 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return line.EndsWith("}", StringComparison.Ordinal) &&
                 !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWith(Environment.NewLine));
+        }
+
+        private static bool IncludeReturnStatement(BlockExpression block, ICollection<string> lines)
+        {
+            if ((block.Type == typeof(void)) || (lines.Count == 1))
+            {
+                return false;
+            }
+
+            switch (block.Result.NodeType)
+            {
+                case ExpressionType.Call:
+                case ExpressionType.Conditional:
+                case ExpressionType.Invoke:
+                case ExpressionType.MemberAccess:
+                case ExpressionType.Parameter:
+                    return true;
+            }
+
+            return false;
         }
     }
 }

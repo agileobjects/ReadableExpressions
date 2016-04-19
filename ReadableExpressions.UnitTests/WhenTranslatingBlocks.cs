@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -118,6 +120,32 @@ var count = 0;
     var count = 0;
     ++count;
     return count;
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAVariableBlockLambdaWithAReturnExpression()
+        {
+            var listVariable = Expression.Variable(typeof(List<int>), "list");
+            Expression<Func<List<int>>> createList = () => new List<int> { 1, 2, 3 };
+
+            var listAssignment = Expression.Assign(listVariable, createList.Body);
+
+            var toArrayMethod = typeof(Enumerable).GetMethod("ToArray");
+            var typedToArrayMethod = toArrayMethod.MakeGenericMethod(typeof(int));
+            var listToArray = Expression.Call(typedToArrayMethod, listVariable);
+
+            var listBlock = Expression.Block(new[] { listVariable }, listAssignment, listToArray);
+            var listLambda = Expression.Lambda<Func<int[]>>(listBlock);
+
+            var translated = listLambda.ToReadableString();
+
+            const string EXPECTED = @"() =>
+{
+    var list = new List<int> { 1, 2, 3 };
+    return list.ToArray();
 }";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
