@@ -217,6 +217,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAMethodCallWithPartlyImpliedTypeParameters()
+        {
+            Expression<Func<int, string>> convertIntToString =
+                i => new ValueConverter().Convert<int, string>(i);
+
+            var translated = convertIntToString.Body.ToReadableString();
+
+            Assert.AreEqual("new ValueConverter().Convert<int, string>(i)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMethodCallWithoutGenericArgumentIncluded()
         {
             Expression<Action<IndexedProperty, string>> setFirstItem = (ip, str) => ip.SetFirst(str);
@@ -296,6 +307,14 @@
             public T GetFirst<T>() => (T)_values[0];
 
             public void SetFirst<T>(T item) => _values[0] = item;
+        }
+
+        private class ValueConverter
+        {
+            public TResult Convert<TValue, TResult>(TValue value)
+            {
+                return (TResult)(object)value;
+            }
         }
 
         internal class CapturedInstanceHelper
