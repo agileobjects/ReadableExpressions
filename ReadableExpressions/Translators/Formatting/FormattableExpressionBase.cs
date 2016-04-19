@@ -13,13 +13,18 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
         protected abstract Func<string> MultipleLineTranslationFactory { get; }
 
-        public override string ToString()
+        protected string GetFormattedTranslation()
         {
             var translation = SingleLineTranslationFactory.Invoke();
 
             return (translation.Length > 100) || translation.Contains(Environment.NewLine)
                 ? MultipleLineTranslationFactory.Invoke()
                 : translation;
+        }
+
+        public override string ToString()
+        {
+            return GetFormattedTranslation();
         }
     }
 }

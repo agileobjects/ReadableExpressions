@@ -79,12 +79,12 @@
 
         public string WithoutBrackets()
         {
-            return ToString();
+            return GetFormattedTranslation();
         }
 
         public string WithBrackets()
         {
-            return _arguments.Any() ? $"({ToString()})" : "()";
+            return _arguments.Any() ? $"({GetFormattedTranslation()})" : "()";
         }
     }
 }
