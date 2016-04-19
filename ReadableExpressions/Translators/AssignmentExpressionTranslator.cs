@@ -43,13 +43,23 @@ namespace AgileObjects.ReadableExpressions.Translators
         internal string GetAssignment(
             string target,
             ExpressionType assignmentType,
-            Expression right,
+            Expression value,
             TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var value = GetTranslation(right, context).WithoutSurroundingParentheses();
+            var valueString = GetTranslation(value, context);
 
-            return $"{target} {symbol} {value}";
+            if (TrimSurroundingParentheses(value))
+            {
+                valueString = valueString.WithoutSurroundingParentheses();
+            }
+
+            return $"{target} {symbol} {valueString}";
+        }
+
+        private static bool TrimSurroundingParentheses(Expression value)
+        {
+            return value.NodeType != ExpressionType.Conditional;
         }
     }
 }

@@ -188,5 +188,25 @@
 
             Assert.AreEqual("i = 1 * 2", translated);
         }
+
+        [TestMethod]
+        public void ShouldWrapAnAssignmentTernaryTestInParentheses()
+        {
+            var intVariable1 = Expression.Variable(typeof(int), "i");
+            var intVariable2 = Expression.Variable(typeof(int), "j");
+
+            var intVariable2GreaterThanOne = Expression.GreaterThan(intVariable2, Expression.Constant(1));
+
+            var threeOrDefault = Expression.Condition(
+                intVariable2GreaterThanOne,
+                Expression.Constant(3),
+                Expression.Default(typeof(int)));
+
+            var assignment = Expression.Assign(intVariable1, threeOrDefault);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.AreEqual("i = (j > 1) ? 3 : default(int)", translated);
+        }
     }
 }
