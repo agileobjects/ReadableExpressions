@@ -50,7 +50,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return $"\"{constant.Value}\"";
             }
 
-            if (constant.Type == typeof(Type))
+            if (typeof(Type).IsAssignableFrom(constant.Type))
             {
                 return $"typeof({((Type)constant.Value).GetFriendlyName()})";
             }

@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -105,6 +106,19 @@
             var translated = typeConstant.ToReadableString();
 
             Assert.AreEqual("typeof(long)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAGenericRuntimeType()
+        {
+            var value = typeof(Dictionary<string, DateTime>);
+
+            // ReSharper disable once PossibleMistakenCallToGetType.2
+            var typeConstant = Expression.Constant(value, value.GetType());
+
+            var translated = typeConstant.ToReadableString();
+
+            Assert.AreEqual("typeof(Dictionary<string, DateTime>)", translated);
         }
 
         [TestMethod]
