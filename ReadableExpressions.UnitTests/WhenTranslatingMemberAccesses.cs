@@ -93,6 +93,16 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAStaticCallExpressionOnAGenericType()
+        {
+            Expression<Action> doSomething = () => GenericHelper<Dictionary<DateTime, string>>.DoSomething();
+
+            var translated = doSomething.Body.ToReadableString();
+
+            Assert.AreEqual("GenericHelper<Dictionary<DateTime, string>>.DoSomething()", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
@@ -331,6 +341,13 @@
                 Expression<Func<bool>> comparison = () => _i == comparator;
 
                 return comparison.Body.ToReadableString();
+            }
+        }
+
+        private static class GenericHelper<T>
+        {
+            public static void DoSomething()
+            {
             }
         }
 
