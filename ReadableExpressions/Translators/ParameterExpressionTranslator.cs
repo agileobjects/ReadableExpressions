@@ -33,7 +33,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                     "for",
                     "foreach",
                     "goto",
-                    "return"
+                    "return",
+                    "implicit",
+                    "explicit"
                 })
                 .ToArray();
         }

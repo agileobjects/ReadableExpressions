@@ -45,6 +45,8 @@
             VerifyIsEscaped("foreach");
             VerifyIsEscaped("goto");
             VerifyIsEscaped("return");
+            VerifyIsEscaped("implicit");
+            VerifyIsEscaped("explicit");
         }
 
         private static void VerifyIsEscaped(string keyword)
