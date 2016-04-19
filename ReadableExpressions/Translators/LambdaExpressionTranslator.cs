@@ -14,13 +14,13 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var lambda = (LambdaExpression)expression;
 
-            var parameters = GetTranslatedParameters(lambda.Parameters, context).WithBracketsIfNecessary();
+            var parameters = GetTranslatedParameters(lambda.Parameters, context).WithParenthesesIfNecessary();
 
             var bodyBlock = GetTranslatedExpressionBody(lambda.Body, context);
 
             var body = bodyBlock.IsASingleStatement
                 ? bodyBlock.AsExpressionBody()
-                : bodyBlock.WithBrackets();
+                : bodyBlock.WithParentheses();
 
             return parameters + " =>" + body;
         }

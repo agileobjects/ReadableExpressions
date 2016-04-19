@@ -14,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, TranslationContext context)
         {
             var newExpression = (NewExpression)expression;
-            var parameters = GetTranslatedParameters(newExpression.Arguments, context).WithBrackets();
+            var parameters = GetTranslatedParameters(newExpression.Arguments, context).WithParentheses();
 
             return "new " + newExpression.Type.GetFriendlyName() + parameters;
         }

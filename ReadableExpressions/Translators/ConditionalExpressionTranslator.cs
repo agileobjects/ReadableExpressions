@@ -22,7 +22,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (hasNoElseCondition)
             {
-                return IfStatement(test, ifTrueBlock.WithBrackets());
+                return IfStatement(test, ifTrueBlock.WithParentheses());
             }
 
             var ifFalseBlock = GetTranslatedExpressionBody(conditional.IfFalse, context);
@@ -66,9 +66,9 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
             var ifElseBlock = $@"
-if {test}{ifTrue.WithBrackets()}
+if {test}{ifTrue.WithParentheses()}
 
-{ifFalse.WithoutBrackets()}";
+{ifFalse.WithoutParentheses()}";
 
             return ifElseBlock.TrimStart();
         }
@@ -85,11 +85,11 @@ if {test}{ifTrue.WithBrackets()}
             bool isElseIf)
         {
             var ifFalseBlock = isElseIf
-                ? " " + ifFalse.WithoutBrackets()
-                : ifFalse.WithBrackets();
+                ? " " + ifFalse.WithoutParentheses()
+                : ifFalse.WithParentheses();
 
             string ifElseBlock = $@"
-if {test}{ifTrue.WithBrackets()}
+if {test}{ifTrue.WithParentheses()}
 else{ifFalseBlock}";
 
 

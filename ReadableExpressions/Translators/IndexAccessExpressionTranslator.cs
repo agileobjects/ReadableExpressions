@@ -36,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var indexedVariable = GetTranslation(variable, context);
-            var indexValues = GetTranslatedParameters(indexes, context).WithoutBrackets();
+            var indexValues = GetTranslatedParameters(indexes, context).WithoutParentheses();
 
             return $"{indexedVariable}[{indexValues}]";
         }

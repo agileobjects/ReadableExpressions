@@ -72,17 +72,17 @@
             return modifier + _globalTranslator.Invoke(argument, _context);
         }
 
-        public string WithBracketsIfNecessary()
+        public string WithParenthesesIfNecessary()
         {
-            return (_arguments.Count() == 1) ? WithoutBrackets() : WithBrackets();
+            return (_arguments.Count() == 1) ? WithoutParentheses() : WithParentheses();
         }
 
-        public string WithoutBrackets()
+        public string WithoutParentheses()
         {
             return GetFormattedTranslation();
         }
 
-        public string WithBrackets()
+        public string WithParentheses()
         {
             return _arguments.Any() ? $"({GetFormattedTranslation()})" : "()";
         }

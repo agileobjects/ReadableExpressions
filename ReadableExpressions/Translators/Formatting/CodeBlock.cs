@@ -36,12 +36,12 @@
             return new CodeBlock(_blockLines.Select(line => line.Indent()).ToArray());
         }
 
-        public string WithoutBrackets()
+        public string WithoutParentheses()
         {
             return GetCodeBlock();
         }
 
-        public string WithBrackets()
+        public string WithParentheses()
         {
             if (_blockLines.Length == 0)
             {
@@ -80,7 +80,7 @@
 
         public override string ToString()
         {
-            return WithBrackets();
+            return WithParentheses();
         }
     }
 }
