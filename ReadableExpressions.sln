@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions", "ReadableExpressions\ReadableExpressions.csproj", "{9F4A6128-B7F7-43A1-BE9B-695EE76DC1CC}"
 EndProject
@@ -25,6 +25,8 @@ EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ReadableExpressions.Visualizers.Installer.Msi", "ReadableExpressions.Visualizers.Installer.Msi\ReadableExpressions.Visualizers.Installer.Msi.vdproj", "{FDC2FA40-A258-4554-BD6C-81E88B6BCE5C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Installer.Msi.Custom", "ReadableExpressions.Visualizers.Installer.Msi.Custom\ReadableExpressions.Visualizers.Installer.Msi.Custom.csproj", "{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Vs15", "ReadableExpressions.Visualizers.Vs15\ReadableExpressions.Visualizers.Vs15.csproj", "{9152D600-47E1-49D8-9951-2C516F194902}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D68960F-D9B7-4586-92E5-0ECF4D9FFA0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9152D600-47E1-49D8-9951-2C516F194902}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9152D600-47E1-49D8-9951-2C516F194902}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9152D600-47E1-49D8-9951-2C516F194902}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9152D600-47E1-49D8-9951-2C516F194902}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
