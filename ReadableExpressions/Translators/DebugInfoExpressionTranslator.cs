@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Globalization;
     using System.Linq.Expressions;
 

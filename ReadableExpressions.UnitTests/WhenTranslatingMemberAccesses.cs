@@ -344,6 +344,7 @@
             }
         }
 
+        // ReSharper disable once UnusedTypeParameter
         private static class GenericHelper<T>
         {
             public static void DoSomething()

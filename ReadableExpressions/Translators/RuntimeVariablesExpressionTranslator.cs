@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Linq.Expressions;
 
     internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
