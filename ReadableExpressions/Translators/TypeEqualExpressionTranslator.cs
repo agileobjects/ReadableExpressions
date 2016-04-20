@@ -13,7 +13,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
                 .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
 
-        public TypeEqualExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public TypeEqualExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.TypeEqual)
         {
         }

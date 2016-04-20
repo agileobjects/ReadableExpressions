@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
     {
-        public DebugInfoExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public DebugInfoExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.DebugInfo)
         {
         }

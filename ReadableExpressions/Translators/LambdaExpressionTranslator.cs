@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LambdaExpressionTranslator : ExpressionTranslatorBase
     {
-        internal LambdaExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal LambdaExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Lambda)
         {
         }

@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LabelExpressionTranslator : ExpressionTranslatorBase
     {
-        public LabelExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public LabelExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Label)
         {
         }

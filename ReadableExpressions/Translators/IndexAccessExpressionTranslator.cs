@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        public IndexAccessExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public IndexAccessExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.ArrayIndex, ExpressionType.Index)
         {
         }

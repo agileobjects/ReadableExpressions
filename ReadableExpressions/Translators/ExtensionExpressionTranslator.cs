@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ExtensionExpressionTranslator : ExpressionTranslatorBase
     {
-        public ExtensionExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public ExtensionExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Extension)
         {
         }

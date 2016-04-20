@@ -10,7 +10,7 @@
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
-            public ArrayInitExpressionHelper(Func<Expression, TranslationContext, string> globalTranslator)
+            public ArrayInitExpressionHelper(Translator globalTranslator)
                 : base(globalTranslator)
             {
             }

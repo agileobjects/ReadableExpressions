@@ -23,7 +23,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
-        public UnaryExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public UnaryExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
         {
         }

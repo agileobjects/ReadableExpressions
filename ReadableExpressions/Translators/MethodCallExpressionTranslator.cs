@@ -18,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal MethodCallExpressionTranslator(
             IndexAccessExpressionTranslator indexAccessTranslator,
-            Func<Expression, TranslationContext, string> globalTranslator)
+            Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Call, ExpressionType.Invoke)
         {
             _specialCaseHandlers = new SpecialCaseHandlerBase[]
@@ -67,7 +67,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (methodCall.Method.GetCustomAttributes(typeof(ExtensionAttribute), inherit: false).Any())
             {
                 var subject = methodCall.Arguments.First();
-                arguments = methodCall.Arguments.Skip(1);
+                arguments = methodCall.Arguments.Skip(1).ToArray();
 
                 return GetTranslation(subject, context);
             }
@@ -181,21 +181,21 @@ namespace AgileObjects.ReadableExpressions.Translators
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
             private readonly Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> _methodCallTranslator;
-            private readonly Func<Expression, TranslationContext, string> _translator;
+            private readonly Translator _globalTranslator;
 
             public InvocationExpressionHandler(
                 Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> methodCallTranslator,
-                Func<Expression, TranslationContext, string> translator)
+                Translator globalTranslator)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
                 _methodCallTranslator = methodCallTranslator;
-                _translator = translator;
+                _globalTranslator = globalTranslator;
             }
 
             public override string Translate(Expression expression, TranslationContext context)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = _translator.Invoke(invocation.Expression, context);
+                var invocationSubject = _globalTranslator.Invoke(invocation.Expression, context);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {

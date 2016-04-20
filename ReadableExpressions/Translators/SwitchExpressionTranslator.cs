@@ -8,7 +8,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
     {
-        public SwitchExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public SwitchExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Switch)
         {
         }

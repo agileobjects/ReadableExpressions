@@ -27,7 +27,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssignChecked] = "-="
             };
 
-        internal AssignmentExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal AssignmentExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, _symbolsByNodeType.Keys.ToArray())
         {
         }

@@ -1,17 +1,19 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq.Expressions;
     using Formatting;
 
+    internal delegate string Translator(Expression expression, TranslationContext context);
+
     internal abstract class ExpressionTranslatorBase : IExpressionTranslator
     {
-        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
+
+        private readonly Translator _globalTranslator;
         private readonly ExpressionType[] _nodeTypes;
 
         protected ExpressionTranslatorBase(
-            Func<Expression, TranslationContext, string> globalTranslator,
+            Translator globalTranslator,
             params ExpressionType[] nodeTypes)
         {
             _nodeTypes = nodeTypes;

@@ -8,7 +8,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>> _gotoKindHandlers;
 
-        public GotoExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public GotoExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Goto)
         {
             _gotoKindHandlers = new Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>>

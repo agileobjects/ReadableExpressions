@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
     {
-        public ConditionalExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public ConditionalExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Conditional)
         {
         }

@@ -10,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal InitialisationExpressionTranslator(
             MethodCallExpressionTranslator methodCallTranslator,
-            Func<Expression, TranslationContext, string> globalTranslator)
+            Translator globalTranslator)
             : base(globalTranslator, ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
         {
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>

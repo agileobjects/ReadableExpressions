@@ -7,7 +7,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class NewArrayExpressionTranslator : ExpressionTranslatorBase
     {
-        internal NewArrayExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal NewArrayExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.NewArrayBounds)
         {
         }

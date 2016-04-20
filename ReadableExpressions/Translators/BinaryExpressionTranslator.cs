@@ -43,7 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal BinaryExpressionTranslator(
             NegationExpressionTranslator negationTranslator,
-            Func<Expression, TranslationContext, string> globalTranslator)
+            Translator globalTranslator)
             : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
         {
             _negationTranslator = negationTranslator;

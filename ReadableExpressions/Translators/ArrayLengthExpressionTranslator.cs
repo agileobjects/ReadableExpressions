@@ -1,11 +1,10 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Linq.Expressions;
 
     internal class ArrayLengthExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ArrayLengthExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal ArrayLengthExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.ArrayLength)
         {
         }

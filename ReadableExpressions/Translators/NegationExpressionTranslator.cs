@@ -14,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.NegateChecked] = "-"
         };
 
-        internal NegationExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal NegationExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, _negationsByNodeType.Keys.ToArray())
         {
         }

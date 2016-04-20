@@ -9,7 +9,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly Dictionary<ExpressionType, Func<Expression, TranslationContext, string>> _translatorsByType;
 
-        internal CastExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal CastExpressionTranslator(Translator globalTranslator)
             : base(
                 globalTranslator,
                 ExpressionType.Convert,

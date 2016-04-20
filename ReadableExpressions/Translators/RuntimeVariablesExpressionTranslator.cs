@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
     {
-        public RuntimeVariablesExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public RuntimeVariablesExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.RuntimeVariables)
         {
         }

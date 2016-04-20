@@ -7,7 +7,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {
-        public TryCatchExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public TryCatchExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Try)
         {
         }

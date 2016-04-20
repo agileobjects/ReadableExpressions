@@ -8,7 +8,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        public BlockExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Block)
         {
         }

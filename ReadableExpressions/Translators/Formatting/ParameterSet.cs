@@ -10,13 +10,13 @@
         private readonly IEnumerable<string> _parameterModifiers;
         private readonly IEnumerable<Expression> _arguments;
         private readonly TranslationContext _context;
-        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
+        private readonly Translator _globalTranslator;
 
         public ParameterSet(
             IMethodInfo method,
             IEnumerable<Expression> arguments,
             TranslationContext context,
-            Func<Expression, TranslationContext, string> globalTranslator)
+            Translator globalTranslator)
         {
             _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments;

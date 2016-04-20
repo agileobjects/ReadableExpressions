@@ -14,7 +14,7 @@
 
             public MemberInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
-                Func<Expression, TranslationContext, string> globalTranslator)
+                Translator globalTranslator)
                 : base(globalTranslator, exp => exp.NewExpression)
             {
                 _methodCallTranslator = methodCallTranslator;

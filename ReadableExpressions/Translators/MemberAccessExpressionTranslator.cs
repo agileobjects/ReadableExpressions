@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        internal MemberAccessExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal MemberAccessExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.MemberAccess)
         {
         }

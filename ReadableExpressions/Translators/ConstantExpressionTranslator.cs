@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConstantExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ConstantExpressionTranslator(Func<Expression, TranslationContext, string> globalTranslator)
+        internal ConstantExpressionTranslator(Translator globalTranslator)
             : base(globalTranslator, ExpressionType.Constant)
         {
         }

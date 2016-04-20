@@ -19,14 +19,14 @@
             private readonly Func<TExpression, TNewExpression> _newExpressionFactory;
 
             protected InitExpressionHelperBase(
-                Func<Expression, TranslationContext, string> globalTranslator,
+                Translator globalTranslator,
                 Func<TExpression, TNewExpression> newExpressionFactory = null)
             {
                 _newExpressionFactory = newExpressionFactory;
                 GlobalTranslator = globalTranslator;
             }
 
-            protected Func<Expression, TranslationContext, string> GlobalTranslator { get; }
+            protected Translator GlobalTranslator { get; }
 
             public string Translate(Expression expression, TranslationContext context)
             {
