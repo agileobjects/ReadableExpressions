@@ -181,7 +181,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsTrue.ToReadableString();
 
-            Assert.AreEqual("(b == true)", translated);
+            Assert.AreEqual("b", translated);
         }
 
         [TestMethod]
@@ -192,7 +192,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsFalse.ToReadableString();
 
-            Assert.AreEqual("(b == false)", translated);
+            Assert.AreEqual("!b", translated);
         }
     }
 }

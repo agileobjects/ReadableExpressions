@@ -23,7 +23,17 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var negation = (UnaryExpression)expression;
 
-            return _negationsByNodeType[expression.NodeType] + GetTranslation(negation.Operand, context);
+            return Translate(expression.NodeType, negation.Operand, context);
+        }
+
+        public string TranslateNot(Expression expression, TranslationContext context)
+        {
+            return Translate(ExpressionType.Not, expression, context);
+        }
+
+        private string Translate(ExpressionType negationType, Expression expression, TranslationContext context)
+        {
+            return _negationsByNodeType[negationType] + GetTranslation(expression, context);
         }
     }
 }

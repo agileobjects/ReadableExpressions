@@ -101,7 +101,7 @@ namespace AgileObjects.ReadableExpressions
             return value.StartsWith(Environment.NewLine, StringComparison.Ordinal);
         }
 
-        private static bool StartsWith(this string value, char character)
+        public static bool StartsWith(this string value, char character)
         {
             return value[0] == character;
         }

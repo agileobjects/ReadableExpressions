@@ -12,6 +12,7 @@
 
         public ExpressionTranslatorRegistry()
         {
+            var negationTranslator = new NegationExpressionTranslator(Translate);
             var memberAccessTranslator = new MemberAccessExpressionTranslator(Translate);
             var assignmentTranslator = new AssignmentExpressionTranslator(Translate);
             var indexAccessTranslator = new IndexAccessExpressionTranslator(Translate);
@@ -21,7 +22,7 @@
             {
                 new ArrayLengthExpressionTranslator(Translate),
                 new AssignmentExpressionTranslator(Translate),
-                new BinaryExpressionTranslator(Translate),
+                new BinaryExpressionTranslator(negationTranslator, Translate),
                 new BlockExpressionTranslator(Translate),
                 new CastExpressionTranslator(Translate),
                 new ConditionalExpressionTranslator(Translate),

@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTest(string test)
         {
-            return (test[0] == '(') ? test : $"({test})";
+            return test.StartsWith('(') ? test : $"({test})";
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

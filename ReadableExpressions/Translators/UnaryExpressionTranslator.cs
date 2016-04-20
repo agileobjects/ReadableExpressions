@@ -12,8 +12,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 [ExpressionType.Decrement] = o => "--" + o,
                 [ExpressionType.Increment] = o => "++" + o,
-                [ExpressionType.IsTrue] = o => $"({o} == true)",
-                [ExpressionType.IsFalse] = o => $"({o} == false)",
+                [ExpressionType.IsTrue] = o => o,
+                [ExpressionType.IsFalse] = o => "!" + o,
                 [ExpressionType.OnesComplement] = o => "~" + o,
                 [ExpressionType.PostDecrementAssign] = o => o + "--",
                 [ExpressionType.PostIncrementAssign] = o => o + "++",

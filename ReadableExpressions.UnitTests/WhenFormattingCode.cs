@@ -285,6 +285,8 @@ else
             Assert.AreEqual("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
         }
 
+        
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local
