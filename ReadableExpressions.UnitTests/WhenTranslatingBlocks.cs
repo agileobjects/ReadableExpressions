@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -251,6 +252,23 @@ Console.Beep();";
             const string EXPECTED = @"() => false";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldNotTerminateMethodCallArguments()
+        {
+            var objectVariable = Expression.Variable(typeof(object), "o");
+            var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
+            var intToStringMethod = typeof(int).GetMethods().First(m => m.Name == "ToString");
+            var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
+            var intToStringBlock = Expression.Block(intToStringCall);
+            Expression<Func<string, StreamReader>> openTextFile = str => File.OpenText(str);
+            var openTextFileMethod = ((MethodCallExpression)openTextFile.Body).Method;
+            var openTextFileCall = Expression.Call(openTextFileMethod, intToStringBlock);
+
+            var translated = openTextFileCall.ToReadableString();
+
+            Assert.AreEqual("File.OpenText(((int)o).ToString())", translated);
         }
     }
 }

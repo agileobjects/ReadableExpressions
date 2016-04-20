@@ -148,8 +148,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool LeaveBlankLineAfter(string line, string nextLine)
         {
-            return line.EndsWith("}", StringComparison.Ordinal) &&
-                !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWith(Environment.NewLine));
+            return line.EndsWith('}') && !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWithNewLine());
         }
 
         private static bool IncludeReturnStatement(BlockExpression block, ICollection<string> lines)

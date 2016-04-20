@@ -18,17 +18,12 @@
         {
             var expression = _blockLines.First();
 
-            if (!expression.StartsWith(Environment.NewLine, StringComparison.Ordinal))
+            if (!expression.StartsWithNewLine())
             {
                 expression = " " + expression;
             }
 
-            if (expression.EndsWith(";", StringComparison.Ordinal))
-            {
-                expression = expression.TrimEnd(';');
-            }
-
-            return expression;
+            return expression.Unterminated();
         }
 
         public CodeBlock Indented()
@@ -52,7 +47,7 @@
 
             var codeBlock = Indented().GetCodeBlock();
 
-            if (codeBlock.StartsWith(Environment.NewLine, StringComparison.Ordinal))
+            if (codeBlock.StartsWithNewLine())
             {
                 codeBlock = codeBlock.Substring(Environment.NewLine.Length);
             }

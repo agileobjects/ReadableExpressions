@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     internal static class StringExtensions
@@ -9,8 +10,15 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool IsTerminated(this string codeLine)
         {
-            return _terminatingCharacters.Contains(codeLine[codeLine.Length - 1]) ||
+            return codeLine.EndsWithAny(_terminatingCharacters) ||
                 CommentExpression.IsComment(codeLine);
+        }
+
+        public static string Unterminated(this string codeLine)
+        {
+            return codeLine.EndsWith(';')
+                ? codeLine.Substring(0, codeLine.Length - 1)
+                : codeLine;
         }
 
         private static readonly string[] _newLines = { Environment.NewLine };
@@ -60,13 +68,37 @@ namespace AgileObjects.ReadableExpressions
 
         public static string WithoutSurroundingParentheses(this string value)
         {
-            if ((value?.StartsWith("(", StringComparison.Ordinal) == true) &&
-                value.EndsWith(")", StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            if (value.StartsWith('(') && value.EndsWith(')'))
             {
                 return value.Substring(1, value.Length - 2);
             }
 
             return value;
+        }
+
+        public static bool StartsWithNewLine(this string value)
+        {
+            return value.StartsWith(Environment.NewLine, StringComparison.Ordinal);
+        }
+
+        private static bool StartsWith(this string value, char character)
+        {
+            return value[0] == character;
+        }
+
+        public static bool EndsWith(this string value, char character)
+        {
+            return value[value.Length - 1] == character;
+        }
+
+        private static bool EndsWithAny(this string value, IEnumerable<char> characters)
+        {
+            return characters.Any(value.EndsWith);
         }
     }
 }

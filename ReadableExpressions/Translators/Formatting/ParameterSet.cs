@@ -68,8 +68,9 @@
         private string TranslateArgument(Expression argument, int parameterIndex)
         {
             var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
+            var argumentString = _globalTranslator.Invoke(argument, _context).Unterminated();
 
-            return modifier + _globalTranslator.Invoke(argument, _context);
+            return modifier + argumentString;
         }
 
         public string WithParenthesesIfNecessary()

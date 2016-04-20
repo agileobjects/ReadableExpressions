@@ -26,12 +26,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var reducedTypeEqualExpression = (Expression)_reduceTypeEqualMethod.Invoke(expression, null);
-            var translated = GetTranslation(reducedTypeEqualExpression, context);
-
-            if (translated.EndsWith(";", StringComparison.Ordinal))
-            {
-                translated = translated.TrimEnd(';');
-            }
+            var translated = GetTranslation(reducedTypeEqualExpression, context).Unterminated();
 
             return translated;
         }
