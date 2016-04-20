@@ -262,6 +262,29 @@ else
             Assert.AreEqual(unknown.ToString(), translated);
         }
 
+        [TestMethod]
+        public void ShouldOnlyRemoveParenthesesIfNecessary()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariableIsOne = Expression.Equal(intVariable, Expression.Constant(1));
+
+            var objectVariable = Expression.Variable(typeof(object), "o");
+            var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
+            var intToStringMethod = typeof(int).GetMethods().First(m => m.Name == "ToString");
+            var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
+
+            Expression<Func<string>> emptyString = () => string.Empty;
+
+            var toStringOrEmptyString = Expression.Condition(
+                intVariableIsOne,
+                emptyString.Body,
+                intToStringCall);
+
+            var translated = toStringOrEmptyString.ToReadableString();
+
+            Assert.AreEqual("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local

@@ -66,7 +66,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
         {
-            var body = GetTranslation(bodySingle, context).WithoutSurroundingParentheses();
+            var body = GetTranslation(bodySingle, context).WithoutSurroundingParentheses(bodySingle);
 
             return new CodeBlock(body);
         }

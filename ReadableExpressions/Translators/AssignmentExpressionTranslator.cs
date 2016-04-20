@@ -47,19 +47,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var valueString = GetTranslation(value, context);
-
-            if (TrimSurroundingParentheses(value))
-            {
-                valueString = valueString.WithoutSurroundingParentheses();
-            }
+            var valueString = GetTranslation(value, context).WithoutSurroundingParentheses(value);
 
             return $"{target} {symbol} {valueString}";
-        }
-
-        private static bool TrimSurroundingParentheses(Expression value)
-        {
-            return value.NodeType != ExpressionType.Conditional;
         }
     }
 }

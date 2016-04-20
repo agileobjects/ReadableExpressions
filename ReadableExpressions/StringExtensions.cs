@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Linq.Expressions;
 
     internal static class StringExtensions
     {
@@ -66,9 +67,9 @@ namespace AgileObjects.ReadableExpressions
             return code;
         }
 
-        public static string WithoutSurroundingParentheses(this string value)
+        public static string WithoutSurroundingParentheses(this string value, Expression expression)
         {
-            if (string.IsNullOrEmpty(value))
+            if (string.IsNullOrEmpty(value) || KeepSurroundingParentheses(expression))
             {
                 return value;
             }
@@ -79,6 +80,20 @@ namespace AgileObjects.ReadableExpressions
             }
 
             return value;
+        }
+
+        private static bool KeepSurroundingParentheses(Expression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Conditional:
+                    return true;
+
+                case ExpressionType.Call:
+                    return ((MethodCallExpression)expression).Object?.NodeType == ExpressionType.Convert;
+            }
+
+            return false;
         }
 
         public static bool StartsWithNewLine(this string value)
