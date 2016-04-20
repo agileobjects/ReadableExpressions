@@ -81,35 +81,35 @@ namespace AgileObjects.ReadableExpressions.Translators
         private string GetMethodCall(
             string subject,
             MethodInfo method,
-            IEnumerable<Expression> parameters,
+            IEnumerable<Expression> arguments,
             TranslationContext context)
         {
-            return GetMethodCall(subject, new BclMethodInfoWrapper(method), parameters, context);
+            return GetMethodCall(subject, new BclMethodInfoWrapper(method), arguments, context);
         }
 
         internal string GetMethodCall(
             string subject,
             IMethodInfo method,
-            IEnumerable<Expression> parameters,
+            IEnumerable<Expression> arguments,
             TranslationContext context)
         {
-            return subject + "." + GetMethodCall(method, parameters, context);
+            return subject + "." + GetMethodCall(method, arguments, context);
         }
 
         internal string GetMethodCall(
             MethodInfo method,
-            IEnumerable<Expression> parameters,
+            IEnumerable<Expression> arguments,
             TranslationContext context)
         {
-            return GetMethodCall(new BclMethodInfoWrapper(method), parameters, context);
+            return GetMethodCall(new BclMethodInfoWrapper(method), arguments, context);
         }
 
         private string GetMethodCall(
             IMethodInfo method,
-            IEnumerable<Expression> parameters,
+            IEnumerable<Expression> arguments,
             TranslationContext context)
         {
-            var parametersString = GetTranslatedParameters(parameters, context, method).WithParentheses();
+            var parametersString = GetTranslatedParameters(arguments, context, method).WithParentheses();
             var genericArguments = GetGenericArgumentsIfNecessary(method);
 
             return method.Name + genericArguments + parametersString;

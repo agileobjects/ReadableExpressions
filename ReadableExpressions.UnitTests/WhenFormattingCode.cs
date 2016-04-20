@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -285,7 +286,40 @@ else
             Assert.AreEqual("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
         }
 
-        
+        [TestMethod]
+        public void ShouldUseMethodGroupsForStaticMethods()
+        {
+            Expression<Func<IEnumerable<TimeSpan>>> selectTimeSpans =
+                () => new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays);
+
+            var translated = selectTimeSpans.Body.ToReadableString();
+
+            Assert.AreEqual("new[] { 1.00, 2.00, 3.00 }.Select(TimeSpan.FromDays)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldUseMethodGroupsForInstanceMethods()
+        {
+            Expression<Func<IntConverter, IEnumerable<string>>> selectStrings =
+                converter => new[] { 1, 2, 3 }.Select(converter.Convert);
+
+            var translated = selectStrings.Body.ToReadableString();
+
+            Assert.AreEqual("new[] { 1, 2, 3 }.Select(converter.Convert)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldUseMethodGroupsForLocalFuncs()
+        {
+            Func<int, string> intConverter = i => i.ToString();
+
+            Expression<Func<IEnumerable<string>>> selectStrings =
+                () => new[] { 1, 2, 3 }.Select(intConverter);
+
+            var translated = selectStrings.Body.ToReadableString();
+
+            Assert.AreEqual("new[] { 1, 2, 3 }.Select(intConverter)", translated);
+        }
 
         #region Helper Classes
 
@@ -304,6 +338,15 @@ else
         }
         // ReSharper restore UnusedParameter.Local
         // ReSharper restore UnusedMember.Local
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class IntConverter
+        {
+            public string Convert(int value)
+            {
+                return value.ToString();
+            }
+        }
 
         private class UnknownExpression : Expression
         {
