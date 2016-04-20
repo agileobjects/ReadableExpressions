@@ -22,7 +22,7 @@
                 return "new" + explicitType + "[]";
             }
 
-            private string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation)
+            private static string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation)
             {
                 var expressionTypes = initialisation
                     .Expressions
