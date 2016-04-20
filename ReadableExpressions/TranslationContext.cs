@@ -33,6 +33,7 @@ namespace AgileObjects.ReadableExpressions
             private readonly List<BlockExpression> _processedBlocks;
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<ParameterExpression> _assignedVariables;
+            private readonly List<Expression> _assignedAssignments;
             private readonly List<BinaryExpression> _joinedAssignments;
             private readonly List<LabelTarget> _namedLabelTargets;
 
@@ -41,6 +42,7 @@ namespace AgileObjects.ReadableExpressions
                 _processedBlocks = new List<BlockExpression>();
                 _accessedVariables = new List<ParameterExpression>();
                 _assignedVariables = new List<ParameterExpression>();
+                _assignedAssignments = new List<Expression>();
                 _joinedAssignments = new List<BinaryExpression>();
                 _namedLabelTargets = new List<LabelTarget>();
             }
@@ -80,15 +82,19 @@ namespace AgileObjects.ReadableExpressions
             {
                 if ((binaryExpression.NodeType == ExpressionType.Assign) &&
                     (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
-                    !_assignedVariables.Contains(binaryExpression.Left))
+                    !_assignedVariables.Contains(binaryExpression.Left) &&
+                    !_assignedAssignments.Contains(binaryExpression))
                 {
                     var variable = (ParameterExpression)binaryExpression.Left;
 
                     if (VariableHasNotYetBeenAccessed(variable))
                     {
                         _joinedAssignments.Add(binaryExpression);
+                        _accessedVariables.Add(variable);
                         _assignedVariables.Add(variable);
                     }
+
+                    AddAssignmentIfAppropriate(binaryExpression.Right);
                 }
 
                 return base.VisitBinary(binaryExpression);
@@ -97,6 +103,29 @@ namespace AgileObjects.ReadableExpressions
             private bool VariableHasNotYetBeenAccessed(Expression variable)
             {
                 return !_accessedVariables.Contains(variable);
+            }
+
+            private void AddAssignmentIfAppropriate(Expression assignedValue)
+            {
+                while (true)
+                {
+                    switch (assignedValue.NodeType)
+                    {
+                        case ExpressionType.Block:
+                            assignedValue = ((BlockExpression)assignedValue).Result;
+                            continue;
+
+                        case ExpressionType.Convert:
+                        case ExpressionType.ConvertChecked:
+                            assignedValue = ((UnaryExpression)assignedValue).Operand;
+                            continue;
+
+                        case ExpressionType.Assign:
+                            _assignedAssignments.Add(assignedValue);
+                            break;
+                    }
+                    break;
+                }
             }
 
             protected override Expression VisitGoto(GotoExpression @goto)

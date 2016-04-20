@@ -199,7 +199,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {
-                    invocationSubject = $"({invocationSubject})";
+                    invocationSubject = invocationSubject.WithSurroundingParentheses();
                 }
 
                 var invocationMethod = invocation.Expression.Type.GetMethod("Invoke");

@@ -67,6 +67,11 @@ namespace AgileObjects.ReadableExpressions
             return code;
         }
 
+        public static string WithSurroundingParentheses(this string value)
+        {
+            return $"({value})";
+        }
+
         public static string WithoutSurroundingParentheses(this string value, Expression expression)
         {
             if (string.IsNullOrEmpty(value) || KeepSurroundingParentheses(expression))
@@ -74,19 +79,20 @@ namespace AgileObjects.ReadableExpressions
                 return value;
             }
 
-            if (value.StartsWith('(') && value.EndsWith(')'))
-            {
-                return value.Substring(1, value.Length - 2);
-            }
+            return value.HasSurroundingParentheses()
+                ? value.Substring(1, value.Length - 2)
+                : value;
+        }
 
-            return value;
+        public static bool HasSurroundingParentheses(this string value)
+        {
+            return value.StartsWith('(') && value.EndsWith(')');
         }
 
         private static bool KeepSurroundingParentheses(Expression expression)
         {
             switch (expression.NodeType)
             {
-                case ExpressionType.Assign:
                 case ExpressionType.Conditional:
                     return true;
 

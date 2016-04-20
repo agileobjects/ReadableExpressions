@@ -71,6 +71,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             var typeName = cast.Type.GetFriendlyName();
             var subject = GetTranslation(cast.Operand, context);
 
+            if (cast.Operand.NodeType == ExpressionType.Assign)
+            {
+                subject = subject.WithSurroundingParentheses();
+            }
+
             return $"(({typeName}){subject})";
         }
 

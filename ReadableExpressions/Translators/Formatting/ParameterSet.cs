@@ -85,7 +85,7 @@
 
         public string WithParentheses()
         {
-            return _arguments.Any() ? $"({GetFormattedTranslation()})" : "()";
+            return _arguments.Any() ? GetFormattedTranslation().WithSurroundingParentheses() : "()";
         }
     }
 }

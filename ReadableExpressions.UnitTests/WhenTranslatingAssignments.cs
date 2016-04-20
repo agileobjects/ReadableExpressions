@@ -208,5 +208,41 @@
 
             Assert.AreEqual("i = (j > 1) ? 3 : default(int)", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAnAssignmentResultAssignment()
+        {
+            var intVariable1 = Expression.Variable(typeof(int), "i");
+            var intVariable2 = Expression.Variable(typeof(int), "j");
+            var assignVariable2 = Expression.Assign(intVariable2, Expression.Constant(1));
+            var setVariableOneToAssignmentResult = Expression.Assign(intVariable1, assignVariable2);
+
+            var translated = setVariableOneToAssignmentResult.ToReadableString();
+
+            Assert.AreEqual("i = (j = 1)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateABlockAssignmentResultAssignment()
+        {
+            var longVariable = Expression.Variable(typeof(long), "i");
+            var intVariable = Expression.Variable(typeof(int), "j");
+            var assignInt = Expression.Assign(intVariable, Expression.Constant(10));
+            var castAssignmentResult = Expression.Convert(assignInt, typeof(long));
+            var assignIntBlock = Expression.Block(castAssignmentResult);
+            var setLongVariableToAssignmentResult = Expression.Assign(longVariable, assignIntBlock);
+
+            var assignmentBlock = Expression.Block(
+                new[] { longVariable, intVariable },
+                setLongVariableToAssignmentResult);
+
+            var translated = assignmentBlock.ToReadableString();
+
+            const string EXPECTED = @"
+int j;
+var i = ((long)(j = 10));";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
