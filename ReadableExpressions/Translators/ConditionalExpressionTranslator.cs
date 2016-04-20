@@ -32,7 +32,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return new FormattableTernaryExpression(test, ifTrueBlock, ifFalseBlock);
             }
 
-            if (conditional.IfTrue.Type != typeof(void))
+            if (conditional.IfTrue.IsReturnable())
             {
                 return ShortCircuitingIf(test, ifTrueBlock, ifFalseBlock);
             }

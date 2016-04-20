@@ -153,22 +153,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool IncludeReturnStatement(BlockExpression block, ICollection<string> lines)
         {
-            if ((block.Type == typeof(void)) || (lines.Count == 1))
-            {
-                return false;
-            }
-
-            switch (block.Result.NodeType)
-            {
-                case ExpressionType.Call:
-                case ExpressionType.Conditional:
-                case ExpressionType.Invoke:
-                case ExpressionType.MemberAccess:
-                case ExpressionType.Parameter:
-                    return true;
-            }
-
-            return false;
+            return (lines.Count != 1) && block.IsReturnable();
         }
     }
 }

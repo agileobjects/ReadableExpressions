@@ -5,7 +5,6 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Translators;
 
     [TestClass]
     public class WhenFormattingCode
@@ -221,6 +220,36 @@ Action writeNameTwice = () =>
 name = ""Alice"";
 writeNameTwice.Invoke();";
 
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldVarAssignVariablesInSiblingBlocks()
+        {
+            var intVariable1 = Expression.Variable(typeof(int), "i");
+            var assignVariable1 = Expression.Assign(intVariable1, Expression.Constant(1));
+            var variable1Block = Expression.Block(new[] { intVariable1 }, assignVariable1);
+
+            var intVariable2 = Expression.Variable(typeof(int), "j");
+            var assignVariable2 = Expression.Assign(intVariable2, Expression.Constant(2));
+            var variable2Block = Expression.Block(new[] { intVariable2 }, assignVariable2);
+
+            var assign1Or2 = Expression.IfThenElse(
+                Expression.Constant(true),
+                variable1Block,
+                variable2Block);
+
+            var translated = assign1Or2.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+    var i = 1;
+}
+else
+{
+    var j = 2;
+}";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 

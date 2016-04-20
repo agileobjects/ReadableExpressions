@@ -8,21 +8,18 @@ namespace AgileObjects.ReadableExpressions
     {
         private ExpressionAnalysisVisitor _analyzer;
 
+        private ExpressionAnalysisVisitor Analyzer => _analyzer ?? (_analyzer = new ExpressionAnalysisVisitor());
+
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
 
         public void Process(BlockExpression block)
         {
-            if (_analyzer != null)
-            {
-                return;
-            }
-
-            _analyzer = ExpressionAnalysisVisitor.For(block);
+            Analyzer.Process(block);
         }
 
         public bool IsNotJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != ExpressionType.Assign) || 
+            return (expression.NodeType != ExpressionType.Assign) ||
                 !_analyzer.JoinedAssignments.Contains(expression);
         }
 
@@ -33,13 +30,15 @@ namespace AgileObjects.ReadableExpressions
 
         private class ExpressionAnalysisVisitor : ExpressionVisitor
         {
+            private readonly List<BlockExpression> _processedBlocks;
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<ParameterExpression> _assignedVariables;
             private readonly List<BinaryExpression> _joinedAssignments;
             private readonly List<LabelTarget> _namedLabelTargets;
 
-            private ExpressionAnalysisVisitor()
+            public ExpressionAnalysisVisitor()
             {
+                _processedBlocks = new List<BlockExpression>();
                 _accessedVariables = new List<ParameterExpression>();
                 _assignedVariables = new List<ParameterExpression>();
                 _joinedAssignments = new List<BinaryExpression>();
@@ -52,13 +51,19 @@ namespace AgileObjects.ReadableExpressions
 
             public IEnumerable<LabelTarget> NamedLabelTargets => _namedLabelTargets;
 
-            public static ExpressionAnalysisVisitor For(Expression block)
+            public void Process(Expression block)
             {
-                var visitor = new ExpressionAnalysisVisitor();
+                if (!_processedBlocks.Contains(block))
+                {
+                    Visit(block);
+                }
+            }
 
-                visitor.Visit(block);
+            protected override Expression VisitBlock(BlockExpression block)
+            {
+                _processedBlocks.Add(block);
 
-                return visitor;
+                return base.VisitBlock(block);
             }
 
             protected override Expression VisitParameter(ParameterExpression variable)
