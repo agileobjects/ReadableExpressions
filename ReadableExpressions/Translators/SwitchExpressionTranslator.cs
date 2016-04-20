@@ -42,11 +42,14 @@ switch ({switchValue})
 
         private static string GetCase(CodeBlock bodyBlock, params string[] labels)
         {
-            var caseBody = bodyBlock.Indented().WithoutParentheses();
-            var caseBlock = new CodeBlock(labels.Concat(new[] { caseBody }).ToArray());
-            var @case = caseBlock.Indented().WithoutParentheses();
+            if (!bodyBlock.HasReturn())
+            {
+                bodyBlock = bodyBlock.Append("break;");
+            }
 
-            return @case;
+            var @case = bodyBlock.Indented().Insert(labels).Indented();
+
+            return @case.WithoutParentheses();
         }
 
         private IEnumerable<string> AppendDefaultCaseIfExists(

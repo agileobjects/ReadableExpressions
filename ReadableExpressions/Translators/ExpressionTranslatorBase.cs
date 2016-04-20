@@ -63,14 +63,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             var block = GetTranslation(bodyBlock, context);
             var blockLines = block.SplitToLines();
 
-            return new CodeBlock(blockLines);
+            return new CodeBlock(bodyBlock, blockLines);
         }
 
         private CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
         {
             var body = GetTranslation(bodySingle, context).WithoutSurroundingParentheses(bodySingle);
 
-            return new CodeBlock(body);
+            return new CodeBlock(bodySingle, body);
         }
 
         #endregion

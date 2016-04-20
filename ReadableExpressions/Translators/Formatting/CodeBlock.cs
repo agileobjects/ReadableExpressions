@@ -2,13 +2,18 @@
 {
     using System;
     using System.Linq;
+    using System.Linq.Expressions;
 
     internal class CodeBlock
     {
+        private readonly Expression _expression;
         private readonly string[] _blockLines;
 
-        public CodeBlock(params string[] blockLines)
+        public CodeBlock(
+            Expression expression,
+            params string[] blockLines)
         {
+            _expression = expression;
             _blockLines = blockLines.Where(line => line != null).ToArray();
         }
 
@@ -28,12 +33,64 @@
 
         public CodeBlock Indented()
         {
-            return new CodeBlock(_blockLines.Select(line => line.Indent()).ToArray());
+            AddSemiColonIfRequired();
+
+            return new CodeBlock(
+                _expression,
+                _blockLines.Select(line => line.Indent()).ToArray());
+        }
+
+        public CodeBlock Insert(params string[] lines)
+        {
+            return new CodeBlock(_expression, lines.Concat(_blockLines).ToArray());
+        }
+
+        public CodeBlock Append(params string[] lines)
+        {
+            AddSemiColonIfRequired();
+
+            return new CodeBlock(_expression, _blockLines.Concat(lines).ToArray());
         }
 
         public string WithoutParentheses()
         {
             return GetCodeBlock();
+        }
+
+        public bool HasReturn()
+        {
+            return _blockLines.Last().StartsWith("return ", StringComparison.Ordinal) ||
+                ExpressionHasReturn(_expression);
+        }
+
+        private static bool ExpressionHasReturn(Expression expression)
+        {
+            while (true)
+            {
+                var block = expression as BlockExpression;
+
+                if (block == null)
+                {
+                    return expression.NodeType == ExpressionType.Goto;
+                }
+
+                expression = block.Expressions.Last();
+            }
+        }
+
+        public CodeBlock WithReturn()
+        {
+            if (!_expression.IsReturnable() || HasReturn())
+            {
+                return this;
+            }
+
+            return new CodeBlock(
+                _expression,
+                _blockLines
+                    .Take(_blockLines.Length - 1)
+                    .Concat(new[] { "return " + _blockLines.Last() })
+                    .ToArray());
         }
 
         public string WithParentheses()

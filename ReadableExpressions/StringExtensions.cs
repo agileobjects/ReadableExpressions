@@ -86,6 +86,7 @@ namespace AgileObjects.ReadableExpressions
         {
             switch (expression.NodeType)
             {
+                case ExpressionType.Assign:
                 case ExpressionType.Conditional:
                     return true;
 

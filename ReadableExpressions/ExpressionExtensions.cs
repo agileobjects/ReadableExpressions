@@ -27,6 +27,9 @@
 
                 case ExpressionType.Call:
                 case ExpressionType.Conditional:
+                case ExpressionType.Constant:
+                case ExpressionType.Convert:
+                case ExpressionType.ConvertChecked:
                 case ExpressionType.Invoke:
                 case ExpressionType.MemberAccess:
                 case ExpressionType.Parameter:

@@ -27,6 +27,30 @@ if (i < 1)
         }
 
         [TestMethod]
+        public void ShouldTranslateAShortCircuitingIfStatement()
+        {
+            var oneCastToDouble = Expression.Convert(Expression.Constant(1), typeof(double?));
+
+            var ifTrueOne = Expression.IfThen(Expression.Constant(true), oneCastToDouble);
+
+            var nullDouble = Expression.Constant(null, typeof(double?));
+
+            var block = Expression.Block(ifTrueOne, nullDouble);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+    return (double?)1;
+}
+
+return null;";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMultipleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -175,12 +199,15 @@ switch (i)
 {
     case 1:
         Console.WriteLine(""One"");
+        break;
 
     case 2:
         Console.WriteLine(""Two"");
+        break;
 
     case 3:
         Console.WriteLine(""Three"");
+        break;
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -209,17 +236,21 @@ switch (i)
 {
     case 1:
         Console.WriteLine(""One"");
+        break;
 
     case 2:
         Console.WriteLine(""Two"");
+        break;
 
     case 3:
         Console.WriteLine(""Three"");
+        break;
 
     default:
         Console.WriteLine(""One"");
         Console.WriteLine(""Two"");
         Console.WriteLine(""Three"");
+        break;
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -248,11 +279,39 @@ switch (i)
     case 12:
         Console.WriteLine(""One"");
         Console.WriteLine(""Two"");
+        break;
 
     case 23:
         Console.WriteLine(""Two"");
         Console.WriteLine(""Three"");
+        break;
 }";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIncludeReturnKeywordsForConstantsAndCasts()
+        {
+            var nullLong = Expression.Constant(null, typeof(long?));
+
+            Expression<Action> writeOne = () => Console.WriteLine("One!");
+            var oneCastToLong = Expression.Convert(Expression.Constant(1), typeof(long?));
+            var elseBlock = Expression.Block(writeOne.Body, writeOne.Body, oneCastToLong);
+
+            var nullOrOne = Expression.Condition(Expression.Constant(true), nullLong, elseBlock);
+
+            var translated = nullOrOne.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+    return null;
+}
+
+Console.WriteLine(""One!"");
+Console.WriteLine(""One!"");
+return ((long?)1);";
+
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
