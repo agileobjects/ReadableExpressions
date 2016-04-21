@@ -13,13 +13,15 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, TranslationContext context)
         {
-            var newArrayExpression = (NewArrayExpression)expression;
+            var newArray = (NewArrayExpression)expression;
+
+            var arrayTypeName = expression.Type.GetElementType().GetFriendlyName();
 
             var bounds = string.Join(
-                string.Empty,
-                newArrayExpression.Expressions.Select(exp => "[" + GetTranslation(exp, context) + "]"));
+                "][",
+                newArray.Expressions.Select(exp => GetTranslation(exp, context)));
 
-            return "new " + expression.Type.GetElementType().GetFriendlyName() + bounds;
+            return $"new {arrayTypeName}[{bounds}]";
         }
     }
 }

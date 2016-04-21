@@ -108,6 +108,26 @@ new ContactDetails
         }
 
         [TestMethod]
+        public void ShouldTranslateANewArrayExpression()
+        {
+            Expression<Func<int[]>> createArray = () => new int[5];
+
+            var translated = createArray.Body.ToReadableString();
+
+            Assert.AreEqual("new int[5]", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateANewGenericTypeArrayExpression()
+        {
+            Expression<Func<Tuple<decimal>[]>> createArray = () => new Tuple<decimal>[5];
+
+            var translated = createArray.Body.ToReadableString();
+
+            Assert.AreEqual("new Tuple<decimal>[5]", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnImplicitTypeNewArrayExpressionWithAdditions()
         {
             Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.3f, 3.00f };
