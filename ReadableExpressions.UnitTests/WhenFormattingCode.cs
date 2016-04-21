@@ -303,7 +303,7 @@ else
 
             var translated = selectTimeSpans.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1.00, 2.00, 3.00 }.Select(TimeSpan.FromDays)", translated);
+            Assert.AreEqual("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)", translated);
         }
 
         [TestMethod]

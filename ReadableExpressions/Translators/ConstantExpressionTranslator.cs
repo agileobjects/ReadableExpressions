@@ -35,10 +35,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return constant.Value.ToString().ToLowerInvariant();
 
                 case TypeCode.Decimal:
-                    return constant.Value + "m";
+                    return FormatNumeric((decimal)constant.Value) + "m";
 
                 case TypeCode.Double:
-                    return FormatNumeric((double)constant.Value);
+                    return FormatNumeric((double)constant.Value) + "d";
 
                 case TypeCode.Int64:
                     return constant.Value + "L";
@@ -58,14 +58,19 @@ namespace AgileObjects.ReadableExpressions.Translators
             return constant.Value.ToString();
         }
 
+        private static string FormatNumeric(decimal value)
+        {
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
+        }
+
         private static string FormatNumeric(double value)
         {
-            return (value % 1).Equals(0) ? value.ToString("0.00") : value.ToString();
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
         }
 
         private static string FormatNumeric(float value)
         {
-            return (value % 1).Equals(0) ? value.ToString("0.00") : value.ToString();
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
         }
     }
 }

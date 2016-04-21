@@ -45,7 +45,7 @@
 
             var translated = floatConstant.ToReadableString();
 
-            Assert.AreEqual("890.00f", translated);
+            Assert.AreEqual("890f", translated);
         }
 
         [TestMethod]
@@ -65,7 +65,7 @@
 
             var translated = decimalConstant.ToReadableString();
 
-            Assert.AreEqual("456.00m", translated);
+            Assert.AreEqual("456m", translated);
         }
 
         [TestMethod]
@@ -85,7 +85,7 @@
 
             var translated = doubleConstant.ToReadableString();
 
-            Assert.AreEqual("999.00", translated);
+            Assert.AreEqual("999d", translated);
         }
 
         [TestMethod]
@@ -95,7 +95,7 @@
 
             var translated = doubleConstant.ToReadableString();
 
-            Assert.AreEqual("64739.7", translated);
+            Assert.AreEqual("64739.7d", translated);
         }
 
         [TestMethod]

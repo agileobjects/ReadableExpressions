@@ -100,11 +100,11 @@ new ContactDetails
         public void ShouldTranslateANewListExpressionWithAdditions()
         {
             Expression<Func<List<decimal>>> createList =
-                () => new List<decimal> { 1.00m, 2.00m, 3.00m };
+                () => new List<decimal> { 1m, 2.005m, 3m };
 
             var translated = createList.Body.ToReadableString();
 
-            Assert.AreEqual("new List<decimal> { 1.00m, 2.00m, 3.00m }", translated);
+            Assert.AreEqual("new List<decimal> { 1m, 2.005m, 3m }", translated);
         }
 
         [TestMethod]
@@ -134,7 +134,7 @@ new ContactDetails
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1.00f, 2.3f, 3.00f }", translated);
+            Assert.AreEqual("new[] { 1f, 2.3f, 3f }", translated);
         }
 
         [TestMethod]
