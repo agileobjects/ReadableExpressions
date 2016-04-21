@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var typeBinary = (TypeBinaryExpression)expression;
             var operand = GetTranslation(typeBinary.Expression, context);
 
-            return $"({ operand} TypeOf {typeBinary.TypeOperand.GetFriendlyName()})";
+            return $"({operand} TypeOf {typeBinary.TypeOperand.GetFriendlyName()})";
         }
     }
 }

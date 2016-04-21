@@ -255,6 +255,15 @@ else
         }
 
         [TestMethod]
+        public void ShouldTranslateAnExtensionExpressionType()
+        {
+            var extension = new ExtensionExpression();
+            var translated = extension.ToReadableString();
+
+            Assert.AreEqual(extension.ToString(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnUnknownExpressionType()
         {
             var unknown = new UnknownExpression();
@@ -345,6 +354,16 @@ else
             public string Convert(int value)
             {
                 return value.ToString();
+            }
+        }
+
+        private class ExtensionExpression : Expression
+        {
+            public override ExpressionType NodeType => ExpressionType.Extension;
+
+            public override string ToString()
+            {
+                return "Exteeennndddiiiinnngg";
             }
         }
 
