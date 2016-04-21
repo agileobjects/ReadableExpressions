@@ -45,21 +45,20 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return GetTranslation(operand, context);
             }
 
-            if ((operand.NodeType == ExpressionType.Call) && (operand.Type == typeof(Delegate)))
+            MethodCallExpression methodCall;
+
+            if ((operand.NodeType == ExpressionType.Call) &&
+                (operand.Type == typeof(Delegate)) &&
+                ((methodCall = ((MethodCallExpression)operand)).Method.Name == "CreateDelegate"))
             {
-                var methodCall = ((MethodCallExpression)operand);
+                // ReSharper disable once PossibleNullReferenceException
+                var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Object).Value;
 
-                if (methodCall.Method.Name == "CreateDelegate")
-                {
-                    // ReSharper disable once PossibleNullReferenceException
-                    var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Object).Value;
+                var methodSubject = subjectMethod.IsStatic
+                    ? subjectMethod.DeclaringType.GetFriendlyName()
+                    : GetTranslation(methodCall.Arguments.ElementAtOrDefault(1), context);
 
-                    var methodSubject = subjectMethod.IsStatic
-                        ? subjectMethod.DeclaringType.GetFriendlyName()
-                        : GetTranslation(methodCall.Arguments.ElementAtOrDefault(1), context);
-
-                    return methodSubject + "." + subjectMethod.Name;
-                }
+                return methodSubject + "." + subjectMethod.Name;
             }
 
             return TranslateCastCore(expression, context);
