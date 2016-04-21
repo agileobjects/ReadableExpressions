@@ -13,14 +13,9 @@
             public ListInitExpressionHelper(
                 MethodCallExpressionTranslator methodCallTranslator,
                 Translator globalTranslator)
-                : base(globalTranslator, exp => exp.NewExpression)
+                : base(exp => exp.NewExpression, exp => !exp.Arguments.Any(), globalTranslator)
             {
                 _methodCallTranslator = methodCallTranslator;
-            }
-
-            protected override bool ConstructorIsParameterless(NewExpression newExpression)
-            {
-                return !newExpression.Arguments.Any();
             }
 
             protected override IEnumerable<string> GetMemberInitialisations(

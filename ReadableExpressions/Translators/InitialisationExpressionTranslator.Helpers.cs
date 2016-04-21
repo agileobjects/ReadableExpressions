@@ -17,12 +17,20 @@
             where TNewExpression : Expression
         {
             private readonly Func<TExpression, TNewExpression> _newExpressionFactory;
+            private readonly Func<TNewExpression, bool> _parameterlessConstructorTester;
+
+            protected InitExpressionHelperBase(Translator globalTranslator)
+                : this(null, null, globalTranslator)
+            {
+            }
 
             protected InitExpressionHelperBase(
-                Translator globalTranslator,
-                Func<TExpression, TNewExpression> newExpressionFactory = null)
+               Func<TExpression, TNewExpression> newExpressionFactory,
+               Func<TNewExpression, bool> parameterlessConstructorTester,
+               Translator globalTranslator)
             {
                 _newExpressionFactory = newExpressionFactory;
+                _parameterlessConstructorTester = parameterlessConstructorTester;
                 GlobalTranslator = globalTranslator;
             }
 
@@ -51,7 +59,10 @@
                 return newExpressionString;
             }
 
-            protected abstract bool ConstructorIsParameterless(TNewExpression newExpression);
+            private bool ConstructorIsParameterless(TNewExpression newExpression)
+            {
+                return _parameterlessConstructorTester.Invoke(newExpression);
+            }
 
             protected abstract IEnumerable<string> GetMemberInitialisations(TExpression initialisation, TranslationContext context);
 

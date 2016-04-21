@@ -37,11 +37,6 @@
                 return " " + initialisation.Type.GetElementType().GetFriendlyName();
             }
 
-            protected override bool ConstructorIsParameterless(NewArrayExpression newExpression)
-            {
-                return false;
-            }
-
             protected override IEnumerable<string> GetMemberInitialisations(
                 NewArrayExpression arrayInitialisation,
                 TranslationContext context)
