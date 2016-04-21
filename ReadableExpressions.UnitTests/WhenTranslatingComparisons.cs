@@ -82,7 +82,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         public void ShouldAbbreviateBooleanFalseComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
-            var boolIsFalse = Expression.Equal(boolVariable, Expression.Constant(false));
+            var boolIsFalse = Expression.Equal(Expression.Constant(false), boolVariable);
 
             var translated = boolIsFalse.ToReadableString();
 
@@ -93,7 +93,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         public void ShouldAbbreviateNotBooleanTrueComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
-            var boolIsNotTrue = Expression.NotEqual(boolVariable, Expression.Constant(true));
+            var boolIsNotTrue = Expression.NotEqual(Expression.Constant(true), boolVariable);
 
             var translated = boolIsNotTrue.ToReadableString();
 
