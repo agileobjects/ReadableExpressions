@@ -17,8 +17,6 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var block = (BlockExpression)expression;
 
-            context.Process(block);
-
             var variables = GetVariableDeclarations(block, context);
             var lines = GetBlockLines(block, context);
 

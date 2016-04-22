@@ -3,19 +3,23 @@ namespace AgileObjects.ReadableExpressions
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Extensions;
 
     public class TranslationContext
     {
-        private ExpressionAnalysisVisitor _analyzer;
+        private readonly ExpressionAnalysisVisitor _analyzer;
 
-        private ExpressionAnalysisVisitor Analyzer => _analyzer ?? (_analyzer = new ExpressionAnalysisVisitor());
+        private TranslationContext(ExpressionAnalysisVisitor analyzer)
+        {
+            _analyzer = analyzer;
+        }
+
+        public static TranslationContext For(Expression expression)
+        {
+            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression));
+        }
 
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
-
-        public void Process(BlockExpression block)
-        {
-            Analyzer.Process(block);
-        }
 
         public bool IsNotJoinedAssignment(Expression expression)
         {
@@ -28,24 +32,76 @@ namespace AgileObjects.ReadableExpressions
             return _analyzer.NamedLabelTargets.Contains(labelTarget);
         }
 
+        public bool IsPartOfMethodCallChain(Expression methodCall)
+        {
+            return _analyzer.ChainedMethodCalls.Contains(methodCall);
+        }
+
         private class ExpressionAnalysisVisitor : ExpressionVisitor
         {
-            private readonly List<BlockExpression> _processedBlocks;
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<ParameterExpression> _assignedVariables;
             private readonly List<Expression> _assignedAssignments;
             private readonly List<BinaryExpression> _joinedAssignments;
             private readonly List<LabelTarget> _namedLabelTargets;
+            private readonly List<MethodCallExpression> _chainedMethodCalls;
 
-            public ExpressionAnalysisVisitor()
+            private ExpressionAnalysisVisitor()
             {
-                _processedBlocks = new List<BlockExpression>();
                 _accessedVariables = new List<ParameterExpression>();
                 _assignedVariables = new List<ParameterExpression>();
                 _assignedAssignments = new List<Expression>();
                 _joinedAssignments = new List<BinaryExpression>();
                 _namedLabelTargets = new List<LabelTarget>();
+                _chainedMethodCalls = new List<MethodCallExpression>();
             }
+
+            #region Factory Method
+
+            public static ExpressionAnalysisVisitor Analyse(Expression expression)
+            {
+                var analyzer = new ExpressionAnalysisVisitor();
+
+                var coreExpression = GetCoreExpression(expression);
+
+                switch (coreExpression.NodeType)
+                {
+                    case ExpressionType.Block:
+                    case ExpressionType.Call:
+                    case ExpressionType.Conditional:
+                        analyzer.Visit(coreExpression);
+                        break;
+                }
+
+                return analyzer;
+            }
+
+            private static Expression GetCoreExpression(Expression expression)
+            {
+                var coreExpression = expression;
+
+                while (true)
+                {
+                    if (coreExpression.NodeType == ExpressionType.Lambda)
+                    {
+                        coreExpression = ((LambdaExpression)coreExpression).Body;
+                        continue;
+                    }
+
+                    var unary = coreExpression as UnaryExpression;
+
+                    if (unary == null)
+                    {
+                        break;
+                    }
+
+                    coreExpression = unary.Operand;
+                }
+
+                return coreExpression;
+            }
+
+            #endregion
 
             public IEnumerable<ParameterExpression> AssignedVariables => _assignedVariables;
 
@@ -53,20 +109,7 @@ namespace AgileObjects.ReadableExpressions
 
             public IEnumerable<LabelTarget> NamedLabelTargets => _namedLabelTargets;
 
-            public void Process(Expression block)
-            {
-                if (!_processedBlocks.Contains(block))
-                {
-                    Visit(block);
-                }
-            }
-
-            protected override Expression VisitBlock(BlockExpression block)
-            {
-                _processedBlocks.Add(block);
-
-                return base.VisitBlock(block);
-            }
+            public IEnumerable<MethodCallExpression> ChainedMethodCalls => _chainedMethodCalls;
 
             protected override Expression VisitParameter(ParameterExpression variable)
             {
@@ -136,6 +179,32 @@ namespace AgileObjects.ReadableExpressions
                 }
 
                 return base.VisitGoto(@goto);
+            }
+
+            protected override Expression VisitMethodCall(MethodCallExpression methodCall)
+            {
+                if (!_chainedMethodCalls.Contains(methodCall))
+                {
+                    var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
+
+                    if (methodCallChain.Length > 2)
+                    {
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                }
+
+                return base.VisitMethodCall(methodCall);
+            }
+
+            private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(
+                MethodCallExpression methodCall)
+            {
+                while (methodCall != null)
+                {
+                    yield return methodCall;
+
+                    methodCall = methodCall.GetSubject() as MethodCallExpression;
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq.Expressions;
+    using Extensions;
     using Formatting;
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
@@ -28,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
             {
-                return new FormattableTernaryExpression(test, ifTrueBlock, ifFalseBlock);
+                return new TernaryExpression(test, ifTrueBlock, ifFalseBlock);
             }
 
             if (conditional.IfTrue.IsReturnable())

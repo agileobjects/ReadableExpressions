@@ -9,8 +9,7 @@
     {
         private readonly IEnumerable<string> _parameterModifiers;
         private readonly IEnumerable<Expression> _arguments;
-        private readonly TranslationContext _context;
-        private readonly Translator _globalTranslator;
+        private readonly Func<Expression, string> _argumentTranslator;
 
         public ParameterSet(
             IMethodInfo method,
@@ -20,8 +19,7 @@
         {
             _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments;
-            _context = context;
-            _globalTranslator = globalTranslator;
+            _argumentTranslator = arg => globalTranslator.Invoke(arg, context);
         }
 
         private static IEnumerable<string> GetParameterModifers(IMethodInfo method)
@@ -68,7 +66,7 @@
         private string TranslateArgument(Expression argument, int parameterIndex)
         {
             var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
-            var argumentString = _globalTranslator.Invoke(argument, _context).Unterminated();
+            var argumentString = _argumentTranslator.Invoke(argument).Unterminated();
 
             return modifier + argumentString;
         }

@@ -330,6 +330,32 @@ else
             Assert.AreEqual("new[] { 1, 2, 3 }.Select(intConverter)", translated);
         }
 
+        [TestMethod]
+        public void ShouldSplitLongChainedMethodsOntoMultipleLines()
+        {
+            Expression<Func<IEnumerable<int>>> longMethodChain = () =>
+                Enumerable
+                    .Range(1, 10)
+                    .Select(Convert.ToInt64)
+                    .ToArray()
+                    .Select(Convert.ToInt32)
+                    .OrderByDescending(i => i)
+                    .ToList();
+
+            var translated = longMethodChain.Body.ToReadableString();
+
+            const string EXPECTED = @"
+Enumerable
+    .Range(1, 10)
+    .Select(Convert.ToInt64)
+    .ToArray()
+    .Select(Convert.ToInt32)
+    .OrderByDescending(i => i)
+    .ToList()";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local
@@ -349,6 +375,7 @@ else
         // ReSharper restore UnusedMember.Local
 
         // ReSharper disable once ClassNeverInstantiated.Local
+
         private class IntConverter
         {
             public string Convert(int value)
@@ -361,6 +388,12 @@ else
         {
             public override ExpressionType NodeType => ExpressionType.Extension;
 
+            protected override Expression VisitChildren(ExpressionVisitor visitor)
+            {
+                // See CommentExpression for why this is necessary:
+                return this;
+            }
+
             public override string ToString()
             {
                 return "Exteeennndddiiiinnngg";
@@ -370,6 +403,12 @@ else
         private class UnknownExpression : Expression
         {
             public override ExpressionType NodeType => (ExpressionType)5346372;
+
+            protected override Expression VisitChildren(ExpressionVisitor visitor)
+            {
+                // See CommentExpression for why this is necessary:
+                return this;
+            }
 
             public override string ToString()
             {

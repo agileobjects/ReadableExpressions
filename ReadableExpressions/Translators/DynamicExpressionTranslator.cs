@@ -45,7 +45,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 if (translator.TryTranslate(
                     operationDescription,
-                    dynamicExpression.Arguments,
+                    dynamicExpression,
                     context,
                     out translated))
                 {
@@ -74,7 +74,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             public bool TryTranslate(
                 string operationDescription,
-                IEnumerable<Expression> arguments,
+                DynamicExpression dynamicExpression,
                 TranslationContext context,
                 out string translated)
             {
@@ -82,7 +82,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 if (match.Success)
                 {
-                    return DoTranslate(match, arguments, context, out translated);
+                    return DoTranslate(match, dynamicExpression, context, out translated);
                 }
 
                 translated = null;
@@ -91,7 +91,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected abstract bool DoTranslate(
                 Match match,
-                IEnumerable<Expression> arguments,
+                DynamicExpression dynamicExpression,
                 TranslationContext context,
                 out string translated);
         }
@@ -110,11 +110,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected override bool DoTranslate(
                 Match match,
-                IEnumerable<Expression> arguments,
+                DynamicExpression dynamicExpression,
                 TranslationContext context,
                 out string translated)
             {
-                translated = GetMemberAccess(match, arguments, context);
+                translated = GetMemberAccess(match, dynamicExpression.Arguments, context);
                 return true;
             }
 
@@ -144,12 +144,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected override bool DoTranslate(
                 Match match,
-                IEnumerable<Expression> arguments,
+                DynamicExpression dynamicExpression,
                 TranslationContext context,
                 out string translated)
             {
-                var target = _memberAccessTranslator.GetMemberAccess(match, arguments, context);
-                var value = arguments.Last();
+                var target = _memberAccessTranslator.GetMemberAccess(match, dynamicExpression.Arguments, context);
+                var value = dynamicExpression.Arguments.Last();
 
                 translated = _assignmentTranslator.GetAssignment(target, ExpressionType.Assign, value, context);
                 return true;
@@ -170,11 +170,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             protected override bool DoTranslate(
                 Match match,
-                IEnumerable<Expression> arguments,
+                DynamicExpression dynamicExpression,
                 TranslationContext context,
                 out string translated)
             {
-                var subjectObject = arguments.First();
+                var subjectObject = dynamicExpression.Arguments.First();
                 var subject = GlobalTranslator.Invoke(subjectObject, context);
                 var methodName = match.Groups["MethodName"].Value;
                 var method = subjectObject.Type.GetMethod(methodName);
@@ -186,7 +186,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 translated = _methodCallTranslator.GetMethodCall(
                     subject,
                     methodInfo,
-                    arguments.Skip(1).ToArray(),
+                    dynamicExpression.Arguments.Skip(1).ToArray(),
+                    dynamicExpression,
                     context);
 
                 return true;

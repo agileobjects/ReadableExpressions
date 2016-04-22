@@ -2,9 +2,9 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
 
-    internal class FormattableTernaryExpression : FormattableExpressionBase
+    internal class TernaryExpression : FormattableExpressionBase
     {
-        public FormattableTernaryExpression(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        public TernaryExpression(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
             var ifTrueString = ifTrue.AsExpressionBody();
             var ifFalseString = ifFalse.AsExpressionBody();

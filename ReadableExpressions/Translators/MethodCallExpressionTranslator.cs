@@ -5,7 +5,6 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
     using Extensions;
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
@@ -41,7 +40,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> methodArguments;
             var methodCallSubject = GetMethodCallSubject(methodCall, context, out methodArguments);
 
-            return GetMethodCall(methodCallSubject, methodCall.Method, methodArguments, context);
+            return GetMethodCall(
+                methodCallSubject,
+                methodCall.Method,
+                methodArguments,
+                expression,
+                context);
         }
 
         private string GetMethodCallSubject(
@@ -64,7 +68,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context,
             out IEnumerable<Expression> arguments)
         {
-            if (methodCall.Method.GetCustomAttributes(typeof(ExtensionAttribute), inherit: false).Any())
+            if (methodCall.Method.IsExtensionMethod())
             {
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1).ToArray();
@@ -82,18 +86,29 @@ namespace AgileObjects.ReadableExpressions.Translators
             string subject,
             MethodInfo method,
             IEnumerable<Expression> arguments,
+            Expression originalMethodCall,
             TranslationContext context)
         {
-            return GetMethodCall(subject, new BclMethodInfoWrapper(method), arguments, context);
+            return GetMethodCall(
+                subject,
+                new BclMethodInfoWrapper(method),
+                arguments,
+                originalMethodCall,
+                context);
         }
 
         internal string GetMethodCall(
             string subject,
             IMethodInfo method,
             IEnumerable<Expression> arguments,
+            Expression originalMethodCall,
             TranslationContext context)
         {
-            return subject + "." + GetMethodCall(method, arguments, context);
+            var separator = context.IsPartOfMethodCallChain(originalMethodCall)
+                ? Environment.NewLine + ".".Indent()
+                : ".";
+
+            return subject + separator + GetMethodCall(method, arguments, context);
         }
 
         internal string GetMethodCall(
@@ -180,11 +195,18 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private class InvocationExpressionHandler : SpecialCaseHandlerBase
         {
-            private readonly Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> _methodCallTranslator;
+            public delegate string MethodCallTranslator(
+                string subject,
+                MethodInfo method,
+                IEnumerable<Expression> arguments,
+                Expression originalMethodCall,
+                TranslationContext context);
+
+            private readonly MethodCallTranslator _methodCallTranslator;
             private readonly Translator _globalTranslator;
 
             public InvocationExpressionHandler(
-                Func<string, MethodInfo, IEnumerable<Expression>, TranslationContext, string> methodCallTranslator,
+                MethodCallTranslator methodCallTranslator,
                 Translator globalTranslator)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
@@ -204,8 +226,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 var invocationMethod = invocation.Expression.Type.GetMethod("Invoke");
 
-                return _methodCallTranslator
-                    .Invoke(invocationSubject, invocationMethod, invocation.Arguments, context);
+                return _methodCallTranslator.Invoke(
+                    invocationSubject,
+                    invocationMethod,
+                    invocation.Arguments,
+                    expression,
+                    context);
             }
         }
 
