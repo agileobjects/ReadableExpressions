@@ -1,5 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using System;
+    using System.IO;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -241,6 +243,33 @@
             const string EXPECTED = @"
 int j;
 var i = ((long)(j = 10));";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldAssignTheResultOfATryCatch()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+
+            Expression<Func<int>> read = () => Console.Read();
+
+            var returnDefault = Expression.Catch(typeof(IOException), Expression.Default(typeof(int)));
+            var readOrDefault = Expression.TryCatch(read.Body, returnDefault);
+
+            var assignReadOrDefault = Expression.Assign(intVariable, readOrDefault);
+
+            var translated = assignReadOrDefault.ToReadableString();
+
+            const string EXPECTED = @"
+i = try
+{
+    Console.Read();
+}
+catch (IOException)
+{
+    default(int);
+}";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

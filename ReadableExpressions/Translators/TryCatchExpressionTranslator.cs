@@ -34,9 +34,13 @@ try{tryBody.WithParentheses()}
 
             var exceptionClause = GetExceptionClause(catchBlock, context);
 
-            var catchBodyBlock = catchBody
-                .WithParentheses()
-                .Replace($"throw {catchBlock.Variable.Name};", "throw;");
+            var catchBodyBlock = catchBody.WithParentheses();
+
+            if (catchBlock.Variable != null)
+            {
+                catchBodyBlock = catchBodyBlock
+                    .Replace($"throw {catchBlock.Variable.Name};", "throw;");
+            }
 
             return $@"catch{exceptionClause}{catchBodyBlock}
 ";
@@ -44,7 +48,7 @@ try{tryBody.WithParentheses()}
 
         private string GetExceptionClause(CatchBlock catchBlock, TranslationContext context)
         {
-            var exceptionTypeName = catchBlock.Variable.Type.GetFriendlyName();
+            var exceptionTypeName = catchBlock.Test.GetFriendlyName();
 
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
@@ -55,12 +59,9 @@ try{tryBody.WithParentheses()}
                 return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;
             }
 
-            if (catchBlock.Variable.Type != typeof(Exception))
-            {
-                return $" ({exceptionTypeName})";
-            }
-
-            return null;
+            return (catchBlock.Test != typeof(Exception))
+                ? $" ({exceptionTypeName})"
+                : null;
         }
 
         private string GetFaultBlock(Expression faultBlock, TranslationContext context)
@@ -100,6 +101,11 @@ try{tryBody.WithParentheses()}
 
             public static bool IsVariableUsed(CatchBlock catchHandler)
             {
+                if (catchHandler.Variable == null)
+                {
+                    return false;
+                }
+
                 var visitor = new ExceptionUsageFinder(catchHandler);
                 visitor.Visit(catchHandler.Filter);
 
