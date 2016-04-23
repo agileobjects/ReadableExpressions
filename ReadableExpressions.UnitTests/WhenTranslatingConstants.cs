@@ -141,6 +141,16 @@
             Assert.AreEqual("OddNumber.One", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateADefaultDate()
+        {
+            var dateConstant = Expression.Constant(default(DateTime));
+
+            var translated = dateConstant.ToReadableString();
+
+            Assert.AreEqual("default(DateTime)", translated);
+        }
+
         private enum OddNumber
         {
             One = 1

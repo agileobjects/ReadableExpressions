@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public static class TypeExtensions
+    internal static class TypeExtensions
     {
         private static readonly Dictionary<Type, string> _typeNameSubstitutions = new Dictionary<Type, string>
         {

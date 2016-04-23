@@ -34,6 +34,13 @@ namespace AgileObjects.ReadableExpressions.Translators
                 case TypeCode.Boolean:
                     return constant.Value.ToString().ToLowerInvariant();
 
+                case TypeCode.DateTime:
+                    if (constant.Value.Equals(default(DateTime)))
+                    {
+                        return "default(DateTime)";
+                    }
+                    break;
+
                 case TypeCode.Decimal:
                     return FormatNumeric((decimal)constant.Value) + "m";
 
