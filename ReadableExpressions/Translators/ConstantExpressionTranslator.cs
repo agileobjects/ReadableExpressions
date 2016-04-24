@@ -57,6 +57,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return $"\"{constant.Value}\"";
             }
 
+            if ((constant.Type == typeof(TimeSpan)) &&
+                constant.Value.Equals(default(TimeSpan)))
+            {
+                return "default(TimeSpan)";
+            }
+
             if (typeof(Type).IsAssignableFrom(constant.Type))
             {
                 return $"typeof({((Type)constant.Value).GetFriendlyName()})";

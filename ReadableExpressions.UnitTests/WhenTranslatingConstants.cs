@@ -151,6 +151,16 @@
             Assert.AreEqual("default(DateTime)", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateADefaultTimeSpan()
+        {
+            var timeSpanConstant = Expression.Constant(default(TimeSpan));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("default(TimeSpan)", translated);
+        }
+
         private enum OddNumber
         {
             One = 1
