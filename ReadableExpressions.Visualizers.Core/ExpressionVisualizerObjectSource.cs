@@ -14,7 +14,7 @@
             var expression = (Expression)target;
             var readableExpression = expression.ToReadableString();
 
-            serializer.Invoke(outgoingData, readableExpression);
+            serializer.Invoke(outgoingData, readableExpression ?? "Nothing to translate");
         }
     }
 }
