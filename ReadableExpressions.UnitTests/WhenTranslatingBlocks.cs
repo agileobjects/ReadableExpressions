@@ -221,23 +221,6 @@ Console.WriteLine();";
         }
 
         [TestMethod]
-        public void ShouldTranslateABlockWithAComment()
-        {
-            var comment = ReadableExpression.Comment("Anyone listening?");
-            Expression<Action> beep = () => Console.Beep();
-
-            var commentedBeep = Expression.Block(comment, beep.Body);
-
-            var translated = commentedBeep.ToReadableString();
-
-            const string EXPECTED = @"
-// Anyone listening?
-Console.Beep();";
-
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
-        }
-
-        [TestMethod]
         public void ShouldIgnoreAVariableOnlyBlockStatement()
         {
             var countVariable = Expression.Variable(typeof(int), "count");

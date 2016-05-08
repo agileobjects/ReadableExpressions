@@ -5,14 +5,18 @@
 
     public class CommentExpression : Expression
     {
+        private const string CommentString = "// ";
+
         internal CommentExpression(string text)
         {
-            Comment = "// " + text;
+            Comment = CommentString + text
+                .Trim()
+                .Replace(Environment.NewLine, Environment.NewLine + CommentString);
         }
 
         public static bool IsComment(string codeLine)
         {
-            return codeLine.StartsWith("// ", StringComparison.Ordinal);
+            return codeLine.TrimStart().StartsWith(CommentString, StringComparison.Ordinal);
         }
 
         public override ExpressionType NodeType => ExpressionType.Constant;

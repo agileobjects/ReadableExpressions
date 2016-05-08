@@ -23,9 +23,11 @@
                 case ExpressionType.Block:
                     return ((BlockExpression)expression).IsReturnable();
 
+                case ExpressionType.Constant:
+                    return !(expression is CommentExpression);
+
                 case ExpressionType.Call:
                 case ExpressionType.Conditional:
-                case ExpressionType.Constant:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
                 case ExpressionType.Invoke:
