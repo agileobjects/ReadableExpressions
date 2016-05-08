@@ -24,7 +24,7 @@
                     return ((BlockExpression)expression).IsReturnable();
 
                 case ExpressionType.Constant:
-                    return !(expression is CommentExpression);
+                    return !expression.IsComment();
 
                 case ExpressionType.Call:
                 case ExpressionType.Conditional:
@@ -42,6 +42,18 @@
         public static bool IsReturnable(this BlockExpression block)
         {
             return (block.Type != typeof(void)) && block.Result.IsReturnable();
+        }
+
+        public static bool IsComment(this Expression expression)
+        {
+            if (expression.NodeType != ExpressionType.Constant)
+            {
+                return false;
+            }
+
+            var value = ((ConstantExpression)expression).Value as string;
+
+            return (value != null) && value.IsComment();
         }
     }
 }

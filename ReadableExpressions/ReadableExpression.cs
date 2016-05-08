@@ -1,10 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System.Linq.Expressions;
+
     public class ReadableExpression
     {
-        public static CommentExpression Comment(string text)
+        public static ConstantExpression Comment(string text)
         {
-            return new CommentExpression(text);
+            return Expression.Constant(text.AsComment());
         }
     }
 }

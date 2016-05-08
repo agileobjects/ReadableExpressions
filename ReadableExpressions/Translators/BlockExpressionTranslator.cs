@@ -59,12 +59,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return false;
             }
 
-            if (expression.NodeType != ExpressionType.Constant)
-            {
-                return true;
-            }
-
-            return expression is CommentExpression;
+            return (expression.NodeType != ExpressionType.Constant) || expression.IsComment();
         }
 
         private string GetTerminatedStatementOrNull(Expression expression, TranslationContext context)
@@ -105,12 +100,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return false;
             }
 
-            if (translation.IsTerminated())
-            {
-                return true;
-            }
-
-            return expression is CommentExpression;
+            return translation.IsTerminated() || expression.IsComment();
         }
 
         private static string GetVariableTypeName(BinaryExpression assignment)

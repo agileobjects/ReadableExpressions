@@ -13,12 +13,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, TranslationContext context)
         {
-            return (expression as CommentExpression)?.Comment
-                ?? TranslateConstant((ConstantExpression)expression);
-        }
+            var constant = (ConstantExpression)expression;
 
-        private static string TranslateConstant(ConstantExpression constant)
-        {
             if (constant.Value == null)
             {
                 return "null";
@@ -29,36 +25,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
 
-            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(constant.Type) ?? constant.Type))
+            string translation;
+
+            if (TryTranslateByTypeCode(constant, out translation))
             {
-                case TypeCode.Boolean:
-                    return constant.Value.ToString().ToLowerInvariant();
-
-                case TypeCode.DateTime:
-                    if (constant.Value.Equals(default(DateTime)))
-                    {
-                        return "default(DateTime)";
-                    }
-                    break;
-
-                case TypeCode.Decimal:
-                    return FormatNumeric((decimal)constant.Value) + "m";
-
-                case TypeCode.Double:
-                    return FormatNumeric((double)constant.Value) + "d";
-
-                case TypeCode.Int64:
-                    return constant.Value + "L";
-
-                case TypeCode.Single:
-                    return FormatNumeric((float)constant.Value) + "f";
-
-                case TypeCode.String:
-                    return $"\"{constant.Value}\"";
+                return translation;
             }
 
-            if ((constant.Type == typeof(TimeSpan)) &&
-                constant.Value.Equals(default(TimeSpan)))
+            if ((constant.Type == typeof(TimeSpan)) && constant.Value.Equals(default(TimeSpan)))
             {
                 return "default(TimeSpan)";
             }
@@ -69,6 +43,48 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return constant.Value.ToString();
+        }
+
+        private static bool TryTranslateByTypeCode(ConstantExpression constant, out string translation)
+        {
+            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(constant.Type) ?? constant.Type))
+            {
+                case TypeCode.Boolean:
+                    translation = constant.Value.ToString().ToLowerInvariant();
+                    return true;
+
+                case TypeCode.DateTime:
+                    if (constant.Value.Equals(default(DateTime)))
+                    {
+                        translation = "default(DateTime)";
+                        return true;
+                    }
+                    break;
+
+                case TypeCode.Decimal:
+                    translation = FormatNumeric((decimal)constant.Value) + "m";
+                    return true;
+
+                case TypeCode.Double:
+                    translation = FormatNumeric((double)constant.Value) + "d";
+                    return true;
+
+                case TypeCode.Int64:
+                    translation = constant.Value + "L";
+                    return true;
+
+                case TypeCode.Single:
+                    translation = FormatNumeric((float)constant.Value) + "f";
+                    return true;
+
+                case TypeCode.String:
+                    var stringValue = (string)constant.Value;
+                    translation = stringValue.IsComment() ? stringValue : $"\"{stringValue}\"";
+                    return true;
+            }
+
+            translation = null;
+            return false;
         }
 
         private static string FormatNumeric(decimal value)

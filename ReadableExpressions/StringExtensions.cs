@@ -11,8 +11,7 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool IsTerminated(this string codeLine)
         {
-            return codeLine.EndsWithAny(_terminatingCharacters) ||
-                CommentExpression.IsComment(codeLine);
+            return codeLine.EndsWithAny(_terminatingCharacters) || codeLine.IsComment();
         }
 
         public static string Unterminated(this string codeLine)
@@ -121,6 +120,20 @@ namespace AgileObjects.ReadableExpressions
         private static bool EndsWithAny(this string value, IEnumerable<char> characters)
         {
             return characters.Any(value.EndsWith);
+        }
+
+        private const string CommentString = "// ";
+
+        public static string AsComment(this string text)
+        {
+            return CommentString + text
+                .Trim()
+                .Replace(Environment.NewLine, Environment.NewLine + CommentString);
+        }
+
+        public static bool IsComment(this string codeLine)
+        {
+            return codeLine.TrimStart().StartsWith(CommentString, StringComparison.Ordinal);
         }
     }
 }
