@@ -248,6 +248,19 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAnOutParameterMethodCallWithoutGenericArgumentIncluded()
+        {
+            string result;
+
+            Expression<Func<int, bool>> convertIntToString =
+                i => new ValueConverter().TryConvert(i, out result);
+
+            var translated = convertIntToString.Body.ToReadableString();
+
+            Assert.AreEqual("new ValueConverter().TryConvert(i, out result)", translated);
+        }
+
+        [TestMethod]
         public void ShouldNotIncludeCapturedInstanceNames()
         {
             var helper = new CapturedInstanceHelper(5);
@@ -324,6 +337,12 @@
             public TResult Convert<TValue, TResult>(TValue value)
             {
                 return (TResult)(object)value;
+            }
+
+            public bool TryConvert<TValue, TResult>(TValue value, out TResult result)
+            {
+                result = (value != null) ? Convert<TValue, TResult>(value) : default(TResult);
+                return true;
             }
         }
 

@@ -160,7 +160,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Type> types,
             ICollection<Type> genericParameterTypes)
         {
-            foreach (var type in types)
+            foreach (var type in types.Select(t => t.IsByRef ? t.GetElementType() : t))
             {
                 if (type.IsGenericParameter && genericParameterTypes.Contains(type))
                 {
