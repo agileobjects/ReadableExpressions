@@ -55,5 +55,30 @@
 
             return (value != null) && value.IsComment();
         }
+
+        public static bool IsAssignment(this Expression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.AddAssign:
+                case ExpressionType.AddAssignChecked:
+                case ExpressionType.AndAssign:
+                case ExpressionType.Assign:
+                case ExpressionType.DivideAssign:
+                case ExpressionType.ExclusiveOrAssign:
+                case ExpressionType.LeftShiftAssign:
+                case ExpressionType.ModuloAssign:
+                case ExpressionType.MultiplyAssign:
+                case ExpressionType.MultiplyAssignChecked:
+                case ExpressionType.OrAssign:
+                case ExpressionType.PowerAssign:
+                case ExpressionType.SubtractAssign:
+                case ExpressionType.SubtractAssignChecked:
+                case ExpressionType.RightShiftAssign:
+                    return true;
+            }
+
+            return false;
+        }
     }
 }

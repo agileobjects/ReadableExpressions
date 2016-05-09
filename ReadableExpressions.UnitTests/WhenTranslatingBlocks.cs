@@ -202,6 +202,30 @@ var countThree = (byte)(countOne + countTwo);";
         }
 
         [TestMethod]
+        public void ShouldTranslateAVariableAssignmentWithinACondition()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var assignFiveToCount = Expression.Assign(countVariable, Expression.Constant(5));
+            var isResultLessThanTen = Expression.LessThan(assignFiveToCount, Expression.Constant(10));
+            var ifResultIsLessThanTenDoNothing = Expression.IfThen(isResultLessThanTen, Expression.Default(typeof(void)));
+
+            var countBlock = Expression.Block(new[] { countVariable }, ifResultIsLessThanTenDoNothing);
+            var countLambda = Expression.Lambda<Action>(countBlock);
+
+            var translated = countLambda.ToReadableString();
+
+            const string EXPECTED = @"() =>
+{
+    int count;
+    if ((count = 5) < 10)
+    {
+    }
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateNestedBlocks()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -252,6 +276,45 @@ Console.WriteLine();";
             var translated = openTextFileCall.ToReadableString();
 
             Assert.AreEqual("File.OpenText(((int)o).ToString())", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateASwitchWithMultipleVariableAssignments()
+        {
+            var countVariable = Expression.Variable(typeof(int), "count");
+            var intVariable = Expression.Variable(typeof(int), "i");
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                Expression.Assign(countVariable, Expression.Constant(0)),
+                Enumerable
+                    .Range(1, 2)
+                    .Select(i => Expression.SwitchCase(
+                        Expression.Assign(countVariable, Expression.Constant(i * 2)),
+                        Expression.Constant(i)))
+                    .ToArray());
+
+            var switchBlock = Expression.Block(new[] { countVariable }, switchStatement);
+
+            var translated = switchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+int count;
+switch (i)
+{
+    case 1:
+        count = 2;
+        break;
+
+    case 2:
+        count = 4;
+        break;
+
+    default:
+        count = 0;
+        break;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
 }

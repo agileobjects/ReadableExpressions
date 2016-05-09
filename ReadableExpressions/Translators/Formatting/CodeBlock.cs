@@ -16,9 +16,11 @@
         {
             _expression = expression;
             _blockLines = blockLines.Where(line => line != null).ToArray();
+
+            IsASingleStatement = (_blockLines.Length == 1) && !_blockLines[0].Contains(";" + Environment.NewLine);
         }
 
-        public bool IsASingleStatement => _blockLines.Length == 1;
+        public bool IsASingleStatement { get; }
 
         public string AsExpressionBody()
         {

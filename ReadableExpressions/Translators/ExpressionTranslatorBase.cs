@@ -24,7 +24,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public abstract string Translate(Expression expression, TranslationContext context);
 
-        protected string GetTranslation(Expression expression, TranslationContext context)
+        protected virtual string GetTranslation(Expression expression, TranslationContext context)
         {
             return _globalTranslator.Invoke(expression, context);
         }

@@ -45,6 +45,7 @@ namespace AgileObjects.ReadableExpressions
             private readonly List<BinaryExpression> _joinedAssignments;
             private readonly List<LabelTarget> _namedLabelTargets;
             private readonly List<MethodCallExpression> _chainedMethodCalls;
+            private BlockExpression _currentBlock;
 
             private ExpressionAnalysisVisitor()
             {
@@ -111,6 +112,13 @@ namespace AgileObjects.ReadableExpressions
 
             public IEnumerable<MethodCallExpression> ChainedMethodCalls => _chainedMethodCalls;
 
+            protected override Expression VisitBlock(BlockExpression block)
+            {
+                _currentBlock = block;
+
+                return base.VisitBlock(block);
+            }
+
             protected override Expression VisitParameter(ParameterExpression variable)
             {
                 if (VariableHasNotYetBeenAccessed(variable))
@@ -125,6 +133,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 if ((binaryExpression.NodeType == ExpressionType.Assign) &&
                     (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
+                    _currentBlock.Expressions.Contains(binaryExpression) &&
                     !_assignedVariables.Contains(binaryExpression.Left) &&
                     !_assignedAssignments.Contains(binaryExpression))
                 {

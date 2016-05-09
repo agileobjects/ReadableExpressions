@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Extensions;
 
     internal class BinaryExpressionTranslator : ExpressionTranslatorBase
     {
@@ -72,6 +73,18 @@ namespace AgileObjects.ReadableExpressions.Translators
             var right = GetTranslation(binary.Right, context);
 
             return $"({left} {@operator} {right})";
+        }
+
+        protected override string GetTranslation(Expression expression, TranslationContext context)
+        {
+            var translation = base.GetTranslation(expression, context);
+
+            if (expression.IsAssignment() && !translation.HasSurroundingParentheses())
+            {
+                translation = translation.WithSurroundingParentheses();
+            }
+
+            return translation;
         }
 
         private string TranslateEqualityComparison(BinaryExpression comparison, TranslationContext context)
