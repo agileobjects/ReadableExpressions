@@ -356,6 +356,17 @@ Enumerable
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
+        [TestMethod]
+        public void ShouldUseFriendlyNamesForArrays()
+        {
+            var intArrayVariable = Expression.Variable(typeof(int[]), "ints");
+            var assignNull = Expression.Assign(intArrayVariable, Expression.Default(intArrayVariable.Type));
+
+            var translated = assignNull.ToReadableString();
+
+            Assert.AreEqual("ints = default(int[])", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local

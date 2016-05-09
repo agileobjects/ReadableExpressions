@@ -26,6 +26,11 @@
 
         public static string GetFriendlyName(this Type type)
         {
+            if (type.IsArray)
+            {
+                return type.GetElementType().GetFriendlyName() + "[]";
+            }
+
             if (!type.IsGenericType)
             {
                 string substitutedName;
