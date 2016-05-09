@@ -103,7 +103,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool IsBooleanConstant(Expression expression)
         {
-            return (expression.NodeType == ExpressionType.Constant) &&
+            return ((expression.NodeType == ExpressionType.Constant) || (expression.NodeType == ExpressionType.Default)) &&
                    (expression.Type == typeof(bool));
         }
 
@@ -123,7 +123,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 Boolean = boolean;
 
-                var comparisonValue = (bool)((ConstantExpression)comparison).Value;
+                var comparisonValue =
+                    (comparison.NodeType != ExpressionType.Default) &&
+                    (bool)((ConstantExpression)comparison).Value;
 
                 IsComparisonToTrue =
                     (comparisonValue && (@operator == ExpressionType.Equal)) ||

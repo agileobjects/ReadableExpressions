@@ -110,5 +110,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             Assert.AreEqual("couldBe", translated);
         }
+
+        [TestMethod]
+        public void ShouldAbbreviateDefaultBooleanComparisons()
+        {
+            var boolVariable = Expression.Variable(typeof(bool), "couldBe");
+            var boolIsFalse = Expression.Equal(Expression.Default(typeof(bool)), boolVariable);
+
+            var translated = boolIsFalse.ToReadableString();
+
+            Assert.AreEqual("!couldBe", translated);
+        }
     }
 }
