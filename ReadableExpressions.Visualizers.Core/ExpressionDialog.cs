@@ -127,7 +127,11 @@
         {
             EnableAutoSize();
 
-            _textBox.Size = newSize;
+            var finalSize = new Size(
+                Math.Max(newSize.Width, _textBox.Parent.Width),
+                Math.Max(newSize.Height, _textBox.Parent.Height));
+
+            _textBox.Size = finalSize;
 
             DisableAutoSize();
         }
