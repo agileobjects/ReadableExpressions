@@ -26,9 +26,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssignChecked] = "-="
             };
 
-        internal AssignmentExpressionTranslator(Translator globalTranslator)
+        private readonly DefaultExpressionTranslator _defaultTranslator;
+
+        internal AssignmentExpressionTranslator(
+            DefaultExpressionTranslator defaultTranslator,
+            Translator globalTranslator)
             : base(globalTranslator, _symbolsByNodeType.Keys.ToArray())
         {
+            _defaultTranslator = defaultTranslator;
         }
 
         public override string Translate(Expression expression, TranslationContext context)
@@ -46,7 +51,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var valueString = GetTranslation(value, context);
+            var valueString = GetValueTranslation(value, context);
 
             switch (value.NodeType)
             {
@@ -71,6 +76,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return $"{target} {symbol} {valueString}";
+        }
+
+        private string GetValueTranslation(Expression value, TranslationContext context)
+        {
+            return (value.NodeType != ExpressionType.Default)
+                ? GetTranslation(value, context)
+                : _defaultTranslator.Translate((DefaultExpression)value);
         }
     }
 }

@@ -361,10 +361,11 @@ Enumerable
         {
             var intArrayVariable = Expression.Variable(typeof(int[]), "ints");
             var assignNull = Expression.Assign(intArrayVariable, Expression.Default(intArrayVariable.Type));
+            var assignNullBlock = Expression.Block(new[] { intArrayVariable }, assignNull);
 
-            var translated = assignNull.ToReadableString();
+            var translated = assignNullBlock.ToReadableString();
 
-            Assert.AreEqual("ints = default(int[])", translated);
+            Assert.AreEqual("var ints = default(int[]);", translated);
         }
 
         #region Helper Classes

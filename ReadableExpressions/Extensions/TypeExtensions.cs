@@ -56,5 +56,15 @@
                 "`" + typeGenericTypeArguments.Length,
                 typeGenericTypeArgumentFriendlyNames);
         }
+
+        public static bool CanBeNull(this Type type)
+        {
+            return type.IsClass || type.IsInterface || type.IsNullableType();
+        }
+
+        public static bool IsNullableType(this Type type)
+        {
+            return Nullable.GetUnderlyingType(type) != null;
+        }
     }
 }

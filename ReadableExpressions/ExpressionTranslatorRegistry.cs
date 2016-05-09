@@ -13,21 +13,22 @@
         {
             var negationTranslator = new NegationExpressionTranslator(Translate);
             var memberAccessTranslator = new MemberAccessExpressionTranslator(Translate);
-            var assignmentTranslator = new AssignmentExpressionTranslator(Translate);
+            var defaultTranslator = new DefaultExpressionTranslator(Translate);
+            var assignmentTranslator = new AssignmentExpressionTranslator(defaultTranslator, Translate);
             var indexAccessTranslator = new IndexAccessExpressionTranslator(Translate);
             var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator, Translate);
 
             var translators = new List<IExpressionTranslator>
             {
                 new ArrayLengthExpressionTranslator(Translate),
-                new AssignmentExpressionTranslator(Translate),
+                assignmentTranslator,
                 new BinaryExpressionTranslator(negationTranslator, Translate),
                 new BlockExpressionTranslator(Translate),
                 new CastExpressionTranslator(Translate),
                 new ConditionalExpressionTranslator(Translate),
                 new ConstantExpressionTranslator(Translate),
                 new DebugInfoExpressionTranslator(Translate),
-                new DefaultExpressionTranslator(Translate),
+                defaultTranslator,
                 new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator, Translate),
                 new ExtensionExpressionTranslator(Translate),
                 new GotoExpressionTranslator(Translate),
@@ -38,7 +39,7 @@
                 new LoopExpressionTranslator(Translate),
                 memberAccessTranslator,
                 methodCallTranslator,
-                new NegationExpressionTranslator(Translate),
+                negationTranslator,
                 new NewArrayExpressionTranslator(Translate),
                 new NewExpressionTranslator(Translate),
                 new ParameterExpressionTranslator(Translate),

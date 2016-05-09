@@ -19,6 +19,13 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return null;
             }
 
+            return defaultExpression.Type.CanBeNull()
+                ? "null"
+                : Translate(defaultExpression);
+        }
+
+        internal string Translate(DefaultExpression defaultExpression)
+        {
             var typeName = defaultExpression.Type.GetFriendlyName();
 
             return $"default({typeName})";
