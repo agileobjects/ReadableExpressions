@@ -53,6 +53,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                     translation = constant.Value.ToString().ToLowerInvariant();
                     return true;
 
+                case TypeCode.Char:
+                    translation = $"'{constant.Value}'";
+                    return true;
+
                 case TypeCode.DateTime:
                     if (constant.Value.Equals(default(DateTime)))
                     {

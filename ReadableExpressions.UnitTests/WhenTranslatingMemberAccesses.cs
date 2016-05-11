@@ -123,6 +123,26 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAParamsArrayArgument()
+        {
+            Expression<Func<string, string[]>> splitString = str => str.Split('x', 'y', 'z');
+
+            var translated = splitString.ToReadableString();
+
+            Assert.AreEqual("str => str.Split('x', 'y', 'z')", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnEmptyParamsArrayArgument()
+        {
+            Expression<Func<string, string>> combineStrings = str => ParamsHelper.OptionalParams(str);
+
+            var translated = combineStrings.ToReadableString();
+
+            Assert.AreEqual("str => ParamsHelper.OptionalParams(str)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnIndexedPropertyAccessExpression()
         {
             Expression<Func<IndexedProperty, int, object>> getPropertyIndex = (p, index) => p[index];
@@ -368,6 +388,14 @@
         {
             public static void DoSomething()
             {
+            }
+        }
+
+        private static class ParamsHelper
+        {
+            public static string OptionalParams(string value, params string[] stringsToAdd)
+            {
+                return value + string.Join(string.Empty, stringsToAdd);
             }
         }
 

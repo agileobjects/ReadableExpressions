@@ -4,10 +4,11 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
 
     internal class ParameterSet : FormattableExpressionBase
     {
-        private readonly IEnumerable<string> _parameterModifiers;
+        private readonly IEnumerable<Func<string, string>> _parameterModifiers;
         private readonly IEnumerable<Expression> _arguments;
         private readonly Func<Expression, string> _argumentTranslator;
 
@@ -22,17 +23,46 @@
             _argumentTranslator = arg => globalTranslator.Invoke(arg, context);
         }
 
-        private static IEnumerable<string> GetParameterModifers(IMethodInfo method)
+        private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
         {
             if (method == null)
             {
-                return Enumerable.Empty<string>();
+                return Enumerable.Empty<Func<string, string>>();
             }
 
             return method
                 .GetParameters()
-                .Select(p => p.IsOut ? "out " : p.ParameterType.IsByRef ? "ref " : null)
+                .Select(GetParameterModifier)
                 .ToArray();
+        }
+
+        private static Func<string, string> GetParameterModifier(ParameterInfo parameter)
+        {
+            if (parameter.IsOut)
+            {
+                return p => "out " + p;
+            }
+
+            if (parameter.ParameterType.IsByRef)
+            {
+                return p => "ref " + p;
+            }
+
+            if (Attribute.IsDefined(parameter, typeof(ParamArrayAttribute)))
+            {
+                return FormatParamsArray;
+            }
+
+            return default(Func<string, string>);
+        }
+
+        private static string FormatParamsArray(string array)
+        {
+            var arrayValuesStart = array.IndexOf('{') + 1;
+            var arrayValuesEnd = array.LastIndexOf('}');
+            var arrayValues = array.Substring(arrayValuesStart, arrayValuesEnd - arrayValuesStart).Trim();
+
+            return arrayValues;
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
@@ -60,15 +90,16 @@
                 separator,
                 _arguments
                     .Select(TranslateArgument)
-                    .Select(extraFormatter));
+                    .Select(extraFormatter)
+                    .Where(arg => arg != string.Empty));
         }
 
         private string TranslateArgument(Expression argument, int parameterIndex)
         {
-            var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
             var argumentString = _argumentTranslator.Invoke(argument).Unterminated();
+            var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
 
-            return modifier + argumentString;
+            return (modifier != null) ? modifier.Invoke(argumentString) : argumentString;
         }
 
         public string WithParenthesesIfNecessary()
