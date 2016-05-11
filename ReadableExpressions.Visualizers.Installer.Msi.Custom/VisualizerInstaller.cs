@@ -140,6 +140,12 @@
 
         private void Write(Visualizer visualizer)
         {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            if (!Directory.Exists(Path.GetDirectoryName(visualizer.InstallPath)))
+            {
+                return;
+            }
+
             using (var resourceStream = _thisAssembly.GetManifestResourceStream(visualizer.ResourceName))
             using (var visualizerFileStream = File.OpenWrite(visualizer.InstallPath))
             {
@@ -179,7 +185,10 @@
                 Directory.Delete(productDirectory, recursive: true);
             }
 
-            File.Delete(visualizer.InstallPath);
+            if (File.Exists(visualizer.InstallPath))
+            {
+                File.Delete(visualizer.InstallPath);
+            }
         }
     }
 }
