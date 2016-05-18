@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -270,6 +271,47 @@ catch (IOException)
 {
     default(int);
 }";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldAssignAVariableInAConditionalTest()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var assignVariable = Expression.Assign(intVariable, Expression.Constant(10));
+            var isAssignmentFive = Expression.Equal(assignVariable, Expression.Constant(5));
+            var ifFiveDoNothing = Expression.IfThen(isAssignmentFive, Expression.Empty());
+
+            var translated = ifFiveDoNothing.ToReadableString();
+
+            const string EXPECTED = @"
+if ((i = 10) == 5)
+{
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldAssignAVariableInAMethodCallArgument()
+        {
+            var stringVariable = Expression.Variable(typeof(string), "value");
+            var setStringVariableToNull = Expression.Assign(stringVariable, Expression.Default(typeof(string)));
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+
+            var intToStringMethod = typeof(int)
+                .GetMethods()
+                .First(m =>
+                    (m.Name == "ToString") &&
+                    (m.GetParameters().FirstOrDefault()?.ParameterType == typeof(string)));
+
+            var intToString = Expression.Call(intVariable, intToStringMethod, setStringVariableToNull);
+
+            var translated = intToString.ToReadableString();
+
+            const string EXPECTED = @"i.ToString(value = null)";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

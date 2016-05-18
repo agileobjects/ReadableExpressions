@@ -133,7 +133,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 if ((binaryExpression.NodeType == ExpressionType.Assign) &&
                     (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
-                    _currentBlock.Expressions.Contains(binaryExpression) &&
+                    ((_currentBlock == null) || _currentBlock.Expressions.Contains(binaryExpression)) &&
                     !_assignedVariables.Contains(binaryExpression.Left) &&
                     !_assignedAssignments.Contains(binaryExpression))
                 {

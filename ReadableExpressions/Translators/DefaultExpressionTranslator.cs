@@ -26,6 +26,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal string Translate(DefaultExpression defaultExpression)
         {
+            if (defaultExpression.Type == typeof(string))
+            {
+                return "null";
+            }
+
             var typeName = defaultExpression.Type.GetFriendlyName();
 
             return $"default({typeName})";
