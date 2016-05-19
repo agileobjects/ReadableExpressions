@@ -116,8 +116,18 @@
                 visualizer.InstallPath = Path.Combine(pathToVisualizers, visualizerAssemblyName);
                 visualizer.VsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
 
+                PopulateVsSetupData(visualizer, localMachineKey, vsInstallPath);
+
                 return true;
             }
+        }
+
+        private static string GetResourceFileName(string resourceName)
+        {
+            var resourceAssemblyNameLength = (typeof(Visualizer).Namespace?.Length + 1).GetValueOrDefault();
+            var resourceFileName = resourceName.Substring(resourceAssemblyNameLength);
+
+            return resourceFileName;
         }
 
         private static string GetPathToExtensions(string vsInstallPath)
@@ -130,12 +140,15 @@
                 _thisAssemblyVersion.FileVersion);
         }
 
-        private static string GetResourceFileName(string resourceName)
+        private static void PopulateVsSetupData(Visualizer visualizer, RegistryKey localMachineKey, string vsInstallPath)
         {
-            var resourceAssemblyNameLength = (typeof(Visualizer).Namespace?.Length + 1).GetValueOrDefault();
-            var resourceFileName = resourceName.Substring(resourceAssemblyNameLength);
+            var pathToDevEnv = Path.Combine(vsInstallPath, "devenv.exe");
 
-            return resourceFileName;
+            if (File.Exists(pathToDevEnv))
+            {
+                visualizer.VsExePath = pathToDevEnv;
+                visualizer.VsSetupArgument = localMachineKey?.GetValue("SetupCommandLine") as string ?? "/setup";
+            }
         }
 
         private void Write(Visualizer visualizer)
@@ -158,6 +171,16 @@
             // ReSharper disable once AssignNullToNotNullAttribute
             Directory.CreateDirectory(manifestDirectory);
             File.WriteAllText(visualizer.VsixManifestPath, VsixManifest, Encoding.ASCII);
+
+            ResetVsExtensions(visualizer);
+        }
+
+        private static void ResetVsExtensions(Visualizer visualizer)
+        {
+            if (visualizer.VsExePath != null)
+            {
+                using (Process.Start(visualizer.VsExePath, visualizer.VsSetupArgument)) { }
+            }
         }
 
         [SecurityPermission(SecurityAction.Demand)]
@@ -183,6 +206,8 @@
                 var productDirectory = vsixManifestPath.Substring(0, endOfProductNameIndex);
 
                 Directory.Delete(productDirectory, recursive: true);
+
+                ResetVsExtensions(visualizer);
             }
 
             if (File.Exists(visualizer.InstallPath))

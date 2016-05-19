@@ -9,5 +9,9 @@
         public string InstallPath { get; set; }
 
         public string VsixManifestPath { get; set; }
+
+        public string VsExePath { get; set; }
+
+        public string VsSetupArgument { get; set; }
     }
 }
