@@ -9,7 +9,7 @@
         public static readonly ExpressionDialog Instance = new ExpressionDialog();
 
         private readonly TextBox _textBox;
-        private readonly Size _maximumSize;
+        private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _toolbar;
         private readonly int _titleBarHeight;
         private bool _autoSize;
@@ -18,13 +18,15 @@
         {
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
-            _maximumSize = GetDialogMaximumSize();
+            _dialogMaximumSize = GetDialogMaximumSize();
+
+            var screenRectangle = RectangleToScreen(ClientRectangle);
+            _titleBarHeight = screenRectangle.Top - Top;
 
             _textBox = AddTextBox();
             _toolbar = AddToolbar();
 
-            var screenRectangle = RectangleToScreen(ClientRectangle);
-            _titleBarHeight = screenRectangle.Top - Top;
+            SetTextBoxMaximumSize();
         }
 
         private Size GetDialogMaximumSize()
@@ -80,9 +82,21 @@
             return toolbar;
         }
 
+        private void SetTextBoxMaximumSize()
+        {
+            _textBox.MaximumSize = GetTextBoxSizeBasedOn(_dialogMaximumSize);
+        }
+
+        private Size GetTextBoxSizeBasedOn(Size containerSize)
+        {
+            return new Size(
+                containerSize.Width - SystemInformation.VerticalScrollBarWidth,
+                containerSize.Height - _titleBarHeight - _toolbar.Height);
+        }
+
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => _maximumSize;
+        public override Size MaximumSize => _dialogMaximumSize;
 
         public override string Text => string.Empty;
 
@@ -101,11 +115,7 @@
         {
             base.OnResizeEnd(e);
 
-            var newTextBoxSize = new Size(
-                Size.Width - 10,
-                Size.Height - _titleBarHeight - _toolbar.Height);
-
-            SetTextBoxSize(newTextBoxSize);
+            SetTextBoxSize(GetTextBoxSizeBasedOn(Size));
         }
 
         public ExpressionDialog WithText(string expression)
