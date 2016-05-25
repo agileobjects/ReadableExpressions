@@ -2,13 +2,13 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
   <Metadata>
     <Identity Id="2d5de770-50e9-4dcf-87e9-ea1ed1b43b68" Version="1.4.4" Language="en-US" Publisher="$author$" />
-    <DisplayName _locID="vsGalleryDisplayName">ReadableExpressions.Visualizers</DisplayName>
-    <Description xml:space="preserve" _locID="vsGalleryDescription">A set of Debug Visualizers providing readable views of Expressions.</Description>
-    <MoreInfo>https://github.com/AgileObjects/ReadableExpressions</MoreInfo>
+    <DisplayName>ReadableExpressions.Visualizers</DisplayName>
+    <Description xml:space="preserve">A set of Debug Visualizers providing readable views of Expressions.</Description>
+    <MoreInfo>http://github.com/AgileObjects/ReadableExpressions</MoreInfo>
   </Metadata>
   <Installation InstalledByMsi="true" AllUsers="true">
-    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="10.0" />
-    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="15.0" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[14.0-15.0]" />
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[10.0-15.0]" />
   </Installation>
   <Dependencies/>
   <Assets/>
