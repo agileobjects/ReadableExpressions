@@ -171,6 +171,28 @@
             Assert.AreEqual("null", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateAParameterlessFunc()
+        {
+            Func<string> stringFactory = () => "Factory!";
+            var funcConstant = Expression.Constant(stringFactory);
+
+            var translated = funcConstant.ToReadableString();
+
+            Assert.AreEqual("Func<string>", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnAction()
+        {
+            Action<int, long> numberAdder = (i, l) => Console.WriteLine(i + l);
+            var actionConstant = Expression.Constant(numberAdder);
+
+            var translated = actionConstant.ToReadableString();
+
+            Assert.AreEqual("Action<int, long>", translated);
+        }
+
         private enum OddNumber
         {
             One = 1

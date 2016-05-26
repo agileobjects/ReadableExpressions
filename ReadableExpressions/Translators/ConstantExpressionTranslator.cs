@@ -1,7 +1,9 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Linq;
     using System.Linq.Expressions;
+    using System.Text.RegularExpressions;
     using Extensions;
 
     internal class ConstantExpressionTranslator : ExpressionTranslatorBase
@@ -30,16 +32,6 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (TryTranslateByTypeCode(constant, out translation))
             {
                 return translation;
-            }
-
-            if ((constant.Type == typeof(TimeSpan)) && constant.Value.Equals(default(TimeSpan)))
-            {
-                return "default(TimeSpan)";
-            }
-
-            if (typeof(Type).IsAssignableFrom(constant.Type))
-            {
-                return $"typeof({((Type)constant.Value).GetFriendlyName()})";
             }
 
             return constant.Value.ToString();
@@ -77,6 +69,15 @@ namespace AgileObjects.ReadableExpressions.Translators
                     translation = constant.Value + "L";
                     return true;
 
+                case TypeCode.Object:
+                    if (IsType(constant, out translation) ||
+                        IsFunc(constant, out translation) ||
+                        IsDefaultTimeSpan(constant, out translation))
+                    {
+                        return true;
+                    }
+                    break;
+
                 case TypeCode.Single:
                     translation = FormatNumeric((float)constant.Value) + "f";
                     return true;
@@ -104,6 +105,52 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string FormatNumeric(float value)
         {
             return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
+        }
+
+        private static bool IsDefaultTimeSpan(ConstantExpression constant, out string translation)
+        {
+            if ((constant.Type == typeof(TimeSpan)) && constant.Value.Equals(default(TimeSpan)))
+            {
+                translation = "default(TimeSpan)";
+                return true;
+            }
+
+            translation = null;
+            return false;
+        }
+
+        private static bool IsType(ConstantExpression constant, out string translation)
+        {
+            if (typeof(Type).IsAssignableFrom(constant.Type))
+            {
+                translation = $"typeof({((Type)constant.Value).GetFriendlyName()})";
+                return true;
+            }
+
+            translation = null;
+            return false;
+        }
+
+        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?<Type>Func|Action)`\d+\[(?<Arguments>[^\]]+)\]$");
+
+        private static bool IsFunc(ConstantExpression constant, out string translation)
+        {
+            var match = _funcMatcher.Match(constant.Value.ToString());
+
+            if (!match.Success)
+            {
+                translation = null;
+                return false;
+            }
+
+            var funcType = match.Groups["Type"].Value;
+
+            var argumentTypes = match.Groups["Arguments"].Value
+                .Split(',')
+                .Select(typeFullName => typeFullName.GetSubstitutionOrNull() ?? typeFullName);
+
+            translation = $"{funcType}<{string.Join(", ", argumentTypes)}>";
+            return true;
         }
     }
 }
