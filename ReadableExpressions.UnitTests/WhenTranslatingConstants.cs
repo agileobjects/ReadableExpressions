@@ -175,12 +175,12 @@
         [TestMethod]
         public void ShouldTranslateAParameterlessFunc()
         {
-            Func<string> stringFactory = () => "Factory!";
+            Func<object> stringFactory = () => "Factory!";
             var funcConstant = Expression.Constant(stringFactory);
 
             var translated = funcConstant.ToReadableString();
 
-            Assert.AreEqual("Func<string>", translated);
+            Assert.AreEqual("Func<object>", translated);
         }
 
         [TestMethod]

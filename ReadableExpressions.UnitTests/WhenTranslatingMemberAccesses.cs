@@ -89,7 +89,7 @@
 
             var translated = oneEqualsTwo.ToReadableString();
 
-            Assert.AreEqual("() => Object.ReferenceEquals(1, 2)", translated);
+            Assert.AreEqual("() => object.ReferenceEquals(1, 2)", translated);
         }
 
         [TestMethod]

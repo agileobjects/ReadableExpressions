@@ -19,7 +19,8 @@
             { typeof(float).FullName, "float" },
             { typeof(decimal).FullName, "decimal" },
             { typeof(double).FullName, "double" },
-            { typeof(string).FullName, "string" }
+            { typeof(string).FullName, "string" },
+            { typeof(object).FullName, "object" },
         };
 
         internal static IEnumerable<string> TypeNames => _typeNameSubstitutions.Values;
