@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Linq;
+    using System.Collections.Generic;
     using System.Linq.Expressions;
     using System.Text.RegularExpressions;
     using Extensions;
@@ -131,7 +131,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return false;
         }
 
-        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?<Type>Func|Action)`\d+\[(?<Arguments>[^\]]+)\]$");
+        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?<Type>Func|Action)`\d+\[(?<Arguments>.+)\]$");
 
         private static bool IsFunc(ConstantExpression constant, out string translation)
         {
@@ -144,13 +144,88 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var funcType = match.Groups["Type"].Value;
+            var argumentTypes = ParseArgumentNames(match.Groups["Arguments"].Value.Split(','));
 
-            var argumentTypes = match.Groups["Arguments"].Value
-                .Split(',')
-                .Select(typeFullName => typeFullName.GetSubstitutionOrNull() ?? typeFullName);
-
-            translation = $"{funcType}<{string.Join(", ", argumentTypes)}>";
+            translation = GetGenericTypeName(funcType, argumentTypes);
             return true;
         }
+
+        private static IEnumerable<string> ParseArgumentNames(params string[] arguments)
+        {
+            for (var i = 0; i < arguments.Length; i++)
+            {
+                var argument = arguments[i];
+                var genericArgumentsIndex = argument.IndexOf('`');
+
+                if (genericArgumentsIndex == -1)
+                {
+                    yield return GetTypeName(argument);
+                    continue;
+                }
+
+                if (argument.StartsWith("System.Nullable`"))
+                {
+                    yield return GetNullableTypeName(argument);
+                    continue;
+                }
+
+                var genericTypeName = GetTypeName(argument.Substring(0, genericArgumentsIndex));
+                var genericTypeArgumentsStart = argument.IndexOf('[', genericArgumentsIndex) + 1;
+                argument = argument.Substring(genericTypeArgumentsStart);
+                var genericTypeArgumentsClosesNeeded = 1;
+                var genericTypeArgumentsString = argument;
+
+                while (i < arguments.Length - 1)
+                {
+                    if (argument.IndexOf('`') != -1)
+                    {
+                        ++genericTypeArgumentsClosesNeeded;
+                    }
+
+                    argument = arguments[++i];
+                    genericTypeArgumentsString += "," + argument;
+
+                    if (argument.EndsWith(']') && (argument[argument.Length - 2] != '['))
+                    {
+                        --genericTypeArgumentsClosesNeeded;
+                    }
+
+                    if (genericTypeArgumentsClosesNeeded == 0)
+                    {
+                        genericTypeArgumentsString =
+                            genericTypeArgumentsString.Substring(0, genericTypeArgumentsString.Length - 1);
+                        break;
+                    }
+                }
+
+                var genericTypeArguments = ParseArgumentNames(genericTypeArgumentsString.Split(','));
+
+                yield return GetGenericTypeName(genericTypeName, genericTypeArguments);
+            }
+        }
+
+        private static readonly int _nullableTypeArgumentStart = "System.Nullable`1[".Length;
+
+        private static string GetNullableTypeName(string typeFullName)
+        {
+            var nullableTypeNameLength = typeFullName.Length - _nullableTypeArgumentStart - 1;
+            var nullableTypeName = typeFullName.Substring(_nullableTypeArgumentStart, nullableTypeNameLength);
+
+            return GetTypeName(nullableTypeName) + "?";
+        }
+
+        private static string GetTypeName(string typeFullName)
+        {
+            if (typeFullName.EndsWith("[]", StringComparison.Ordinal))
+            {
+                return GetTypeName(typeFullName.Substring(0, typeFullName.Length - 2)) + "[]";
+            }
+
+            return typeFullName.GetSubstitutionOrNull() ??
+                   typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
+        }
+
+        private static string GetGenericTypeName(string typeName, IEnumerable<string> arguments)
+            => $"{typeName}<{string.Join(", ", arguments)}>";
     }
 }

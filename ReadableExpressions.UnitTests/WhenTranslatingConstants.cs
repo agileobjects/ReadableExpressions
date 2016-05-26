@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -191,6 +192,22 @@
             var translated = actionConstant.ToReadableString();
 
             Assert.AreEqual("Action<int, long>", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAFuncWithNestedGenericParameters()
+        {
+            Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>> dictionaryFactory =
+                (i, fileInfo) => new Dictionary<IDictionary<FileInfo, string[]>, string>
+                {
+                    [new Dictionary<FileInfo, string[]> { [fileInfo] = new[] { fileInfo.ToString() } }] = i.ToString()
+                };
+
+            var funcConstant = Expression.Constant(dictionaryFactory);
+
+            var translated = funcConstant.ToReadableString();
+
+            Assert.AreEqual("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
         }
 
         private enum OddNumber
