@@ -195,23 +195,66 @@
 
         private static void Delete(Visualizer visualizer)
         {
+            DeletePreviousManifests(visualizer);
+
+            // ReSharper disable PossibleNullReferenceException
             if (File.Exists(visualizer.VsixManifestPath))
             {
-                var vsixManifestPath = Path.GetDirectoryName(visualizer.VsixManifestPath);
+                var vsixManifestDirectory = GetVsixManifestDirectory(visualizer);
+                var productDirectory = vsixManifestDirectory.Parent;
+                var companyDirectory = productDirectory.Parent;
 
-                // ReSharper disable once PossibleNullReferenceException
-                var productNameIndex = vsixManifestPath.IndexOf(_thisAssemblyVersion.ProductName, StringComparison.Ordinal);
-                var endOfProductNameIndex = productNameIndex + _thisAssemblyVersion.ProductName.Length;
-                var productDirectory = vsixManifestPath.Substring(0, endOfProductNameIndex);
+                vsixManifestDirectory.Delete(recursive: true);
 
-                Directory.Delete(productDirectory, recursive: true);
+                if (!productDirectory.GetDirectories().Any())
+                {
+                    productDirectory.Delete(recursive: true);
+
+                    if (!companyDirectory.GetDirectories().Any())
+                    {
+                        companyDirectory.Delete(recursive: true);
+                    }
+                }
 
                 ResetVsExtensions(visualizer);
             }
+            // ReSharper restore PossibleNullReferenceException
 
             if (File.Exists(visualizer.InstallPath))
             {
                 File.Delete(visualizer.InstallPath);
+            }
+        }
+
+        private static DirectoryInfo GetVsixManifestDirectory(Visualizer visualizer)
+        {
+            // ReSharper disable once AssignNullToNotNullAttribute
+            return new DirectoryInfo(Path.GetDirectoryName(visualizer.VsixManifestPath));
+        }
+
+        private static void DeletePreviousManifests(Visualizer visualizer)
+        {
+            var productDirectory = GetVsixManifestDirectory(visualizer).Parent;
+
+            if ((productDirectory == null) || !productDirectory.Exists)
+            {
+                return;
+            }
+
+            var thisVersion = new Version(_thisAssemblyVersion.FileVersion);
+
+            // ReSharper disable once PossibleNullReferenceException
+            foreach (var versionDirectory in productDirectory.GetDirectories("*"))
+            {
+                Version directoryVersion;
+
+                if (Version.TryParse(versionDirectory.Name, out directoryVersion))
+                {
+                    if (directoryVersion != thisVersion)
+                    {
+                        versionDirectory.Delete(recursive: true);
+                    }
+                }
             }
         }
     }
