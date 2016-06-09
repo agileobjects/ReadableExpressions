@@ -173,6 +173,16 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateADefaultGuid()
+        {
+            var guidConstant = Expression.Constant(default(Guid));
+
+            var translated = guidConstant.ToReadableString();
+
+            Assert.AreEqual("default(Guid)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAParameterlessFunc()
         {
             Func<object> stringFactory = () => "Factory!";

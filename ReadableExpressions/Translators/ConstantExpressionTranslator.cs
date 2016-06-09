@@ -50,9 +50,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return true;
 
                 case TypeCode.DateTime:
-                    if (constant.Value.Equals(default(DateTime)))
+                    if (IsDefault<DateTime>(constant, out translation))
                     {
-                        translation = "default(DateTime)";
                         return true;
                     }
                     break;
@@ -72,7 +71,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 case TypeCode.Object:
                     if (IsType(constant, out translation) ||
                         IsFunc(constant, out translation) ||
-                        IsDefaultTimeSpan(constant, out translation))
+                        IsDefault<TimeSpan>(constant, out translation) ||
+                        IsDefault<Guid>(constant, out translation))
                     {
                         return true;
                     }
@@ -107,11 +107,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
         }
 
-        private static bool IsDefaultTimeSpan(ConstantExpression constant, out string translation)
+        private static bool IsDefault<T>(ConstantExpression constant, out string translation)
         {
-            if ((constant.Type == typeof(TimeSpan)) && constant.Value.Equals(default(TimeSpan)))
+            if ((constant.Type == typeof(T)) && constant.Value.Equals(default(T)))
             {
-                translation = "default(TimeSpan)";
+                translation = $"default({typeof(T).Name})";
                 return true;
             }
 
