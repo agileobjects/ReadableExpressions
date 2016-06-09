@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTest(string test)
         {
-            return test.StartsWith('(') ? test : test.WithSurroundingParentheses();
+            return (test.StartsWith('(') && test.EndsWith(')')) ? test : test.WithSurroundingParentheses();
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

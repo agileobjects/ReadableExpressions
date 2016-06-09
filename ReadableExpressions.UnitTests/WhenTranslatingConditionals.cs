@@ -52,6 +52,29 @@ return null;";
         }
 
         [TestMethod]
+        public void ShouldTranslateAnIfStatementWithAConditional()
+        {
+            var guidVariable = Expression.Variable(typeof(Guid), "guid");
+            var defaultGuid = Expression.Default(typeof(Guid));
+            var guidNotDefault = Expression.NotEqual(guidVariable, defaultGuid);
+            var guidEmpty = Expression.Field(null, typeof(Guid), "Empty");
+            var guidNotEmpty = Expression.NotEqual(guidVariable, guidEmpty);
+            var falseConstant = Expression.Constant(false);
+            var guidNotEmptyOrFalse = Expression.Condition(guidNotDefault, guidNotEmpty, falseConstant);
+            Expression<Action> writeGuidFun = () => Console.Write("GUID FUN!");
+            var ifNotEmptyThenWrite = Expression.IfThen(guidNotEmptyOrFalse, writeGuidFun.Body);
+
+            var translated = ifNotEmptyThenWrite.ToReadableString();
+
+            const string EXPECTED = @"
+if ((guid != default(Guid)) ? guid != Guid.Empty : false)
+{
+    Console.Write(""GUID FUN!"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMultipleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
