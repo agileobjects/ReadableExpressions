@@ -119,7 +119,9 @@ try{tryBody.WithParentheses()}
 
             protected override Expression VisitUnary(UnaryExpression node)
             {
-                _rethrowFound = node.NodeType == ExpressionType.Throw;
+                _rethrowFound =
+                    (node.NodeType == ExpressionType.Throw) &&
+                    (node.Operand == _catchHandler.Variable);
 
                 return base.VisitUnary(node);
             }

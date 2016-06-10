@@ -146,6 +146,36 @@ catch (Exception ex)
         }
 
         [TestMethod]
+        public void ShouldTranslateATryWithATopLevelCatchWithAWrappedExceptionThrow()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            Expression<Action> writeBoom = () => Console.Write("BOOM?");
+
+            var wrappedException = Expression.New(
+                // ReSharper disable once AssignNullToNotNullAttribute
+                typeof(InvalidOperationException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
+                Expression.Constant("Wrapped!"),
+                exception);
+
+            var throwWrapped = Expression.Throw(wrappedException);
+            var globalCatch = Expression.Catch(exception, throwWrapped);
+            var tryCatch = Expression.TryCatch(writeBoom.Body, globalCatch);
+
+            var translated = tryCatch.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    Console.Write(""BOOM?"");
+}
+catch (Exception ex)
+{
+    throw new InvalidOperationException(""Wrapped!"", ex);
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateATryFinally()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
