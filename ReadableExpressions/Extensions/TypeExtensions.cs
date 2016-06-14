@@ -10,6 +10,7 @@
         {
             { typeof(byte).FullName, "byte" },
             { typeof(sbyte).FullName, "sbyte" },
+            { typeof(char).FullName, "char" },
             { typeof(bool).FullName, "bool" },
             { typeof(short).FullName, "short" },
             { typeof(ushort).FullName, "ushort" },

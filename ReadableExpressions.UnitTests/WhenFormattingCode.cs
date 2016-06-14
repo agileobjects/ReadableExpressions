@@ -438,6 +438,16 @@ Enumerable
             Assert.AreEqual("var ints = default(int[]);", translated);
         }
 
+        [TestMethod]
+        public void ShouldUseFriendlyNamesForCharacters()
+        {
+            Expression<Func<char, double>> characterToNumeric = c => char.GetNumericValue(c);
+
+            var translated = characterToNumeric.ToReadableString();
+
+            Assert.AreEqual("c => char.GetNumericValue(c)", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local
