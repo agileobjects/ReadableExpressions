@@ -101,9 +101,7 @@
                         return defaultArgumentTranslator;
                     }
 
-                    var argumentLambda = argument as LambdaExpression;
-
-                    return ParametersMatch(parameter, argumentLambda)
+                    return CanBeConvertedToMethodGroup(argument)
                         ? MethodGroupTranslator
                         : defaultArgumentTranslator;
                 })
@@ -113,6 +111,11 @@
         private static bool IsNotFuncType(ParameterInfo parameter)
         {
             if (parameter == null)
+            {
+                return true;
+            }
+
+            if (parameter.ParameterType.BaseType == typeof(MulticastDelegate))
             {
                 return false;
             }
@@ -124,32 +127,21 @@
                    (parameter.ParameterType.Assembly != typeof(Action).Assembly);
         }
 
-        private static bool ParametersMatch(ParameterInfo parameter, LambdaExpression argumentLambda)
+        private static bool CanBeConvertedToMethodGroup(Expression argument)
         {
-            if (argumentLambda == null)
+            if (argument.NodeType != ExpressionType.Lambda)
             {
                 return false;
             }
 
-            var parameterFuncTypes = parameter.ParameterType.GetGenericArguments();
+            var argumentLambda = (LambdaExpression)argument;
 
-            if (argumentLambda.ReturnType != typeof(void))
-            {
-                parameterFuncTypes = parameterFuncTypes.Take(parameterFuncTypes.Length - 1).ToArray();
-            }
-
-            if (parameterFuncTypes.Length != argumentLambda.Parameters.Count)
+            if (argumentLambda.Body.NodeType != ExpressionType.Call)
             {
                 return false;
             }
 
-            var lambdaBodyMethodCall = argumentLambda.Body as MethodCallExpression;
-
-            if (lambdaBodyMethodCall == null)
-            {
-                return false;
-            }
-
+            var lambdaBodyMethodCall = (MethodCallExpression)argumentLambda.Body;
             var lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments.ToArray();
 
             if (lambdaBodyMethodCall.Method.IsExtensionMethod())
@@ -157,7 +149,7 @@
                 lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
             }
 
-            if (parameterFuncTypes.Length != lambdaBodyMethodCallArguments.Length)
+            if (lambdaBodyMethodCallArguments.Length != argumentLambda.Parameters.Count)
             {
                 return false;
             }

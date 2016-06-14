@@ -364,6 +364,19 @@ else
         }
 
         [TestMethod]
+        public void ShouldConvertADelegateMethodArgumentToAMethodGroup()
+        {
+            Func<IntEvaluator, int, bool> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
+
+            Expression<Func<List<int>, int, bool>> listContainsEvaluator =
+                (list, i) => evaluatorInvoker.Invoke(x => list.Contains(x), i);
+
+            var translated = listContainsEvaluator.Body.ToReadableString();
+
+            Assert.AreEqual("evaluatorInvoker.Invoke(list.Contains, i)", translated);
+        }
+
+        [TestMethod]
         public void ShouldNotConvertAModifyingArgumentToAMethodGroup()
         {
             Expression<Action<List<int>, ICollection<string>>> copy =
@@ -372,6 +385,19 @@ else
             var translated = copy.Body.ToReadableString();
 
             Assert.AreEqual("list.ForEach(i => items.Add(i.ToString()))", translated);
+        }
+
+        [TestMethod]
+        public void ShouldNotConvertAModifyingReturnTypeToAMethodGroup()
+        {
+            Func<IntEvaluatorNullable, int, bool?> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
+
+            Expression<Func<List<int>, int, bool?>> listContainsEvaluator =
+                (list, i) => evaluatorInvoker.Invoke(x => list.Contains(x), i);
+
+            var translated = listContainsEvaluator.Body.ToReadableString();
+
+            Assert.AreEqual("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)", translated);
         }
 
         [TestMethod]
@@ -430,8 +456,11 @@ Enumerable
         // ReSharper restore UnusedParameter.Local
         // ReSharper restore UnusedMember.Local
 
-        // ReSharper disable once ClassNeverInstantiated.Local
+        private delegate bool IntEvaluator(int value);
 
+        private delegate bool? IntEvaluatorNullable(int value);
+
+        // ReSharper disable once ClassNeverInstantiated.Local
         private class IntConverter
         {
             public string Convert(int value)

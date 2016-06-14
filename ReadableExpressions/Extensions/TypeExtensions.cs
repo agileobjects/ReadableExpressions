@@ -10,6 +10,7 @@
         {
             { typeof(byte).FullName, "byte" },
             { typeof(sbyte).FullName, "sbyte" },
+            { typeof(bool).FullName, "bool" },
             { typeof(short).FullName, "short" },
             { typeof(ushort).FullName, "ushort" },
             { typeof(int).FullName, "int" },
@@ -37,18 +38,20 @@
                 return type.FullName.GetSubstitutionOrNull() ?? type.Name;
             }
 
-            var typeGenericTypeArguments = type.GetGenericArguments();
+            Type underlyingNullableType;
 
-            var typeGenericTypeArgumentFriendlyNames =
-                string.Join(", ", typeGenericTypeArguments.Select(ga => ga.GetFriendlyName()));
-
-            if (Nullable.GetUnderlyingType(type) != null)
+            if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) != null)
             {
-                return typeGenericTypeArgumentFriendlyNames + "?";
+                return underlyingNullableType.GetFriendlyName() + "?";
             }
 
             var typeGenericNameWithAngleBrackets =
                 type.Name.Insert(type.Name.IndexOf("`", StringComparison.Ordinal), "<") + ">";
+
+            var typeGenericTypeArguments = type.GetGenericArguments();
+
+            var typeGenericTypeArgumentFriendlyNames =
+                string.Join(", ", typeGenericTypeArguments.Select(ga => ga.GetFriendlyName()));
 
             return typeGenericNameWithAngleBrackets.Replace(
                 "`" + typeGenericTypeArguments.Length,
