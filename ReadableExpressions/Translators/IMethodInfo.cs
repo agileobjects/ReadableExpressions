@@ -10,6 +10,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         bool IsGenericMethod { get; }
 
+        bool IsExtensionMethod { get; }
+
         MethodInfo GetGenericMethodDefinition();
 
         IEnumerable<Type> GetGenericArguments();

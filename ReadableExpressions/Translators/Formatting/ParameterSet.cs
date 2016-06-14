@@ -5,12 +5,15 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Extensions;
 
     internal class ParameterSet : FormattableExpressionBase
     {
         private readonly IEnumerable<Func<string, string>> _parameterModifiers;
         private readonly IEnumerable<Expression> _arguments;
-        private readonly Func<Expression, string> _argumentTranslator;
+        private readonly TranslationContext _context;
+        private readonly Translator _globalTranslator;
+        private readonly IEnumerable<Func<Expression, string>> _argumentTranslators;
 
         public ParameterSet(
             IMethodInfo method,
@@ -20,7 +23,13 @@
         {
             _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments;
-            _argumentTranslator = arg => globalTranslator.Invoke(arg, context);
+            _context = context;
+            _globalTranslator = globalTranslator;
+
+            _argumentTranslators = GetArgumentTranslators(
+                method,
+                arguments,
+                arg => globalTranslator.Invoke(arg, context));
         }
 
         private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
@@ -65,6 +74,119 @@
             return arrayValues;
         }
 
+        private IEnumerable<Func<Expression, string>> GetArgumentTranslators(
+            IMethodInfo method,
+            IEnumerable<Expression> arguments,
+            Func<Expression, string> defaultArgumentTranslator)
+        {
+            if (method == null)
+            {
+                return arguments.Select(argument => defaultArgumentTranslator).ToArray();
+            }
+
+            var parameters = method.GetParameters();
+
+            if (method.IsExtensionMethod)
+            {
+                parameters = parameters.Skip(1).ToArray();
+            }
+
+            return arguments
+                .Select((argument, i) =>
+                {
+                    var parameter = parameters.ElementAtOrDefault(i);
+
+                    if (IsNotFuncType(parameter))
+                    {
+                        return defaultArgumentTranslator;
+                    }
+
+                    var argumentLambda = argument as LambdaExpression;
+
+                    return ParametersMatch(parameter, argumentLambda)
+                        ? MethodGroupTranslator
+                        : defaultArgumentTranslator;
+                })
+                .ToArray();
+        }
+
+        private static bool IsNotFuncType(ParameterInfo parameter)
+        {
+            if (parameter == null)
+            {
+                return false;
+            }
+
+            var parameterTypeName = parameter.ParameterType.FullName;
+
+            return !(parameterTypeName.StartsWith("System.Action", StringComparison.Ordinal) ||
+                    parameterTypeName.StartsWith("System.Func", StringComparison.Ordinal)) ||
+                   (parameter.ParameterType.Assembly != typeof(Action).Assembly);
+        }
+
+        private static bool ParametersMatch(ParameterInfo parameter, LambdaExpression argumentLambda)
+        {
+            if (argumentLambda == null)
+            {
+                return false;
+            }
+
+            var parameterFuncTypes = parameter.ParameterType.GetGenericArguments();
+
+            if (argumentLambda.ReturnType != typeof(void))
+            {
+                parameterFuncTypes = parameterFuncTypes.Take(parameterFuncTypes.Length - 1).ToArray();
+            }
+
+            if (parameterFuncTypes.Length != argumentLambda.Parameters.Count)
+            {
+                return false;
+            }
+
+            var lambdaBodyMethodCall = argumentLambda.Body as MethodCallExpression;
+
+            if (lambdaBodyMethodCall == null)
+            {
+                return false;
+            }
+
+            var lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments.ToArray();
+
+            if (lambdaBodyMethodCall.Method.IsExtensionMethod())
+            {
+                lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
+            }
+
+            if (parameterFuncTypes.Length != lambdaBodyMethodCallArguments.Length)
+            {
+                return false;
+            }
+
+            var i = 0;
+
+            var allArgumentTypesMatch = argumentLambda
+                .Parameters
+                .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
+
+            return allArgumentTypesMatch;
+        }
+
+        private Func<Expression, string> MethodGroupTranslator
+        {
+            get
+            {
+                return argument =>
+                {
+                    var methodCall = (MethodCallExpression)((LambdaExpression)argument).Body;
+
+                    var subject = MethodCallExpressionTranslator
+                        .GetMethodCallSubject(methodCall, _context, _globalTranslator);
+
+                    return subject + "." + methodCall.Method.Name;
+                };
+            }
+        }
+
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
 
         protected override Func<string> MultipleLineTranslationFactory
@@ -96,7 +218,8 @@
 
         private string TranslateArgument(Expression argument, int parameterIndex)
         {
-            var argumentString = _argumentTranslator.Invoke(argument).Unterminated();
+            var argumentTranslator = _argumentTranslators.ElementAt(parameterIndex);
+            var argumentString = argumentTranslator.Invoke(argument).Unterminated();
             var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
 
             return (modifier != null) ? modifier.Invoke(argumentString) : argumentString;

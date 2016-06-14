@@ -331,6 +331,50 @@ else
         }
 
         [TestMethod]
+        public void ShouldConvertAnExtensionMethodArgumentToAMethodGroup()
+        {
+            Expression<Func<List<int>, IEnumerable<int>, bool>> allItemsContained =
+                (list, items) => list.All(i => items.Contains(i));
+
+            var translated = allItemsContained.Body.ToReadableString();
+
+            Assert.AreEqual("list.All(items.Contains)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldConvertAStaticMethodArgumentToAMethodGroup()
+        {
+            Expression<Func<List<double>, IEnumerable<TimeSpan>>> parseTimeSpans =
+                list => list.Select(i => TimeSpan.FromDays(i));
+
+            var translated = parseTimeSpans.Body.ToReadableString();
+
+            Assert.AreEqual("list.Select(TimeSpan.FromDays)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldConvertAnInstanceMethodArgumentToAMethodGroup()
+        {
+            Expression<Action<List<int>, ICollection<int>>> copy =
+                (list, items) => list.ForEach(i => items.Add(i));
+
+            var translated = copy.Body.ToReadableString();
+
+            Assert.AreEqual("list.ForEach(items.Add)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldNotConvertAModifyingArgumentToAMethodGroup()
+        {
+            Expression<Action<List<int>, ICollection<string>>> copy =
+                (list, items) => list.ForEach(i => items.Add(i.ToString()));
+
+            var translated = copy.Body.ToReadableString();
+
+            Assert.AreEqual("list.ForEach(i => items.Add(i.ToString()))", translated);
+        }
+
+        [TestMethod]
         public void ShouldSplitLongChainedMethodsOntoMultipleLines()
         {
             Expression<Func<IEnumerable<int>>> longMethodChain = () =>

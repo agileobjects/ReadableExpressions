@@ -38,7 +38,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSubject(methodCall, context, out methodArguments);
+            var methodCallSubject = GetMethodCallSubject(methodCall, context, GetTranslation, out methodArguments);
 
             return GetMethodCall(
                 methodCallSubject,
@@ -48,24 +48,36 @@ namespace AgileObjects.ReadableExpressions.Translators
                 context);
         }
 
-        private string GetMethodCallSubject(
+        public static string GetMethodCallSubject(
             MethodCallExpression methodCall,
             TranslationContext context,
+            Translator translator)
+        {
+            IEnumerable<Expression> arguments;
+
+            return GetMethodCallSubject(methodCall, context, translator, out arguments);
+        }
+
+        private static string GetMethodCallSubject(
+            MethodCallExpression methodCall,
+            TranslationContext context,
+            Translator translator,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Object == null)
             {
-                return GetStaticMethodCallSubject(methodCall, context, out arguments);
+                return GetStaticMethodCallSubject(methodCall, context, translator, out arguments);
             }
 
             arguments = methodCall.Arguments;
 
-            return GetTranslation(methodCall.Object, context);
+            return translator.Invoke(methodCall.Object, context);
         }
 
-        private string GetStaticMethodCallSubject(
+        private static string GetStaticMethodCallSubject(
             MethodCallExpression methodCall,
             TranslationContext context,
+            Translator translator,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Method.IsExtensionMethod())
@@ -73,7 +85,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1).ToArray();
 
-                return GetTranslation(subject, context);
+                return translator.Invoke(subject, context);
             }
 
             arguments = methodCall.Arguments;

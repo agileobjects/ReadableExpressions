@@ -204,6 +204,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 public bool IsGenericMethod => false;
 
+                public bool IsExtensionMethod => false;
+
                 public MethodInfo GetGenericMethodDefinition() => null;
 
                 public IEnumerable<Type> GetGenericArguments() => Enumerable.Empty<Type>();
