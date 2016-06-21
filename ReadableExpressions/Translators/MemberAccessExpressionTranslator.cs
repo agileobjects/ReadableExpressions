@@ -22,7 +22,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return (memberExpression.Expression != null)
                 ? GetInstanceMemberSubject(memberExpression, context)
-                : memberExpression.Type.GetFriendlyName();
+                : memberExpression.Member.DeclaringType.GetFriendlyName();
         }
 
         private string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)

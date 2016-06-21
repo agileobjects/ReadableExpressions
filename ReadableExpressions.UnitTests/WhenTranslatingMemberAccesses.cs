@@ -123,6 +123,16 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAStaticMemberExpressionUsingTheDeclaringType()
+        {
+            Expression<Func<object>> getDefaultIndexedProperty = () => IndexedProperty.Default;
+
+            var translated = getDefaultIndexedProperty.Body.ToReadableString();
+
+            Assert.AreEqual("IndexedProperty.Default", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAParamsArrayArgument()
         {
             Expression<Func<string, string[]>> splitString = str => str.Split('x', 'y', 'z');
@@ -322,6 +332,8 @@
         // ReSharper disable once ClassNeverInstantiated.Local
         private class IndexedProperty
         {
+            public static readonly object Default = new IndexedProperty(new object[0]);
+
             private readonly object[] _values;
 
             public IndexedProperty(object[] values)
