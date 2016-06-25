@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConstantExpressionTranslator : ExpressionTranslatorBase
     {
-        internal ConstantExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Constant)
+        internal ConstantExpressionTranslator()
+            : base(ExpressionType.Constant)
         {
         }
 

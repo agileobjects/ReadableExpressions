@@ -4,22 +4,30 @@ namespace AgileObjects.ReadableExpressions
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
+    using Translators;
 
     public class TranslationContext
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
+        private readonly Translator _globalTranslator;
 
-        private TranslationContext(ExpressionAnalysisVisitor analyzer)
+        private TranslationContext(ExpressionAnalysisVisitor analyzer, Translator globalTranslator)
         {
             _analyzer = analyzer;
+            _globalTranslator = globalTranslator;
         }
 
-        public static TranslationContext For(Expression expression)
+        public static TranslationContext For(Expression expression, Translator globalTranslator)
         {
-            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression));
+            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression), globalTranslator);
         }
 
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
+
+        public string GetTranslation(Expression expression)
+        {
+            return _globalTranslator.Invoke(expression, this);
+        }
 
         public bool IsNotJoinedAssignment(Expression expression)
         {

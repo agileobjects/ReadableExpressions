@@ -5,8 +5,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        public IndexAccessExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.ArrayIndex, ExpressionType.Index)
+        public IndexAccessExpressionTranslator()
+            : base(ExpressionType.ArrayIndex, ExpressionType.Index)
         {
         }
 
@@ -34,7 +34,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> indexes,
             TranslationContext context)
         {
-            var indexedVariable = GetTranslation(variable, context);
+            var indexedVariable = context.GetTranslation(variable);
             var indexValues = GetTranslatedParameters(indexes, context).WithoutParentheses();
 
             return $"{indexedVariable}[{indexValues}]";

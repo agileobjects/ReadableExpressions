@@ -28,10 +28,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private readonly DefaultExpressionTranslator _defaultTranslator;
 
-        internal AssignmentExpressionTranslator(
-            DefaultExpressionTranslator defaultTranslator,
-            Translator globalTranslator)
-            : base(globalTranslator, _symbolsByNodeType.Keys.ToArray())
+        internal AssignmentExpressionTranslator(DefaultExpressionTranslator defaultTranslator)
+            : base(_symbolsByNodeType.Keys.ToArray())
         {
             _defaultTranslator = defaultTranslator;
         }
@@ -39,7 +37,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, TranslationContext context)
         {
             var assignment = (BinaryExpression)expression;
-            var target = GetTranslation(assignment.Left, context);
+            var target = context.GetTranslation(assignment.Left);
 
             return GetAssignment(target, expression.NodeType, assignment.Right, context);
         }
@@ -81,7 +79,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private string GetValueTranslation(Expression value, TranslationContext context)
         {
             return (value.NodeType != ExpressionType.Default)
-                ? GetTranslation(value, context)
+                ? context.GetTranslation(value)
                 : _defaultTranslator.Translate((DefaultExpression)value);
         }
     }

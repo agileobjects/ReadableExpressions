@@ -7,8 +7,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
     {
-        public TryCatchExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Try)
+        public TryCatchExpressionTranslator()
+            : base(ExpressionType.Try)
         {
         }
 
@@ -53,7 +53,7 @@ try{tryBody.WithParentheses()}
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
                 var filter = (catchBlock.Filter != null)
-                    ? " when " + GetTranslation(catchBlock.Filter, context)
+                    ? " when " + context.GetTranslation(catchBlock.Filter)
                     : null;
 
                 return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;

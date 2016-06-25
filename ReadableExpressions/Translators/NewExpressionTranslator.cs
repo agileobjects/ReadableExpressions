@@ -6,8 +6,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class NewExpressionTranslator : ExpressionTranslatorBase
     {
-        internal NewExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.New)
+        internal NewExpressionTranslator()
+            : base(ExpressionType.New)
         {
         }
 
@@ -31,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var arguments = newExpression
                 .Arguments
-                .Select((arg, i) => constructorParameters[i].Name + " = " + GetTranslation(arg, context));
+                .Select((arg, i) => constructorParameters[i].Name + " = " + context.GetTranslation(arg));
 
             var argumentsString = string.Join(", ", arguments);
 

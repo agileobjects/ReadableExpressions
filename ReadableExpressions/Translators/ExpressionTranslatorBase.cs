@@ -4,37 +4,27 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq.Expressions;
     using Formatting;
 
-    internal delegate string Translator(Expression expression, TranslationContext context);
+    public delegate string Translator(Expression expression, TranslationContext context);
 
     internal abstract class ExpressionTranslatorBase : IExpressionTranslator
     {
-
-        private readonly Translator _globalTranslator;
         private readonly ExpressionType[] _nodeTypes;
 
-        protected ExpressionTranslatorBase(
-            Translator globalTranslator,
-            params ExpressionType[] nodeTypes)
+        protected ExpressionTranslatorBase(params ExpressionType[] nodeTypes)
         {
             _nodeTypes = nodeTypes;
-            _globalTranslator = globalTranslator;
         }
 
         public IEnumerable<ExpressionType> NodeTypes => _nodeTypes;
 
         public abstract string Translate(Expression expression, TranslationContext context);
 
-        protected virtual string GetTranslation(Expression expression, TranslationContext context)
-        {
-            return _globalTranslator.Invoke(expression, context);
-        }
-
         protected ParameterSet GetTranslatedParameters(
             IEnumerable<Expression> parameters,
             TranslationContext context,
             IMethodInfo method = null)
         {
-            return new ParameterSet(method, parameters, context, _globalTranslator);
+            return new ParameterSet(method, parameters, context);
         }
 
         protected CodeBlock GetTranslatedExpressionBody(
@@ -48,7 +38,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         #region TranslateExpressionBody
 
-        private CodeBlock TranslateBlock(BlockExpression bodyBlock, TranslationContext context)
+        private static CodeBlock TranslateBlock(BlockExpression bodyBlock, TranslationContext context)
         {
             if (bodyBlock == null)
             {
@@ -60,15 +50,15 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return TranslateSingle(bodyBlock, context);
             }
 
-            var block = GetTranslation(bodyBlock, context);
+            var block = context.GetTranslation(bodyBlock);
             var blockLines = block.SplitToLines();
 
             return new CodeBlock(bodyBlock, blockLines);
         }
 
-        private CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
+        private static CodeBlock TranslateSingle(Expression bodySingle, TranslationContext context)
         {
-            var body = GetTranslation(bodySingle, context).WithoutSurroundingParentheses(bodySingle);
+            var body = context.GetTranslation(bodySingle).WithoutSurroundingParentheses(bodySingle);
 
             return new CodeBlock(bodySingle, body);
         }

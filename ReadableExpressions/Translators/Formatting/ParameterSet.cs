@@ -12,24 +12,21 @@
         private readonly IEnumerable<Func<string, string>> _parameterModifiers;
         private readonly IEnumerable<Expression> _arguments;
         private readonly TranslationContext _context;
-        private readonly Translator _globalTranslator;
         private readonly IEnumerable<Func<Expression, string>> _argumentTranslators;
 
         public ParameterSet(
             IMethodInfo method,
             IEnumerable<Expression> arguments,
-            TranslationContext context,
-            Translator globalTranslator)
+            TranslationContext context)
         {
             _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments;
             _context = context;
-            _globalTranslator = globalTranslator;
 
             _argumentTranslators = GetArgumentTranslators(
                 method,
                 arguments,
-                arg => globalTranslator.Invoke(arg, context));
+                context.GetTranslation);
         }
 
         private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
@@ -172,7 +169,7 @@
                     var methodCall = (MethodCallExpression)((LambdaExpression)argument).Body;
 
                     var subject = MethodCallExpressionTranslator
-                        .GetMethodCallSubject(methodCall, _context, _globalTranslator);
+                        .GetMethodCallSubject(methodCall, _context);
 
                     return subject + "." + methodCall.Method.Name;
                 };

@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
     {
-        public SwitchExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Switch)
+        public SwitchExpressionTranslator()
+            : base(ExpressionType.Switch)
         {
         }
 
@@ -17,12 +17,12 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var switchStatement = (SwitchExpression)expression;
 
-            var switchValue = GetTranslation(switchStatement.SwitchValue, context);
+            var switchValue = context.GetTranslation(switchStatement.SwitchValue);
 
             var switchCases = switchStatement.Cases
                 .Select(@case => new
                 {
-                    Tests = @case.TestValues.Select(value => $"case {GetTranslation(value, context)}:"),
+                    Tests = @case.TestValues.Select(value => $"case {context.GetTranslation(value)}:"),
                     BodyBlock = GetTranslatedExpressionBody(@case.Body, context)
                 })
                 .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));

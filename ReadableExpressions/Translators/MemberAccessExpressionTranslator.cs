@@ -5,8 +5,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
     {
-        internal MemberAccessExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.MemberAccess)
+        internal MemberAccessExpressionTranslator()
+            : base(ExpressionType.MemberAccess)
         {
         }
 
@@ -18,18 +18,18 @@ namespace AgileObjects.ReadableExpressions.Translators
             return GetMemberAccess(subject, memberExpression.Member.Name);
         }
 
-        private string GetSubject(MemberExpression memberExpression, TranslationContext context)
+        private static string GetSubject(MemberExpression memberExpression, TranslationContext context)
         {
             return (memberExpression.Expression != null)
                 ? GetInstanceMemberSubject(memberExpression, context)
                 : memberExpression.Member.DeclaringType.GetFriendlyName();
         }
 
-        private string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)
+        private static string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)
         {
             return SubjectIsCapturedInstance(memberExpression)
                 ? null
-                : GetTranslation(memberExpression.Expression, context);
+                : context.GetTranslation(memberExpression.Expression);
         }
 
         private static bool SubjectIsCapturedInstance(MemberExpression memberExpression)

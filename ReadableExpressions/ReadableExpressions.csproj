@@ -56,7 +56,6 @@
     <Compile Include="Translators\DynamicExpressionTranslator.cs" />
     <Compile Include="Translators\ExtensionExpressionTranslator.cs" />
     <Compile Include="Translators\Formatting\FormattableExpressionBase.cs" />
-    <Compile Include="Translators\Formatting\MethodCallChainExpression.cs" />
     <Compile Include="Translators\Formatting\TernaryExpression.cs" />
     <Compile Include="Translators\GotoExpressionTranslator.cs" />
     <Compile Include="Translators\IMethodInfo.cs" />

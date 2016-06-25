@@ -9,8 +9,8 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly IEnumerable<string> _keywords;
 
-        internal ParameterExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Parameter)
+        internal ParameterExpressionTranslator()
+            : base(ExpressionType.Parameter)
         {
             _keywords = TypeExtensions
                 .TypeNames

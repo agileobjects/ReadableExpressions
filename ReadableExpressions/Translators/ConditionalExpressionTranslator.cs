@@ -6,8 +6,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
     {
-        public ConditionalExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Conditional)
+        public ConditionalExpressionTranslator()
+            : base(ExpressionType.Conditional)
         {
         }
 
@@ -15,7 +15,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = GetTest(GetTranslation(conditional.Test, context));
+            var test = GetTest(context.GetTranslation(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
             var ifTrueBlock = GetTranslatedExpressionBody(conditional.IfTrue, context);

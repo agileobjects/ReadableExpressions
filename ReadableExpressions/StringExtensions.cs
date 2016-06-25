@@ -4,7 +4,6 @@ namespace AgileObjects.ReadableExpressions
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using Translators;
 
     internal static class StringExtensions
     {
@@ -137,12 +136,9 @@ namespace AgileObjects.ReadableExpressions
             return codeLine.TrimStart().StartsWith(CommentString, StringComparison.Ordinal);
         }
 
-        public static string ToStringConcatenation(
-            this IEnumerable<Expression> strings,
-            TranslationContext context,
-            Translator globalTranslator)
+        public static string ToStringConcatenation(this IEnumerable<Expression> strings, TranslationContext context)
         {
-            return string.Join(" + ", strings.Select(str => globalTranslator.Invoke(str, context)));
+            return string.Join(" + ", strings.Select(context.GetTranslation));
         }
     }
 }

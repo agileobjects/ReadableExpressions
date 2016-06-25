@@ -5,8 +5,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LabelExpressionTranslator : ExpressionTranslatorBase
     {
-        public LabelExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Label)
+        public LabelExpressionTranslator()
+            : base(ExpressionType.Label)
         {
         }
 
@@ -17,7 +17,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var labelNamePart = GetLabelNamePart(label, context);
 
             var labelValuePart = (label.DefaultValue != null)
-                ? $"{Environment.NewLine}return {GetTranslation(label.DefaultValue, context)};"
+                ? $"{Environment.NewLine}return {context.GetTranslation(label.DefaultValue)};"
                 : null;
 
             return labelNamePart + labelValuePart;

@@ -5,8 +5,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
     {
-        public DebugInfoExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.DebugInfo)
+        public DebugInfoExpressionTranslator()
+            : base(ExpressionType.DebugInfo)
         {
         }
 
@@ -34,7 +34,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var debugInfoComment = ReadableExpression.Comment(debugInfoText);
 
-            return GetTranslation(debugInfoComment, context);
+            return context.GetTranslation(debugInfoComment);
         }
     }
 }

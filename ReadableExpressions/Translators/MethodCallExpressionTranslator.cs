@@ -11,15 +11,13 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly SpecialCaseHandlerBase[] _specialCaseHandlers;
 
-        internal MethodCallExpressionTranslator(
-            IndexAccessExpressionTranslator indexAccessTranslator,
-            Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Call, ExpressionType.Invoke)
+        internal MethodCallExpressionTranslator(IndexAccessExpressionTranslator indexAccessTranslator)
+            : base(ExpressionType.Call, ExpressionType.Invoke)
         {
             _specialCaseHandlers = new SpecialCaseHandlerBase[]
             {
-                new InvocationExpressionHandler(GetMethodCall, globalTranslator),
-                new StringConcatenationHandler(globalTranslator),
+                new InvocationExpressionHandler(GetMethodCall),
+                new StringConcatenationHandler(),
                 new IndexedPropertyHandler(indexAccessTranslator)
             };
         }
@@ -35,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var methodCall = (MethodCallExpression)expression;
             IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSubject(methodCall, context, GetTranslation, out methodArguments);
+            var methodCallSubject = GetMethodCallSubject(methodCall, context, out methodArguments);
 
             return GetMethodCall(
                 methodCallSubject,
@@ -45,36 +43,31 @@ namespace AgileObjects.ReadableExpressions.Translators
                 context);
         }
 
-        public static string GetMethodCallSubject(
-            MethodCallExpression methodCall,
-            TranslationContext context,
-            Translator translator)
+        public static string GetMethodCallSubject(MethodCallExpression methodCall, TranslationContext context)
         {
             IEnumerable<Expression> arguments;
 
-            return GetMethodCallSubject(methodCall, context, translator, out arguments);
+            return GetMethodCallSubject(methodCall, context, out arguments);
         }
 
         private static string GetMethodCallSubject(
             MethodCallExpression methodCall,
             TranslationContext context,
-            Translator translator,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Object == null)
             {
-                return GetStaticMethodCallSubject(methodCall, context, translator, out arguments);
+                return GetStaticMethodCallSubject(methodCall, context, out arguments);
             }
 
             arguments = methodCall.Arguments;
 
-            return translator.Invoke(methodCall.Object, context);
+            return context.GetTranslation(methodCall.Object);
         }
 
         private static string GetStaticMethodCallSubject(
             MethodCallExpression methodCall,
             TranslationContext context,
-            Translator translator,
             out IEnumerable<Expression> arguments)
         {
             if (methodCall.Method.IsExtensionMethod())
@@ -82,7 +75,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1).ToArray();
 
-                return translator.Invoke(subject, context);
+                return context.GetTranslation(subject);
             }
 
             arguments = methodCall.Arguments;
@@ -204,12 +197,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private class StringConcatenationHandler : SpecialCaseHandlerBase
         {
-            private readonly Translator _globalTranslator;
-
-            public StringConcatenationHandler(Translator globalTranslator)
+            public StringConcatenationHandler()
                 : base(IsStringConcatCall)
             {
-                _globalTranslator = globalTranslator;
             }
 
             private static bool IsStringConcatCall(Expression expression)
@@ -225,7 +215,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 var methodCall = (MethodCallExpression)expression;
 
-                return methodCall.Arguments.ToStringConcatenation(context, _globalTranslator);
+                return methodCall.Arguments.ToStringConcatenation(context);
             }
         }
 
@@ -239,21 +229,17 @@ namespace AgileObjects.ReadableExpressions.Translators
                 TranslationContext context);
 
             private readonly MethodCallTranslator _methodCallTranslator;
-            private readonly Translator _globalTranslator;
 
-            public InvocationExpressionHandler(
-                MethodCallTranslator methodCallTranslator,
-                Translator globalTranslator)
+            public InvocationExpressionHandler(MethodCallTranslator methodCallTranslator)
                 : base(exp => exp.NodeType == ExpressionType.Invoke)
             {
                 _methodCallTranslator = methodCallTranslator;
-                _globalTranslator = globalTranslator;
             }
 
             public override string Translate(Expression expression, TranslationContext context)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = _globalTranslator.Invoke(invocation.Expression, context);
+                var invocationSubject = context.GetTranslation(invocation.Expression);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {

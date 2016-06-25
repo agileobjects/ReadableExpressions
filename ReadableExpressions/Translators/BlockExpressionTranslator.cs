@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Block)
+        public BlockExpressionTranslator()
+            : base(ExpressionType.Block)
         {
         }
 
@@ -38,7 +38,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
         }
 
-        private IEnumerable<string> GetBlockLines(BlockExpression block, TranslationContext context)
+        private static IEnumerable<string> GetBlockLines(BlockExpression block, TranslationContext context)
         {
             return block
                 .Expressions
@@ -62,9 +62,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return (expression.NodeType != ExpressionType.Constant) || expression.IsComment();
         }
 
-        private string GetTerminatedStatementOrNull(Expression expression, TranslationContext context)
+        private static string GetTerminatedStatementOrNull(Expression expression, TranslationContext context)
         {
-            var translation = GetTranslation(expression, context);
+            var translation = context.GetTranslation(expression);
 
             if (translation == null)
             {

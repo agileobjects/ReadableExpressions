@@ -10,10 +10,8 @@
         {
             private readonly MethodCallExpressionTranslator _methodCallTranslator;
 
-            public ListInitExpressionHelper(
-                MethodCallExpressionTranslator methodCallTranslator,
-                Translator globalTranslator)
-                : base(exp => exp.NewExpression, exp => !exp.Arguments.Any(), globalTranslator)
+            public ListInitExpressionHelper(MethodCallExpressionTranslator methodCallTranslator)
+                : base(exp => exp.NewExpression, exp => !exp.Arguments.Any())
             {
                 _methodCallTranslator = methodCallTranslator;
             }
@@ -27,7 +25,7 @@
                     {
                         if (initialisation.Arguments.Count == 1)
                         {
-                            return GlobalTranslator.Invoke(initialisation.Arguments.First(), context);
+                            return context.GetTranslation(initialisation.Arguments.First());
                         }
 
                         var listAddCall = _methodCallTranslator

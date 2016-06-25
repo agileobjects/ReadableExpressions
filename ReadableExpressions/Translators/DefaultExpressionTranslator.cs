@@ -5,8 +5,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class DefaultExpressionTranslator : ExpressionTranslatorBase
     {
-        public DefaultExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Default)
+        public DefaultExpressionTranslator()
+            : base(ExpressionType.Default)
         {
         }
 

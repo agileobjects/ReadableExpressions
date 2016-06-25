@@ -4,8 +4,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class LoopExpressionTranslator : ExpressionTranslatorBase
     {
-        public LoopExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Loop)
+        public LoopExpressionTranslator()
+            : base(ExpressionType.Loop)
         {
         }
 

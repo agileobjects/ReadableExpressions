@@ -13,8 +13,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.NegateChecked] = "-"
         };
 
-        internal NegationExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, _negationsByNodeType.Keys.ToArray())
+        internal NegationExpressionTranslator()
+            : base(_negationsByNodeType.Keys.ToArray())
         {
         }
 
@@ -30,9 +30,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return Translate(ExpressionType.Not, expression, context);
         }
 
-        private string Translate(ExpressionType negationType, Expression expression, TranslationContext context)
+        private static string Translate(ExpressionType negationType, Expression expression, TranslationContext context)
         {
-            return _negationsByNodeType[negationType] + GetTranslation(expression, context);
+            return _negationsByNodeType[negationType] + context.GetTranslation(expression);
         }
     }
 }

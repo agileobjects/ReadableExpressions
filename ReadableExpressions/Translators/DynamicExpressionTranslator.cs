@@ -14,17 +14,16 @@ namespace AgileObjects.ReadableExpressions.Translators
         public DynamicExpressionTranslator(
             MemberAccessExpressionTranslator memberAccessTranslator,
             AssignmentExpressionTranslator assignmentTranslator,
-            MethodCallExpressionTranslator methodCallTranslator,
-            Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Dynamic)
+            MethodCallExpressionTranslator methodCallTranslator)
+            : base(ExpressionType.Dynamic)
         {
-            var dynamicMemberAccessTranslator = new DynamicMemberAccessTranslator(memberAccessTranslator, globalTranslator);
+            var dynamicMemberAccessTranslator = new DynamicMemberAccessTranslator(memberAccessTranslator);
 
             _translators = new DynamicOperationTranslatorBase[]
             {
                 dynamicMemberAccessTranslator,
-                new DynamicMemberWriteTranslator(dynamicMemberAccessTranslator, assignmentTranslator, globalTranslator),
-                new DynamicMethodCallTranslator(methodCallTranslator, globalTranslator)
+                new DynamicMemberWriteTranslator(dynamicMemberAccessTranslator, assignmentTranslator),
+                new DynamicMethodCallTranslator(methodCallTranslator)
             };
         }
 
@@ -62,15 +61,10 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             private readonly Regex _operationMatcher;
 
-            protected DynamicOperationTranslatorBase(
-                string operationPattern,
-                Translator globalTranslator)
+            protected DynamicOperationTranslatorBase(string operationPattern)
             {
-                GlobalTranslator = globalTranslator;
                 _operationMatcher = new Regex(operationPattern);
             }
-
-            protected Translator GlobalTranslator { get; }
 
             public bool TryTranslate(
                 string operationDescription,
@@ -100,10 +94,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             private readonly MemberAccessExpressionTranslator _memberAccessTranslator;
 
-            public DynamicMemberAccessTranslator(
-                MemberAccessExpressionTranslator memberAccessTranslator,
-                Translator globalTranslator)
-                : base(@"^GetMember (?<MemberName>[^\(]+)\(", globalTranslator)
+            public DynamicMemberAccessTranslator(MemberAccessExpressionTranslator memberAccessTranslator)
+                : base(@"^GetMember (?<MemberName>[^\(]+)\(")
             {
                 _memberAccessTranslator = memberAccessTranslator;
             }
@@ -120,7 +112,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments, TranslationContext context)
             {
-                var subject = GlobalTranslator.Invoke(arguments.First(), context);
+                var subject = context.GetTranslation(arguments.First());
                 var memberName = match.Groups["MemberName"].Value;
 
                 return _memberAccessTranslator.GetMemberAccess(subject, memberName);
@@ -134,9 +126,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             public DynamicMemberWriteTranslator(
                 DynamicMemberAccessTranslator memberAccessTranslator,
-                AssignmentExpressionTranslator assignmentTranslator,
-                Translator globalTranslator)
-                : base(@"^SetMember (?<MemberName>[^\(]+)\(", globalTranslator)
+                AssignmentExpressionTranslator assignmentTranslator)
+                : base(@"^SetMember (?<MemberName>[^\(]+)\(")
             {
                 _memberAccessTranslator = memberAccessTranslator;
                 _assignmentTranslator = assignmentTranslator;
@@ -160,10 +151,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             private readonly MethodCallExpressionTranslator _methodCallTranslator;
 
-            public DynamicMethodCallTranslator(
-                MethodCallExpressionTranslator methodCallTranslator,
-                Translator globalTranslator)
-                : base(@"^Call (?<MethodName>[^\(]+)\(", globalTranslator)
+            public DynamicMethodCallTranslator(MethodCallExpressionTranslator methodCallTranslator)
+                : base(@"^Call (?<MethodName>[^\(]+)\(")
             {
                 _methodCallTranslator = methodCallTranslator;
             }
@@ -175,7 +164,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 out string translated)
             {
                 var subjectObject = dynamicExpression.Arguments.First();
-                var subject = GlobalTranslator.Invoke(subjectObject, context);
+                var subject = context.GetTranslation(subjectObject);
                 var methodName = match.Groups["MethodName"].Value;
                 var method = subjectObject.Type.GetMethod(methodName);
 

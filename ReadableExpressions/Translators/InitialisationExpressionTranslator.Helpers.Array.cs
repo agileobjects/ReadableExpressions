@@ -9,8 +9,8 @@
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
-            public ArrayInitExpressionHelper(Translator globalTranslator)
-                : base(globalTranslator)
+            public ArrayInitExpressionHelper()
+                : base(null, null)
             {
             }
 
@@ -41,7 +41,7 @@
                 NewArrayExpression arrayInitialisation,
                 TranslationContext context)
             {
-                return arrayInitialisation.Expressions.Select(exp => GlobalTranslator.Invoke(exp, context));
+                return arrayInitialisation.Expressions.Select(context.GetTranslation);
             }
         }
     }

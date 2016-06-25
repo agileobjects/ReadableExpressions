@@ -7,16 +7,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly Dictionary<ExpressionType, IInitExpressionHelper> _helpersByNodeType;
 
-        internal InitialisationExpressionTranslator(
-            MethodCallExpressionTranslator methodCallTranslator,
-            Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
+        internal InitialisationExpressionTranslator(MethodCallExpressionTranslator methodCallTranslator)
+            : base(ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
         {
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
             {
-                [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator, globalTranslator),
-                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator, globalTranslator),
-                [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper(globalTranslator)
+                [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator),
+                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator),
+                [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper()
             };
         }
 

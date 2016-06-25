@@ -12,8 +12,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
                 .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
 
-        public TypeEqualExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.TypeEqual)
+        public TypeEqualExpressionTranslator()
+            : base(ExpressionType.TypeEqual)
         {
         }
 
@@ -25,15 +25,15 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var reducedTypeEqualExpression = (Expression)_reduceTypeEqualMethod.Invoke(expression, null);
-            var translated = GetTranslation(reducedTypeEqualExpression, context).Unterminated();
+            var translated = context.GetTranslation(reducedTypeEqualExpression).Unterminated();
 
             return translated;
         }
 
-        private string FallbackTranslation(Expression expression, TranslationContext context)
+        private static string FallbackTranslation(Expression expression, TranslationContext context)
         {
             var typeBinary = (TypeBinaryExpression)expression;
-            var operand = GetTranslation(typeBinary.Expression, context);
+            var operand = context.GetTranslation(typeBinary.Expression);
 
             return $"({operand} TypeOf {typeBinary.TypeOperand.GetFriendlyName()})";
         }

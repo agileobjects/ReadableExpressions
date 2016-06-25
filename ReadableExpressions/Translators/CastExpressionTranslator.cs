@@ -9,18 +9,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class CastExpressionTranslator : ExpressionTranslatorBase
     {
-        private readonly Dictionary<ExpressionType, Translator> _translatorsByType;
-
-        internal CastExpressionTranslator(Translator globalTranslator)
-            : base(
-                globalTranslator,
-                ExpressionType.Convert,
-                ExpressionType.ConvertChecked,
-                ExpressionType.TypeAs,
-                ExpressionType.TypeIs,
-                ExpressionType.Unbox)
-        {
-            _translatorsByType = new Dictionary<ExpressionType, Translator>
+        private static readonly Dictionary<ExpressionType, Translator> _translatorsByType =
+            new Dictionary<ExpressionType, Translator>
             {
                 [ExpressionType.Convert] = TranslateCast,
                 [ExpressionType.ConvertChecked] = TranslateCast,
@@ -28,6 +18,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.TypeIs] = TranslateTypeIs,
                 [ExpressionType.Unbox] = TranslateCastCore,
             };
+
+        internal CastExpressionTranslator()
+            : base(_translatorsByType.Keys.ToArray())
+        {
         }
 
         public override string Translate(Expression expression, TranslationContext context)
@@ -35,14 +29,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             return _translatorsByType[expression.NodeType].Invoke(expression, context);
         }
 
-        private string TranslateCast(Expression expression, TranslationContext context)
+        private static string TranslateCast(Expression expression, TranslationContext context)
         {
             var operand = ((UnaryExpression)expression).Operand;
 
             if (expression.Type == typeof(object))
             {
                 // Don't bother showing a boxing operation:
-                return GetTranslation(operand, context);
+                return context.GetTranslation(operand);
             }
 
             MethodCallExpression methodCall;
@@ -56,7 +50,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 var methodSubject = subjectMethod.IsStatic
                     ? subjectMethod.DeclaringType.GetFriendlyName()
-                    : GetTranslation(methodCall.Arguments.ElementAtOrDefault(1), context);
+                    : context.GetTranslation(methodCall.Arguments.ElementAtOrDefault(1));
 
                 return methodSubject + "." + subjectMethod.Name;
             }
@@ -64,11 +58,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             return TranslateCastCore(expression, context);
         }
 
-        private string TranslateCastCore(Expression expression, TranslationContext context)
+        private static string TranslateCastCore(Expression expression, TranslationContext context)
         {
             var cast = (UnaryExpression)expression;
             var typeName = cast.Type.GetFriendlyName();
-            var subject = GetTranslation(cast.Operand, context);
+            var subject = context.GetTranslation(cast.Operand);
 
             if (cast.Operand.NodeType == ExpressionType.Assign)
             {
@@ -78,20 +72,20 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"(({typeName}){subject})";
         }
 
-        private string TranslateTypeAs(Expression expression, TranslationContext context)
+        private static string TranslateTypeAs(Expression expression, TranslationContext context)
         {
             var typeAs = (UnaryExpression)expression;
             var typeName = typeAs.Type.GetFriendlyName();
-            var subject = GetTranslation(typeAs.Operand, context);
+            var subject = context.GetTranslation(typeAs.Operand);
 
             return $"({subject} as {typeName})";
         }
 
-        private string TranslateTypeIs(Expression expression, TranslationContext context)
+        private static string TranslateTypeIs(Expression expression, TranslationContext context)
         {
             var typeIs = (TypeBinaryExpression)expression;
             var typeName = typeIs.TypeOperand.GetFriendlyName();
-            var subject = GetTranslation(typeIs.Expression, context);
+            var subject = context.GetTranslation(typeIs.Expression);
 
             return $"({subject} is {typeName})";
         }

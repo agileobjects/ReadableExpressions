@@ -9,7 +9,7 @@
         public static string ToReadableString(this Expression expression)
         {
             return _translatorRegistry
-                .Translate(expression, TranslationContext.For(expression))?
+                .Translate(expression)?
                 .WithoutUnindents();
         }
     }

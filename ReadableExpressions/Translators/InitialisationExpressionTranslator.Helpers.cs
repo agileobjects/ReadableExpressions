@@ -19,22 +19,13 @@
             private readonly Func<TExpression, TNewExpression> _newExpressionFactory;
             private readonly Func<TNewExpression, bool> _parameterlessConstructorTester;
 
-            protected InitExpressionHelperBase(Translator globalTranslator)
-                : this(null, null, globalTranslator)
-            {
-            }
-
             protected InitExpressionHelperBase(
                Func<TExpression, TNewExpression> newExpressionFactory,
-               Func<TNewExpression, bool> parameterlessConstructorTester,
-               Translator globalTranslator)
+               Func<TNewExpression, bool> parameterlessConstructorTester)
             {
                 _newExpressionFactory = newExpressionFactory;
                 _parameterlessConstructorTester = parameterlessConstructorTester;
-                GlobalTranslator = globalTranslator;
             }
-
-            protected Translator GlobalTranslator { get; }
 
             public string Translate(Expression expression, TranslationContext context)
             {
@@ -48,7 +39,7 @@
             protected virtual string GetNewExpressionString(TExpression initialisation, TranslationContext context)
             {
                 var newExpression = _newExpressionFactory.Invoke(initialisation);
-                var newExpressionString = GlobalTranslator.Invoke(newExpression, context);
+                var newExpressionString = context.GetTranslation(newExpression);
 
                 if (ConstructorIsParameterless(newExpression))
                 {

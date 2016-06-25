@@ -23,8 +23,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
-        public UnaryExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
+        public UnaryExpressionTranslator()
+            : base(_operatorsByNodeType.Keys.ToArray())
         {
         }
 
@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse - Operand 
             // is null when using Expression.Rethrow():
             var operand = (unary.Operand != null)
-                ? GetTranslation(unary.Operand, context) : null;
+                ? context.GetTranslation(unary.Operand) : null;
 
             return _operatorsByNodeType[expression.NodeType].Invoke(operand);
         }

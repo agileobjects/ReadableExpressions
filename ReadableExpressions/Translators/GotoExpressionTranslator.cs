@@ -8,8 +8,8 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private readonly Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>> _gotoKindHandlers;
 
-        public GotoExpressionTranslator(Translator globalTranslator)
-            : base(globalTranslator, ExpressionType.Goto)
+        public GotoExpressionTranslator()
+            : base(ExpressionType.Goto)
         {
             _gotoKindHandlers = new Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>>
             {
@@ -36,14 +36,14 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateGoto(GotoExpression gotoExpression, TranslationContext context)
             => $"goto {gotoExpression.Target.Name};";
 
-        private string TranslateReturn(GotoExpression gotoExpression, TranslationContext context)
+        private static string TranslateReturn(GotoExpression gotoExpression, TranslationContext context)
         {
             if (gotoExpression.Value == null)
             {
                 return "return;";
             }
 
-            var value = GetTranslation(gotoExpression.Value, context);
+            var value = context.GetTranslation(gotoExpression.Value);
 
             return $"return {value}";
         }

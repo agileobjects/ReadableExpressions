@@ -12,10 +12,8 @@
             private readonly MethodCallExpressionTranslator _methodCallTranslator;
             private readonly Dictionary<MemberBindingType, Func<MemberBinding, TranslationContext, string>> _bindingTranslatorsByType;
 
-            public MemberInitExpressionHelper(
-                MethodCallExpressionTranslator methodCallTranslator,
-                Translator globalTranslator)
-                : base(exp => exp.NewExpression, exp => !exp.Arguments.Any(), globalTranslator)
+            public MemberInitExpressionHelper(MethodCallExpressionTranslator methodCallTranslator)
+                : base(exp => exp.NewExpression, exp => !exp.Arguments.Any())
             {
                 _methodCallTranslator = methodCallTranslator;
 
@@ -39,10 +37,10 @@
                     .ToArray();
             }
 
-            private string TranslateAssignmentBinding(MemberBinding binding, TranslationContext context)
+            private static string TranslateAssignmentBinding(MemberBinding binding, TranslationContext context)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = GlobalTranslator.Invoke(assignment.Expression, context);
+                var value = context.GetTranslation(assignment.Expression);
 
                 return assignment.Member.Name + " = " + value;
             }
@@ -63,7 +61,7 @@
                 var listInitialisers = listBinding
                     .Initializers
                     .Select(init => IsStandardAddMethod(init)
-                        ? GlobalTranslator.Invoke(init.Arguments.First(), context)
+                        ? context.GetTranslation(init.Arguments.First())
                         : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments, context))
                     .ToArray();
 

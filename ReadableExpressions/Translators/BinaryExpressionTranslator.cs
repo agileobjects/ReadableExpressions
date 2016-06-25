@@ -37,18 +37,13 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractChecked] = "-"
             };
 
-
         private readonly NegationExpressionTranslator _negationTranslator;
-        private readonly Translator _globalTranslator;
         private readonly Dictionary<ExpressionType, BinaryTranslator> _translatorsByNodeType;
 
-        internal BinaryExpressionTranslator(
-            NegationExpressionTranslator negationTranslator,
-            Translator globalTranslator)
-            : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
+        internal BinaryExpressionTranslator(NegationExpressionTranslator negationTranslator)
+            : base(_operatorsByNodeType.Keys.ToArray())
         {
             _negationTranslator = negationTranslator;
-            _globalTranslator = globalTranslator;
 
             _translatorsByNodeType = new Dictionary<ExpressionType, BinaryTranslator>
             {
@@ -69,7 +64,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : Translate(binary, context);
         }
 
-        private string Translate(BinaryExpression binary, TranslationContext context)
+        private static string Translate(BinaryExpression binary, TranslationContext context)
         {
             var left = GetTranslation(binary.Left, context);
             var @operator = _operatorsByNodeType[binary.NodeType];
@@ -78,9 +73,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"({left} {@operator} {right})";
         }
 
-        protected override string GetTranslation(Expression expression, TranslationContext context)
+        private static string GetTranslation(Expression expression, TranslationContext context)
         {
-            var translation = base.GetTranslation(expression, context);
+            var translation = context.GetTranslation(expression);
 
             if (expression.IsAssignment() && !translation.HasSurroundingParentheses())
             {
@@ -90,14 +85,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             return translation;
         }
 
-        private string TranslateAddition(BinaryExpression binary, TranslationContext context)
+        private static string TranslateAddition(BinaryExpression binary, TranslationContext context)
         {
             if ((binary.Left.Type != typeof(string)) && (binary.Right.Type != typeof(string)))
             {
                 return Translate(binary, context);
             }
 
-            return new[] { binary.Left, binary.Right }.ToStringConcatenation(context, _globalTranslator);
+            return new[] { binary.Left, binary.Right }.ToStringConcatenation(context);
         }
 
         private string TranslateEqualityComparison(BinaryExpression comparison, TranslationContext context)
