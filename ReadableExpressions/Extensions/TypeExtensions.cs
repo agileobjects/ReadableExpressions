@@ -3,6 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
 
     internal static class TypeExtensions
     {
@@ -75,6 +77,16 @@
         public static bool IsNullableType(this Type type)
         {
             return Nullable.GetUnderlyingType(type) != null;
+        }
+
+        // See http://stackoverflow.com/questions/2483023/how-to-test-if-a-type-is-anonymous
+        public static bool IsAnonymous(this Type type)
+        {
+            return type.IsGenericType &&
+                   type.Name.Contains("AnonymousType") &&
+                   (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$")) &&
+                   (type.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic &&
+                   Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), inherit: false);
         }
     }
 }

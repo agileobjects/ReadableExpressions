@@ -200,6 +200,20 @@ new IDisposable[]
             Assert.AreEqual("new StringBuilder(str)", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateAnAnonymousTypeCreation()
+        {
+            var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetConstructor(new[] { typeof(string), typeof(int) });
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = Expression.New(constructor, Expression.Constant("How much?!"), Expression.Constant(100));
+
+            var translated = creation.ToReadableString();
+
+            Assert.AreEqual("new { ValueString = \"How much?!\", ValueInt = 100 }", translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable ClassNeverInstantiated.Local
