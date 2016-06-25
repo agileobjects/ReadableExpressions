@@ -62,7 +62,9 @@
 
         public string Translate(Expression expression)
         {
-            var context = TranslationContext.For(expression, Translate);
+            var context = (expression != null)
+                ? TranslationContext.For(expression, Translate)
+                : null;
 
             return Translate(expression, context);
         }

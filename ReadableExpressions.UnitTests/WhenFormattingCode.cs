@@ -448,6 +448,14 @@ Enumerable
             Assert.AreEqual("c => char.GetNumericValue(c)", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateNullToNull()
+        {
+            var translated = default(Expression).ToReadableString();
+
+            Assert.IsNull(translated);
+        }
+
         #region Helper Classes
 
         // ReSharper disable UnusedMember.Local
