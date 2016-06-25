@@ -59,6 +59,7 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="WhenTranslatingStringConcatenation.cs" />
     <Compile Include="WhenTranslatingComments.cs" />
     <Compile Include="WhenTranslatingDynamicOperations.cs" />
     <Compile Include="WhenTranslatingDebugInfo.cs" />

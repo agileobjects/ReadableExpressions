@@ -9,11 +9,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
     {
-        #region Special Cases
-
         private readonly SpecialCaseHandlerBase[] _specialCaseHandlers;
-
-        #endregion
 
         internal MethodCallExpressionTranslator(
             IndexAccessExpressionTranslator indexAccessTranslator,
@@ -23,6 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             _specialCaseHandlers = new SpecialCaseHandlerBase[]
             {
                 new InvocationExpressionHandler(GetMethodCall, globalTranslator),
+                new StringConcatenationHandler(globalTranslator),
                 new IndexedPropertyHandler(indexAccessTranslator)
             };
         }
@@ -203,6 +200,33 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             public abstract string Translate(Expression expression, TranslationContext context);
+        }
+
+        private class StringConcatenationHandler : SpecialCaseHandlerBase
+        {
+            private readonly Translator _globalTranslator;
+
+            public StringConcatenationHandler(Translator globalTranslator)
+                : base(IsStringConcatCall)
+            {
+                _globalTranslator = globalTranslator;
+            }
+
+            private static bool IsStringConcatCall(Expression expression)
+            {
+                var method = ((MethodCallExpression)expression).Method;
+
+                return method.IsStatic &&
+                      (method.DeclaringType == typeof(string)) &&
+                      (method.Name == "Concat");
+            }
+
+            public override string Translate(Expression expression, TranslationContext context)
+            {
+                var methodCall = (MethodCallExpression)expression;
+
+                return methodCall.Arguments.ToStringConcatenation(context, _globalTranslator);
+            }
         }
 
         private class InvocationExpressionHandler : SpecialCaseHandlerBase

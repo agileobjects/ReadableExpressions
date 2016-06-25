@@ -39,6 +39,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
 
         private readonly NegationExpressionTranslator _negationTranslator;
+        private readonly Translator _globalTranslator;
         private readonly Dictionary<ExpressionType, BinaryTranslator> _translatorsByNodeType;
 
         internal BinaryExpressionTranslator(
@@ -47,11 +48,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             : base(globalTranslator, _operatorsByNodeType.Keys.ToArray())
         {
             _negationTranslator = negationTranslator;
+            _globalTranslator = globalTranslator;
 
             _translatorsByNodeType = new Dictionary<ExpressionType, BinaryTranslator>
             {
+                [ExpressionType.Add] = TranslateAddition,
                 [ExpressionType.Equal] = TranslateEqualityComparison,
-                [ExpressionType.NotEqual] = TranslateEqualityComparison,
+                [ExpressionType.NotEqual] = TranslateEqualityComparison
             };
         }
 
@@ -85,6 +88,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return translation;
+        }
+
+        private string TranslateAddition(BinaryExpression binary, TranslationContext context)
+        {
+            if ((binary.Left.Type != typeof(string)) && (binary.Right.Type != typeof(string)))
+            {
+                return Translate(binary, context);
+            }
+
+            return new[] { binary.Left, binary.Right }.ToStringConcatenation(context, _globalTranslator);
         }
 
         private string TranslateEqualityComparison(BinaryExpression comparison, TranslationContext context)
