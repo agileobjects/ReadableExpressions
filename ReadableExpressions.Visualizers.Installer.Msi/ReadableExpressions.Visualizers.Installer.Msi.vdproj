@@ -241,15 +241,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8: AgileObjects.ReadableExpressions.Visualizers"
-        "ProductCode" = "8:{FB646F21-1DCB-471D-96CA-723657C80A24}"
-        "PackageCode" = "8:{10DC9E78-5CD9-4F0D-9EA7-78B1E72608CB}"
+        "ProductCode" = "8:{7DDBC668-98E7-4F9B-B059-A1314E991C9F}"
+        "PackageCode" = "8:{3762E37A-3851-41A5-8DB8-08E33051616F}"
         "UpgradeCode" = "8:{BB7C528F-ECFD-45F2-B50C-9F0A71EC8BE9}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:FALSE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:1.5.2"
+        "ProductVersion" = "8:1.6.0"
         "Manufacturer" = "8:AgileObjects"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
@@ -763,7 +763,7 @@
         {
             "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_2A6E60A757C94A87B28318E663F451ED"
             {
-            "SourcePath" = "8:..\\ReadableExpressions.Visualizers.Installer.Msi.Custom\\obj\\Debug\\AgileObjects.ReadableExpressions.Visualizers.Installer.Msi.Custom.dll"
+            "SourcePath" = "8:..\\ReadableExpressions.Visualizers.Installer.Msi.Custom\\obj\\Release\\AgileObjects.ReadableExpressions.Visualizers.Installer.Msi.Custom.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_A0155D8423A449678382CF705779AE30"
