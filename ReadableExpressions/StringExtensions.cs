@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Extensions;
 
     internal static class StringExtensions
     {
@@ -138,7 +139,22 @@ namespace AgileObjects.ReadableExpressions
 
         public static string ToStringConcatenation(this IEnumerable<Expression> strings, TranslationContext context)
         {
-            return string.Join(" + ", strings.Select(context.GetTranslation));
+            return string.Join(" + ", strings.Select((str => GetStringValue(str, context))));
+        }
+
+        private static string GetStringValue(Expression value, TranslationContext context)
+        {
+            if (value.NodeType == ExpressionType.Call)
+            {
+                var methodCall = (MethodCallExpression)value;
+
+                if ((methodCall.Method.Name == "ToString") && !methodCall.Arguments.Any())
+                {
+                    value = methodCall.GetSubject();
+                }
+            }
+
+            return context.GetTranslation(value);
         }
     }
 }

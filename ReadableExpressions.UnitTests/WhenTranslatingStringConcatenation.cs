@@ -28,6 +28,26 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAMixedTypeTwoArgumentConcatenation()
+        {
+            Expression<Func<string, int, string>> concat = (str1, i) => i + str1;
+
+            var translated = concat.Body.ToReadableString();
+
+            Assert.AreEqual("i + str1", translated);
+        }
+
+        [TestMethod]
+        public void ShouldExcludeAnExplictParameterlessToStringCall()
+        {
+            Expression<Func<string, int, string>> concat = (str1, i) => i.ToString() + str1;
+
+            var translated = concat.Body.ToReadableString();
+
+            Assert.AreEqual("i + str1", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnExplicitTwoArgumentConcatenation()
         {
             Expression<Func<string, string, string>> concat = (str1, str2) => string.Concat(str1, str2);
