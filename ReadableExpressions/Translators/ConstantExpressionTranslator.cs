@@ -56,6 +56,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                     }
                     break;
 
+                case (TypeCode)2:
+                    // TypeCode.DBNull (2) is unavailable in a PCL, but can
+                    // still be translated:
+                    translation = "DBNull.Value";
+                    return true;
+
                 case TypeCode.Decimal:
                     translation = FormatNumeric((decimal)constant.Value) + "m";
                     return true;
@@ -71,8 +77,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 case TypeCode.Object:
                     if (IsType(constant, out translation) ||
                         IsFunc(constant, out translation) ||
-                        IsDefault<TimeSpan>(constant, out translation) ||
-                        IsDefault<Guid>(constant, out translation))
+                        IsDefault<Guid>(constant, out translation) ||
+                        IsDefault<TimeSpan>(constant, out translation))
                     {
                         return true;
                     }
@@ -107,18 +113,6 @@ namespace AgileObjects.ReadableExpressions.Translators
             return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
         }
 
-        private static bool IsDefault<T>(ConstantExpression constant, out string translation)
-        {
-            if ((constant.Type == typeof(T)) && constant.Value.Equals(default(T)))
-            {
-                translation = $"default({typeof(T).Name})";
-                return true;
-            }
-
-            translation = null;
-            return false;
-        }
-
         private static bool IsType(ConstantExpression constant, out string translation)
         {
             if (typeof(Type).IsAssignableFrom(constant.Type))
@@ -149,6 +143,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             translation = GetGenericTypeName(funcType, argumentTypes);
             return true;
         }
+
+        #region IsFunc Helpers
 
         private static IEnumerable<string> ParseArgumentNames(params string[] arguments)
         {
@@ -227,5 +223,19 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetGenericTypeName(string typeName, IEnumerable<string> arguments)
             => $"{typeName}<{string.Join(", ", arguments)}>";
+
+        #endregion
+
+        private static bool IsDefault<T>(ConstantExpression constant, out string translation)
+        {
+            if ((constant.Type == typeof(T)) && constant.Value.Equals(default(T)))
+            {
+                translation = $"default({typeof(T).Name})";
+                return true;
+            }
+
+            translation = null;
+            return false;
+        }
     }
 }

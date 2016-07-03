@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data.Common;
     using System.IO;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -218,6 +219,20 @@
             var translated = funcConstant.ToReadableString();
 
             Assert.AreEqual("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/5
+        [TestMethod]
+        public void ShouldTranslateDbNullValue()
+        {
+            var dbParameter = Expression.Variable(typeof(DbParameter), "param");
+            var parameterValue = Expression.Property(dbParameter, "Value");
+            var dbNull = Expression.Constant(DBNull.Value, typeof(DBNull));
+            var setParamToDbNull = Expression.Assign(parameterValue, dbNull);
+
+            var translated = setParamToDbNull.ToReadableString();
+
+            Assert.AreEqual("param.Value = DBNull.Value", translated);
         }
 
         private enum OddNumber
