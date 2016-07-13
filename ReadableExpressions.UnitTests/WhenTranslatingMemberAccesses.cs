@@ -326,84 +326,79 @@
 
             Assert.AreEqual("ip.RefGet(3, ref value)", translated);
         }
+    }
 
-        #region Helper Classes
+    #region Helper Classes
 
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class IndexedProperty
+    internal class IndexedProperty
+    {
+        public static readonly object Default = new IndexedProperty(new object[0]);
+
+        private readonly object[] _values;
+
+        public IndexedProperty(object[] values)
         {
-            public static readonly object Default = new IndexedProperty(new object[0]);
+            _values = values;
+        }
 
-            private readonly object[] _values;
+        public object this[int index] => _values[index];
 
-            public IndexedProperty(object[] values)
-            {
-                _values = values;
-            }
+        public bool TryGet(int index, out object value)
+        {
+            value = _values.ElementAtOrDefault(index);
+            return value != null;
+        }
 
-            public object this[int index] => _values[index];
-
-            // ReSharper disable once UnusedMember.Local
-            public bool TryGet(int index, out object value)
+        public void RefGet(int index, ref object value)
+        {
+            if (value == null)
             {
                 value = _values.ElementAtOrDefault(index);
-                return value != null;
             }
-
-            // ReSharper disable once UnusedMember.Local
-            public void RefGet(int index, ref object value)
-            {
-                if (value == null)
-                {
-                    value = _values.ElementAtOrDefault(index);
-                }
-            }
-
-            public T GetFirst<T>() => (T)_values[0];
-
-            public void SetFirst<T>(T item) => _values[0] = item;
         }
 
-        private class ValueConverter
+        public T GetFirst<T>() => (T)_values[0];
+
+        public void SetFirst<T>(T item) => _values[0] = item;
+    }
+
+    internal class ValueConverter
+    {
+        public TResult Convert<TValue, TResult>(TValue value)
         {
-            public TResult Convert<TValue, TResult>(TValue value)
-            {
-                return (TResult)(object)value;
-            }
-
-            public bool TryConvert<TValue, TResult>(TValue value, out TResult result)
-            {
-                result = (value != null) ? Convert<TValue, TResult>(value) : default(TResult);
-                return true;
-            }
+            return (TResult)(object)value;
         }
 
-        internal class CapturedInstanceHelper
+        public bool TryConvert<TValue, TResult>(TValue value, out TResult result)
         {
-            private readonly int _i;
-
-            public CapturedInstanceHelper(int i)
-            {
-                _i = i;
-            }
-
-            public string GetComparisonTranslation(int comparator)
-            {
-                Expression<Func<bool>> comparison = () => _i == comparator;
-
-                return comparison.Body.ToReadableString();
-            }
+            result = (value != null) ? Convert<TValue, TResult>(value) : default(TResult);
+            return true;
         }
+    }
 
-        private static class ParamsHelper
+    internal class CapturedInstanceHelper
+    {
+        private readonly int _i;
+
+        public CapturedInstanceHelper(int i)
         {
-            public static string OptionalParams(string value, params string[] stringsToAdd)
-            {
-                return value + string.Join(string.Empty, stringsToAdd);
-            }
+            _i = i;
         }
 
-        #endregion
+        public string GetComparisonTranslation(int comparator)
+        {
+            Expression<Func<bool>> comparison = () => _i == comparator;
+
+            return comparison.Body.ToReadableString();
+        }
+    }
+
+    internal static class ParamsHelper
+    {
+        public static string OptionalParams(string value, params string[] stringsToAdd)
+        {
+            return value + string.Join(string.Empty, stringsToAdd);
+        }
     }
 
     // ReSharper disable once UnusedTypeParameter
@@ -413,4 +408,6 @@
         {
         }
     }
+
+    #endregion
 }

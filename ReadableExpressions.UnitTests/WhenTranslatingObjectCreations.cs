@@ -213,44 +213,35 @@ new IDisposable[]
 
             Assert.AreEqual("new { ValueString = \"How much?!\", ValueInt = 100 }", translated);
         }
-
-        #region Helper Classes
-
-        // ReSharper disable ClassNeverInstantiated.Local
-        // ReSharper disable UnusedAutoPropertyAccessor.Local
-        // ReSharper disable MemberCanBePrivate.Local
-
-        private class Postcode
-        {
-            public Postcode(string value)
-            {
-                Value = value;
-            }
-
-            public string Value { get; }
-        }
-
-        private class Address
-        {
-            public int HouseNumber { get; set; }
-
-            public Postcode Postcode { get; set; }
-        }
-
-        private class ContactDetails
-        {
-            public string Name { get; set; }
-
-            public Address Address { get; set; }
-
-            // ReSharper disable once CollectionNeverQueried.Local
-            public List<string> PhoneNumbers { get; set; }
-        }
-
-        // ReSharper restore MemberCanBePrivate.Local
-        // ReSharper restore UnusedAutoPropertyAccessor.Local
-        // ReSharper restore ClassNeverInstantiated.Local
-
-        #endregion
     }
+
+    #region Helper Classes
+
+    internal class Postcode
+    {
+        public Postcode(string value)
+        {
+            Value = value;
+        }
+
+        public string Value { get; }
+    }
+
+    internal class Address
+    {
+        public int HouseNumber { get; set; }
+
+        public Postcode Postcode { get; set; }
+    }
+
+    internal class ContactDetails
+    {
+        public string Name { get; set; }
+
+        public Address Address { get; set; }
+
+        public List<string> PhoneNumbers { get; set; }
+    }
+
+    #endregion
 }

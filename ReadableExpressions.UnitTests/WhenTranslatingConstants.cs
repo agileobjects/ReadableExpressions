@@ -234,10 +234,10 @@
 
             Assert.AreEqual("param.Value = DBNull.Value", translated);
         }
+    }
 
-        private enum OddNumber
-        {
-            One = 1
-        }
+    internal enum OddNumber
+    {
+        One = 1
     }
 }

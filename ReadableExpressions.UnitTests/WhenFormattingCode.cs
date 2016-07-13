@@ -448,8 +448,19 @@ Enumerable
             Assert.AreEqual("c => char.GetNumericValue(c)", translated);
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/6
         [TestMethod]
-        public void ShouldUseFriendlyNamesForNestedTypes()
+        public void ShouldUseFriendlyNamesForMultiplyNestedTypes()
+        {
+            var nestedType = Expression.Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
+
+            var translated = nestedType.ToReadableString();
+
+            Assert.AreEqual("typeof(OuterClass.InnerClass.Nested)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldUseFriendlyNamesForGenericNestedTypes()
         {
             var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
 
@@ -459,76 +470,106 @@ Enumerable
         }
 
         [TestMethod]
+        public void ShouldUseFriendlyNamesForGenericMultiplyNestedTypes()
+        {
+            var nestedGenericType = Expression.Constant(
+                typeof(OuterGeneric<int>.InnerGeneric<long>.Nested),
+                typeof(Type));
+
+            var translated = nestedGenericType.ToReadableString();
+
+            Assert.AreEqual("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateNullToNull()
         {
             var translated = default(Expression).ToReadableString();
 
             Assert.IsNull(translated);
         }
-
-        #region Helper Classes
-
-        // ReSharper disable UnusedMember.Local
-        // ReSharper disable UnusedParameter.Local
-        private class HelperClass
-        {
-            public HelperClass(int intOne, int intTwo, int intThree)
-            {
-
-            }
-
-            public void GiveMeSomeInts(int intOne, int intTwo, int intThree)
-            {
-            }
-        }
-        // ReSharper restore UnusedParameter.Local
-        // ReSharper restore UnusedMember.Local
-
-        private delegate bool IntEvaluator(int value);
-
-        private delegate bool? IntEvaluatorNullable(int value);
-
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class IntConverter
-        {
-            public string Convert(int value)
-            {
-                return value.ToString();
-            }
-        }
-
-        private class ExtensionExpression : Expression
-        {
-            public override ExpressionType NodeType => ExpressionType.Extension;
-
-            protected override Expression VisitChildren(ExpressionVisitor visitor)
-            {
-                // See CommentExpression for why this is necessary:
-                return this;
-            }
-
-            public override string ToString()
-            {
-                return "Exteeennndddiiiinnngg";
-            }
-        }
-
-        private class UnknownExpression : Expression
-        {
-            public override ExpressionType NodeType => (ExpressionType)5346372;
-
-            protected override Expression VisitChildren(ExpressionVisitor visitor)
-            {
-                // See CommentExpression for why this is necessary:
-                return this;
-            }
-
-            public override string ToString()
-            {
-                return "You can't know me!";
-            }
-        }
-
-        #endregion
     }
+
+    #region Helper Classes
+
+    // ReSharper disable UnusedParameter.Local
+    internal class HelperClass
+    {
+        public HelperClass(int intOne, int intTwo, int intThree)
+        {
+        }
+
+        public void GiveMeSomeInts(int intOne, int intTwo, int intThree)
+        {
+        }
+    }
+    // ReSharper restore UnusedParameter.Local
+
+    internal delegate bool IntEvaluator(int value);
+
+    internal delegate bool? IntEvaluatorNullable(int value);
+
+    internal class IntConverter
+    {
+        public string Convert(int value)
+        {
+            return value.ToString();
+        }
+    }
+
+    internal class ExtensionExpression : Expression
+    {
+        public override ExpressionType NodeType => ExpressionType.Extension;
+
+        protected override Expression VisitChildren(ExpressionVisitor visitor)
+        {
+            // See CommentExpression for why this is necessary:
+            return this;
+        }
+
+        public override string ToString()
+        {
+            return "Exteeennndddiiiinnngg";
+        }
+    }
+
+    internal class UnknownExpression : Expression
+    {
+        public override ExpressionType NodeType => (ExpressionType)5346372;
+
+        protected override Expression VisitChildren(ExpressionVisitor visitor)
+        {
+            // See CommentExpression for why this is necessary:
+            return this;
+        }
+
+        public override string ToString()
+        {
+            return "You can't know me!";
+        }
+    }
+
+    internal class OuterClass
+    {
+        internal class InnerClass
+        {
+            internal class Nested
+            {
+            }
+        }
+    }
+
+    // ReSharper disable once UnusedTypeParameter
+    internal class OuterGeneric<TOuter>
+    {
+        // ReSharper disable once UnusedTypeParameter
+        internal class InnerGeneric<TInner>
+        {
+            internal class Nested
+            {
+            }
+        }
+    }
+
+    #endregion
 }

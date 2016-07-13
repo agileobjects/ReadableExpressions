@@ -38,7 +38,14 @@
 
             if (!type.IsGenericType)
             {
-                return type.FullName.GetSubstitutionOrNull() ?? type.Name;
+                var qualifiedTypeName = type.FullName.GetSubstitutionOrNull() ?? type.Name;
+
+                if (type.IsNested)
+                {
+                    return type.DeclaringType.GetFriendlyName() + "." + qualifiedTypeName;
+                }
+
+                return qualifiedTypeName;
             }
 
             Type underlyingNullableType;
@@ -62,21 +69,74 @@
         private static string GetGenericTypeName(Type genericType)
         {
             var typeGenericTypeArguments = genericType.GetGenericArguments();
+
+            if (!genericType.IsNested)
+            {
+                return GetGenericTypeName(genericType.Name, typeGenericTypeArguments.Length, typeGenericTypeArguments);
+            }
+
             var genericTypeName = genericType.Name;
 
             // ReSharper disable once PossibleNullReferenceException
             while (genericType.IsNested)
             {
                 genericType = genericType.DeclaringType;
-                genericTypeName = genericType.Name + "." + genericTypeName;
+                var parentTypeName = genericType.Name;
+
+                var backtickIndex = parentTypeName.IndexOf("`", StringComparison.Ordinal);
+
+                if (backtickIndex != -1)
+                {
+                    var numberOfParameters = int.Parse(parentTypeName.Substring(backtickIndex + 1));
+
+                    Type[] typeArguments;
+
+                    if (numberOfParameters == typeGenericTypeArguments.Length)
+                    {
+                        typeArguments = typeGenericTypeArguments;
+                    }
+                    else
+                    {
+                        typeArguments = new Type[numberOfParameters];
+                        var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
+                        var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
+
+                        Array.Copy(
+                            typeGenericTypeArguments,
+                            numberOfRemainingTypeArguments,
+                            typeArguments,
+                            0,
+                            numberOfParameters);
+
+                        Array.Copy(
+                            typeGenericTypeArguments,
+                            0,
+                            typeGenericTypeArgumentsSubset,
+                            0,
+                            numberOfRemainingTypeArguments);
+
+                        typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
+                    }
+
+                    parentTypeName = GetGenericTypeName(parentTypeName, numberOfParameters, typeArguments);
+                }
+
+                genericTypeName = parentTypeName + "." + genericTypeName;
             }
 
-            var typeGenericTypeArgumentFriendlyNames =
-                string.Join(", ", typeGenericTypeArguments.Select(ga => ga.GetFriendlyName()));
+            return genericTypeName;
+        }
 
-            return genericTypeName.Replace(
-                "`" + typeGenericTypeArguments.Length,
+        private static string GetGenericTypeName(string typeName, int numberOfParameters, IEnumerable<Type> typeArguments)
+        {
+            var typeGenericTypeArgumentFriendlyNames =
+                string.Join(", ", typeArguments.Select(tp => tp.GetFriendlyName()));
+
+            typeName = typeName.Replace(
+                "`" + numberOfParameters,
                 "<" + typeGenericTypeArgumentFriendlyNames + ">");
+
+            return typeName;
         }
 
         public static bool CanBeNull(this Type type)
