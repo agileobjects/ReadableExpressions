@@ -395,14 +395,6 @@
             }
         }
 
-        // ReSharper disable once UnusedTypeParameter
-        private static class GenericHelper<T>
-        {
-            public static void DoSomething()
-            {
-            }
-        }
-
         private static class ParamsHelper
         {
             public static string OptionalParams(string value, params string[] stringsToAdd)
@@ -412,5 +404,13 @@
         }
 
         #endregion
+    }
+
+    // ReSharper disable once UnusedTypeParameter
+    internal static class GenericHelper<T>
+    {
+        public static void DoSomething()
+        {
+        }
     }
 }

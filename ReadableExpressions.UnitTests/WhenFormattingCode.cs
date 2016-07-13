@@ -449,6 +449,16 @@ Enumerable
         }
 
         [TestMethod]
+        public void ShouldUseFriendlyNamesForNestedTypes()
+        {
+            var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
+
+            var translated = genericListEnumeratorType.ToReadableString();
+
+            Assert.AreEqual("typeof(List<string>.Enumerator)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateNullToNull()
         {
             var translated = default(Expression).ToReadableString();

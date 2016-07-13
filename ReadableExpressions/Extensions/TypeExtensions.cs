@@ -48,17 +48,7 @@
                 return underlyingNullableType.GetFriendlyName() + "?";
             }
 
-            var typeGenericNameWithAngleBrackets =
-                type.Name.Insert(type.Name.IndexOf("`", StringComparison.Ordinal), "<") + ">";
-
-            var typeGenericTypeArguments = type.GetGenericArguments();
-
-            var typeGenericTypeArgumentFriendlyNames =
-                string.Join(", ", typeGenericTypeArguments.Select(ga => ga.GetFriendlyName()));
-
-            return typeGenericNameWithAngleBrackets.Replace(
-                "`" + typeGenericTypeArguments.Length,
-                typeGenericTypeArgumentFriendlyNames);
+            return GetGenericTypeName(type);
         }
 
         public static string GetSubstitutionOrNull(this string typeFullName)
@@ -67,6 +57,26 @@
 
             return _typeNameSubstitutions.TryGetValue(typeFullName, out substitutedName)
                 ? substitutedName : null;
+        }
+
+        private static string GetGenericTypeName(Type genericType)
+        {
+            var typeGenericTypeArguments = genericType.GetGenericArguments();
+            var genericTypeName = genericType.Name;
+
+            // ReSharper disable once PossibleNullReferenceException
+            while (genericType.IsNested)
+            {
+                genericType = genericType.DeclaringType;
+                genericTypeName = genericType.Name + "." + genericTypeName;
+            }
+
+            var typeGenericTypeArgumentFriendlyNames =
+                string.Join(", ", typeGenericTypeArguments.Select(ga => ga.GetFriendlyName()));
+
+            return genericTypeName.Replace(
+                "`" + typeGenericTypeArguments.Length,
+                "<" + typeGenericTypeArgumentFriendlyNames + ">");
         }
 
         public static bool CanBeNull(this Type type)
