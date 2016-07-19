@@ -46,7 +46,7 @@ try{tryBody.WithParentheses()}
 ";
         }
 
-        private string GetExceptionClause(CatchBlock catchBlock, TranslationContext context)
+        private static string GetExceptionClause(CatchBlock catchBlock, TranslationContext context)
         {
             var exceptionTypeName = catchBlock.Test.GetFriendlyName();
 

@@ -267,11 +267,11 @@ i =
 {
     try
     {
-        Console.Read();
+        return Console.Read();
     }
     catch (IOException)
     {
-        default(int);
+        return default(int);
     }
 }";
 

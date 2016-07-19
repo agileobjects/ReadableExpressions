@@ -105,7 +105,7 @@
 }";
             }
 
-            var codeBlock = Indented().GetCodeBlock();
+            var codeBlock = WithReturn().Indented().GetCodeBlock();
 
             if (codeBlock.StartsWithNewLine())
             {

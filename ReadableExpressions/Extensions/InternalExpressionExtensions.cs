@@ -32,6 +32,7 @@
                 case ExpressionType.Conditional:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
+                case ExpressionType.Default:
                 case ExpressionType.Invoke:
                 case ExpressionType.MemberAccess:
                 case ExpressionType.Parameter:
