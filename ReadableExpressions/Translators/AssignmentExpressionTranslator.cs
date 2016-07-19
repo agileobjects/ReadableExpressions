@@ -1,9 +1,9 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using Extensions;
 
     internal class AssignmentExpressionTranslator : ExpressionTranslatorBase
     {
@@ -27,10 +27,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssignChecked] = "-="
             };
 
-        private static readonly ExpressionType[] _checkedAssignmentTypes = _symbolsByNodeType
-            .Keys
-            .Where(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
-            .ToArray();
+        private static readonly ExpressionType[] _checkedAssignmentTypes =
+            _symbolsByNodeType.GetCheckedExpressionTypes();
 
         private readonly DefaultExpressionTranslator _defaultTranslator;
 
@@ -62,7 +60,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var assignment = $"{target} {symbol} {valueString}";
 
-            assignment = AdjustForCheckedAssignmentIfAppropriate(assignment, assignmentType);
+            assignment = AdjustForCheckedAssignmentIfAppropriate(assignmentType, assignment);
 
             return assignment;
         }
@@ -85,8 +83,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         private static string AdjustForCheckedAssignmentIfAppropriate(
-            string assignment,
-            ExpressionType assignmentType)
+            ExpressionType assignmentType,
+            string assignment)
         {
             if (!_checkedAssignmentTypes.Contains(assignmentType))
             {

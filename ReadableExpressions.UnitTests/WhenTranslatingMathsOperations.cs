@@ -31,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = checkedAdditionLambda.ToReadableString();
 
-            Assert.AreEqual("(a, b) => a + b", translated);
+            Assert.AreEqual("(a, b) => checked(a + b)", translated);
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = checkedSubtractionLambda.ToReadableString();
 
-            Assert.AreEqual("(a, b) => a - b", translated);
+            Assert.AreEqual("(a, b) => checked(a - b)", translated);
         }
 
         [TestMethod]
@@ -105,9 +105,11 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 intParameter1,
                 intParameter2);
 
+            //Expression<Func<int, int, int>> ass = (a, b) => checked(a * b);
+
             var translated = checkedMultiplicationLambda.ToReadableString();
 
-            Assert.AreEqual("(a, b) => a * b", translated);
+            Assert.AreEqual("(a, b) => checked(a * b)", translated);
         }
 
         [TestMethod]

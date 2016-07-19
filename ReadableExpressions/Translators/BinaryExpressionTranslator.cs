@@ -37,6 +37,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractChecked] = "-"
             };
 
+        private static readonly ExpressionType[] _checkedOperatorTypes =
+            _operatorsByNodeType.GetCheckedExpressionTypes();
+
         private readonly NegationExpressionTranslator _negationTranslator;
         private readonly Dictionary<ExpressionType, BinaryTranslator> _translatorsByNodeType;
 
@@ -70,7 +73,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             var @operator = _operatorsByNodeType[binary.NodeType];
             var right = GetTranslation(binary.Right, context);
 
-            return $"({left} {@operator} {right})";
+            var operation = $"{left} {@operator} {right}";
+
+            return AdjustForCheckedOperatorIfAppropriate(binary.NodeType, operation);
         }
 
         private static string GetTranslation(Expression expression, TranslationContext context)
@@ -83,6 +88,27 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return translation;
+        }
+
+        private static string AdjustForCheckedOperatorIfAppropriate(
+            ExpressionType operatorType,
+            string operation)
+        {
+            if (!_checkedOperatorTypes.Contains(operatorType))
+            {
+                return operation.WithSurroundingParentheses();
+            }
+
+            if (operation.IsMultiLine())
+            {
+                return $@"
+checked
+{{
+{operation.Indent()}
+}}".TrimStart();
+            }
+
+            return $"checked({operation})";
         }
 
         private static string TranslateAddition(BinaryExpression binary, TranslationContext context)

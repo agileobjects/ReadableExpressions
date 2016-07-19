@@ -1,5 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
 
@@ -79,6 +81,14 @@
             }
 
             return false;
+        }
+
+        public static ExpressionType[] GetCheckedExpressionTypes(this Dictionary<ExpressionType, string> valuesByExpressionTypes)
+        {
+            return valuesByExpressionTypes
+               .Keys
+               .Where(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
+               .ToArray();
         }
     }
 }
