@@ -38,7 +38,7 @@ namespace AgileObjects.ReadableExpressions
                 return string.Empty;
             }
 
-            if (line.Contains(Environment.NewLine))
+            if (line.IsMultiLine())
             {
                 return string.Join(
                     Environment.NewLine,
@@ -47,6 +47,8 @@ namespace AgileObjects.ReadableExpressions
 
             return IndentSpaces + line;
         }
+
+        public static bool IsMultiLine(this string value) => value.Contains(Environment.NewLine);
 
         private const string UnindentPlaceholder = "*unindent*";
 

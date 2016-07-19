@@ -17,7 +17,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
         {
             var translation = SingleLineTranslationFactory.Invoke();
 
-            return (translation.Length > 100) || translation.Contains(Environment.NewLine)
+            return (translation.Length > 100) || translation.IsMultiLine()
                 ? MultipleLineTranslationFactory.Invoke()
                 : translation;
         }

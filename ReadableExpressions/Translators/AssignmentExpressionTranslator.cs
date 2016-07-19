@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -25,6 +26,11 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.SubtractAssign] = "-=",
                 [ExpressionType.SubtractAssignChecked] = "-="
             };
+
+        private static readonly ExpressionType[] _checkedAssignmentTypes = _symbolsByNodeType
+            .Keys
+            .Where(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
+            .ToArray();
 
         private readonly DefaultExpressionTranslator _defaultTranslator;
 
@@ -54,7 +60,11 @@ namespace AgileObjects.ReadableExpressions.Translators
                 ? _defaultTranslator.Translate((DefaultExpression)value)
                 : GetValueTranslation(value, context);
 
-            return $"{target} {symbol} {valueString}";
+            var assignment = $"{target} {symbol} {valueString}";
+
+            assignment = AdjustForCheckedAssignmentIfAppropriate(assignment, assignmentType);
+
+            return assignment;
         }
 
         private string GetValueTranslation(Expression value, TranslationContext context)
@@ -72,6 +82,27 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return valueBlock.WithReturn().WithParentheses();
+        }
+
+        private static string AdjustForCheckedAssignmentIfAppropriate(
+            string assignment,
+            ExpressionType assignmentType)
+        {
+            if (!_checkedAssignmentTypes.Contains(assignmentType))
+            {
+                return assignment;
+            }
+
+            if (assignment.IsMultiLine())
+            {
+                return $@"
+checked
+{{
+{assignment.Indent()}
+}}".TrimStart();
+            }
+
+            return $"checked {{ {assignment} }}";
         }
     }
 }

@@ -39,7 +39,7 @@
 
             var translated = addTenAndAssign.ToReadableString();
 
-            Assert.AreEqual("i += 10", translated);
+            Assert.AreEqual("checked { i += 10 }", translated);
         }
 
         [TestMethod]
@@ -61,7 +61,7 @@
 
             var translated = substractOneAndAssign.ToReadableString();
 
-            Assert.AreEqual("i -= 1", translated);
+            Assert.AreEqual("checked { i -= 1 }", translated);
         }
 
         [TestMethod]
@@ -83,7 +83,7 @@
 
             var translated = doubleAndAssign.ToReadableString();
 
-            Assert.AreEqual("i *= 2", translated);
+            Assert.AreEqual("checked { i *= 2 }", translated);
         }
 
         [TestMethod]
