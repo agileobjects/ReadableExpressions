@@ -222,7 +222,7 @@
 
             var translated = setVariableOneToAssignmentResult.ToReadableString();
 
-            Assert.AreEqual("i = (j = 1)", translated);
+            Assert.AreEqual("i = j = 1", translated);
         }
 
         [TestMethod]
@@ -263,13 +263,16 @@ var i = ((long)(j = 10));";
             var translated = assignReadOrDefault.ToReadableString();
 
             const string EXPECTED = @"
-i = try
+i = 
 {
-    Console.Read();
-}
-catch (IOException)
-{
-    default(int);
+    try
+    {
+        Console.Read();
+    }
+    catch (IOException)
+    {
+        default(int);
+    }
 }";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);

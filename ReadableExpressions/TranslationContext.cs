@@ -29,6 +29,8 @@ namespace AgileObjects.ReadableExpressions
             return _globalTranslator.Invoke(expression, this);
         }
 
+        public bool IsAssignedValue(Expression expression) => _analyzer.AssignedValues.Contains(expression);
+
         public bool IsNotJoinedAssignment(Expression expression)
         {
             return (expression.NodeType != ExpressionType.Assign) ||
@@ -49,6 +51,7 @@ namespace AgileObjects.ReadableExpressions
         {
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<ParameterExpression> _assignedVariables;
+            private readonly List<Expression> _assignedValues;
             private readonly List<Expression> _assignedAssignments;
             private readonly List<BinaryExpression> _joinedAssignments;
             private readonly List<LabelTarget> _namedLabelTargets;
@@ -59,6 +62,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 _accessedVariables = new List<ParameterExpression>();
                 _assignedVariables = new List<ParameterExpression>();
+                _assignedValues = new List<Expression>();
                 _assignedAssignments = new List<Expression>();
                 _joinedAssignments = new List<BinaryExpression>();
                 _namedLabelTargets = new List<LabelTarget>();
@@ -114,6 +118,8 @@ namespace AgileObjects.ReadableExpressions
 
             public IEnumerable<ParameterExpression> AssignedVariables => _assignedVariables;
 
+            public IEnumerable<Expression> AssignedValues => _assignedValues;
+
             public IEnumerable<BinaryExpression> JoinedAssignments => _joinedAssignments;
 
             public IEnumerable<LabelTarget> NamedLabelTargets => _namedLabelTargets;
@@ -139,22 +145,26 @@ namespace AgileObjects.ReadableExpressions
 
             protected override Expression VisitBinary(BinaryExpression binaryExpression)
             {
-                if ((binaryExpression.NodeType == ExpressionType.Assign) &&
-                    (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
-                    ((_currentBlock == null) || _currentBlock.Expressions.Contains(binaryExpression)) &&
-                    !_assignedVariables.Contains(binaryExpression.Left) &&
-                    !_assignedAssignments.Contains(binaryExpression))
+                if (binaryExpression.NodeType == ExpressionType.Assign)
                 {
-                    var variable = (ParameterExpression)binaryExpression.Left;
+                    _assignedValues.Add(binaryExpression.Right);
 
-                    if (VariableHasNotYetBeenAccessed(variable))
+                    if ((binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
+                        ((_currentBlock == null) || _currentBlock.Expressions.Contains(binaryExpression)) &&
+                        !_assignedVariables.Contains(binaryExpression.Left) &&
+                        !_assignedAssignments.Contains(binaryExpression))
                     {
-                        _joinedAssignments.Add(binaryExpression);
-                        _accessedVariables.Add(variable);
-                        _assignedVariables.Add(variable);
-                    }
+                        var variable = (ParameterExpression)binaryExpression.Left;
 
-                    AddAssignmentIfAppropriate(binaryExpression.Right);
+                        if (VariableHasNotYetBeenAccessed(variable))
+                        {
+                            _joinedAssignments.Add(binaryExpression);
+                            _accessedVariables.Add(variable);
+                            _assignedVariables.Add(variable);
+                        }
+
+                        AddAssignmentIfAppropriate(binaryExpression.Right);
+                    }
                 }
 
                 return base.VisitBinary(binaryExpression);

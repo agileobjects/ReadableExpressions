@@ -49,38 +49,29 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var symbol = _symbolsByNodeType[assignmentType];
-            var valueString = GetValueTranslation(value, context);
 
-            switch (value.NodeType)
-            {
-                case ExpressionType.Assign:
-                case ExpressionType.Block:
-                    if (valueString.EndsWith(';'))
-                    {
-                        valueString = valueString.Substring(0, valueString.Length - 1);
-                    }
-
-                    if (!valueString.HasSurroundingParentheses())
-                    {
-                        valueString = valueString.WithSurroundingParentheses();
-                    }
-
-                    break;
-
-                default:
-                    valueString = valueString.WithoutSurroundingParentheses(value);
-                    break;
-
-            }
+            var valueString = (value.NodeType == ExpressionType.Default)
+                ? _defaultTranslator.Translate((DefaultExpression)value)
+                : GetValueTranslation(value, context);
 
             return $"{target} {symbol} {valueString}";
         }
 
         private string GetValueTranslation(Expression value, TranslationContext context)
         {
-            return (value.NodeType != ExpressionType.Default)
-                ? context.GetTranslation(value)
-                : _defaultTranslator.Translate((DefaultExpression)value);
+            var valueBlock = GetTranslatedExpressionBody(value, context);
+
+            if (valueBlock.IsASingleStatement)
+            {
+                return valueBlock.WithoutParentheses().Unterminated();
+            }
+
+            if (value.NodeType == ExpressionType.Lambda)
+            {
+                return valueBlock.WithoutParentheses();
+            }
+
+            return valueBlock.WithReturn().WithParentheses();
         }
     }
 }
