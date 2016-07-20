@@ -18,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var quotedLambdaBlock = Expression.Block(comment, quote.Operand);
             var translatedLambda = GetTranslatedExpressionBody(quotedLambdaBlock, context);
 
-            return Environment.NewLine + translatedLambda.Indented().WithoutParentheses();
+            return Environment.NewLine + translatedLambda.Indented().WithoutCurlyBraces();
         }
     }
 }

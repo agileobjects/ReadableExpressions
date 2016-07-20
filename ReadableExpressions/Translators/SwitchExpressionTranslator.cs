@@ -49,7 +49,7 @@ switch ({switchValue})
 
             var @case = bodyBlock.Indented().Insert(labels).Indented();
 
-            return @case.WithoutParentheses();
+            return @case.WithoutCurlyBraces();
         }
 
         private IEnumerable<string> AppendDefaultCaseIfExists(

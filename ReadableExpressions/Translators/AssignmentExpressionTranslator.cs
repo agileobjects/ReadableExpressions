@@ -71,15 +71,16 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (valueBlock.IsASingleStatement)
             {
-                return valueBlock.WithoutParentheses().Unterminated();
+                return valueBlock.WithoutCurlyBraces().Unterminated();
             }
 
-            if (value.NodeType == ExpressionType.Lambda)
+            if ((value.NodeType == ExpressionType.Conditional) ||
+                (value.NodeType == ExpressionType.Lambda))
             {
-                return valueBlock.WithoutParentheses();
+                return valueBlock.WithoutCurlyBraces();
             }
 
-            return valueBlock.WithReturn().WithParentheses();
+            return valueBlock.WithCurlyBraces();
         }
 
         private static string AdjustForCheckedAssignmentIfAppropriate(

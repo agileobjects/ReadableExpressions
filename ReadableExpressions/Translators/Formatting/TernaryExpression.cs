@@ -6,8 +6,8 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
     {
         public TernaryExpression(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
-            var ifTrueString = ifTrue.AsExpressionBody();
-            var ifFalseString = ifFalse.AsExpressionBody();
+            var ifTrueString = GetBranch(ifTrue);
+            var ifFalseString = GetBranch(ifFalse);
 
             SingleLineTranslationFactory = () => $"{test} ?{ifTrueString} :{ifFalseString}";
 
@@ -17,6 +17,13 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
                 ("?" + ifTrueString).Indent() +
                 Environment.NewLine +
                 (":" + ifFalseString).Indent();
+        }
+
+        private static string GetBranch(CodeBlock codeBlock)
+        {
+            return codeBlock.IsASingleStatement
+                ? codeBlock.AsExpressionBody()
+                : " " + codeBlock.WithCurlyBraces().TrimStart();
         }
 
         protected override Func<string> SingleLineTranslationFactory { get; }

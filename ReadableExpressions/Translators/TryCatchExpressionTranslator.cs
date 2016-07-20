@@ -22,7 +22,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally, context);
 
             var tryCatchFinallyBlock = $@"
-try{tryBody.WithParentheses()}
+try{tryBody.WithCurlyBraces()}
 {catchBlocks}{faultBlock}{finallyBlock}";
 
             return tryCatchFinallyBlock.Trim();
@@ -34,7 +34,7 @@ try{tryBody.WithParentheses()}
 
             var exceptionClause = GetExceptionClause(catchBlock, context);
 
-            var catchBodyBlock = catchBody.WithParentheses();
+            var catchBodyBlock = catchBody.WithCurlyBraces();
 
             if (catchBlock.Variable != null)
             {
@@ -81,7 +81,7 @@ try{tryBody.WithParentheses()}
                 return null;
             }
 
-            var blockBody = GetTranslatedExpressionBody(block, context).WithParentheses();
+            var blockBody = GetTranslatedExpressionBody(block, context).WithCurlyBraces();
 
             return keyword + blockBody;
         }

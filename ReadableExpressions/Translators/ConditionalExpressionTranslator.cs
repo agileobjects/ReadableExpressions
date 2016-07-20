@@ -22,12 +22,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (hasNoElseCondition)
             {
-                return IfStatement(test, ifTrueBlock.WithReturn().WithParentheses());
+                return IfStatement(test, ifTrueBlock.WithCurlyBraces());
             }
 
             var ifFalseBlock = GetTranslatedExpressionBody(conditional.IfFalse, context);
 
-            if (IsSuitableForTernary(conditional, ifTrueBlock, ifFalseBlock))
+            if (IsTernary(conditional))
             {
                 return new TernaryExpression(test, ifTrueBlock, ifFalseBlock);
             }
@@ -56,19 +56,17 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"if {test}{body}";
         }
 
-        private static bool IsSuitableForTernary(Expression conditional, CodeBlock ifTrue, CodeBlock ifFalse)
+        private static bool IsTernary(Expression conditional)
         {
-            return (conditional.Type != typeof(void)) &&
-                   ifTrue.IsASingleStatement &&
-                   ifFalse.IsASingleStatement;
+            return conditional.Type != typeof(void);
         }
 
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
             var ifElseBlock = $@"
-if {test}{ifTrue.WithReturn().WithParentheses()}
+if {test}{ifTrue.WithCurlyBraces()}
 
-{ifFalse.WithoutParentheses()}";
+{ifFalse.WithoutCurlyBraces()}";
 
             return ifElseBlock.TrimStart();
         }
@@ -85,11 +83,11 @@ if {test}{ifTrue.WithReturn().WithParentheses()}
             bool isElseIf)
         {
             var ifFalseBlock = isElseIf
-                ? " " + ifFalse.WithoutParentheses()
-                : ifFalse.WithParentheses();
+                ? " " + ifFalse.WithoutCurlyBraces()
+                : ifFalse.WithCurlyBraces();
 
             string ifElseBlock = $@"
-if {test}{ifTrue.WithParentheses()}
+if {test}{ifTrue.WithCurlyBraces()}
 else{ifFalseBlock}";
 
 

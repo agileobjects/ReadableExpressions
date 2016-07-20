@@ -55,7 +55,7 @@
             return new CodeBlock(_expression, _blockLines.Concat(lines).ToArray());
         }
 
-        public string WithoutParentheses()
+        public string WithoutCurlyBraces()
         {
             return GetCodeBlock();
         }
@@ -81,22 +81,7 @@
             }
         }
 
-        public CodeBlock WithReturn()
-        {
-            if (!_expression.IsReturnable() || HasReturn())
-            {
-                return this;
-            }
-
-            return new CodeBlock(
-                _expression,
-                _blockLines
-                    .Take(_blockLines.Length - 1)
-                    .Concat(new[] { "return " + _blockLines.Last() })
-                    .ToArray());
-        }
-
-        public string WithParentheses()
+        public string WithCurlyBraces()
         {
             if (_blockLines.Length == 0)
             {
@@ -116,6 +101,21 @@
 {{
 {codeBlock}
 }}";
+        }
+
+        private CodeBlock WithReturn()
+        {
+            if (!_expression.IsReturnable() || HasReturn())
+            {
+                return this;
+            }
+
+            return new CodeBlock(
+                _expression,
+                _blockLines
+                    .Take(_blockLines.Length - 1)
+                    .Concat(new[] { "return " + _blockLines.Last() })
+                    .ToArray());
         }
 
         private string GetCodeBlock()

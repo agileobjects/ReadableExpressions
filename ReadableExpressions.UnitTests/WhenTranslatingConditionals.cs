@@ -145,7 +145,7 @@ else if (i == 2)
         }
 
         [TestMethod]
-        public void ShouldTranslateMultipleLineIfElseStatements()
+        public void ShouldTranslateMultipleLineVoidIfElseStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var zero = Expression.Constant(0);
@@ -173,7 +173,7 @@ else
         }
 
         [TestMethod]
-        public void ShouldTranslateAMultipleLineConditional()
+        public void ShouldTranslateAMultipleLineNonVoidIfElseStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var zero = Expression.Constant(0);
@@ -182,7 +182,7 @@ else
             Expression<Action> writeGoodbye = () => Console.WriteLine("Goodbye");
             var helloThenGoodbye = Expression.Block(writeHello.Body, writeGoodbye.Body, intVariable);
             var goodbyeThenHello = Expression.Block(writeGoodbye.Body, writeHello.Body, intVariable);
-            var writeHelloAndGoodbye = Expression.Condition(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
+            var writeHelloAndGoodbye = Expression.IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
 
             var translated = writeHelloAndGoodbye.ToReadableString();
 
@@ -321,7 +321,7 @@ switch (i)
             var oneCastToLong = Expression.Convert(Expression.Constant(1), typeof(long?));
             var elseBlock = Expression.Block(writeOne.Body, writeOne.Body, oneCastToLong);
 
-            var nullOrOne = Expression.Condition(Expression.Constant(true), nullLong, elseBlock);
+            var nullOrOne = Expression.IfThenElse(Expression.Constant(true), nullLong, elseBlock);
 
             var translated = nullOrOne.ToReadableString();
 

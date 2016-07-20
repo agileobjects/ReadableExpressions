@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var body = bodyBlock.IsASingleStatement
                 ? bodyBlock.AsExpressionBody()
-                : bodyBlock.WithParentheses();
+                : bodyBlock.WithCurlyBraces();
 
             return parameters + " =>" + body;
         }

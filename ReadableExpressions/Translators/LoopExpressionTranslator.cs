@@ -15,7 +15,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var loopBodyBlock = GetTranslatedExpressionBody(loop.Body, context);
 
-            return $"while (true){loopBodyBlock.WithParentheses()}";
+            return $"while (true){loopBodyBlock.WithCurlyBraces()}";
         }
     }
 }

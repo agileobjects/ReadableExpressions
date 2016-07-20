@@ -318,5 +318,73 @@ if ((i = 10) == 5)
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAMultipleLineTernaryAssignment()
+        {
+            Expression<Action> consoleRead = () => Console.Read();
+
+            var variableOne = Expression.Variable(typeof(int), "one");
+            var variableTwo = Expression.Variable(typeof(int), "two");
+            var resultVariableOne = Expression.Variable(typeof(int), "resultOne");
+
+            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+
+            var variableOneTimesTwo = Expression.Multiply(variableOne, variableTwo);
+            var resultOneAssignment = Expression.Assign(resultVariableOne, variableOneTimesTwo);
+
+            var ifTrueBlock = Expression.Block(
+                new[] { variableOne, variableTwo, resultVariableOne },
+                variableOneAssignment,
+                variableTwoAssignment,
+                resultOneAssignment,
+                resultVariableOne);
+
+            var variableThree = Expression.Variable(typeof(int), "three");
+            var variableFour = Expression.Variable(typeof(int), "four");
+            var resultVariableTwo = Expression.Variable(typeof(int), "resultTwo");
+
+            var variableThreeAssignment = Expression.Assign(variableThree, consoleRead.Body);
+            var variableFourAssignment = Expression.Assign(variableFour, consoleRead.Body);
+
+            var variableThreeDivideFour = Expression.Divide(variableThree, variableFour);
+            var resultTwoAssignment = Expression.Assign(resultVariableTwo, variableThreeDivideFour);
+
+            var ifFalseBlock = Expression.Block(
+                new[] { variableThree, variableFour, resultVariableTwo },
+                variableThreeAssignment,
+                variableFourAssignment,
+                resultTwoAssignment,
+                resultVariableTwo);
+
+            var dateTimeNow = Expression.Property(null, typeof(DateTime), "Now");
+            var nowHour = Expression.Property(dateTimeNow, "Hour");
+            var nowHourModuloTwo = Expression.Modulo(nowHour, Expression.Constant(2));
+            var nowHourIsEven = Expression.Equal(nowHourModuloTwo, Expression.Constant(0));
+
+            var conditional = Expression.Condition(nowHourIsEven, ifTrueBlock, ifFalseBlock);
+
+            var resultVariable = Expression.Variable(typeof(int), "result");
+            var resultAssignment = Expression.Assign(resultVariable, conditional);
+
+            var translated = resultAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+result = ((DateTime.Now.Hour % 2) == 0)
+    ? {
+        var one = Console.Read();
+        var two = Console.Read();
+        var resultOne = one * two;
+        return resultOne;
+    }
+    : {
+        var three = Console.Read();
+        var four = Console.Read();
+        var resultTwo = three / four;
+        return resultTwo;
+    }";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
