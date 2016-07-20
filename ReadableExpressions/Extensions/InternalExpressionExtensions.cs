@@ -28,14 +28,21 @@
                 case ExpressionType.Constant:
                     return !expression.IsComment();
 
+                case ExpressionType.Add:
+                case ExpressionType.AddChecked:
                 case ExpressionType.Call:
                 case ExpressionType.Conditional:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:
                 case ExpressionType.Default:
+                case ExpressionType.Divide:
                 case ExpressionType.Invoke:
                 case ExpressionType.MemberAccess:
+                case ExpressionType.Multiply:
+                case ExpressionType.MultiplyChecked:
                 case ExpressionType.Parameter:
+                case ExpressionType.Subtract:
+                case ExpressionType.SubtractChecked:
                     return true;
             }
 

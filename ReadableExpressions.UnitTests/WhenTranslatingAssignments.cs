@@ -54,14 +54,42 @@
         }
 
         [TestMethod]
-        public void ShouldTranslateACheckedSubtractionAssignment()
+        public void ShouldTranslateAMultiLineCheckedSubtractionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
-            var substractOneAndAssign = Expression.SubtractAssignChecked(intVariable, Expression.Constant(1));
+
+            Expression<Action> consoleRead = () => Console.Read();
+
+            var variableOne = Expression.Variable(typeof(int), "one");
+            var variableTwo = Expression.Variable(typeof(int), "two");
+
+            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+
+            var variableOnePlusTwo = Expression.Add(variableOne, variableTwo);
+
+            var valueBlock = Expression.Block(
+                new[] { variableOne, variableTwo },
+                variableOneAssignment,
+                variableTwoAssignment,
+                variableOnePlusTwo);
+
+            var substractOneAndAssign = Expression.SubtractAssignChecked(intVariable, valueBlock);
 
             var translated = substractOneAndAssign.ToReadableString();
 
-            Assert.AreEqual("checked { i -= 1 }", translated);
+            const string EXPECTED = @"
+checked
+{
+    i -= 
+    {
+        var one = Console.Read();
+        var two = Console.Read();
+        return (one + two);
+    }
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]
