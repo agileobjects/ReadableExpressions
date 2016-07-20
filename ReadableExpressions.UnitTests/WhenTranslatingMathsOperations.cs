@@ -96,20 +96,38 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [TestMethod]
         public void ShouldTranslateACheckedMultiplicationExpression()
         {
-            var intParameter1 = Expression.Parameter(typeof(int), "a");
-            var intParameter2 = Expression.Parameter(typeof(int), "b");
-            var checkedMultiplication = Expression.MultiplyChecked(intParameter1, intParameter2);
+            Expression<Action> consoleRead = () => Console.Read();
 
-            var checkedMultiplicationLambda = Expression.Lambda<Func<int, int, int>>(
-                checkedMultiplication,
-                intParameter1,
-                intParameter2);
+            var variableOne = Expression.Variable(typeof(int), "one");
+            var variableTwo = Expression.Variable(typeof(int), "two");
 
-            //Expression<Func<int, int, int>> ass = (a, b) => checked(a * b);
+            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
 
-            var translated = checkedMultiplicationLambda.ToReadableString();
+            var variableOnePlusTwo = Expression.Add(variableOne, variableTwo);
 
-            Assert.AreEqual("(a, b) => checked(a * b)", translated);
+            var valueOneBlock = Expression.Block(
+                new[] { variableOne, variableTwo },
+                variableOneAssignment,
+                variableTwoAssignment,
+                variableOnePlusTwo);
+
+            var intVariable = Expression.Parameter(typeof(int), "i");
+            var checkedMultiplication = Expression.MultiplyChecked(valueOneBlock, intVariable);
+
+            var translated = checkedMultiplication.ToReadableString();
+
+            const string EXPECTED = @"
+checked
+{
+    {
+        var one = Console.Read();
+        var two = Console.Read();
+        return (one + two);
+    } * i
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]

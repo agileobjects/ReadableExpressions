@@ -67,24 +67,31 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : Translate(binary, context);
         }
 
-        private static string Translate(BinaryExpression binary, TranslationContext context)
+        private string Translate(BinaryExpression binary, TranslationContext context)
         {
-            var left = GetTranslation(binary.Left, context);
+            var left = TranslateOperand(binary.Left, context);
             var @operator = _operatorsByNodeType[binary.NodeType];
-            var right = GetTranslation(binary.Right, context);
+            var right = TranslateOperand(binary.Right, context);
 
             var operation = $"{left} {@operator} {right}";
 
             return AdjustForCheckedOperatorIfAppropriate(binary.NodeType, operation);
         }
 
-        private static string GetTranslation(Expression expression, TranslationContext context)
+        private string TranslateOperand(Expression expression, TranslationContext context)
         {
+            var operand = GetTranslatedExpressionBody(expression, context);
+
+            if (!operand.IsASingleStatement)
+            {
+                return operand.WithCurlyBraces();
+            }
+
             var translation = context.GetTranslation(expression);
 
             if (expression.IsAssignment() && !translation.HasSurroundingParentheses())
             {
-                translation = translation.WithSurroundingParentheses();
+                return translation.WithSurroundingParentheses();
             }
 
             return translation;
@@ -104,14 +111,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return $@"
 checked
 {{
-{operation.Indent()}
+{operation.TrimStart().Indent()}
 }}".TrimStart();
             }
 
             return $"checked({operation})";
         }
 
-        private static string TranslateAddition(BinaryExpression binary, TranslationContext context)
+        private string TranslateAddition(BinaryExpression binary, TranslationContext context)
         {
             if ((binary.Left.Type != typeof(string)) && (binary.Right.Type != typeof(string)))
             {
@@ -157,7 +164,7 @@ checked
         private string Translate(StandaloneBoolean standalone, TranslationContext context)
         {
             return standalone.IsComparisonToTrue
-                ? GetTranslation(standalone.Boolean, context)
+                ? TranslateOperand(standalone.Boolean, context)
                 : _negationTranslator.TranslateNot(standalone.Boolean, context);
         }
 

@@ -73,21 +73,7 @@ namespace AgileObjects.ReadableExpressions
 
                 var coreExpression = GetCoreExpression(expression);
 
-                if (coreExpression.IsAssignment())
-                {
-                    analyzer.Visit(coreExpression);
-                    return analyzer;
-                }
-
-                switch (coreExpression.NodeType)
-                {
-                    case ExpressionType.Block:
-                    case ExpressionType.Call:
-                    case ExpressionType.Conditional:
-                        analyzer.Visit(coreExpression);
-                        break;
-                }
-
+                analyzer.Visit(coreExpression);
                 return analyzer;
             }
 
