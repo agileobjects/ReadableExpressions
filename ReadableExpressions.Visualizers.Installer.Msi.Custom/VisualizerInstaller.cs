@@ -47,6 +47,7 @@
             {
                 return streamReader
                     .ReadToEnd()
+                    .Replace("$version$", _thisAssemblyVersion.FileVersion)
                     .Replace("$author$", _thisAssemblyVersion.CompanyName);
             }
         }
