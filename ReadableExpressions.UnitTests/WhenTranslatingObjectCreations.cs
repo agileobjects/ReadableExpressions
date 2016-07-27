@@ -108,6 +108,24 @@ new ContactDetails
         }
 
         [TestMethod]
+        public void ShouldTranslateANewDictionaryExpressionWithAdditions()
+        {
+            Expression<Func<Dictionary<int, decimal>>> createList =
+                () => new Dictionary<int, decimal> { { 1, 1.0m }, { 2, 2.0m } };
+
+            var translated = createList.Body.ToReadableString();
+
+            const string EXPECTED = @"
+new Dictionary<int, decimal>
+{
+    { 1, 1m },
+    { 2, 2m }
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANewArrayExpression()
         {
             Expression<Func<int[]>> createArray = () => new int[5];

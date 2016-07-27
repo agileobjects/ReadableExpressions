@@ -28,10 +28,9 @@
                             return context.Translate(initialisation.Arguments.First());
                         }
 
-                        var listAddCall = _methodCallTranslator
-                            .GetMethodCall(initialisation.AddMethod, initialisation.Arguments, context);
+                        var additionArguments = string.Join(", ", initialisation.Arguments.Select(context.Translate));
 
-                        return listAddCall;
+                        return "{ " + additionArguments + " }";
                     });
             }
         }
