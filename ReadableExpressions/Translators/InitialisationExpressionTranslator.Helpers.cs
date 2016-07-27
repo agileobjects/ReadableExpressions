@@ -39,7 +39,7 @@
             protected virtual string GetNewExpressionString(TExpression initialisation, TranslationContext context)
             {
                 var newExpression = _newExpressionFactory.Invoke(initialisation);
-                var newExpressionString = context.GetTranslation(newExpression);
+                var newExpressionString = context.Translate(newExpression);
 
                 if (ConstructorIsParameterless(newExpression))
                 {

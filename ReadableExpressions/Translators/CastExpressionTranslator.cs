@@ -36,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (expression.Type == typeof(object))
             {
                 // Don't bother showing a boxing operation:
-                return context.GetTranslation(operand);
+                return context.Translate(operand);
             }
 
             MethodCallExpression methodCall;
@@ -50,7 +50,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 var methodSubject = subjectMethod.IsStatic
                     ? subjectMethod.DeclaringType.GetFriendlyName()
-                    : context.GetTranslation(methodCall.Arguments.ElementAtOrDefault(1));
+                    : context.Translate(methodCall.Arguments.ElementAtOrDefault(1));
 
                 return methodSubject + "." + subjectMethod.Name;
             }
@@ -62,7 +62,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var cast = (UnaryExpression)expression;
             var typeName = cast.Type.GetFriendlyName();
-            var subject = context.GetTranslation(cast.Operand);
+            var subject = context.Translate(cast.Operand);
 
             if (cast.Operand.NodeType == ExpressionType.Assign)
             {
@@ -76,7 +76,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var typeAs = (UnaryExpression)expression;
             var typeName = typeAs.Type.GetFriendlyName();
-            var subject = context.GetTranslation(typeAs.Operand);
+            var subject = context.Translate(typeAs.Operand);
 
             return $"({subject} as {typeName})";
         }
@@ -85,7 +85,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var typeIs = (TypeBinaryExpression)expression;
             var typeName = typeIs.TypeOperand.GetFriendlyName();
-            var subject = context.GetTranslation(typeIs.Expression);
+            var subject = context.Translate(typeIs.Expression);
 
             return $"({subject} is {typeName})";
         }

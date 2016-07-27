@@ -15,17 +15,17 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = GetTest(context.GetTranslation(conditional.Test));
+            var test = GetTest(context.Translate(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            var ifTrueBlock = GetTranslatedExpressionBody(conditional.IfTrue, context);
+            var ifTrueBlock = context.TranslateCodeBlock(conditional.IfTrue);
 
             if (hasNoElseCondition)
             {
                 return IfStatement(test, ifTrueBlock.WithCurlyBraces());
             }
 
-            var ifFalseBlock = GetTranslatedExpressionBody(conditional.IfFalse, context);
+            var ifFalseBlock = context.TranslateCodeBlock(conditional.IfFalse);
 
             if (IsTernary(conditional))
             {

@@ -5,6 +5,7 @@ namespace AgileObjects.ReadableExpressions
     using System.Linq.Expressions;
     using Extensions;
     using Translators;
+    using Translators.Formatting;
 
     public class TranslationContext
     {
@@ -24,9 +25,46 @@ namespace AgileObjects.ReadableExpressions
 
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
 
-        public string GetTranslation(Expression expression)
+        public string Translate(Expression expression)
         {
             return _globalTranslator.Invoke(expression, this);
+        }
+
+        internal CodeBlock TranslateCodeBlock(Expression expression)
+        {
+            return TranslateBlock(expression as BlockExpression) ?? TranslateSingle(expression);
+        }
+
+        private CodeBlock TranslateBlock(BlockExpression block)
+        {
+            if (block == null)
+            {
+                return null;
+            }
+
+            if (block.Expressions.Count == 1)
+            {
+                return TranslateSingle(block);
+            }
+
+            var blockString = Translate(block);
+            var blockLines = blockString.SplitToLines();
+
+            return new CodeBlock(block, blockLines);
+        }
+
+        private CodeBlock TranslateSingle(Expression body)
+        {
+            var bodyString = Translate(body).WithoutSurroundingParentheses(body);
+
+            return new CodeBlock(body, bodyString);
+        }
+
+        internal ParameterSet TranslateParameters(
+            IEnumerable<Expression> parameters,
+            IMethodInfo method = null)
+        {
+            return new ParameterSet(method, parameters, this);
         }
 
         public bool IsNotJoinedAssignment(Expression expression)

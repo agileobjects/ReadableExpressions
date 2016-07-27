@@ -17,13 +17,13 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var switchStatement = (SwitchExpression)expression;
 
-            var switchValue = context.GetTranslation(switchStatement.SwitchValue);
+            var switchValue = context.Translate(switchStatement.SwitchValue);
 
             var switchCases = switchStatement.Cases
                 .Select(@case => new
                 {
-                    Tests = @case.TestValues.Select(value => $"case {context.GetTranslation(value)}:"),
-                    BodyBlock = GetTranslatedExpressionBody(@case.Body, context)
+                    Tests = @case.TestValues.Select(value => $"case {context.Translate(value)}:"),
+                    BodyBlock = context.TranslateCodeBlock(@case.Body)
                 })
                 .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
 
@@ -68,9 +68,9 @@ switch ({switchValue})
             }
         }
 
-        private string GetDefaultCase(Expression defaultBody, TranslationContext context)
+        private static string GetDefaultCase(Expression defaultBody, TranslationContext context)
         {
-            var defaultCaseBody = GetTranslatedExpressionBody(defaultBody, context);
+            var defaultCaseBody = context.TranslateCodeBlock(defaultBody);
 
             return GetCase(defaultCaseBody, "default:");
         }

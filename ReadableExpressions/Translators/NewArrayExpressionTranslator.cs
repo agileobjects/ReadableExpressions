@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var bounds = string.Join(
                 "][",
-                newArray.Expressions.Select(context.GetTranslation));
+                newArray.Expressions.Select(context.Translate));
 
             return $"new {arrayTypeName}[{bounds}]";
         }

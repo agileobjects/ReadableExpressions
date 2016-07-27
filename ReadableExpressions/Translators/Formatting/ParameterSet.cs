@@ -26,7 +26,7 @@
             _argumentTranslators = GetArgumentTranslators(
                 method,
                 arguments,
-                context.GetTranslation);
+                context.Translate);
         }
 
         private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)

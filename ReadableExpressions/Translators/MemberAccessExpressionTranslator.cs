@@ -29,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return SubjectIsCapturedInstance(memberExpression)
                 ? null
-                : context.GetTranslation(memberExpression.Expression);
+                : context.Translate(memberExpression.Expression);
         }
 
         private static bool SubjectIsCapturedInstance(MemberExpression memberExpression)

@@ -62,7 +62,7 @@
 
         public bool HasReturn()
         {
-            return _blockLines.Last().StartsWith("return ", StringComparison.Ordinal) ||
+            return _blockLines.Last().SplitToLines().Last().StartsWith("return ", StringComparison.Ordinal) ||
                 ExpressionHasReturn(_expression);
         }
 

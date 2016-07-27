@@ -13,7 +13,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var loop = (LoopExpression)expression;
 
-            var loopBodyBlock = GetTranslatedExpressionBody(loop.Body, context);
+            var loopBodyBlock = context.TranslateCodeBlock(loop.Body);
 
             return $"while (true){loopBodyBlock.WithCurlyBraces()}";
         }

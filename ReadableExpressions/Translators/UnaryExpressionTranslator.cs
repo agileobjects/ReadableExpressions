@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse - Operand 
             // is null when using Expression.Rethrow():
             var operand = (unary.Operand != null)
-                ? context.GetTranslation(unary.Operand) : null;
+                ? context.Translate(unary.Operand) : null;
 
             return _operatorsByNodeType[expression.NodeType].Invoke(operand);
         }

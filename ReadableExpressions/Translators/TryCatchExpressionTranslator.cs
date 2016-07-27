@@ -16,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var tryCatchFinally = (TryExpression)expression;
 
-            var tryBody = GetTranslatedExpressionBody(tryCatchFinally.Body, context);
+            var tryBody = context.TranslateCodeBlock(tryCatchFinally.Body);
             var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(h => GetCatchBlock(h, context)));
             var faultBlock = GetFaultBlock(tryCatchFinally.Fault, context);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally, context);
@@ -28,9 +28,9 @@ try{tryBody.WithCurlyBraces()}
             return tryCatchFinallyBlock.Trim();
         }
 
-        private string GetCatchBlock(CatchBlock catchBlock, TranslationContext context)
+        private static string GetCatchBlock(CatchBlock catchBlock, TranslationContext context)
         {
-            var catchBody = GetTranslatedExpressionBody(catchBlock.Body, context);
+            var catchBody = context.TranslateCodeBlock(catchBlock.Body);
 
             var exceptionClause = GetExceptionClause(catchBlock, context);
 
@@ -53,7 +53,7 @@ try{tryBody.WithCurlyBraces()}
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
                 var filter = (catchBlock.Filter != null)
-                    ? " when " + context.GetTranslation(catchBlock.Filter)
+                    ? " when " + context.Translate(catchBlock.Filter)
                     : null;
 
                 return $" ({exceptionTypeName} {catchBlock.Variable.Name})" + filter;
@@ -64,24 +64,24 @@ try{tryBody.WithCurlyBraces()}
                 : null;
         }
 
-        private string GetFaultBlock(Expression faultBlock, TranslationContext context)
+        private static string GetFaultBlock(Expression faultBlock, TranslationContext context)
         {
             return GetHandlerBlock(faultBlock, "fault", context);
         }
 
-        private string GetFinallyBlock(Expression finallyBlock, TranslationContext context)
+        private static string GetFinallyBlock(Expression finallyBlock, TranslationContext context)
         {
             return GetHandlerBlock(finallyBlock, "finally", context);
         }
 
-        private string GetHandlerBlock(Expression block, string keyword, TranslationContext context)
+        private static string GetHandlerBlock(Expression block, string keyword, TranslationContext context)
         {
             if (block == null)
             {
                 return null;
             }
 
-            var blockBody = GetTranslatedExpressionBody(block, context).WithCurlyBraces();
+            var blockBody = context.TranslateCodeBlock(block).WithCurlyBraces();
 
             return keyword + blockBody;
         }

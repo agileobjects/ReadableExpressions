@@ -16,9 +16,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var comment = ReadableExpression.Comment("Quoted to induce a closure:");
             var quotedLambdaBlock = Expression.Block(comment, quote.Operand);
-            var translatedLambda = GetTranslatedExpressionBody(quotedLambdaBlock, context);
 
-            return Environment.NewLine + translatedLambda.Indented().WithoutCurlyBraces();
+            var translatedLambda = context
+                .TranslateCodeBlock(quotedLambdaBlock)
+                .Indented()
+                .WithoutCurlyBraces();
+
+            return Environment.NewLine + translatedLambda;
         }
     }
 }

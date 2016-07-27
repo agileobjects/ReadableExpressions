@@ -156,7 +156,7 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            return context.GetTranslation(value);
+            return context.Translate(value);
         }
     }
 }

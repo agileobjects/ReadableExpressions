@@ -414,5 +414,42 @@ result = ((DateTime.Now.Hour % 2) == 0)
     }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/7
+        [TestMethod]
+        public void ShouldTranslateANestedBlockAssignment()
+        {
+            Expression<Action> consoleRead = () => Console.Read();
+
+            var variableOne = Expression.Variable(typeof(int), "one");
+            var variableTwo = Expression.Variable(typeof(int), "two");
+
+            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+
+            var variableOneMinusTwo = Expression.Subtract(variableOne, variableTwo);
+
+            var valueBlock = Expression.Block(
+                new[] { variableOne, variableTwo },
+                variableOneAssignment,
+                variableTwoAssignment,
+                variableOneMinusTwo);
+
+            var wrappingBlock = Expression.Block(valueBlock);
+
+            var resultVariable = Expression.Variable(typeof(int), "result");
+            var resultOneAssignment = Expression.Assign(resultVariable, wrappingBlock);
+
+            var translated = resultOneAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+result = 
+{
+    var one = Console.Read();
+    var two = Console.Read();
+    return (one - two);
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }

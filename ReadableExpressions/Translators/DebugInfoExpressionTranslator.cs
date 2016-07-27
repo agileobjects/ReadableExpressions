@@ -34,7 +34,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var debugInfoComment = ReadableExpression.Comment(debugInfoText);
 
-            return context.GetTranslation(debugInfoComment);
+            return context.Translate(debugInfoComment);
         }
     }
 }

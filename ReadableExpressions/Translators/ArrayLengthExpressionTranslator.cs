@@ -11,7 +11,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, TranslationContext context)
         {
-            var arrayAccess = context.GetTranslation(((UnaryExpression)expression).Operand);
+            var arrayAccess = context.Translate(((UnaryExpression)expression).Operand);
 
             return arrayAccess + ".Length";
         }

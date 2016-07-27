@@ -41,7 +41,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         public override string Translate(Expression expression, TranslationContext context)
         {
             var assignment = (BinaryExpression)expression;
-            var target = context.GetTranslation(assignment.Left);
+            var target = context.Translate(assignment.Left);
 
             return GetAssignment(target, expression.NodeType, assignment.Right, context);
         }
@@ -65,9 +65,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return assignment;
         }
 
-        private string GetValueTranslation(Expression value, TranslationContext context)
+        private static string GetValueTranslation(Expression value, TranslationContext context)
         {
-            var valueBlock = GetTranslatedExpressionBody(value, context);
+            var valueBlock = context.TranslateCodeBlock(value);
 
             if (valueBlock.IsASingleStatement)
             {

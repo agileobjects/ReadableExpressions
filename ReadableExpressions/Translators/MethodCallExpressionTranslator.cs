@@ -62,7 +62,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             arguments = methodCall.Arguments;
 
-            return context.GetTranslation(methodCall.Object);
+            return context.Translate(methodCall.Object);
         }
 
         private static string GetStaticMethodCallSubject(
@@ -75,7 +75,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = methodCall.Arguments.First();
                 arguments = methodCall.Arguments.Skip(1).ToArray();
 
-                return context.GetTranslation(subject);
+                return context.Translate(subject);
             }
 
             arguments = methodCall.Arguments;
@@ -126,7 +126,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Expression> arguments,
             TranslationContext context)
         {
-            var parametersString = GetTranslatedParameters(arguments, context, method).WithParentheses();
+            var parametersString = context.TranslateParameters(arguments, method).WithParentheses();
             var genericArguments = GetGenericArgumentsIfNecessary(method);
 
             return method.Name + genericArguments + parametersString;
@@ -239,7 +239,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             public override string Translate(Expression expression, TranslationContext context)
             {
                 var invocation = (InvocationExpression)expression;
-                var invocationSubject = context.GetTranslation(invocation.Expression);
+                var invocationSubject = context.Translate(invocation.Expression);
 
                 if (invocation.Expression.NodeType == ExpressionType.Lambda)
                 {

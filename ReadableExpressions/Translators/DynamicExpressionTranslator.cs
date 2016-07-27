@@ -112,7 +112,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments, TranslationContext context)
             {
-                var subject = context.GetTranslation(arguments.First());
+                var subject = context.Translate(arguments.First());
                 var memberName = match.Groups["MemberName"].Value;
 
                 return _memberAccessTranslator.GetMemberAccess(subject, memberName);
@@ -164,7 +164,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 out string translated)
             {
                 var subjectObject = dynamicExpression.Arguments.First();
-                var subject = context.GetTranslation(subjectObject);
+                var subject = context.Translate(subjectObject);
                 var methodName = match.Groups["MethodName"].Value;
                 var method = subjectObject.Type.GetMethod(methodName);
 

@@ -43,7 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return "return;";
             }
 
-            var value = context.GetTranslation(gotoExpression.Value);
+            var value = context.Translate(gotoExpression.Value);
 
             return $"return {value}";
         }

@@ -67,7 +67,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : Translate(binary, context);
         }
 
-        private string Translate(BinaryExpression binary, TranslationContext context)
+        private static string Translate(BinaryExpression binary, TranslationContext context)
         {
             var left = TranslateOperand(binary.Left, context);
             var @operator = _operatorsByNodeType[binary.NodeType];
@@ -78,16 +78,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             return AdjustForCheckedOperatorIfAppropriate(binary.NodeType, operation);
         }
 
-        private string TranslateOperand(Expression expression, TranslationContext context)
+        private static string TranslateOperand(Expression expression, TranslationContext context)
         {
-            var operand = GetTranslatedExpressionBody(expression, context);
+            var operand = context.TranslateCodeBlock(expression);
 
             if (!operand.IsASingleStatement)
             {
                 return operand.WithCurlyBraces();
             }
 
-            var translation = context.GetTranslation(expression);
+            var translation = context.Translate(expression);
 
             if (expression.IsAssignment() && !translation.HasSurroundingParentheses())
             {

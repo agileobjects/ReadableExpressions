@@ -25,7 +25,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var reducedTypeEqualExpression = (Expression)_reduceTypeEqualMethod.Invoke(expression, null);
-            var translated = context.GetTranslation(reducedTypeEqualExpression).Unterminated();
+            var translated = context.Translate(reducedTypeEqualExpression).Unterminated();
 
             return translated;
         }
@@ -33,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string FallbackTranslation(Expression expression, TranslationContext context)
         {
             var typeBinary = (TypeBinaryExpression)expression;
-            var operand = context.GetTranslation(typeBinary.Expression);
+            var operand = context.Translate(typeBinary.Expression);
 
             return $"({operand} TypeOf {typeBinary.TypeOperand.GetFriendlyName()})";
         }

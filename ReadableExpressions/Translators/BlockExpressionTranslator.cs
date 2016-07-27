@@ -64,7 +64,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTerminatedStatementOrNull(Expression expression, TranslationContext context)
         {
-            var translation = context.GetTranslation(expression);
+            var translation = context.Translate(expression);
 
             if (translation == null)
             {

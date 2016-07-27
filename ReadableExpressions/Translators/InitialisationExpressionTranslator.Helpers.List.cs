@@ -25,7 +25,7 @@
                     {
                         if (initialisation.Arguments.Count == 1)
                         {
-                            return context.GetTranslation(initialisation.Arguments.First());
+                            return context.Translate(initialisation.Arguments.First());
                         }
 
                         var listAddCall = _methodCallTranslator

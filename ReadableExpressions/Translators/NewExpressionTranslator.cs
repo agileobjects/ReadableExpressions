@@ -21,7 +21,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var typeName = (newExpression.Type == typeof(object)) ? "Object" : newExpression.Type.GetFriendlyName();
-            var parameters = GetTranslatedParameters(newExpression.Arguments, context).WithParentheses();
+            var parameters = context.TranslateParameters(newExpression.Arguments).WithParentheses();
 
             return "new " + typeName + parameters;
         }
@@ -31,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var arguments = newExpression
                 .Arguments
-                .Select((arg, i) => constructorParameters[i].Name + " = " + context.GetTranslation(arg));
+                .Select((arg, i) => constructorParameters[i].Name + " = " + context.Translate(arg));
 
             var argumentsString = string.Join(", ", arguments);
 

@@ -13,9 +13,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var lambda = (LambdaExpression)expression;
 
-            var parameters = GetTranslatedParameters(lambda.Parameters, context).WithParenthesesIfNecessary();
-
-            var bodyBlock = GetTranslatedExpressionBody(lambda.Body, context);
+            var parameters = context.TranslateParameters(lambda.Parameters).WithParenthesesIfNecessary();
+            var bodyBlock = context.TranslateCodeBlock(lambda.Body);
 
             var body = bodyBlock.IsASingleStatement
                 ? bodyBlock.AsExpressionBody()

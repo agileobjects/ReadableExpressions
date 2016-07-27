@@ -40,7 +40,7 @@
             private static string TranslateAssignmentBinding(MemberBinding binding, TranslationContext context)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = context.GetTranslation(assignment.Expression);
+                var value = context.Translate(assignment.Expression);
 
                 return assignment.Member.Name + " = " + value;
             }
@@ -61,7 +61,7 @@
                 var listInitialisers = listBinding
                     .Initializers
                     .Select(init => IsStandardAddMethod(init)
-                        ? context.GetTranslation(init.Arguments.First())
+                        ? context.Translate(init.Arguments.First())
                         : _methodCallTranslator.GetMethodCall(init.AddMethod, init.Arguments, context))
                     .ToArray();
 

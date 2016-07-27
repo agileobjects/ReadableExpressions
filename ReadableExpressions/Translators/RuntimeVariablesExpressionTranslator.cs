@@ -13,7 +13,8 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var runtimeVariables = (RuntimeVariablesExpression)expression;
 
-            var translated = GetTranslatedParameters(runtimeVariables.Variables, context)
+            var translated = context
+                .TranslateParameters(runtimeVariables.Variables)
                 .WithParenthesesIfNecessary();
 
             return translated;
