@@ -460,6 +460,16 @@ Enumerable
         }
 
         [TestMethod]
+        public void ShouldUseFriendlyNamesForListsOfNestedTypes()
+        {
+            var newNestedTypeList = Expression.New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
+
+            var translated = newNestedTypeList.ToReadableString();
+
+            Assert.AreEqual("new List<OuterClass.InnerClass>()", translated);
+        }
+
+        [TestMethod]
         public void ShouldUseFriendlyNamesForGenericNestedTypes()
         {
             var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
