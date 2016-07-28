@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Globalization;
@@ -326,6 +327,23 @@
 
             Assert.AreEqual("ip.RefGet(3, ref value)", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateACustomEnumerableAddInitialiser()
+        {
+            Expression<Func<int, int, int, CustomAdder>> customAdder =
+                (intOne, intTwo, intThree) => new CustomAdder { { intOne, intTwo, intThree } };
+
+            var translated = customAdder.Body.ToReadableString();
+
+            const string EXPECTED = @"
+new CustomAdder
+{
+    { intOne, intTwo, intThree }
+}";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 
     #region Helper Classes
@@ -406,6 +424,18 @@
     {
         public static void DoSomething()
         {
+        }
+    }
+
+    internal class CustomAdder : IEnumerable
+    {
+        public void Add(int intOne, int intTwo, int intThree)
+        {
+        }
+
+        public IEnumerator GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 

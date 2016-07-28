@@ -114,14 +114,6 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         internal string GetMethodCall(
-            MethodInfo method,
-            IEnumerable<Expression> arguments,
-            TranslationContext context)
-        {
-            return GetMethodCall(new BclMethodInfoWrapper(method), arguments, context);
-        }
-
-        private string GetMethodCall(
             IMethodInfo method,
             IEnumerable<Expression> arguments,
             TranslationContext context)
