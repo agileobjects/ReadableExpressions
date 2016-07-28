@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq.Expressions;
     using System.Text.RegularExpressions;
     using Extensions;
@@ -54,7 +55,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                     {
                         return true;
                     }
-                    break;
+
+                    translation = TranslateDateTime((DateTime)constant.Value);
+                    return true;
 
                 case (TypeCode)2:
                     // TypeCode.DBNull (2) is unavailable in a PCL, but can
@@ -78,7 +81,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     if (IsType(constant, out translation) ||
                         IsFunc(constant, out translation) ||
                         IsDefault<Guid>(constant, out translation) ||
-                        IsDefault<TimeSpan>(constant, out translation))
+                        IsTimeSpan(constant, out translation))
                     {
                         return true;
                     }
@@ -92,6 +95,115 @@ namespace AgileObjects.ReadableExpressions.Translators
                     var stringValue = (string)constant.Value;
                     translation = stringValue.IsComment() ? stringValue : $"\"{stringValue}\"";
                     return true;
+            }
+
+            translation = null;
+            return false;
+        }
+
+        private static string TranslateDateTime(DateTime value)
+        {
+            var month = PadToTwoDigits(value.Month);
+            var day = PadToTwoDigits(value.Day);
+            var hour = PadToTwoDigits(value.Hour);
+            var minute = PadToTwoDigits(value.Minute);
+            var second = PadToTwoDigits(value.Second);
+
+            if (value.Millisecond != 0)
+            {
+                return $"new DateTime({value.Year}, {month}, {day}, {hour}, {minute}, {second}, {value.Millisecond})";
+            }
+
+            if ((value.Hour == 0) && (value.Minute == 0) && (value.Second == 0))
+            {
+                return $"new DateTime({value.Year}, {month}, {day})";
+            }
+
+            return $"new DateTime({value.Year}, {month}, {day}, {hour}, {minute}, {second})";
+        }
+
+        private static string PadToTwoDigits(int value)
+        {
+            return value.ToString(CultureInfo.InvariantCulture).PadLeft(2, '0');
+        }
+
+        private static bool IsTimeSpan(ConstantExpression constant, out string translation)
+        {
+            if (constant.Type != typeof(TimeSpan))
+            {
+                translation = null;
+                return false;
+            }
+
+            if (IsDefault<TimeSpan>(constant, out translation))
+            {
+                return true;
+            }
+
+            var timeSpan = (TimeSpan)constant.Value;
+
+            if (TryGetFactoryMethodCall(timeSpan.Days, timeSpan.TotalDays, "Days", out translation))
+            {
+                return true;
+            }
+
+            if (TryGetFactoryMethodCall(timeSpan.Hours, timeSpan.TotalHours, "Hours", out translation))
+            {
+                return true;
+            }
+
+            if (TryGetFactoryMethodCall(timeSpan.Minutes, timeSpan.TotalMinutes, "Minutes", out translation))
+            {
+                return true;
+            }
+
+            if (TryGetFactoryMethodCall(timeSpan.Seconds, timeSpan.TotalSeconds, "Seconds", out translation))
+            {
+                return true;
+            }
+
+            if (TryGetFactoryMethodCall(timeSpan.Milliseconds, timeSpan.TotalMilliseconds, "Milliseconds", out translation))
+            {
+                return true;
+            }
+
+            if (timeSpan.Days != 0)
+            {
+                if (timeSpan.Milliseconds != 0)
+                {
+                    translation = $"new TimeSpan({timeSpan.Days}, {timeSpan.Hours}, {timeSpan.Minutes}, {timeSpan.Seconds}, {timeSpan.Milliseconds})";
+                    return true;
+                }
+
+                translation = $"new TimeSpan({timeSpan.Days}, {timeSpan.Hours}, {timeSpan.Minutes}, {timeSpan.Seconds})";
+                return true;
+            }
+
+            if ((timeSpan.Hours > 0) || (timeSpan.Minutes > 0) || (timeSpan.Seconds > 0))
+            {
+                translation = $"new TimeSpan({timeSpan.Hours}, {timeSpan.Minutes}, {timeSpan.Seconds})";
+                return true;
+            }
+
+            translation = $"TimeSpan.FromTicks({Math.Floor(timeSpan.TotalMilliseconds * 10000)})";
+            return true;
+        }
+
+        private static bool TryGetFactoryMethodCall(
+            long value,
+            double totalValue,
+            string valueName,
+            out string translation)
+        {
+            if (value != 0)
+            {
+                // ReSharper disable CompareOfFloatsByEqualityOperator
+                if (value == totalValue)
+                {
+                    translation = "TimeSpan.From" + valueName + "(" + value + ")";
+                    return true;
+                }
+                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
 
             translation = null;

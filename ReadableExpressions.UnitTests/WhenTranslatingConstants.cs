@@ -154,6 +154,36 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateADateTimeWithNoTime()
+        {
+            var dateConstant = Expression.Constant(new DateTime(2015, 07, 02));
+
+            var translated = dateConstant.ToReadableString();
+
+            Assert.AreEqual("new DateTime(2015, 07, 02)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADateTimeWithATime()
+        {
+            var dateConstant = Expression.Constant(new DateTime(2016, 08, 01, 10, 23, 45));
+
+            var translated = dateConstant.ToReadableString();
+
+            Assert.AreEqual("new DateTime(2016, 08, 01, 10, 23, 45)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADateTimeWithMilliseconds()
+        {
+            var dateConstant = Expression.Constant(new DateTime(2017, 01, 10, 00, 00, 00, 123));
+
+            var translated = dateConstant.ToReadableString();
+
+            Assert.AreEqual("new DateTime(2017, 01, 10, 00, 00, 00, 123)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateADefaultTimeSpan()
         {
             var timeSpanConstant = Expression.Constant(default(TimeSpan));
@@ -161,6 +191,96 @@
             var translated = timeSpanConstant.ToReadableString();
 
             Assert.AreEqual("default(TimeSpan)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfDays()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromDays(1));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromDays(1)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfHours()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromHours(2));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromHours(2)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfMinutes()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromMinutes(10));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromMinutes(10)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfSeconds()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromSeconds(58));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromSeconds(58)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfMilliseconds()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromMilliseconds(923));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromMilliseconds(923)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateATimeSpanOfTicks()
+        {
+            var timeSpanConstant = Expression.Constant(TimeSpan.FromTicks(428));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("TimeSpan.FromTicks(428)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADayTimeSpanWithMilliseconds()
+        {
+            var timeSpanConstant = Expression.Constant(new TimeSpan(2, 3, 4, 5, 6));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("new TimeSpan(2, 3, 4, 5, 6)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADayTimeSpanWithoutMilliseconds()
+        {
+            var timeSpanConstant = Expression.Constant(new TimeSpan(3, 4, 5, 6));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("new TimeSpan(3, 4, 5, 6)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnHourTimeSpan()
+        {
+            var timeSpanConstant = Expression.Constant(new TimeSpan(6, 5, 4));
+
+            var translated = timeSpanConstant.ToReadableString();
+
+            Assert.AreEqual("new TimeSpan(6, 5, 4)", translated);
         }
 
         [TestMethod]
@@ -233,6 +353,16 @@
             var translated = setParamToDbNull.ToReadableString();
 
             Assert.AreEqual("param.Value = DBNull.Value", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAnObjectConstant()
+        {
+            var objectConstant = Expression.Constant(123, typeof(object));
+
+            var translated = objectConstant.ToReadableString();
+
+            Assert.AreEqual("123", translated);
         }
     }
 
