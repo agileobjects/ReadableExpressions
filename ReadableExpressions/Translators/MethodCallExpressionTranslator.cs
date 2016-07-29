@@ -145,7 +145,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var argumentNames = method
                 .GetGenericArguments()
-                .Select(a => a.GetFriendlyName());
+                .Select(a => a.GetFriendlyName())
+                .Where(name => name != null)
+                .ToArray();
+
+            if (!argumentNames.Any())
+            {
+                return null;
+            }
 
             return $"<{string.Join(", ", argumentNames)}>";
         }

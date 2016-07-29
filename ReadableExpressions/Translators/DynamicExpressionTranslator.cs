@@ -167,19 +167,89 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subject = context.Translate(subjectObject);
                 var methodName = match.Groups["MethodName"].Value;
                 var method = subjectObject.Type.GetMethod(methodName);
+                var methodArguments = dynamicExpression.Arguments.Skip(1).ToArray();
 
-                var methodInfo = (method != null)
-                    ? new BclMethodInfoWrapper(method)
-                    : (IMethodInfo)new MissingMethodInfo(methodName);
+                var methodInfo = GetMethodInfo(
+                    methodName,
+                    method,
+                    methodArguments,
+                    dynamicExpression.Type);
 
                 translated = _methodCallTranslator.GetMethodCall(
                     subject,
                     methodInfo,
-                    dynamicExpression.Arguments.Skip(1).ToArray(),
+                    methodArguments,
                     dynamicExpression,
                     context);
 
                 return true;
+            }
+
+            private static IMethodInfo GetMethodInfo(
+                string methodName,
+                MethodInfo method,
+                Expression[] methodArguments,
+                Type methodReturnType)
+            {
+                if (method == null)
+                {
+                    return new MissingMethodInfo(methodName);
+                }
+
+                return new BclMethodInfoWrapper(
+                    method,
+                    GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
+            }
+
+            private static IEnumerable<Type> GetGenericArgumentsOrNull(
+                MethodInfo method,
+                Expression[] methodArguments,
+                Type methodReturnType)
+            {
+                if (!method.IsGenericMethod)
+                {
+                    return null;
+                }
+
+                var genericParameterTypes = method.GetGenericArguments();
+
+                var methodParameters = method
+                    .GetParameters()
+                    .Select((p, i) => new { Index = i, Parameter = p })
+                    .ToArray();
+
+                var genericArguments = new Type[genericParameterTypes.Length];
+
+                for (var i = 0; i < genericParameterTypes.Length; i++)
+                {
+                    var genericParameterType = genericParameterTypes[i];
+
+                    if (genericParameterType == method.ReturnType)
+                    {
+                        genericArguments[i] = methodReturnType;
+                        continue;
+                    }
+
+                    var matchingMethodParameter = methodParameters
+                        .FirstOrDefault(p => p.Parameter.ParameterType == genericParameterType);
+
+                    if (matchingMethodParameter == null)
+                    {
+                        return null;
+                    }
+
+                    var matchingMethodArgument = methodArguments
+                        .ElementAtOrDefault(matchingMethodParameter.Index);
+
+                    if (matchingMethodArgument == null)
+                    {
+                        return null;
+                    }
+
+                    genericArguments[i] = matchingMethodArgument.Type;
+                }
+
+                return genericArguments;
             }
 
             private class MissingMethodInfo : IMethodInfo
@@ -200,6 +270,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 public IEnumerable<Type> GetGenericArguments() => Enumerable.Empty<Type>();
 
                 public IEnumerable<ParameterInfo> GetParameters() => Enumerable.Empty<ParameterInfo>();
+
+                public Type GetGenericArgumentFor(Type parameterType) => null;
             }
         }
 

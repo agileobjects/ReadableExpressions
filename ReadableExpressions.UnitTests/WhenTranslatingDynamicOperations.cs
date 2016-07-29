@@ -157,5 +157,126 @@
 
             Assert.AreEqual("(obj, ci) => obj.ToString(ci)", translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateAGenericParameterisedMethodCall()
+        {
+            var valueConverterConvertCallSiteBinder = Binder.InvokeMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                "Convert",
+                new[] { typeof(string), typeof(int) },
+                typeof(WhenTranslatingDynamicOperations),
+                new[]
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
+                });
+
+            var dynamicParameter = Expression.Parameter(typeof(ValueConverter), "valueConverter");
+            var valueParameter = Expression.Parameter(typeof(string), "value");
+
+            var dynamicConvertCall = Expression.Dynamic(
+                valueConverterConvertCallSiteBinder,
+                typeof(int),
+                dynamicParameter,
+                valueParameter);
+
+            var dynamicConvertLambda = Expression.Lambda<Func<ValueConverter, string, int>>(
+                dynamicConvertCall,
+                dynamicParameter,
+                valueParameter);
+
+            dynamicConvertLambda.Compile();
+
+            var translated = dynamicConvertLambda.ToReadableString();
+
+            Assert.AreEqual("(valueConverter, value) => valueConverter.Convert<string, int>(value)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateACallWithTooFewParameters()
+        {
+            var valueConverterConvertCallSiteBinder = Binder.InvokeMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                "Convert",
+                new[] { typeof(int), typeof(string) },
+                typeof(WhenTranslatingDynamicOperations),
+                new[]
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
+                });
+
+            var dynamicParameter = Expression.Parameter(typeof(ValueConverter), "valueConverter");
+
+            var dynamicConvertCall = Expression.Dynamic(
+                valueConverterConvertCallSiteBinder,
+                typeof(string),
+                dynamicParameter);
+
+            var dynamicConvertLambda = Expression.Lambda<Func<ValueConverter, string>>(
+                dynamicConvertCall,
+                dynamicParameter);
+
+            dynamicConvertLambda.Compile();
+
+            var translated = dynamicConvertLambda.ToReadableString();
+
+            // The method type parameter can't be figured out from the arguments and return type, so are missing:
+            Assert.AreEqual("valueConverter => valueConverter.Convert()", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAParameterlessCallWithGenericParameters()
+        {
+            var typePrinterPrintCallSiteBinder = Binder.InvokeMember(
+                CSharpBinderFlags.InvokeSimpleName,
+                "Print",
+                new[] { typeof(DateTime) },
+                typeof(WhenTranslatingDynamicOperations),
+                new[]
+                {
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                    CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
+                });
+
+            var dynamicParameter = Expression.Parameter(typeof(TypePrinter), "typePrinter");
+
+            var dynamicPrintCall = Expression.Dynamic(
+                typePrinterPrintCallSiteBinder,
+                typeof(void),
+                dynamicParameter);
+
+            var dynamicPrintLambda = Expression.Lambda<Action<TypePrinter>>(
+                dynamicPrintCall,
+                dynamicParameter);
+
+            dynamicPrintLambda.Compile();
+
+            var translated = dynamicPrintLambda.ToReadableString();
+
+            // The method type parameter can't be figured out from the arguments and return type, so are missing:
+            Assert.AreEqual("typePrinter => typePrinter.Print()", translated);
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private class ValueConverter
+        {
+            // ReSharper disable once UnusedMember.Local
+            public TResult Convert<TValue, TResult>(TValue value)
+            {
+                return (TResult)(object)value;
+            }
+        }
+
+        // ReSharper disable once UnusedMember.Local
+        private class TypePrinter
+        {
+            // ReSharper disable once UnusedMember.Local
+            public void Print<T>()
+            {
+                Console.WriteLine(typeof(T));
+            }
+        }
     }
 }

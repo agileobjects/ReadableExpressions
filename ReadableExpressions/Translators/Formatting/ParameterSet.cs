@@ -93,7 +93,7 @@
                 {
                     var parameter = parameters.ElementAtOrDefault(i);
 
-                    if (IsNotFuncType(parameter))
+                    if (IsNotFuncType(parameter, method))
                     {
                         return defaultArgumentTranslator;
                     }
@@ -105,7 +105,7 @@
                 .ToArray();
         }
 
-        private static bool IsNotFuncType(ParameterInfo parameter)
+        private static bool IsNotFuncType(ParameterInfo parameter, IMethodInfo method)
         {
             if (parameter == null)
             {
@@ -117,11 +117,21 @@
                 return false;
             }
 
-            var parameterTypeName = parameter.ParameterType.FullName;
+            var parameterType = parameter.ParameterType;
 
-            return !(parameterTypeName.StartsWith("System.Action", StringComparison.Ordinal) ||
-                    parameterTypeName.StartsWith("System.Func", StringComparison.Ordinal)) ||
-                   (parameter.ParameterType.Assembly != typeof(Action).Assembly);
+            if (parameterType.FullName == null)
+            {
+                if (!method.IsGenericMethod)
+                {
+                    return true;
+                }
+
+                parameterType = method.GetGenericArgumentFor(parameter.ParameterType);
+            }
+
+            return !(parameterType.FullName.StartsWith("System.Action", StringComparison.Ordinal) ||
+                parameterType.FullName.StartsWith("System.Func", StringComparison.Ordinal)) ||
+                (parameter.ParameterType.Assembly != typeof(Action).Assembly);
         }
 
         private static bool CanBeConvertedToMethodGroup(Expression argument)

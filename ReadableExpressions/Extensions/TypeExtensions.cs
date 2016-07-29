@@ -31,6 +31,12 @@
 
         public static string GetFriendlyName(this Type type)
         {
+            if (type.FullName == null)
+            {
+                // An open generic parameter Type:
+                return null;
+            }
+
             if (type.IsArray)
             {
                 return type.GetElementType().GetFriendlyName() + "[]";
