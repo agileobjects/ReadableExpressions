@@ -136,7 +136,20 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool LeaveBlankLineAfter(string line, string nextLine)
         {
-            return line.EndsWith('}') && !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWithNewLine());
+            return (line.EndsWith('}') || IsMultiLineStatement(line)) &&
+                !(string.IsNullOrEmpty(nextLine) || nextLine.StartsWithNewLine());
+        }
+
+        private static bool IsMultiLineStatement(string line)
+        {
+            if (!line.Contains(Environment.NewLine))
+            {
+                return false;
+            }
+
+            return line
+                .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
+                .Any(l => !l.IsTerminated());
         }
 
         private static bool IncludeReturnStatement(BlockExpression block, ICollection<string> lines)

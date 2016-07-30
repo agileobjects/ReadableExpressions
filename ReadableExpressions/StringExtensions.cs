@@ -24,9 +24,9 @@ namespace AgileObjects.ReadableExpressions
 
         private static readonly string[] _newLines = { Environment.NewLine };
 
-        public static string[] SplitToLines(this string line)
+        public static string[] SplitToLines(this string line, StringSplitOptions splitOptions = StringSplitOptions.None)
         {
-            return line.Split(_newLines, StringSplitOptions.None);
+            return line.Split(_newLines, splitOptions);
         }
 
         private const string IndentSpaces = "    ";

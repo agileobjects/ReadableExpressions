@@ -218,6 +218,7 @@ Action writeNameTwice = () =>
     Console.WriteLine(name);
     Console.WriteLine(name);
 };
+
 name = ""Alice"";
 writeNameTwice.Invoke();";
 
@@ -497,6 +498,35 @@ Enumerable
             var translated = default(Expression).ToReadableString();
 
             Assert.IsNull(translated);
+        }
+
+        [TestMethod]
+        public void ShouldLeaveABlankLineAfterAMultipleLineExpression()
+        {
+            Expression<Func<List<int>, IEnumerable<int>>> longCallChain = list => list
+                .Select(i => i * 2)
+                .Select(i => i * 3)
+                .Select(i => i * 4)
+                .ToArray();
+
+            var longChainblock = Expression.Block(longCallChain.Body, longCallChain.Body);
+
+            const string EXPECTED = @"
+list
+    .Select(i => i * 2)
+    .Select(i => i * 3)
+    .Select(i => i * 4)
+    .ToArray();
+
+return list
+    .Select(i => i * 2)
+    .Select(i => i * 3)
+    .Select(i => i * 4)
+    .ToArray();";
+
+            var translated = longChainblock.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
 
