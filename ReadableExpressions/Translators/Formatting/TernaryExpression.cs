@@ -29,7 +29,8 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
         {
             var test = context.Translate(condition);
 
-            if (test.IndexOf(" ", StringComparison.Ordinal) == -1)
+            if ((condition.NodeType == ExpressionType.Call) ||
+                test.IndexOf(" ", StringComparison.Ordinal) == -1)
             {
                 return test.WithoutSurroundingParentheses(condition);
             }

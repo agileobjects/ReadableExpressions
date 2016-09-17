@@ -2,6 +2,8 @@
 {
     using System;
     using System.Linq.Expressions;
+    using System.Reflection;
+    using System.Reflection.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -215,6 +217,27 @@ return i;
         }
 
         [TestMethod]
+        public void ShouldNotWrapMethodCallTernaryConditionsInParentheses()
+        {
+            var method = typeof(MethodCallHelper).GetMethod("MultipleParameterMethod");
+
+            var methodCall = Expression.Call(
+                Expression.Variable(typeof(MethodCallHelper), "helper"),
+                method,
+                Expression.Constant("hello"),
+                Expression.Constant(123));
+
+            var ternary = Expression.Condition(
+                methodCall,
+                Expression.Constant(1),
+                Expression.Constant(2));
+
+            var translated = ternary.ToReadableString();
+
+            Assert.AreEqual("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateASwitchStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -351,4 +374,16 @@ return ((long?)1);";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
+
+    #region Helpers
+
+    internal class MethodCallHelper
+    {
+        public bool MultipleParameterMethod(string stringValue, int intValue)
+        {
+            return true;
+        }
+    }
+
+    #endregion
 }
