@@ -28,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (IsTernary(conditional))
             {
-                return new TernaryExpression(conditional.Test, ifTrueBlock, ifFalseBlock, context);
+                return new TernaryFormatter(conditional.Test, ifTrueBlock, ifFalseBlock, context);
             }
 
             var test = GetTest(conditional, context);

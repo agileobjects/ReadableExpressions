@@ -107,7 +107,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var separator = context.IsPartOfMethodCallChain(originalMethodCall)
-                ? Environment.NewLine + ".".Indent()
+                ? Environment.NewLine + ".".Indented()
                 : ".";
 
             return subject + separator + GetMethodCall(method, arguments, context);

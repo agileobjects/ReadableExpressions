@@ -108,7 +108,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return $@"
 checked
 {{
-{operation.TrimStart().Indent()}
+{operation.TrimStart().Indented()}
 }}".TrimStart();
             }
 

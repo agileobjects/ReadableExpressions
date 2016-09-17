@@ -31,7 +31,7 @@ namespace AgileObjects.ReadableExpressions
 
         private const string IndentSpaces = "    ";
 
-        public static string Indent(this string line)
+        public static string Indented(this string line)
         {
             if (string.IsNullOrEmpty(line))
             {
@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 return string.Join(
                     Environment.NewLine,
-                    line.SplitToLines().Select(l => l.Indent()));
+                    line.SplitToLines().Select(l => l.Indented()));
             }
 
             return IndentSpaces + line;

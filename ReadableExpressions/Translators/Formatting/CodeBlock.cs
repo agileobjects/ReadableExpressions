@@ -40,7 +40,7 @@
 
             return new CodeBlock(
                 _expression,
-                _blockLines.Select(line => line.Indent()).ToArray());
+                _blockLines.Select(line => line.Indented()).ToArray());
         }
 
         public CodeBlock Insert(params string[] lines)

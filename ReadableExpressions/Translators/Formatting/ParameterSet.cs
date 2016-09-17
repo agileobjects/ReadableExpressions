@@ -199,7 +199,7 @@
             {
                 return () =>
                     Environment.NewLine +
-                    FormatParameters("," + Environment.NewLine, a => a.Indent());
+                    FormatParameters("," + Environment.NewLine, a => a.Indented());
             }
         }
 

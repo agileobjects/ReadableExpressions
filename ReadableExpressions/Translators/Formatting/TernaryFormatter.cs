@@ -3,9 +3,9 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
     using System;
     using System.Linq.Expressions;
 
-    internal class TernaryExpression : FormattableExpressionBase
+    internal class TernaryFormatter : FormattableExpressionBase
     {
-        public TernaryExpression(
+        public TernaryFormatter(
             Expression condition,
             CodeBlock ifTrue,
             CodeBlock ifFalse,
@@ -20,9 +20,9 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
             MultipleLineTranslationFactory = () =>
                 test +
                 Environment.NewLine +
-                ("?" + ifTrueString).Indent() +
+                ("?" + ifTrueString).Indented() +
                 Environment.NewLine +
-                (":" + ifFalseString).Indent();
+                (":" + ifFalseString).Indented();
         }
 
         private static string GetTest(Expression condition, TranslationContext context)
