@@ -17,9 +17,9 @@
             var helperConstructor = helperVariable.Type.GetConstructors().First();
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
             var newHelper = Expression.New(helperConstructor, longVariable, longVariable, longVariable);
-            var assignHelper = Expression.Assign(helperVariable, newHelper);
+            var helperAssignment = Expression.Assign(helperVariable, newHelper);
 
-            var longArgumentListBlock = Expression.Block(new[] { helperVariable }, assignHelper);
+            var longArgumentListBlock = Expression.Block(new[] { helperVariable }, helperAssignment);
 
             var translated = longArgumentListBlock.ToReadableString();
 
@@ -28,6 +28,35 @@ var helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldSplitMultipleArgumentListsOntoMultipleLines()
+        {
+            var intsMethod = typeof(HelperClass)
+                .GetMethod("GiveMeFourInts", BindingFlags.Public | BindingFlags.Instance);
+
+            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
+            var intVariable = Expression.Variable(typeof(int), "intVariable");
+
+            var intsMethodCall = Expression.Call(
+                helperVariable,
+                intsMethod,
+                intVariable,
+                intVariable,
+                intVariable,
+                intVariable);
+
+            var translated = intsMethodCall.ToReadableString();
+
+            const string EXPECTED = @"
+helper.GiveMeFourInts(
+    intVariable,
+    intVariable,
+    intVariable,
+    intVariable)";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -540,6 +569,10 @@ return list
         }
 
         public void GiveMeSomeInts(int intOne, int intTwo, int intThree)
+        {
+        }
+
+        public void GiveMeFourInts(int intOne, int intTwo, int intThree, int intFour)
         {
         }
     }

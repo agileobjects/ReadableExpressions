@@ -186,6 +186,11 @@
             }
         }
 
+        protected override bool SplitToMultipleLines(string translation)
+        {
+            return (_arguments.Count() > 3) || base.SplitToMultipleLines(translation);
+        }
+
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
 
         protected override Func<string> MultipleLineTranslationFactory

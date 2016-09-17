@@ -17,9 +17,14 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
         {
             var translation = SingleLineTranslationFactory.Invoke();
 
-            return (translation.Length > 100) || translation.IsMultiLine()
+            return SplitToMultipleLines(translation)
                 ? MultipleLineTranslationFactory.Invoke()
                 : translation;
+        }
+
+        protected virtual bool SplitToMultipleLines(string translation)
+        {
+            return (translation.Length > 100) || translation.IsMultiLine();
         }
 
         public override string ToString()
