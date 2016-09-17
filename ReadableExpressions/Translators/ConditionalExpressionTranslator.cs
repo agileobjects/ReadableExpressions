@@ -15,22 +15,23 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var conditional = (ConditionalExpression)expression;
 
-            var test = GetTest(context.Translate(conditional.Test));
             var hasNoElseCondition = HasNoElseCondition(conditional);
 
             var ifTrueBlock = context.TranslateCodeBlock(conditional.IfTrue);
 
             if (hasNoElseCondition)
             {
-                return IfStatement(test, ifTrueBlock.WithCurlyBraces());
+                return IfStatement(GetTest(conditional, context), ifTrueBlock.WithCurlyBraces());
             }
 
             var ifFalseBlock = context.TranslateCodeBlock(conditional.IfFalse);
 
             if (IsTernary(conditional))
             {
-                return new TernaryExpression(test, ifTrueBlock, ifFalseBlock);
+                return new TernaryExpression(conditional.Test, ifTrueBlock, ifFalseBlock, context);
             }
+
+            var test = GetTest(conditional, context);
 
             if (conditional.IfTrue.IsReturnable())
             {
@@ -40,9 +41,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             return IfElse(test, ifTrueBlock, ifFalseBlock, IsElseIf(conditional));
         }
 
-        private static string GetTest(string test)
+        private static string GetTest(ConditionalExpression conditional, TranslationContext context)
         {
-            return (test.StartsWith('(') && test.EndsWith(')')) ? test : test.WithSurroundingParentheses();
+            var test = context.Translate(conditional.Test);
+
+            return test.WithSurroundingParentheses(checkExisting: true);
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)

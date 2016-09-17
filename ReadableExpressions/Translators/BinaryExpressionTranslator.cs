@@ -89,12 +89,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var translation = context.Translate(expression);
 
-            if (expression.IsAssignment() && !translation.HasSurroundingParentheses())
-            {
-                return translation.WithSurroundingParentheses();
-            }
-
-            return translation;
+            return expression.IsAssignment()
+                ? translation.WithSurroundingParentheses(checkExisting: true)
+                : translation;
         }
 
         private static string AdjustForCheckedOperatorIfAppropriate(

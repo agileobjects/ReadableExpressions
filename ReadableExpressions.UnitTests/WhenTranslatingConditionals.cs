@@ -202,6 +202,19 @@ return i;
         }
 
         [TestMethod]
+        public void ShouldNotWrapSingleExpressionTernaryConditionsInParentheses()
+        {
+            var ternary = Expression.Condition(
+                Expression.Constant(false),
+                Expression.Constant(1),
+                Expression.Constant(2));
+
+            var translated = ternary.ToReadableString();
+
+            Assert.AreEqual("false ? 1 : 2", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateASwitchStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");

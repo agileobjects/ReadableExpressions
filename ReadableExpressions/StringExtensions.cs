@@ -69,8 +69,13 @@ namespace AgileObjects.ReadableExpressions
             return code;
         }
 
-        public static string WithSurroundingParentheses(this string value)
+        public static string WithSurroundingParentheses(this string value, bool checkExisting = false)
         {
+            if (checkExisting && value.HasSurroundingParentheses())
+            {
+                return value;
+            }
+
             return $"({value})";
         }
 
@@ -86,7 +91,7 @@ namespace AgileObjects.ReadableExpressions
                 : value;
         }
 
-        public static bool HasSurroundingParentheses(this string value)
+        private static bool HasSurroundingParentheses(this string value)
         {
             return value.StartsWith('(') && value.EndsWith(')');
         }

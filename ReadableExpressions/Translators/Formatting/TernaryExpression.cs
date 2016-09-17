@@ -1,11 +1,17 @@
 namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
+    using System.Linq.Expressions;
 
     internal class TernaryExpression : FormattableExpressionBase
     {
-        public TernaryExpression(string test, CodeBlock ifTrue, CodeBlock ifFalse)
+        public TernaryExpression(
+            Expression condition,
+            CodeBlock ifTrue,
+            CodeBlock ifFalse,
+            TranslationContext context)
         {
+            var test = GetTest(condition, context);
             var ifTrueString = GetBranch(ifTrue);
             var ifFalseString = GetBranch(ifFalse);
 
@@ -17,6 +23,18 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
                 ("?" + ifTrueString).Indent() +
                 Environment.NewLine +
                 (":" + ifFalseString).Indent();
+        }
+
+        private static string GetTest(Expression condition, TranslationContext context)
+        {
+            var test = context.Translate(condition);
+
+            if (test.IndexOf(" ", StringComparison.Ordinal) == -1)
+            {
+                return test.WithoutSurroundingParentheses(condition);
+            }
+
+            return test.WithSurroundingParentheses(checkExisting: true);
         }
 
         private static string GetBranch(CodeBlock codeBlock)
