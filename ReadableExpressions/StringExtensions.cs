@@ -31,6 +31,11 @@ namespace AgileObjects.ReadableExpressions
 
         private const string IndentSpaces = "    ";
 
+        public static bool IsNotIndented(this string line)
+        {
+            return (line.Length > 0) && !line.StartsWith(IndentSpaces, StringComparison.Ordinal);
+        }
+
         public static string Indented(this string line)
         {
             if (string.IsNullOrEmpty(line))

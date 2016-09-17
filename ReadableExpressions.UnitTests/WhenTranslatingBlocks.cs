@@ -256,9 +256,9 @@ Console.WriteLine();";
 
             var translated = countLambda.ToReadableString();
 
-            const string EXPECTED = @"() => false";
+            const string EXPECTED = "() => false";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.AreEqual(EXPECTED, translated);
         }
 
         [TestMethod]
@@ -315,6 +315,27 @@ switch (i)
         break;
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIgnoreABlankLabelTargetLine()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intAssignment = Expression.Assign(intVariable, Expression.Constant(0));
+
+            var labelTarget = Expression.Label(typeof(void), "LabelTarget");
+
+            var intAssignmentBlock = Expression.Block(
+                new[] { intVariable },
+                intAssignment,
+                Expression.Label(labelTarget));
+
+            var translated = intAssignmentBlock.ToReadableString();
+
+            const string EXPECTED = @"var i = 0;";
+
+
+            Assert.AreEqual(EXPECTED, translated);
         }
     }
 }

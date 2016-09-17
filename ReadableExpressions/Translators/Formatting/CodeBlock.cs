@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
@@ -62,8 +63,14 @@
 
         public bool HasReturn()
         {
-            return _blockLines.Last().SplitToLines().Last().StartsWith("return ", StringComparison.Ordinal) ||
-                ExpressionHasReturn(_expression);
+            if (ExpressionHasReturn(_expression))
+            {
+                return true;
+            }
+
+            var blockInfo = new BlockInfo(_blockLines);
+
+            return blockInfo.LastLineHasReturnKeyword;
         }
 
         private static bool ExpressionHasReturn(Expression expression)
@@ -110,12 +117,14 @@
                 return this;
             }
 
-            return new CodeBlock(
-                _expression,
-                _blockLines
-                    .Take(_blockLines.Length - 1)
-                    .Concat(new[] { "return " + _blockLines.Last() })
-                    .ToArray());
+            return new CodeBlock(_expression, GetBlockLinesWithInsert());
+        }
+
+        private string[] GetBlockLinesWithInsert()
+        {
+            var blockInfo = new BlockInfo(_blockLines);
+
+            return blockInfo.GetBlockLinesWithReturnKeyword();
         }
 
         private string GetCodeBlock()
@@ -130,6 +139,55 @@
             if (IsASingleStatement && !_blockLines[0].IsTerminated())
             {
                 _blockLines[0] += ";";
+            }
+        }
+
+        private class BlockInfo
+        {
+            private readonly string[] _blockLines;
+            private readonly int _lastNonIndentedStatementIndex;
+            private readonly string _lastNonIndentedLine;
+            private readonly int _lastNonIndentedLineIndex;
+
+            public BlockInfo(string[] blockLines)
+            {
+                _blockLines = blockLines;
+                var lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
+                _lastNonIndentedStatementIndex = Array.IndexOf(blockLines, lastNonIndentedStatement);
+
+                var lastStatementLines = lastNonIndentedStatement.SplitToLines();
+                _lastNonIndentedLine = lastStatementLines.Last(line => line.IsNotIndented());
+                _lastNonIndentedLineIndex = Array.IndexOf(lastStatementLines, _lastNonIndentedLine);
+            }
+
+            public bool LastLineHasReturnKeyword =>
+                _lastNonIndentedLine.StartsWith("return ", StringComparison.Ordinal);
+
+            public string[] GetBlockLinesWithReturnKeyword()
+            {
+                var lastNonIndentedStatement = _blockLines.Last(line => line.IsNotIndented());
+
+                var updatedBlockLines = new List<string>();
+
+                var preLastStatementStatements = _blockLines
+                    .Take(_blockLines.Length - (_lastNonIndentedStatementIndex + 1));
+
+                updatedBlockLines.AddRange(preLastStatementStatements);
+
+                var lastStatementLines = lastNonIndentedStatement.SplitToLines();
+
+                var preLastLineLines = lastStatementLines
+                    .Take(_lastNonIndentedLineIndex)
+                    .ToArray();
+
+                var postLastLineLines = lastStatementLines
+                    .Skip(preLastLineLines.Length + 1);
+
+                updatedBlockLines.AddRange(preLastLineLines);
+                updatedBlockLines.Add("return " + _lastNonIndentedLine);
+                updatedBlockLines.AddRange(postLastLineLines);
+
+                return updatedBlockLines.ToArray();
             }
         }
     }

@@ -66,7 +66,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var translation = context.Translate(expression);
 
-            if (translation == null)
+            if (string.IsNullOrEmpty(translation))
             {
                 return null;
             }

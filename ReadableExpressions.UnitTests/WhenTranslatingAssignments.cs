@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
@@ -450,6 +451,146 @@ result =
     return (one - two);
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/7
+        [TestMethod]
+        public void ShouldTranslateMultiStatementValueBlockAssignments()
+        {
+            ParameterExpression existingInts;
+            var valueConditional = GetReturnStatementBlock(out existingInts);
+
+            Expression<Action> consoleRead = () => Console.Read();
+
+            var multiStatementValueBlock = Expression.Block(
+                new[] { existingInts },
+                consoleRead.Body,
+                valueConditional);
+
+            var resultVariable = Expression.Variable(multiStatementValueBlock.Type, "result");
+            var resultOneAssignment = Expression.Assign(resultVariable, multiStatementValueBlock);
+
+            var translated = resultOneAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+result = 
+{
+    List<int> ints;
+    Console.Read();
+    return (ints == null)
+        ? new List<int>()
+        : {
+            var enumerator = ints.GetEnumerator();
+            while (true)
+            {
+                if (enumerator.MoveNext())
+                {
+                    var item = enumerator.Current;
+                    ints.Add(item);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return ints;
+        }
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/7
+        [TestMethod]
+        public void ShouldTranslateSingleStatementValueBlockAssignments()
+        {
+            ParameterExpression existingInts;
+            var valueConditional = GetReturnStatementBlock(out existingInts);
+
+            var singleStatementValueBlock = Expression.Block(
+                new[] { existingInts },
+                valueConditional);
+
+            var resultVariable = Expression.Variable(singleStatementValueBlock.Type, "result");
+            var resultOneAssignment = Expression.Assign(resultVariable, singleStatementValueBlock);
+
+            var translated = resultOneAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+result = 
+{
+    List<int> ints;
+    return (ints == null)
+        ? new List<int>()
+        : {
+            var enumerator = ints.GetEnumerator();
+            while (true)
+            {
+                if (enumerator.MoveNext())
+                {
+                    var item = enumerator.Current;
+                    ints.Add(item);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return ints;
+        }
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
+        {
+            existingInts = Expression.Variable(typeof(List<int>), "ints");
+
+            var existingIntsEnumerator = Expression.Variable(typeof(List<int>.Enumerator), "enumerator");
+            var getEnumeratorMethod = existingInts.Type.GetMethod("GetEnumerator");
+            var getEnumeratorCall = Expression.Call(existingInts, getEnumeratorMethod);
+            var enumeratorAssignment = Expression.Assign(existingIntsEnumerator, getEnumeratorCall);
+
+            var enumeratorMoveNextMethod = existingIntsEnumerator.Type.GetMethod("MoveNext");
+            var enumeratorMoveNextCall = Expression.Call(existingIntsEnumerator, enumeratorMoveNextMethod);
+
+            var enumeratorItem = Expression.Variable(typeof(int), "item");
+            var enumeratorCurrent = Expression.Property(existingIntsEnumerator, "Current");
+            var itemAssignment = Expression.Assign(enumeratorItem, enumeratorCurrent);
+
+            var intsAddMethod = existingInts.Type.GetMethod("Add");
+            var intsAddCall = Expression.Call(existingInts, intsAddMethod, enumeratorItem);
+
+            var addItemBlock = Expression.Block(
+                new[] { enumeratorItem },
+                itemAssignment,
+                intsAddCall);
+
+            var loopBreakTarget = Expression.Label(typeof(void), "LoopBreak");
+
+            var conditionallyAddItems = Expression.Condition(
+                Expression.IsTrue(enumeratorMoveNextCall),
+                addItemBlock,
+                Expression.Break(loopBreakTarget));
+
+            var addItemsLoop = Expression.Loop(conditionallyAddItems, loopBreakTarget);
+
+            var populateExistingInts = Expression.Block(
+                new[] { existingIntsEnumerator },
+                enumeratorAssignment,
+                addItemsLoop);
+
+            var conditionFalseBlock = Expression.Block(
+                populateExistingInts,
+                existingInts);
+
+            var valueConditional = Expression.Condition(
+                Expression.Equal(existingInts, Expression.Default(existingInts.Type)),
+                Expression.New(conditionFalseBlock.Type),
+                conditionFalseBlock);
+
+            return valueConditional;
         }
     }
 }
