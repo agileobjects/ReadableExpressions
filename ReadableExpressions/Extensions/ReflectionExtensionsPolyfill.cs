@@ -3,7 +3,7 @@
     using System;
     using System.Reflection;
 
-    internal static class ReflectionExtensionsPolyFill
+    internal static class ReflectionExtensionsPolyfill
     {
         public static bool IsParamsArray(this ParameterInfo parameter)
         {

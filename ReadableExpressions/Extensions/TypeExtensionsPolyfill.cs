@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Reflection;
 
-    internal static class TypeExtensionsPolyFill
+    internal static class TypeExtensionsPolyfill
     {
         public static bool IsClass(this Type type)
         {
