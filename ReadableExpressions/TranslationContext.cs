@@ -86,21 +86,17 @@ namespace AgileObjects.ReadableExpressions
         private class ExpressionAnalysisVisitor : ExpressionVisitor
         {
             private readonly List<ParameterExpression> _accessedVariables;
-            private readonly List<ParameterExpression> _assignedVariables;
             private readonly List<Expression> _assignedAssignments;
-            private readonly List<BinaryExpression> _joinedAssignments;
-            private readonly List<LabelTarget> _namedLabelTargets;
-            private readonly List<MethodCallExpression> _chainedMethodCalls;
             private BlockExpression _currentBlock;
 
             private ExpressionAnalysisVisitor()
             {
                 _accessedVariables = new List<ParameterExpression>();
-                _assignedVariables = new List<ParameterExpression>();
+                AssignedVariables = new List<ParameterExpression>();
                 _assignedAssignments = new List<Expression>();
-                _joinedAssignments = new List<BinaryExpression>();
-                _namedLabelTargets = new List<LabelTarget>();
-                _chainedMethodCalls = new List<MethodCallExpression>();
+                JoinedAssignments = new List<BinaryExpression>();
+                NamedLabelTargets = new List<LabelTarget>();
+                ChainedMethodCalls = new List<MethodCallExpression>();
             }
 
             #region Factory Method
@@ -142,13 +138,13 @@ namespace AgileObjects.ReadableExpressions
 
             #endregion
 
-            public IEnumerable<ParameterExpression> AssignedVariables => _assignedVariables;
+            public ICollection<ParameterExpression> AssignedVariables { get; }
 
-            public IEnumerable<BinaryExpression> JoinedAssignments => _joinedAssignments;
+            public ICollection<BinaryExpression> JoinedAssignments { get; }
 
-            public IEnumerable<LabelTarget> NamedLabelTargets => _namedLabelTargets;
+            public ICollection<LabelTarget> NamedLabelTargets { get; }
 
-            public IEnumerable<MethodCallExpression> ChainedMethodCalls => _chainedMethodCalls;
+            public List<MethodCallExpression> ChainedMethodCalls { get; }
 
             protected override Expression VisitBlock(BlockExpression block)
             {
@@ -172,16 +168,16 @@ namespace AgileObjects.ReadableExpressions
                 if ((binaryExpression.NodeType == ExpressionType.Assign) &&
                     (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
                     ((_currentBlock == null) || _currentBlock.Expressions.Contains(binaryExpression)) &&
-                    !_assignedVariables.Contains(binaryExpression.Left) &&
+                    !AssignedVariables.Contains(binaryExpression.Left) &&
                     !_assignedAssignments.Contains(binaryExpression))
                 {
                     var variable = (ParameterExpression)binaryExpression.Left;
 
                     if (VariableHasNotYetBeenAccessed(variable))
                     {
-                        _joinedAssignments.Add(binaryExpression);
+                        JoinedAssignments.Add(binaryExpression);
                         _accessedVariables.Add(variable);
-                        _assignedVariables.Add(variable);
+                        AssignedVariables.Add(variable);
                     }
 
                     AddAssignmentIfAppropriate(binaryExpression.Right);
@@ -222,7 +218,7 @@ namespace AgileObjects.ReadableExpressions
             {
                 if (@goto.Kind == GotoExpressionKind.Goto)
                 {
-                    _namedLabelTargets.Add(@goto.Target);
+                    NamedLabelTargets.Add(@goto.Target);
                 }
 
                 return base.VisitGoto(@goto);
@@ -230,13 +226,13 @@ namespace AgileObjects.ReadableExpressions
 
             protected override Expression VisitMethodCall(MethodCallExpression methodCall)
             {
-                if (!_chainedMethodCalls.Contains(methodCall))
+                if (!ChainedMethodCalls.Contains(methodCall))
                 {
                     var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
 
                     if (methodCallChain.Length > 2)
                     {
-                        _chainedMethodCalls.AddRange(methodCallChain);
+                        ChainedMethodCalls.AddRange(methodCallChain);
                     }
                 }
 
