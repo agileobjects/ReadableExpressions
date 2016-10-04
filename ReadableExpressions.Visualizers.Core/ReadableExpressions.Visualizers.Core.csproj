@@ -52,7 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions.Net40\ReadableExpressions.Net40.csproj">
-      <Project>{9f4a6128-b7f7-43a1-be9b-695ee76dc1cc}</Project>
+      <Project>{7a33da5b-5dee-42cb-a354-a77766b635ba}</Project>
       <Name>ReadableExpressions.Net40</Name>
     </ProjectReference>
   </ItemGroup>

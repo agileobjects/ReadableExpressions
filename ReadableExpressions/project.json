@@ -2,6 +2,7 @@
   "version": "1.6.5-*",
   "authors": [ "Steve Wilkes" ],
   "title": "ReadableExpressions",
+  "name": "AgileObjects.ReadableExpressions",
   "description": "An extension method and set of Debugger Visualizers to produce a readable string version of an expression tree.",
   "copyright": "2016 Steve Wilkes",
   "packOptions": {
@@ -24,11 +25,12 @@
 
   "buildOptions": {
     "warningsAsErrors": true,
-    "xmlDoc": true
+    "xmlDoc": true,
+    "outputName": "AgileObjects.ReadableExpressions"
   },
 
   "frameworks": {
-    "netstandard1.1": {
+    "netstandard1.0": {
       "imports": "dnxcore50",
       "dependencies": {
         "System.Reflection.TypeExtensions": "4.1.0"
@@ -36,6 +38,7 @@
       "buildOptions": {
         "define": [ "NET_STANDARD" ]
       }
-    }
+    },
+    "net40": {}
   }
 }
