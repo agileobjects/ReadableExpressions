@@ -220,6 +220,22 @@ return getName.Invoke();";
         }
 
         [TestMethod]
+        public void ShouldNotVarAssignAVariableOfNonImpliedType()
+        {
+            var intsVariable = Expression.Variable(typeof(IEnumerable<int>), "ints");
+            var newArray = Expression.NewArrayBounds(typeof(int), Expression.Constant(2));
+            var assignment = Expression.Assign(intsVariable, newArray);
+
+            var block = Expression.Block(new[] { intsVariable }, assignment);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = "IEnumerable<int> ints = new int[2];";
+
+            Assert.AreEqual(EXPECTED, translated);
+        }
+
+        [TestMethod]
         public void ShouldNotVarAssignAnOuterBlockDeclaredVariable()
         {
             var nameVariable = Expression.Variable(typeof(string), "name");
