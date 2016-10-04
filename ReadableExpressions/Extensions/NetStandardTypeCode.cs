@@ -1,5 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+    /// <summary>
+    /// Provides a replacement for the TypeCode enum, which is missing in .NETStandard 1.0.
+    /// </summary>
     internal enum NetStandardTypeCode
     {
         //
