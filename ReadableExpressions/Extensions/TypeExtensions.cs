@@ -42,7 +42,7 @@
                 return type.GetElementType().GetFriendlyName() + "[]";
             }
 
-            if (!type.IsGenericType)
+            if (!type.IsGenericType())
             {
                 var qualifiedTypeName = type.FullName.GetSubstitutionOrNull() ?? type.Name;
 
@@ -147,7 +147,7 @@
 
         public static bool CanBeNull(this Type type)
         {
-            return type.IsClass || type.IsInterface || type.IsNullableType();
+            return type.IsClass() || type.IsInterface() || type.IsNullableType();
         }
 
         public static bool IsNullableType(this Type type)
@@ -158,11 +158,11 @@
         // See http://stackoverflow.com/questions/2483023/how-to-test-if-a-type-is-anonymous
         public static bool IsAnonymous(this Type type)
         {
-            return type.IsGenericType &&
+            return type.IsGenericType() &&
                    type.Name.Contains("AnonymousType") &&
                    (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$")) &&
-                   (type.Attributes & TypeAttributes.NotPublic) == TypeAttributes.NotPublic &&
-                   Attribute.IsDefined(type, typeof(CompilerGeneratedAttribute), inherit: false);
+                   (type.GetAttributes() & TypeAttributes.NotPublic) == TypeAttributes.NotPublic &&
+                   type.HasAttribute<CompilerGeneratedAttribute>();
         }
     }
 }

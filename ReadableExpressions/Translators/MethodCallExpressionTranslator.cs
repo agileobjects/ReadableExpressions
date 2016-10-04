@@ -168,7 +168,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     genericParameterTypes.Remove(type);
                 }
 
-                if (type.IsGenericType)
+                if (type.IsGenericType())
                 {
                     RemoveSpecifiedGenericTypeParameters(type.GetGenericArguments(), genericParameterTypes);
                 }

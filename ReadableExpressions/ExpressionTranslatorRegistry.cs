@@ -29,7 +29,9 @@
                 new ConstantExpressionTranslator(),
                 new DebugInfoExpressionTranslator(),
                 defaultTranslator,
+#if !NET_STANDARD
                 new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator),
+#endif
                 new ExtensionExpressionTranslator(),
                 new GotoExpressionTranslator(),
                 indexAccessTranslator,

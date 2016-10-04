@@ -7,6 +7,9 @@ namespace AgileObjects.ReadableExpressions
     using Translators;
     using Translators.Formatting;
 
+    /// <summary>
+    /// Contains information about an <see cref="Expression"/> being translated.
+    /// </summary>
     public class TranslationContext
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
@@ -18,13 +21,33 @@ namespace AgileObjects.ReadableExpressions
             _globalTranslator = globalTranslator;
         }
 
+        /// <summary>
+        /// Creates a <see cref="TranslationContext"/> containing information about the given
+        /// <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">
+        /// The <see cref="Expression"/> for which to create the <see cref="TranslationContext"/>.
+        /// </param>
+        /// <param name="globalTranslator">
+        /// A global <see cref="Translator"/> delegate with which to perform translations.
+        /// </param>
+        /// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
         public static TranslationContext For(Expression expression, Translator globalTranslator)
         {
             return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression), globalTranslator);
         }
 
+        /// <summary>
+        /// Gets the variables in the translated <see cref="Expression"/> which should be declared in the
+        /// same statement in which they are assigned.
+        /// </summary>
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
 
+        /// <summary>
+        /// Translates the given <paramref name="expression"/> to readable source code.
+        /// </summary>
+        /// <param name="expression">The <see cref="Expression"/> to translate.</param>
+        /// <returns>A source code translation of the given <paramref name="expression"/>.</returns>
         public string Translate(Expression expression)
         {
             return _globalTranslator.Invoke(expression, this);
@@ -67,17 +90,44 @@ namespace AgileObjects.ReadableExpressions
             return new ParameterSet(method, parameters, this);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="expression"/> represents an assignment 
+        /// where the assigned variable is declared as part of the assignment statement.
+        /// </summary>
+        /// <param name="expression">The <see cref="Expression"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> represents an assignment where the assigned variable 
+        /// is declared as part of the assignment statement, otherwise false.
+        /// </returns>
         public bool IsNotJoinedAssignment(Expression expression)
         {
             return (expression.NodeType != ExpressionType.Assign) ||
                 !_analyzer.JoinedAssignments.Contains(expression);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// <see cref="GotoExpression"/>.
+        /// </summary>
+        /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
+        /// otherwise false.
+        /// </returns>
         public bool IsReferencedByGoto(LabelTarget labelTarget)
         {
             return _analyzer.NamedLabelTargets.Contains(labelTarget);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
+        /// of multiple method calls.
+        /// </summary>
+        /// <param name="methodCall">The <see cref="Expression"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
+        /// otherwise false.
+        /// </returns>
         public bool IsPartOfMethodCallChain(Expression methodCall)
         {
             return _analyzer.ChainedMethodCalls.Contains(methodCall);

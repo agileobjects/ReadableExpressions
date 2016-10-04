@@ -54,7 +54,7 @@
                 return p => "ref " + p;
             }
 
-            if (Attribute.IsDefined(parameter, typeof(ParamArrayAttribute)))
+            if (parameter.IsParamsArray())
             {
                 return FormatParamsArray;
             }
@@ -112,7 +112,7 @@
                 return true;
             }
 
-            if (parameter.ParameterType.BaseType == typeof(MulticastDelegate))
+            if (parameter.ParameterType.GetBaseType() == typeof(MulticastDelegate))
             {
                 return false;
             }
@@ -131,7 +131,8 @@
 
             return !(parameterType.FullName.StartsWith("System.Action", StringComparison.Ordinal) ||
                 parameterType.FullName.StartsWith("System.Func", StringComparison.Ordinal)) ||
-                (parameter.ParameterType.Assembly != typeof(Action).Assembly);
+                // ReSharper disable once PossibleUnintendedReferenceComparison
+                (parameter.ParameterType.GetAssembly() != typeof(Action).GetAssembly());
         }
 
         private static bool CanBeConvertedToMethodGroup(Expression argument)

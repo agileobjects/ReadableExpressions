@@ -1,0 +1,41 @@
+{
+  "version": "1.6.5-*",
+  "authors": [ "Steve Wilkes" ],
+  "title": "ReadableExpressions",
+  "description": "An extension method and set of Debugger Visualizers to produce a readable string version of an expression tree.",
+  "copyright": "2016 Steve Wilkes",
+  "packOptions": {
+    "copyright": "2016 Steve Wilkes",
+    "owners": [ "Steve Wilkes" ],
+    "licenseUrl": "https://github.com/agileobjects/ReadableExpressions/blob/master/LICENSE.md",
+    "projectUrl": "https://github.com/AgileObjects/ReadableExpressions",
+    "requireLicenseAcceptance": false,
+    "summary": "Translates Expression objects to source code strings",
+    "tags": [ "Expression Trees", "Debugging", "Debugger Visualizers" ],
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/AgileObjects/ReadableExpressions"
+    }
+  },
+
+  "dependencies": {
+    "NETStandard.Library": "1.6.0"
+  },
+
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true
+  },
+
+  "frameworks": {
+    "netstandard1.1": {
+      "imports": "dnxcore50",
+      "dependencies": {
+        "System.Reflection.TypeExtensions": "4.1.0"
+      },
+      "buildOptions": {
+        "define": [ "NET_STANDARD" ]
+      }
+    }
+  }
+}

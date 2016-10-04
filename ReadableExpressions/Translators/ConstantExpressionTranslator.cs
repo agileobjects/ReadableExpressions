@@ -23,7 +23,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return "null";
             }
 
-            if (constant.Type.IsEnum)
+            if (constant.Type.IsEnum())
             {
                 return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
@@ -40,17 +40,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool TryTranslateByTypeCode(ConstantExpression constant, out string translation)
         {
-            switch (Type.GetTypeCode(Nullable.GetUnderlyingType(constant.Type) ?? constant.Type))
+            switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
             {
-                case TypeCode.Boolean:
+                case NetStandardTypeCode.Boolean:
                     translation = constant.Value.ToString().ToLowerInvariant();
                     return true;
 
-                case TypeCode.Char:
+                case NetStandardTypeCode.Char:
                     translation = $"'{constant.Value}'";
                     return true;
 
-                case TypeCode.DateTime:
+                case NetStandardTypeCode.DateTime:
                     if (IsDefault<DateTime>(constant, out translation))
                     {
                         return true;
@@ -59,25 +59,23 @@ namespace AgileObjects.ReadableExpressions.Translators
                     translation = TranslateDateTime((DateTime)constant.Value);
                     return true;
 
-                case (TypeCode)2:
-                    // TypeCode.DBNull (2) is unavailable in a PCL, but can
-                    // still be translated:
+                case NetStandardTypeCode.DBNull:
                     translation = "DBNull.Value";
                     return true;
 
-                case TypeCode.Decimal:
+                case NetStandardTypeCode.Decimal:
                     translation = FormatNumeric((decimal)constant.Value) + "m";
                     return true;
 
-                case TypeCode.Double:
+                case NetStandardTypeCode.Double:
                     translation = FormatNumeric((double)constant.Value) + "d";
                     return true;
 
-                case TypeCode.Int64:
+                case NetStandardTypeCode.Int64:
                     translation = constant.Value + "L";
                     return true;
 
-                case TypeCode.Object:
+                case NetStandardTypeCode.Object:
                     if (IsType(constant, out translation) ||
                         IsFunc(constant, out translation) ||
                         IsDefault<Guid>(constant, out translation) ||
@@ -87,11 +85,11 @@ namespace AgileObjects.ReadableExpressions.Translators
                     }
                     break;
 
-                case TypeCode.Single:
+                case NetStandardTypeCode.Single:
                     translation = FormatNumeric((float)constant.Value) + "f";
                     return true;
 
-                case TypeCode.String:
+                case NetStandardTypeCode.String:
                     var stringValue = (string)constant.Value;
                     translation = stringValue.IsComment() ? stringValue : $"\"{stringValue}\"";
                     return true;

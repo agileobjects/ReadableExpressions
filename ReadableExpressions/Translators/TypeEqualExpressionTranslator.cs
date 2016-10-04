@@ -9,7 +9,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     {
         private static readonly MethodInfo _reduceTypeEqualMethod =
             typeof(TypeBinaryExpression)
-                .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
+                .GetNonPublicInstanceMethods()
                 .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
 
         public TypeEqualExpressionTranslator()

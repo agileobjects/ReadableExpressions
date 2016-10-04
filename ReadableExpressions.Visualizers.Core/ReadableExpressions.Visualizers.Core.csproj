@@ -51,9 +51,9 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
+    <ProjectReference Include="..\ReadableExpressions.Net40\ReadableExpressions.Net40.csproj">
       <Project>{9f4a6128-b7f7-43a1-be9b-695ee76dc1cc}</Project>
-      <Name>ReadableExpressions</Name>
+      <Name>ReadableExpressions.Net40</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
