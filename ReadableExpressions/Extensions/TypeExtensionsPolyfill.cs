@@ -34,15 +34,6 @@
 #endif
         }
 
-        public static bool IsAssignableFrom(this Type type, Type otherType)
-        {
-#if NET_STANDARD
-            return type.GetTypeInfo().IsAssignableFrom(otherType.GetTypeInfo());
-#else
-            return type.IsAssignableFrom(otherType);
-#endif
-        }
-
         public static bool IsGenericType(this Type type)
         {
 #if NET_STANDARD

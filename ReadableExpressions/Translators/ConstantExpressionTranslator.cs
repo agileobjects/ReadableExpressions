@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using Extensions;
 
