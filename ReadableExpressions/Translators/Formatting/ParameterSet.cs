@@ -9,8 +9,10 @@
 
     internal class ParameterSet : FormattableExpressionBase
     {
+        private const int SplitArgumentsThreshold = 3;
+
         private readonly IEnumerable<Func<string, string>> _parameterModifiers;
-        private readonly IEnumerable<Expression> _arguments;
+        private readonly Expression[] _arguments;
         private readonly TranslationContext _context;
         private readonly IEnumerable<Func<Expression, string>> _argumentTranslators;
 
@@ -20,13 +22,9 @@
             TranslationContext context)
         {
             _parameterModifiers = GetParameterModifers(method);
-            _arguments = arguments;
+            _arguments = arguments.ToArray();
             _context = context;
-
-            _argumentTranslators = GetArgumentTranslators(
-                method,
-                arguments,
-                context.Translate);
+            _argumentTranslators = GetArgumentTranslators(method, _arguments, context.Translate);
         }
 
         private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
@@ -189,7 +187,7 @@
 
         protected override bool SplitToMultipleLines(string translation)
         {
-            return (_arguments.Count() > 3) || base.SplitToMultipleLines(translation);
+            return (_arguments.Length > SplitArgumentsThreshold) || base.SplitToMultipleLines(translation);
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => FormatParameters(", ");
@@ -199,9 +197,39 @@
             get
             {
                 return () =>
-                    Environment.NewLine +
-                    FormatParameters("," + Environment.NewLine, a => a.Indented());
+                {
+                    var hasSingleLambdaArgument = HasSingleLambdaArgument();
+                    var prefix = hasSingleLambdaArgument ? null : Environment.NewLine;
+
+                    var parameters = FormatParameters("," + Environment.NewLine, a => a.Indented());
+
+                    if (hasSingleLambdaArgument)
+                    {
+                        parameters = parameters.TrimStart();
+                    }
+
+                    return prefix + parameters;
+                };
             }
+        }
+
+        private bool HasSingleLambdaArgument()
+        {
+            if (_arguments.Length != 1)
+            {
+                return false;
+            }
+
+            var argument = _arguments.First();
+
+            if (argument.NodeType != ExpressionType.Lambda)
+            {
+                return false;
+            }
+
+            var argumentLambda = (LambdaExpression)argument;
+
+            return argumentLambda.Parameters.Count <= SplitArgumentsThreshold;
         }
 
         private string FormatParameters(
@@ -232,7 +260,7 @@
 
         public string WithParenthesesIfNecessary()
         {
-            return (_arguments.Count() == 1) ? WithoutParentheses() : WithParentheses();
+            return (_arguments.Length == 1) ? WithoutParentheses() : WithParentheses();
         }
 
         public string WithoutParentheses()

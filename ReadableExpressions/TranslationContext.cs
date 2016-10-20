@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -280,9 +281,18 @@ namespace AgileObjects.ReadableExpressions
                 {
                     var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
 
-                    if (methodCallChain.Length > 2)
+                    if (methodCallChain.Length > 1)
                     {
-                        ChainedMethodCalls.AddRange(methodCallChain);
+                        if (methodCallChain.Length > 2)
+                        {
+                            ChainedMethodCalls.AddRange(methodCallChain);
+                        }
+                        else if (methodCallChain[0].ToString().Contains(" ... "))
+                        {
+                            // Expression.ToString() replaces multiple lines with ' ... ';
+                            // potential fragile, but works unless MS change it:
+                            ChainedMethodCalls.AddRange(methodCallChain);
+                        }
                     }
                 }
 

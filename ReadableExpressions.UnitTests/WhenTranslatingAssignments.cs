@@ -416,6 +416,49 @@ result = ((DateTime.Now.Hour % 2) == 0)
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslatedMultipleLineValueBlockAssignments()
+        {
+            Expression<Func<string[], IEnumerable<int>>> linqSelect = ints => ints.Select(int.Parse);
+            var selectMethod = ((MethodCallExpression)linqSelect.Body).Method;
+
+            Expression<Func<string[]>> getStringArray = () => new[] { "1", "2", "blah" };
+            var stringArray = getStringArray.Body;
+
+            // ReSharper disable once RedundantAssignment
+            Expression<Func<string, int, int>> intTryParse = (str, value) => int.TryParse(str, out value) ? value : 0;
+            var stringParameter = intTryParse.Parameters[0];
+            var intVariable = intTryParse.Parameters[1];
+            var tryParseTernary = intTryParse.Body;
+
+            var tryParseBlock = Expression.Block(new[] { intVariable }, tryParseTernary);
+            var tryParseLambda = Expression.Lambda<Func<string, int>>(tryParseBlock, stringParameter);
+
+            var selectCall = Expression.Call(selectMethod, stringArray, tryParseLambda);
+
+            Expression<Func<IEnumerable<int>, int[]>> linqToArray = ints => ints.ToArray();
+            var toArrayMethod = ((MethodCallExpression)linqToArray.Body).Method;
+
+            var toArrayCall = Expression.Call(toArrayMethod, selectCall);
+
+            var resultVariable = Expression.Variable(typeof(IList<int>), "result");
+            var assignment = Expression.Assign(resultVariable, toArrayCall);
+            var assignmentBlock = Expression.Block(assignment);
+
+            var translation = assignmentBlock.ToReadableString();
+
+            const string EXPECTED = @"
+IList<int> result = new[] { ""1"", ""2"", ""blah"" }
+    .Select(str =>
+    {
+        int value;
+        return int.TryParse(str, out value) ? value : 0;
+    })
+    .ToArray();";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translation);
+        }
+
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
         [TestMethod]
         public void ShouldTranslateANestedBlockAssignment()

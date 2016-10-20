@@ -17,8 +17,26 @@
         {
             _expression = expression;
             _blockLines = blockLines.Where(line => line != null).ToArray();
+            IsASingleStatement = IsSingleStatement(_blockLines);
+        }
 
-            IsASingleStatement = (_blockLines.Length == 1) && !_blockLines[0].Contains(";" + Environment.NewLine);
+        private static bool IsSingleStatement(IList<string> blockLines)
+        {
+            if (blockLines.Count != 1)
+            {
+                return false;
+            }
+
+            if (!blockLines[0].Contains(";" + Environment.NewLine))
+            {
+                return true;
+            }
+
+            var numberOfNonIndentedLines = blockLines[0]
+                .SplitToLines()
+                .Count(line => line.IsNotIndented());
+
+            return numberOfNonIndentedLines == 1;
         }
 
         public bool IsASingleStatement { get; }
