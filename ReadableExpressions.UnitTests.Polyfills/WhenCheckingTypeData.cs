@@ -16,7 +16,6 @@
                 .GetParameters()
                 .First();
 
-
             Assert.IsTrue(paramsParameter.IsParamsArray());
         }
 
@@ -27,7 +26,6 @@
                 .GetMethod("DoNonParamsStuff")
                 .GetParameters()
                 .First();
-
 
             Assert.IsFalse(paramsParameter.IsParamsArray());
         }

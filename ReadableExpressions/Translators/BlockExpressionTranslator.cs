@@ -105,13 +105,25 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetVariableTypeName(BinaryExpression assignment)
         {
+            return UseFullTypeName(assignment) ? assignment.Left.Type.GetFriendlyName() : "var";
+        }
+
+        private static bool UseFullTypeName(BinaryExpression assignment)
+        {
             if ((assignment.Left.Type != assignment.Right.Type) ||
                 (assignment.Right.NodeType == ExpressionType.Lambda))
             {
-                return assignment.Left.Type.GetFriendlyName();
+                return true;
             }
 
-            return "var";
+            if (assignment.Right.NodeType != ExpressionType.Conditional)
+            {
+                return false;
+            }
+
+            var conditional = (ConditionalExpression)assignment.Right;
+
+            return conditional.IfTrue.Type != conditional.IfFalse.Type;
         }
 
         private static IEnumerable<string> ProcessBlockContents(IList<string> lines, BlockExpression block)

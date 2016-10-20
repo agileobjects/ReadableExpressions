@@ -230,9 +230,30 @@ return getName.Invoke();";
 
             var translated = block.ToReadableString();
 
-            const string EXPECTED = "IEnumerable<int> ints = new int[2];";
+            Assert.AreEqual("IEnumerable<int> ints = new int[2];", translated);
+        }
 
-            Assert.AreEqual(EXPECTED, translated);
+        [TestMethod]
+        public void ShouldNotVarAssignATernaryValueWithDifferingTypeBranches()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariableEqualsOne = Expression.Equal(intVariable, Expression.Constant(1));
+            var newArray = Expression.NewArrayBounds(typeof(int?), Expression.Constant(0));
+            var newList = Expression.New(typeof(List<int?>));
+
+            var newArrayOrList = Expression.Condition(
+                intVariableEqualsOne,
+                newArray,
+                newList,
+                typeof(ICollection<int?>));
+
+            var resultVariable = Expression.Variable(typeof(ICollection<int?>), "result");
+            var assignResult = Expression.Assign(resultVariable, newArrayOrList);
+            var assignBlock = Expression.Block(new[] { resultVariable }, assignResult);
+
+            var translated = assignBlock.ToReadableString();
+
+            Assert.AreEqual("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();", translated);
         }
 
         [TestMethod]
