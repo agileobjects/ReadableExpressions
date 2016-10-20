@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-#if !NET_STANDARD
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -278,5 +277,4 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         #endregion
     }
-#endif
 }
