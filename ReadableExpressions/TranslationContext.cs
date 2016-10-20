@@ -42,7 +42,7 @@ namespace AgileObjects.ReadableExpressions
         /// Gets the variables in the translated <see cref="Expression"/> which should be declared in the
         /// same statement in which they are assigned.
         /// </summary>
-        public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.AssignedVariables;
+        public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.JoinedAssignedVariables;
 
         /// <summary>
         /// Translates the given <paramref name="expression"/> to readable source code.
@@ -136,18 +136,23 @@ namespace AgileObjects.ReadableExpressions
 
         private class ExpressionAnalysisVisitor : ExpressionVisitor
         {
+            private readonly Dictionary<BinaryExpression, object> _constructsByAssignment;
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<Expression> _assignedAssignments;
+            private readonly Stack<object> _constructs;
             private BlockExpression _currentBlock;
 
             private ExpressionAnalysisVisitor()
             {
+                _constructsByAssignment = new Dictionary<BinaryExpression, object>();
                 _accessedVariables = new List<ParameterExpression>();
-                AssignedVariables = new List<ParameterExpression>();
-                _assignedAssignments = new List<Expression>();
+                JoinedAssignedVariables = new List<ParameterExpression>();
                 JoinedAssignments = new List<BinaryExpression>();
+                _assignedAssignments = new List<Expression>();
                 NamedLabelTargets = new List<LabelTarget>();
                 ChainedMethodCalls = new List<MethodCallExpression>();
+                _constructs = new Stack<object>();
+                _currentBlock = null;
             }
 
             #region Factory Method
@@ -159,6 +164,7 @@ namespace AgileObjects.ReadableExpressions
                 var coreExpression = GetCoreExpression(expression);
 
                 analyzer.Visit(coreExpression);
+
                 return analyzer;
             }
 
@@ -189,7 +195,7 @@ namespace AgileObjects.ReadableExpressions
 
             #endregion
 
-            public ICollection<ParameterExpression> AssignedVariables { get; }
+            public ICollection<ParameterExpression> JoinedAssignedVariables { get; }
 
             public ICollection<BinaryExpression> JoinedAssignments { get; }
 
@@ -210,31 +216,56 @@ namespace AgileObjects.ReadableExpressions
                 {
                     _accessedVariables.Add(variable);
                 }
+                else if (JoinedAssignedVariables.Contains(variable))
+                {
+                    var joinedAssignmentData = _constructsByAssignment
+                        .Where(kvp => kvp.Key.Left == variable)
+                        .Select(kvp => new
+                        {
+                            Assignment = kvp.Key,
+                            Construct = kvp.Value
+                        })
+                        .FirstOrDefault();
+
+                    if ((joinedAssignmentData != null) && !_constructs.Contains(joinedAssignmentData.Construct))
+                    {
+                        // This variable was assigned within a construct but is being accessed 
+                        // outside of that scope, so the assignment shouldn't be joined:
+                        JoinedAssignedVariables.Remove(variable);
+                        JoinedAssignments.Remove(joinedAssignmentData.Assignment);
+                        _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
+                    }
+                }
 
                 return base.VisitParameter(variable);
             }
 
-            protected override Expression VisitBinary(BinaryExpression binaryExpression)
+            protected override Expression VisitBinary(BinaryExpression binary)
             {
-                if ((binaryExpression.NodeType == ExpressionType.Assign) &&
-                    (binaryExpression.Left.NodeType == ExpressionType.Parameter) &&
-                    ((_currentBlock == null) || _currentBlock.Expressions.Contains(binaryExpression)) &&
-                    !AssignedVariables.Contains(binaryExpression.Left) &&
-                    !_assignedAssignments.Contains(binaryExpression))
+                if ((binary.NodeType == ExpressionType.Assign) &&
+                    (binary.Left.NodeType == ExpressionType.Parameter) &&
+                    ((_currentBlock == null) || _currentBlock.Expressions.Contains(binary)) &&
+                    !JoinedAssignedVariables.Contains(binary.Left) &&
+                    !_assignedAssignments.Contains(binary))
                 {
-                    var variable = (ParameterExpression)binaryExpression.Left;
+                    var variable = (ParameterExpression)binary.Left;
 
                     if (VariableHasNotYetBeenAccessed(variable))
                     {
-                        JoinedAssignments.Add(binaryExpression);
+                        if (_constructs.Any())
+                        {
+                            _constructsByAssignment.Add(binary, _constructs.Peek());
+                        }
+
+                        JoinedAssignments.Add(binary);
                         _accessedVariables.Add(variable);
-                        AssignedVariables.Add(variable);
+                        JoinedAssignedVariables.Add(variable);
                     }
 
-                    AddAssignmentIfAppropriate(binaryExpression.Right);
+                    AddAssignmentIfAppropriate(binary.Right);
                 }
 
-                return base.VisitBinary(binaryExpression);
+                return base.VisitBinary(binary);
             }
 
             private bool VariableHasNotYetBeenAccessed(Expression variable)
@@ -309,6 +340,41 @@ namespace AgileObjects.ReadableExpressions
                     methodCall = methodCall.GetSubject() as MethodCallExpression;
                 }
             }
+
+            #region Construct
+
+            protected override CatchBlock VisitCatchBlock(CatchBlock @catch)
+            {
+                return VisitConstruct(@catch, base.VisitCatchBlock);
+            }
+
+            protected override Expression VisitConditional(ConditionalExpression conditional)
+            {
+                return VisitConstruct(conditional, base.VisitConditional);
+            }
+
+            protected override Expression VisitTry(TryExpression @try)
+            {
+                return VisitConstruct(@try, base.VisitTry);
+            }
+
+            protected override SwitchCase VisitSwitchCase(SwitchCase @case)
+            {
+                return VisitConstruct(@case, base.VisitSwitchCase);
+            }
+
+            private TResult VisitConstruct<TArg, TResult>(TArg expression, Func<TArg, TResult> baseMethod)
+            {
+                _constructs.Push(expression);
+
+                var result = baseMethod.Invoke(expression);
+
+                _constructs.Pop();
+
+                return result;
+            }
+
+            #endregion
         }
     }
 }

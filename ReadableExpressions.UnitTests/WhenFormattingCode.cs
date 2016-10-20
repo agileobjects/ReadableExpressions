@@ -322,6 +322,35 @@ else
         }
 
         [TestMethod]
+        public void ShouldNotVarAssignAVariableAssignedInATryButUsedInACatch()
+        {
+            Expression<Func<int, Exception>> exceptionFactory = number => new Exception(number.ToString());
+            var intVariable = exceptionFactory.Parameters.First();
+            var newException = exceptionFactory.Body;
+
+            var assignment = Expression.Assign(intVariable, Expression.Constant(10));
+            var assignmentBlock = Expression.Block(assignment, Expression.Default(typeof(void)));
+
+            var catchBlock = Expression.Catch(typeof(Exception), Expression.Throw(newException));
+            var tryCatch = Expression.TryCatch(assignmentBlock, catchBlock);
+            var tryCatchBlock = Expression.Block(new[] { intVariable }, tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+int number;
+try
+{
+    number = 10;
+}
+catch
+{
+    throw new Exception(number.ToString());
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnExtensionExpressionType()
         {
             var extension = new ExtensionExpression();
