@@ -41,7 +41,7 @@
                 NewArrayExpression arrayInitialisation,
                 TranslationContext context)
             {
-                return arrayInitialisation.Expressions.Select(context.Translate);
+                return arrayInitialisation.Expressions.Select(context.TranslateAsCodeBlock);
             }
         }
     }

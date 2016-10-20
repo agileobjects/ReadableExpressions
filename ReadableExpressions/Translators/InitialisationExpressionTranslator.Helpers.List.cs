@@ -8,12 +8,9 @@
     {
         private class ListInitExpressionHelper : InitExpressionHelperBase<ListInitExpression, NewExpression>
         {
-            private readonly MethodCallExpressionTranslator _methodCallTranslator;
-
-            public ListInitExpressionHelper(MethodCallExpressionTranslator methodCallTranslator)
+            public ListInitExpressionHelper()
                 : base(exp => exp.NewExpression, exp => !exp.Arguments.Any())
             {
-                _methodCallTranslator = methodCallTranslator;
             }
 
             protected override IEnumerable<string> GetMemberInitialisations(
@@ -25,10 +22,12 @@
                     {
                         if (initialisation.Arguments.Count == 1)
                         {
-                            return context.Translate(initialisation.Arguments.First());
+                            return context.TranslateAsCodeBlock(initialisation.Arguments.First());
                         }
 
-                        var additionArguments = string.Join(", ", initialisation.Arguments.Select(context.Translate));
+                        var additionArguments = string.Join(
+                            ", ",
+                            initialisation.Arguments.Select(context.TranslateAsCodeBlock));
 
                         return "{ " + additionArguments + " }";
                     });

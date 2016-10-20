@@ -24,7 +24,11 @@
             _parameterModifiers = GetParameterModifers(method);
             _arguments = arguments.ToArray();
             _context = context;
-            _argumentTranslators = GetArgumentTranslators(method, _arguments, context.Translate);
+
+            _argumentTranslators = GetArgumentTranslators(
+                method,
+                _arguments,
+                TranslateArgumentAsCodeBlock);
         }
 
         private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
@@ -183,6 +187,14 @@
                     return subject + "." + methodCall.Method.Name;
                 };
             }
+        }
+
+        private string TranslateArgumentAsCodeBlock(Expression argument)
+        {
+            var argumentBlock = _context.TranslateCodeBlock(argument);
+            var translated = argumentBlock.WithCurlyBracesIfMultiStatement();
+
+            return translated;
         }
 
         protected override bool SplitToMultipleLines(string translation)

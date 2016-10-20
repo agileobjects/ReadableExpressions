@@ -61,7 +61,7 @@
                 var listInitialisers = listBinding
                     .Initializers
                     .Select(init => IsStandardAddMethod(init)
-                        ? context.Translate(init.Arguments.First())
+                        ? context.TranslateAsCodeBlock(init.Arguments.First())
                         : _methodCallTranslator.GetMethodCall(new BclMethodInfoWrapper(init.AddMethod), init.Arguments, context))
                     .ToArray();
 

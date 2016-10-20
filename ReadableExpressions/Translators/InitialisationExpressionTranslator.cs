@@ -12,7 +12,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
             {
-                [ExpressionType.ListInit] = new ListInitExpressionHelper(methodCallTranslator),
+                [ExpressionType.ListInit] = new ListInitExpressionHelper(),
                 [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator),
                 [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper()
             };

@@ -54,6 +54,11 @@ namespace AgileObjects.ReadableExpressions
             return _globalTranslator.Invoke(expression, this);
         }
 
+        internal string TranslateAsCodeBlock(Expression expression)
+        {
+            return TranslateCodeBlock(expression).WithCurlyBracesIfMultiStatement();
+        }
+
         internal CodeBlock TranslateCodeBlock(Expression expression)
         {
             return TranslateBlock(expression as BlockExpression) ?? TranslateSingle(expression);

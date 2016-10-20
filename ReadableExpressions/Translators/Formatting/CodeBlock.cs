@@ -34,7 +34,7 @@
 
             var numberOfNonIndentedLines = blockLines[0]
                 .SplitToLines()
-                .Count(line => line.IsNotIndented());
+                .Count(line => line.IsNotIndented() && !line.StartsWith('{') && !line.StartsWith('}'));
 
             return numberOfNonIndentedLines == 1;
         }
@@ -72,6 +72,11 @@
             AddSemiColonIfRequired();
 
             return new CodeBlock(_expression, _blockLines.Concat(lines).ToArray());
+        }
+
+        public string WithCurlyBracesIfMultiStatement()
+        {
+            return IsASingleStatement ? WithoutCurlyBraces().Unterminated() : WithCurlyBraces();
         }
 
         public string WithoutCurlyBraces()
