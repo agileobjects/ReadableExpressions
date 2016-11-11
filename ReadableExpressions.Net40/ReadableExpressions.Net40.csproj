@@ -33,8 +33,9 @@
     <DocumentationFile>bin\Release\AgileObjects.ReadableExpressions.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AgileObjects.NetStandardPolyfills">
-      <HintPath>..\..\..\..\Users\Steve\.nuget\packages\AgileObjects.NetStandardPolyfills\0.1.2\lib\net40\AgileObjects.NetStandardPolyfills.dll</HintPath>
+    <Reference Include="AgileObjects.NetStandardPolyfills, Version=0.1.2.0, Culture=neutral, PublicKeyToken=06131ac1c008ad4e, processorArchitecture=MSIL">
+      <HintPath>..\packages\AgileObjects.NetStandardPolyfills.0.1.2\lib\net40\AgileObjects.NetStandardPolyfills.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -49,6 +50,9 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>Properties\VersionInfo.cs</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -63,7 +63,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe" /ndebug /targetplatform:v4 /lib:"C:\Windows\Microsoft.NET\Framework\v4.0.30319" /out:"$(SolutionDir)$(TargetFileName)" $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.dll
+    <PostBuildEvent>"$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe" /ndebug /targetplatform:v4 /lib:"C:\Windows\Microsoft.NET\Framework\v4.0.30319" /out:"$(SolutionDir)$(TargetFileName)" $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.dll
 xcopy "$(SolutionDir)$(TargetFileName)" "$(DevEnvDir)..\Packages\Debugger\Visualizers\" /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
