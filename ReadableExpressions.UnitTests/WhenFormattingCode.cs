@@ -637,6 +637,55 @@ return list
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        [TestMethod]
+        public void ShouldTranslateMultilineBlockSingleMethodArguments()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var variableInit = Expression.Assign(intVariable, Expression.Constant(3));
+            var variableMultiplyFive = Expression.Multiply(intVariable, Expression.Constant(5));
+            var variableAdditionOne = Expression.Assign(intVariable, variableMultiplyFive);
+            var variableDivideThree = Expression.Divide(intVariable, Expression.Constant(3));
+            var variableAdditionTwo = Expression.Assign(intVariable, variableDivideThree);
+
+            var argumentBlock = Expression.Block(
+                new[] { intVariable },
+                variableInit,
+                variableAdditionOne,
+                variableAdditionTwo,
+                intVariable);
+
+            var catchBlock = Expression.Catch(
+                typeof(Exception),
+                Expression.Block(ReadableExpression.Comment("So what!"), Expression.Constant(0)));
+
+            var tryCatch = Expression.TryCatch(argumentBlock, catchBlock);
+
+            var collectionVariable = Expression.Variable(typeof(ICollection<int>), "ints");
+            var addMethod = collectionVariable.Type.GetMethod("Add");
+            var addMethodCall = Expression.Call(collectionVariable, addMethod, tryCatch);
+
+            const string EXPECTED = @"
+ints.Add(
+{
+    try
+    {
+        var i = 3;
+        i = i * 5;
+        i = i / 3;
+        return i;
+    }
+    catch
+    {
+        // So what!
+        return 0;
+    }
+})";
+
+            var translated = addMethodCall.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 
     #region Helper Classes

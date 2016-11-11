@@ -211,29 +211,59 @@
             {
                 return () =>
                 {
-                    var hasSingleLambdaArgument = HasSingleLambdaArgument();
-                    var prefix = hasSingleLambdaArgument ? null : Environment.NewLine;
+                    bool hasSingleBlockArgument, hasSingleLambdaArgument;
 
-                    var parameters = FormatParameters("," + Environment.NewLine, a => a.Indented());
+                    if (_arguments.Length == 1)
+                    {
+                        hasSingleBlockArgument = IsSingleArgumentABlock();
+                        hasSingleLambdaArgument = !hasSingleBlockArgument && IsSingleArgumentALambda();
+                    }
+                    else
+                    {
+                        hasSingleBlockArgument = hasSingleLambdaArgument = false;
+                    }
+
+                    var parameters = FormatParameters(
+                        "," + Environment.NewLine,
+                        a =>
+                        {
+                            hasSingleBlockArgument = hasSingleBlockArgument && a.IsMultiLine();
+
+                            return hasSingleBlockArgument ? a : a.Indented();
+                        });
+
+                    if (hasSingleBlockArgument)
+                    {
+                        return parameters;
+                    }
 
                     if (hasSingleLambdaArgument)
                     {
-                        parameters = parameters.TrimStart();
+                        return parameters.TrimStart();
                     }
 
-                    return prefix + parameters;
+                    return Environment.NewLine + parameters;
                 };
             }
         }
 
-        private bool HasSingleLambdaArgument()
+        private bool IsSingleArgumentABlock()
         {
-            if (_arguments.Length != 1)
+            switch (_arguments[0].NodeType)
             {
-                return false;
+                case ExpressionType.Block:
+                case ExpressionType.Switch:
+                case ExpressionType.Conditional:
+                case ExpressionType.Try:
+                    return true;
             }
 
-            var argument = _arguments.First();
+            return false;
+        }
+
+        private bool IsSingleArgumentALambda()
+        {
+            var argument = _arguments[0];
 
             if (argument.NodeType != ExpressionType.Lambda)
             {
