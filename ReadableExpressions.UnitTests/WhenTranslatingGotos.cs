@@ -140,7 +140,7 @@ i =>
             var returnTrue = Expression.Return(returnLabelTarget, Expression.Constant(true));
 
             var ifLessThanOneReturnTrue = Expression.IfThen(variableLessThanOne, returnTrue);
-            
+
             var testBlock = Expression.Block(
                 ifLessThanOneReturnTrue,
                 Expression.Label(returnLabelTarget, Expression.Constant(false)));
@@ -154,6 +154,44 @@ if (i < 1)
 }
 
 return false;";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+
+        [TestMethod]
+        public void ShouldTranslateAReturnStatementWithABlock()
+        {
+            var returnLabelTarget = Expression.Label(typeof(int));
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var variableInit = Expression.Assign(intVariable, Expression.Constant(0));
+            var variablePlusOne = Expression.Add(intVariable, Expression.Constant(1));
+            var variableAdditionOne = Expression.Assign(intVariable, variablePlusOne);
+            var variablePlusTwo = Expression.Add(intVariable, Expression.Constant(2));
+            var variableAdditionTwo = Expression.Assign(intVariable, variablePlusTwo);
+
+            var variableBlock = Expression.Block(
+                new[] { intVariable },
+                variableInit,
+                variableAdditionOne,
+                variableAdditionTwo,
+                intVariable);
+
+            var returnVariableBlock = Expression.Return(returnLabelTarget, variableBlock);
+
+            var returnBlock = Expression.Block(returnVariableBlock);
+
+            const string EXPECTED = @"
+return 
+{
+    var i = 0;
+    i = i + 1;
+    i = i + 2;
+    return i;
+}";
+
+            var translated = returnBlock.ToReadableString();
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

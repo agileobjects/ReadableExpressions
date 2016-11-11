@@ -27,23 +27,23 @@ namespace AgileObjects.ReadableExpressions.Translators
             return _gotoKindHandlers[gotoExpression.Kind].Invoke(gotoExpression, context);
         }
 
-        private static string TranslateBreak(GotoExpression gotoExpression, TranslationContext context)
+        private static string TranslateBreak(GotoExpression breakExpression, TranslationContext context)
             => "break;";
 
-        private static string TranslateContinue(GotoExpression gotoExpression, TranslationContext context)
+        private static string TranslateContinue(GotoExpression continueExpression, TranslationContext context)
             => "continue;";
 
         private static string TranslateGoto(GotoExpression gotoExpression, TranslationContext context)
             => $"goto {gotoExpression.Target.Name};";
 
-        private static string TranslateReturn(GotoExpression gotoExpression, TranslationContext context)
+        private static string TranslateReturn(GotoExpression returnExpression, TranslationContext context)
         {
-            if (gotoExpression.Value == null)
+            if (returnExpression.Value == null)
             {
                 return "return;";
             }
 
-            var value = context.Translate(gotoExpression.Value);
+            var value = context.TranslateAsCodeBlock(returnExpression.Value);
 
             return $"return {value}";
         }

@@ -16,9 +16,11 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var labelNamePart = GetLabelNamePart(label, context);
 
-            var labelValuePart = (label.DefaultValue != null)
-                ? $"{Environment.NewLine}return {context.Translate(label.DefaultValue)};"
-                : null;
+            if (label.DefaultValue == null)
+            {
+                return labelNamePart;
+            }
+            var labelValuePart = $"{Environment.NewLine}return {context.TranslateAsCodeBlock(label.DefaultValue)};";
 
             return labelNamePart + labelValuePart;
         }
