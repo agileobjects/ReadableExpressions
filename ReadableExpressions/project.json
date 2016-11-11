@@ -19,6 +19,7 @@
     }
   },
   "buildOptions": {
+    "keyFile": "..\\ReadableExpressions.snk",
     "warningsAsErrors": true,
     "xmlDoc": true,
     "outputName": "AgileObjects.ReadableExpressions"
