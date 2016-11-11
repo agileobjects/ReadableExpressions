@@ -145,7 +145,6 @@ namespace AgileObjects.ReadableExpressions
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<Expression> _assignedAssignments;
             private readonly Stack<object> _constructs;
-            private BlockExpression _currentBlock;
 
             private ExpressionAnalysisVisitor()
             {
@@ -157,7 +156,6 @@ namespace AgileObjects.ReadableExpressions
                 NamedLabelTargets = new List<LabelTarget>();
                 ChainedMethodCalls = new List<MethodCallExpression>();
                 _constructs = new Stack<object>();
-                _currentBlock = null;
             }
 
             #region Factory Method
@@ -208,39 +206,37 @@ namespace AgileObjects.ReadableExpressions
 
             public List<MethodCallExpression> ChainedMethodCalls { get; }
 
-            protected override Expression VisitBlock(BlockExpression block)
-            {
-                _currentBlock = block;
-
-                return base.VisitBlock(block);
-            }
-
             protected override Expression VisitParameter(ParameterExpression variable)
             {
                 if (VariableHasNotYetBeenAccessed(variable))
                 {
                     _accessedVariables.Add(variable);
                 }
-                else if (JoinedAssignedVariables.Contains(variable))
-                {
-                    var joinedAssignmentData = _constructsByAssignment
-                        .Where(kvp => kvp.Key.Left == variable)
-                        .Select(kvp => new
-                        {
-                            Assignment = kvp.Key,
-                            Construct = kvp.Value
-                        })
-                        .FirstOrDefault();
 
-                    if ((joinedAssignmentData != null) && !_constructs.Contains(joinedAssignmentData.Construct))
-                    {
-                        // This variable was assigned within a construct but is being accessed 
-                        // outside of that scope, so the assignment shouldn't be joined:
-                        JoinedAssignedVariables.Remove(variable);
-                        JoinedAssignments.Remove(joinedAssignmentData.Assignment);
-                        _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
-                    }
+                if (!JoinedAssignedVariables.Contains(variable))
+                {
+                    return base.VisitParameter(variable);
                 }
+
+                var joinedAssignmentData = _constructsByAssignment
+                    .Where(kvp => kvp.Key.Left == variable)
+                    .Select(kvp => new
+                    {
+                        Assignment = kvp.Key,
+                        Construct = kvp.Value
+                    })
+                    .FirstOrDefault();
+
+                if ((joinedAssignmentData == null) || _constructs.Contains(joinedAssignmentData.Construct))
+                {
+                    return base.VisitParameter(variable);
+                }
+
+                // This variable was assigned within a construct but is being accessed 
+                // outside of that scope, so the assignment shouldn't be joined:
+                JoinedAssignedVariables.Remove(variable);
+                JoinedAssignments.Remove(joinedAssignmentData.Assignment);
+                _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
 
                 return base.VisitParameter(variable);
             }
@@ -249,7 +245,6 @@ namespace AgileObjects.ReadableExpressions
             {
                 if ((binary.NodeType == ExpressionType.Assign) &&
                     (binary.Left.NodeType == ExpressionType.Parameter) &&
-                    ((_currentBlock == null) || _currentBlock.Expressions.Contains(binary)) &&
                     !JoinedAssignedVariables.Contains(binary.Left) &&
                     !_assignedAssignments.Contains(binary))
                 {

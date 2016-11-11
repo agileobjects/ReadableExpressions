@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -347,6 +348,106 @@ catch
 {
     throw new Exception(number.ToString());
 }";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldVarAssignAVariableUsedInNestedConstructs()
+        {
+            var returnLabel = Expression.Label(typeof(long), "Return");
+            var streamVariable = Expression.Variable(typeof(Stream), "stream");
+
+            var memoryStreamVariable = Expression.Variable(typeof(MemoryStream), "memoryStream");
+            var streamAsMemoryStream = Expression.TypeAs(streamVariable, typeof(MemoryStream));
+            var memoryStreamAssignment = Expression.Assign(memoryStreamVariable, streamAsMemoryStream);
+            var nullMemoryStream = Expression.Default(memoryStreamVariable.Type);
+            var memoryStreamNotNull = Expression.NotEqual(memoryStreamVariable, nullMemoryStream);
+            var msLengthVariable = Expression.Variable(typeof(long), "msLength");
+            var memoryStreamLength = Expression.Property(memoryStreamVariable, "Length");
+            var msLengthAssignment = Expression.Assign(msLengthVariable, memoryStreamLength);
+
+            var msTryBlock = Expression.Block(new[] { msLengthVariable }, msLengthAssignment, msLengthVariable);
+            var newNotSupportedException = Expression.New(typeof(NotSupportedException));
+            var throwMsException = Expression.Throw(newNotSupportedException, typeof(long));
+            var msCatchBlock = Expression.Catch(typeof(Exception), throwMsException);
+            var memoryStreamTryCatch = Expression.TryCatch(msTryBlock, msCatchBlock);
+            var returnMemoryStreamResult = Expression.Return(returnLabel, memoryStreamTryCatch);
+            var ifMemoryStreamTryCatch = Expression.IfThen(memoryStreamNotNull, returnMemoryStreamResult);
+
+            var fileStreamVariable = Expression.Variable(typeof(FileStream), "fileStream");
+            var streamAsFileStream = Expression.TypeAs(streamVariable, typeof(FileStream));
+            var fileStreamAssignment = Expression.Assign(fileStreamVariable, streamAsFileStream);
+            var nullFileStream = Expression.Default(fileStreamVariable.Type);
+            var fileStreamNotNull = Expression.NotEqual(fileStreamVariable, nullFileStream);
+            var fsLengthVariable = Expression.Variable(typeof(long), "fsLength");
+            var fileStreamLength = Expression.Property(fileStreamVariable, "Length");
+            var fsLengthAssignment = Expression.Assign(fsLengthVariable, fileStreamLength);
+
+            var fsTryBlock = Expression.Block(new[] { fsLengthVariable }, fsLengthAssignment, fsLengthVariable);
+            var newIoException = Expression.New(typeof(IOException));
+            var throwIoException = Expression.Throw(newIoException, typeof(long));
+            var fsCatchBlock = Expression.Catch(typeof(Exception), throwIoException);
+            var fileStreamTryCatch = Expression.TryCatch(fsTryBlock, fsCatchBlock);
+            var returnFileStreamResult = Expression.Return(returnLabel, fileStreamTryCatch);
+            var ifFileStreamTryCatch = Expression.IfThen(fileStreamNotNull, returnFileStreamResult);
+
+            var overallBlock = Expression.Block(
+                new[] { memoryStreamVariable, fileStreamVariable },
+                memoryStreamAssignment,
+                ifMemoryStreamTryCatch,
+                fileStreamAssignment,
+                ifFileStreamTryCatch,
+                Expression.Label(returnLabel, Expression.Constant(0L)));
+
+            var overallCatchBlock = Expression.Catch(typeof(Exception), Expression.Constant(-1L));
+            var overallTryCatch = Expression.TryCatch(overallBlock, overallCatchBlock);
+
+            const string EXPECTED = @"
+try
+{
+    var memoryStream = stream as MemoryStream;
+    if (memoryStream != null)
+    {
+        return 
+        {
+            try
+            {
+                var msLength = memoryStream.Length;
+                return msLength;
+            }
+            catch
+            {
+                throw new NotSupportedException();
+            }
+        }
+    }
+
+    var fileStream = stream as FileStream;
+    if (fileStream != null)
+    {
+        return 
+        {
+            try
+            {
+                var fsLength = fileStream.Length;
+                return fsLength;
+            }
+            catch
+            {
+                throw new IOException();
+            }
+        }
+    }
+
+    return 0L;
+}
+catch
+{
+    return -1L;
+}";
+
+            var translated = overallTryCatch.ToReadableString();
+
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
