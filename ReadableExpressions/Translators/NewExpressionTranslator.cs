@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
+    using NetStandardPolyfills;
 
     internal class NewExpressionTranslator : ExpressionTranslatorBase
     {

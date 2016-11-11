@@ -4,17 +4,29 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq.Expressions;
     using System.Reflection;
     using Extensions;
+    using NetStandardPolyfills;
 
     internal class TypeEqualExpressionTranslator : ExpressionTranslatorBase
     {
-        private static readonly MethodInfo _reduceTypeEqualMethod =
-            typeof(TypeBinaryExpression)
-                .GetNonPublicInstanceMethods()
-                .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
+        private static readonly MethodInfo _reduceTypeEqualMethod;
 
         public TypeEqualExpressionTranslator()
             : base(ExpressionType.TypeEqual)
         {
+        }
+
+        static TypeEqualExpressionTranslator()
+        {
+            try
+            {
+                _reduceTypeEqualMethod = typeof(TypeBinaryExpression)
+                    .GetNonPublicInstanceMethods()
+                    .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
+            }
+            catch
+            {
+                // Unable to find or access ReduceTypeEqual - ignore
+            }
         }
 
         public override string Translate(Expression expression, TranslationContext context)

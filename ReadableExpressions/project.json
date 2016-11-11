@@ -18,13 +18,14 @@
       "url": "https://github.com/AgileObjects/ReadableExpressions"
     }
   },
-
   "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true,
     "outputName": "AgileObjects.ReadableExpressions"
   },
-
+  "dependencies": {
+    "AgileObjects.NetStandardPolyfills": "0.1.2"
+  },
   "frameworks": {
     "netstandard1.0": {
       "imports": "dnxcore50",

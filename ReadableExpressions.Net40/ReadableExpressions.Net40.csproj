@@ -33,6 +33,9 @@
     <DocumentationFile>bin\Release\AgileObjects.ReadableExpressions.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AgileObjects.NetStandardPolyfills">
+      <HintPath>..\..\..\..\Users\Steve\.nuget\packages\AgileObjects.NetStandardPolyfills\0.1.2\lib\net40\AgileObjects.NetStandardPolyfills.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>

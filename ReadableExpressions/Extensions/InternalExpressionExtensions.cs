@@ -7,11 +7,7 @@
 
     internal static class InternalExpressionExtensions
     {
-        public static Expression GetSubject(this MethodCallExpression methodCall)
-        {
-            return methodCall.Method.IsExtensionMethod()
-                ? methodCall.Arguments.First() : methodCall.Object;
-        }
+        
 
         public static bool IsReturnable(this Expression expression)
         {
