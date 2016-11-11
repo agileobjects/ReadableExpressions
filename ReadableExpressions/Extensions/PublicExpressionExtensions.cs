@@ -22,5 +22,24 @@
             return methodCall.Method.IsExtensionMethod()
                 ? methodCall.Arguments.First() : methodCall.Object;
         }
+
+        /// <summary>
+        /// Gets the parent Expression for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression for which to retrieve the parent.</param>
+        /// <returns>The given <paramref name="expression"/>'s parent Expression.</returns>
+        public static Expression GetParentOrNull(this Expression expression)
+        {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.Call:
+                    return ((MethodCallExpression)expression).GetSubject();
+
+                case ExpressionType.MemberAccess:
+                    return ((MemberExpression)expression).Expression;
+            }
+
+            return null;
+        }
     }
 }

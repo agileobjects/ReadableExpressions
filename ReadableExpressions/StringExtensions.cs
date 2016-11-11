@@ -109,7 +109,14 @@ namespace AgileObjects.ReadableExpressions
                     return true;
 
                 case ExpressionType.Call:
-                    return ((MethodCallExpression)expression).Object?.NodeType == ExpressionType.Convert;
+                    var parentExpression = expression.GetParentOrNull();
+                    while (parentExpression != null)
+                    {
+                        expression = parentExpression;
+                        parentExpression = expression.GetParentOrNull();
+                    }
+
+                    return (expression.NodeType == ExpressionType.Convert);
             }
 
             return false;

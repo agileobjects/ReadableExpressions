@@ -392,6 +392,20 @@ catch
         }
 
         [TestMethod]
+        public void ShouldNotRemoveParenthesesFromACastObjectChainedMethodCall()
+        {
+            Expression<Func<IList<int>, string[]>> intArrayConverter =
+                ints => ((int[])ints).ToString().Split(',');
+
+            var stringArrayVariable = Expression.Variable(typeof(string[]), "strings");
+            var assignment = Expression.Assign(stringArrayVariable, intArrayConverter.Body);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.AreEqual("strings = ((int[])ints).ToString().Split(',')", translated);
+        }
+
+        [TestMethod]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
             Expression<Func<IEnumerable<TimeSpan>>> selectTimeSpans =
