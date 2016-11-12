@@ -36,7 +36,18 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return FallbackTranslation(expression, context);
             }
 
-            var reducedTypeEqualExpression = (Expression)_reduceTypeEqualMethod.Invoke(expression, null);
+            Expression reducedTypeEqualExpression;
+
+            try
+            {
+                reducedTypeEqualExpression = (Expression)_reduceTypeEqualMethod.Invoke(expression, null);
+            }
+            catch
+            {
+                // Unable to invoke the non-public ReduceTypeEqual method:
+                return FallbackTranslation(expression, context);
+            }
+
             var translated = context.Translate(reducedTypeEqualExpression).Unterminated();
 
             return translated;
@@ -47,7 +58,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             var typeBinary = (TypeBinaryExpression)expression;
             var operand = context.Translate(typeBinary.Expression);
 
-            return $"({operand} TypeOf {typeBinary.TypeOperand.GetFriendlyName()})";
+            return typeBinary.TypeOperand.IsClass()
+                ? $"({operand} is {typeBinary.TypeOperand.GetFriendlyName()})"
+                : $"({operand} TypeOf typeof({typeBinary.TypeOperand.GetFriendlyName()}))";
         }
     }
 }
