@@ -43,7 +43,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTest(ConditionalExpression conditional, TranslationContext context)
         {
-            var test = context.Translate(conditional.Test);
+            var test = context.TranslateAsCodeBlock(conditional.Test);
+
+            if (test.IsMultiLine())
+            {
+                test = test.Indented().TrimStart();
+            }
 
             return test.WithSurroundingParentheses(checkExisting: true);
         }

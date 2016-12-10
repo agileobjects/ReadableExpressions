@@ -98,6 +98,42 @@ if (i < 1)
         }
 
         [TestMethod]
+        public void ShouldTranslateAMultipleLineIfStatementTest()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var one = Expression.Constant(1);
+            var intVariableLessThanOne = Expression.LessThan(intVariable, one);
+            var returnLabel = Expression.Label(typeof(bool), "Return");
+            var returnTrue = Expression.Return(returnLabel, Expression.Constant(true));
+            var ifLessThanOneReturnTrue = Expression.IfThen(intVariableLessThanOne, returnTrue);
+            var five = Expression.Constant(5);
+            var intVariableMoreThanFive = Expression.GreaterThan(intVariable, five);
+            var returnMoreThanFive = Expression.Label(returnLabel, intVariableMoreThanFive);
+            var testBlock = Expression.Block(ifLessThanOneReturnTrue, returnMoreThanFive);
+
+            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            var writeVariable = Expression.Variable(writeHello.Type, "write");
+            var assignWrite = Expression.Assign(writeVariable, writeHello);
+            var ifTestPassesThenWrite = Expression.IfThen(testBlock, assignWrite);
+
+            var translated = ifTestPassesThenWrite.ToReadableString();
+
+            const string EXPECTED = @"
+if ({
+        if (i < 1)
+        {
+            return true;
+        }
+
+        return i > 5;
+    })
+{
+    write = () => Console.WriteLine(""Hello"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnIfElseStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");

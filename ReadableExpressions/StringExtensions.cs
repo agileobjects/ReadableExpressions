@@ -106,6 +106,7 @@ namespace AgileObjects.ReadableExpressions
             switch (expression.NodeType)
             {
                 case ExpressionType.Conditional:
+                case ExpressionType.Lambda:
                     return true;
 
                 case ExpressionType.Call:
@@ -117,9 +118,6 @@ namespace AgileObjects.ReadableExpressions
                     }
 
                     return (expression.NodeType == ExpressionType.Convert);
-
-                case ExpressionType.Lambda:
-                    return ((LambdaExpression)expression).Parameters.Count > 1;
             }
 
             return false;
