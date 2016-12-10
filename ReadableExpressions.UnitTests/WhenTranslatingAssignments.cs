@@ -82,7 +82,7 @@
             const string EXPECTED = @"
 checked
 {
-    i -= 
+    i -=
     {
         var one = Console.Read();
         var two = Console.Read();
@@ -305,7 +305,7 @@ var i = ((long)(j = 10));";
             var translated = assignReadOrDefault.ToReadableString();
 
             const string EXPECTED = @"
-i = 
+i =
 {
     try
     {
@@ -500,7 +500,7 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
             var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
-result = 
+result =
 {
     var one = Console.Read();
     var two = Console.Read();
@@ -529,7 +529,7 @@ result =
             var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
-result = 
+result =
 {
     List<int> ints;
     Console.Read();
@@ -573,7 +573,7 @@ result =
             var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
-result = 
+result =
 {
     List<int> ints;
     return (ints == null)
@@ -595,6 +595,102 @@ result =
 
             return ints;
         }
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithATernaryReturnValue()
+        {
+            var objectVariable = Expression.Variable(typeof(object), "id");
+            var objectValue = Expression.Variable(typeof(object), "value");
+            var guidVariable = Expression.Variable(typeof(Guid), "guid");
+            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
+
+            var guidTryParseMethod = typeof(Guid)
+                .GetMethods()
+                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
+
+            var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
+            var defaultGuid = Expression.Default(typeof(Guid));
+
+            var guidTryParse = Expression.Call(
+                null,
+                guidTryParseMethod,
+                Expression.Condition(
+                    objectNotNull,
+                    Expression.Call(objectVariable, typeof(object).GetMethod("ToString")),
+                    Expression.Default(typeof(string))),
+                guidValue);
+
+            var objectAsGuidOrDefault = Expression.Condition(guidTryParse, guidValue, defaultGuid);
+
+            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+
+            var guidParseOuterBlock = Expression.Block(
+                new[] { objectVariable },
+                Expression.Assign(objectVariable, objectValue),
+                guidParseInnerBlock);
+
+            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+
+            var translated = guidAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+guid =
+{
+    var id = value;
+    Guid guidValue;
+    return Guid.TryParse((id != null) ? id.ToString() : null, out guidValue) ? guidValue : default(Guid);
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithANestedTernaryReturnValue()
+        {
+            var objectVariable = Expression.Variable(typeof(object), "id");
+            var objectValue = Expression.Variable(typeof(object), "value");
+            var guidVariable = Expression.Variable(typeof(Guid), "guid");
+            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
+
+            var guidTryParseMethod = typeof(Guid)
+                .GetMethods()
+                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
+
+            var guidTryParse = Expression.Call(
+                null,
+                guidTryParseMethod,
+                Expression.Call(objectVariable, typeof(object).GetMethod("ToString")),
+                guidValue);
+
+            var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
+            var defaultGuid = Expression.Default(typeof(Guid));
+
+            var objectAsGuidOrDefault = Expression.Condition(
+                objectNotNull,
+                Expression.Condition(guidTryParse, guidValue, defaultGuid),
+                defaultGuid);
+
+            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+
+            var guidParseOuterBlock = Expression.Block(
+                new[] { objectVariable },
+                Expression.Assign(objectVariable, objectValue),
+                guidParseInnerBlock);
+
+            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+
+            var translated = guidAssignment.ToReadableString();
+
+            const string EXPECTED = @"
+guid =
+{
+    var id = value;
+    Guid guidValue;
+    return (id != null)
+        ? Guid.TryParse(id.ToString(), out guidValue) ? guidValue : default(Guid)
+        : default(Guid);
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

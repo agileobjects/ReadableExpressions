@@ -20,7 +20,7 @@
             IsASingleStatement = IsSingleStatement(_blockLines);
         }
 
-        private static bool IsSingleStatement(IList<string> blockLines)
+        public static bool IsSingleStatement(IList<string> blockLines)
         {
             if (blockLines.Count != 1)
             {
@@ -140,12 +140,19 @@
                 return this;
             }
 
-            return new CodeBlock(_expression, GetBlockLinesWithInsert());
+            return new CodeBlock(_expression, GetBlockLinesWithReturnKeyword(_blockLines));
         }
 
-        private string[] GetBlockLinesWithInsert()
+        public static string InsertReturnKeyword(string multiLineStatement)
         {
-            var blockInfo = new BlockInfo(_blockLines);
+            var lines = multiLineStatement.SplitToLines();
+
+            return string.Join(Environment.NewLine, GetBlockLinesWithReturnKeyword(lines));
+        }
+
+        private static string[] GetBlockLinesWithReturnKeyword(string[] lines)
+        {
+            var blockInfo = new BlockInfo(lines);
 
             return blockInfo.GetBlockLinesWithReturnKeyword();
         }
@@ -168,19 +175,17 @@
         private class BlockInfo
         {
             private readonly string[] _blockLines;
-            private readonly int _lastNonIndentedStatementIndex;
+            private readonly string _lastNonIndentedStatement;
+            private readonly string[] _lastStatementLines;
             private readonly string _lastNonIndentedLine;
-            private readonly int _lastNonIndentedLineIndex;
 
             public BlockInfo(string[] blockLines)
             {
                 _blockLines = blockLines;
-                var lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
-                _lastNonIndentedStatementIndex = Array.IndexOf(blockLines, lastNonIndentedStatement);
+                _lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
 
-                var lastStatementLines = lastNonIndentedStatement.SplitToLines();
-                _lastNonIndentedLine = lastStatementLines.Last(line => line.IsNotIndented());
-                _lastNonIndentedLineIndex = Array.IndexOf(lastStatementLines, _lastNonIndentedLine);
+                _lastStatementLines = _lastNonIndentedStatement.SplitToLines();
+                _lastNonIndentedLine = _lastStatementLines.Last(line => line.IsNotIndented());
             }
 
             public bool LastLineHasReturnKeyword =>
@@ -188,27 +193,28 @@
 
             public string[] GetBlockLinesWithReturnKeyword()
             {
-                var lastNonIndentedStatement = _blockLines.Last(line => line.IsNotIndented());
-
                 var updatedBlockLines = new List<string>();
 
-                var preLastStatementStatements = _blockLines
-                    .Take(_blockLines.Length - (_lastNonIndentedStatementIndex + 1));
+                var lastNonIndentedStatementIndex = Array.IndexOf(_blockLines, _lastNonIndentedStatement);
+                var preLastStatementStatements = _blockLines.Take(lastNonIndentedStatementIndex);
 
                 updatedBlockLines.AddRange(preLastStatementStatements);
 
-                var lastStatementLines = lastNonIndentedStatement.SplitToLines();
+                var lastNonIndentedLineIndex = Array.IndexOf(_lastStatementLines, _lastNonIndentedLine);
 
-                var preLastLineLines = lastStatementLines
-                    .Take(_lastNonIndentedLineIndex)
+                var preLastLineLines = _lastStatementLines
+                    .Take(lastNonIndentedLineIndex)
                     .ToArray();
 
-                var postLastLineLines = lastStatementLines
+                var postLastLineLines = _lastStatementLines
                     .Skip(preLastLineLines.Length + 1);
 
                 updatedBlockLines.AddRange(preLastLineLines);
                 updatedBlockLines.Add("return " + _lastNonIndentedLine);
                 updatedBlockLines.AddRange(postLastLineLines);
+
+                var finalIndentedLines = _blockLines.Skip(lastNonIndentedStatementIndex + 1);
+                updatedBlockLines.AddRange(finalIndentedLines);
 
                 return updatedBlockLines.ToArray();
             }

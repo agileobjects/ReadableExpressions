@@ -1,10 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.CodeDom;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
+    using Formatting;
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
@@ -146,7 +148,19 @@ namespace AgileObjects.ReadableExpressions.Translators
                     continue;
                 }
 
-                yield return IncludeReturnStatement(block, lines) ? "return " + line : line;
+                if (DoNotAddReturnStatement(block, lines))
+                {
+                    yield return line;
+                    yield break;
+                }
+
+                if (CodeBlock.IsSingleStatement(line.SplitToLines()))
+                {
+                    yield return "return " + line;
+                    yield break;
+                }
+
+                yield return CodeBlock.InsertReturnKeyword(line);
             }
         }
 
@@ -168,9 +182,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Any(l => !l.IsTerminated());
         }
 
-        private static bool IncludeReturnStatement(BlockExpression block, ICollection<string> lines)
+        private static bool DoNotAddReturnStatement(BlockExpression block, ICollection<string> lines)
         {
-            return (lines.Count != 1) && block.IsReturnable();
+            return (lines.Count <= 1) || !block.IsReturnable();
         }
     }
 }

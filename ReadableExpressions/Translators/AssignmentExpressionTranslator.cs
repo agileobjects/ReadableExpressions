@@ -58,7 +58,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 ? _defaultTranslator.Translate((DefaultExpression)value)
                 : GetValueTranslation(value, context);
 
-            var assignment = $"{target} {symbol} {valueString}";
+            var assignment = target + " " + symbol;
+
+            if (!valueString.StartsWithNewLine())
+            {
+                assignment += " ";
+            }
+
+            assignment += valueString;
 
             assignment = AdjustForCheckedAssignmentIfAppropriate(assignmentType, assignment);
 

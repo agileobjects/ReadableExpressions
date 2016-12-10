@@ -135,6 +135,11 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool EndsWith(this string value, char character)
         {
+            if (value == string.Empty)
+            {
+                return false;
+            }
+
             return value[value.Length - 1] == character;
         }
 

@@ -477,7 +477,7 @@ catch
 
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
-            var intToStringMethod = typeof(int).GetMethods().First(m => m.Name == "ToString");
+            var intToStringMethod = typeof(object).GetMethod("ToString");
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
 
             Expression<Func<string>> emptyString = () => string.Empty;
