@@ -4,7 +4,9 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq.Expressions;
+#if NET_STANDARD
     using System.Reflection;
+#endif
     using System.Text.RegularExpressions;
     using Extensions;
     using NetStandardPolyfills;
@@ -283,26 +285,32 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var genericTypeArgumentsClosesNeeded = 1;
                 var genericTypeArgumentsString = argument;
 
-                while (i < arguments.Length - 1)
+                if (i == arguments.Length - 1)
                 {
-                    if (argument.IndexOf('`') != -1)
+                    genericTypeArgumentsString = RemoveFinalGenericArgumentsClose(genericTypeArgumentsString);
+                }
+                else
+                {
+                    while (i < arguments.Length - 1)
                     {
-                        ++genericTypeArgumentsClosesNeeded;
-                    }
+                        if (argument.IndexOf('`') != -1)
+                        {
+                            ++genericTypeArgumentsClosesNeeded;
+                        }
 
-                    argument = arguments[++i];
-                    genericTypeArgumentsString += "," + argument;
+                        argument = arguments[++i];
+                        genericTypeArgumentsString += "," + argument;
 
-                    if (argument.EndsWith(']') && (argument[argument.Length - 2] != '['))
-                    {
-                        --genericTypeArgumentsClosesNeeded;
-                    }
+                        if (argument.EndsWith(']') && (argument[argument.Length - 2] != '['))
+                        {
+                            --genericTypeArgumentsClosesNeeded;
+                        }
 
-                    if (genericTypeArgumentsClosesNeeded == 0)
-                    {
-                        genericTypeArgumentsString =
-                            genericTypeArgumentsString.Substring(0, genericTypeArgumentsString.Length - 1);
-                        break;
+                        if (genericTypeArgumentsClosesNeeded == 0)
+                        {
+                            genericTypeArgumentsString = RemoveFinalGenericArgumentsClose(genericTypeArgumentsString);
+                            break;
+                        }
                     }
                 }
 
@@ -310,6 +318,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 yield return GetGenericTypeName(genericTypeName, genericTypeArguments);
             }
+        }
+
+        private static string GetTypeName(string typeFullName)
+        {
+            if (typeFullName.EndsWith("[]", StringComparison.Ordinal))
+            {
+                return GetTypeName(typeFullName.Substring(0, typeFullName.Length - 2)) + "[]";
+            }
+
+            return typeFullName.GetSubstitutionOrNull() ??
+                   typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
         }
 
         private static readonly int _nullableTypeArgumentStart = "System.Nullable`1[".Length;
@@ -322,15 +341,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return GetTypeName(nullableTypeName) + "?";
         }
 
-        private static string GetTypeName(string typeFullName)
+        private static string RemoveFinalGenericArgumentsClose(string genericTypeArgumentsString)
         {
-            if (typeFullName.EndsWith("[]", StringComparison.Ordinal))
-            {
-                return GetTypeName(typeFullName.Substring(0, typeFullName.Length - 2)) + "[]";
-            }
-
-            return typeFullName.GetSubstitutionOrNull() ??
-                   typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
+            return genericTypeArgumentsString.Substring(0, genericTypeArgumentsString.Length - 1);
         }
 
         private static string GetGenericTypeName(string typeName, IEnumerable<string> arguments)

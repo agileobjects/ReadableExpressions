@@ -326,6 +326,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAParameterisedAction()
+        {
+            Action<IDictionary<object, List<string>>> dictionaryPrinter = Console.WriteLine;
+            var actionConstant = Expression.Constant(dictionaryPrinter);
+
+            var translated = actionConstant.ToReadableString();
+
+            Assert.AreEqual("Action<IDictionary<object, List<string>>>", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAFuncWithNestedGenericParameters()
         {
             Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>> dictionaryFactory =
