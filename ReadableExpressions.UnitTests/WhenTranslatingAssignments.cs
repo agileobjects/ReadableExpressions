@@ -222,6 +222,19 @@ checked
         }
 
         [TestMethod]
+        public void ShouldTranslateANegatedBooleanAssignment()
+        {
+            var boolVariable1 = Expression.Variable(typeof(bool), "isItNot");
+            var boolVariable2 = Expression.Variable(typeof(bool), "isIt");
+            var assignBool = Expression.Assign(boolVariable1, Expression.IsFalse(boolVariable2));
+            var negated = Expression.Not(assignBool);
+
+            var translated = negated.ToReadableString();
+
+            Assert.AreEqual("!(isItNot = !isIt)", translated);
+        }
+
+        [TestMethod]
         public void ShouldWrapAnAssignmentTernaryTestInParentheses()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i");

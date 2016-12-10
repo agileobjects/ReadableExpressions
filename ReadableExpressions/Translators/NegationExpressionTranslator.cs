@@ -32,7 +32,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string Translate(ExpressionType negationType, Expression expression, TranslationContext context)
         {
-            return _negationsByNodeType[negationType] + context.Translate(expression);
+            var valueToNegate = context.Translate(expression);
+
+            if (valueToNegate.Contains(" "))
+            {
+                valueToNegate = valueToNegate.WithSurroundingParentheses(checkExisting: true);
+            }
+
+            return _negationsByNodeType[negationType] + valueToNegate;
         }
     }
 }
