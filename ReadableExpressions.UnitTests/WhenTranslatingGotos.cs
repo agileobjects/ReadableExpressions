@@ -158,7 +158,6 @@ return false;";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
-
         [TestMethod]
         public void ShouldTranslateAReturnStatementWithABlock()
         {
@@ -190,6 +189,43 @@ return
     i = i + 2;
     return i;
 }";
+
+            var translated = returnBlock.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateALabelWithABlockDefaultValue()
+        {
+            var returnLabelTarget = Expression.Label(typeof(int), "Return");
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var variableInit = Expression.Assign(intVariable, Expression.Constant(0));
+            var variablePlusOne = Expression.Add(intVariable, Expression.Constant(1));
+            var variableAdditionOne = Expression.Assign(intVariable, variablePlusOne);
+            var variablePlusTwo = Expression.Add(intVariable, Expression.Constant(2));
+            var variableAdditionTwo = Expression.Assign(intVariable, variablePlusTwo);
+
+            var variableBlock = Expression.Block(variableAdditionTwo, intVariable);
+
+            var returnVariableBlock = Expression.Label(returnLabelTarget, variableBlock);
+
+            var returnBlock = Expression.Block(
+                new[] { intVariable },
+                variableInit,
+                variableAdditionOne,
+                returnVariableBlock);
+
+            const string EXPECTED = @"
+var i = 0;
+i = i + 1;
+
+return 
+{
+    i = i + 2;
+    return i;
+};";
 
             var translated = returnBlock.ToReadableString();
 

@@ -20,6 +20,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 return labelNamePart;
             }
+
             var labelValuePart = $"{Environment.NewLine}return {context.TranslateAsCodeBlock(label.DefaultValue)};";
 
             return labelNamePart + labelValuePart;
