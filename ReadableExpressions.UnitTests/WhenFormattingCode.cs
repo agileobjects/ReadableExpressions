@@ -507,6 +507,18 @@ catch
         }
 
         [TestMethod]
+        public void ShouldNotRemoveParenthesesFromMultiParameterLambdaArguments()
+        {
+            Expression<Func<IEnumerable<string>, string[]>> stringsConverter =
+                strings => strings.Select((str, i) => string.Join(i + ": ", str)).ToArray();
+
+            const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
+            var translated = stringsConverter.Body.ToReadableString();
+
+            Assert.AreEqual(EXPECTED, translated);
+        }
+
+        [TestMethod]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
             Expression<Func<IEnumerable<TimeSpan>>> selectTimeSpans =

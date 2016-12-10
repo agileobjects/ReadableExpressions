@@ -117,6 +117,9 @@ namespace AgileObjects.ReadableExpressions
                     }
 
                     return (expression.NodeType == ExpressionType.Convert);
+
+                case ExpressionType.Lambda:
+                    return ((LambdaExpression)expression).Parameters.Count > 1;
             }
 
             return false;
