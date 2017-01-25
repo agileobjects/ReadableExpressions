@@ -452,6 +452,30 @@ catch
         }
 
         [TestMethod]
+        public void ShouldNotIndentParamsArrayArguments()
+        {
+            Expression<Func<string>> stringJoiner = () =>
+                string.Join(",", "[", "i", "]", "[", "j", "]", "[", "k", "]");
+
+            const string EXPECTED = @"
+string.Join(
+    "","",
+    ""["",
+    ""i"",
+    ""]"",
+    ""["",
+    ""j"",
+    ""]"",
+    ""["",
+    ""k"",
+    ""]"")";
+
+            var translated = stringJoiner.Body.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnExtensionExpressionType()
         {
             var extension = new ExtensionExpression();

@@ -69,9 +69,15 @@
         {
             var arrayValuesStart = array.IndexOf('{') + 1;
             var arrayValuesEnd = array.LastIndexOf('}');
-            var arrayValues = array.Substring(arrayValuesStart, arrayValuesEnd - arrayValuesStart).Trim();
 
-            return arrayValues;
+            var arrayValues = array
+                .Substring(arrayValuesStart, arrayValuesEnd - arrayValuesStart)
+                .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Trim(' '));
+
+            var arrayValuesString = string.Join(Environment.NewLine, arrayValues);
+
+            return arrayValuesString;
         }
 
         private IEnumerable<Func<Expression, string>> GetArgumentTranslators(
