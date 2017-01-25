@@ -34,12 +34,22 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var valueToNegate = context.Translate(expression);
 
-            if (valueToNegate.Contains(" "))
+            if (WrapNegatedValue(valueToNegate, expression))
             {
                 valueToNegate = valueToNegate.WithSurroundingParentheses(checkExisting: true);
             }
 
             return _negationsByNodeType[negationType] + valueToNegate;
+        }
+
+        private static bool WrapNegatedValue(string value, Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.Call)
+            {
+                return false;
+            }
+
+            return value.Contains(" ");
         }
     }
 }

@@ -292,6 +292,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateANegatedMethodCall()
+        {
+            Expression<Func<List<int>, bool>> listDoesNotContainZero =
+                l => !l.Contains(0, EqualityComparer<int>.Default);
+
+            var translated = listDoesNotContainZero.Body.ToReadableString();
+
+            Assert.AreEqual("!l.Contains(0, EqualityComparer<int>.Default)", translated);
+        }
+
+        [TestMethod]
         public void ShouldNotIncludeCapturedInstanceNames()
         {
             var helper = new CapturedInstanceHelper(5);
