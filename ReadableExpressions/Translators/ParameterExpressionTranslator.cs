@@ -41,9 +41,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public override string Translate(Expression expression, TranslationContext context)
         {
-            var parameterName = ((ParameterExpression)expression).Name;
+            return Translate((ParameterExpression)expression);
+        }
 
-            return _keywords.Contains(parameterName) ? "@" + parameterName : parameterName;
+        public string Translate(ParameterExpression parameter)
+        {
+            return _keywords.Contains(parameter.Name) ? "@" + parameter.Name : parameter.Name;
         }
     }
 }

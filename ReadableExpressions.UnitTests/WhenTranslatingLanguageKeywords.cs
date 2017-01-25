@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using System;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -55,6 +56,21 @@
             var translated = variable.ToReadableString();
 
             Assert.AreEqual("@" + keyword, translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateADeclaredBlockVariableKeyword()
+        {
+            var variable = Expression.Variable(typeof(string), "string");
+            Expression<Action> writeLine = () => Console.WriteLine("La la la");
+            var block = Expression.Block(new[] { variable }, writeLine.Body);
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+string @string;
+Console.WriteLine(""La la la"");";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
 }

@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.CodeDom;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -10,9 +9,12 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal class BlockExpressionTranslator : ExpressionTranslatorBase
     {
-        public BlockExpressionTranslator()
+        private readonly ParameterExpressionTranslator _variableNameTranslator;
+
+        public BlockExpressionTranslator(ParameterExpressionTranslator variableNameTranslator)
             : base(ExpressionType.Block)
         {
+            _variableNameTranslator = variableNameTranslator;
         }
 
         public override string Translate(Expression expression, TranslationContext context)
@@ -29,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return string.Join(Environment.NewLine, blockContents);
         }
 
-        private static IEnumerable<string> GetVariableDeclarations(
+        private IEnumerable<string> GetVariableDeclarations(
             BlockExpression block,
             TranslationContext context)
         {
@@ -37,7 +39,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Variables
                 .Except(context.JoinedAssignmentVariables)
                 .GroupBy(v => v.Type)
-                .Select(vGrp => $"{vGrp.Key.GetFriendlyName()} {string.Join(", ", vGrp)};");
+                .Select(vGrp => new
+                {
+                    TypeName = vGrp.Key.GetFriendlyName(),
+                    VariableNames = vGrp.Select(varName => _variableNameTranslator.Translate(varName))
+                })
+                .Select(varData => $"{varData.TypeName} {string.Join(", ", varData.VariableNames)};");
         }
 
         private static IEnumerable<string> GetBlockLines(BlockExpression block, TranslationContext context)
