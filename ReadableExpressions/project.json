@@ -1,5 +1,5 @@
 {
-  "version": "1.8.2-*",
+  "version": "1.8.3-*",
   "authors": [ "Steve Wilkes" ],
   "title": "ReadableExpressions",
   "name": "AgileObjects.ReadableExpressions",
@@ -25,7 +25,7 @@
     "outputName": "AgileObjects.ReadableExpressions"
   },
   "dependencies": {
-    "AgileObjects.NetStandardPolyfills": "0.1.2"
+    "AgileObjects.NetStandardPolyfills": "0.2.0"
   },
   "frameworks": {
     "netstandard1.0": {
