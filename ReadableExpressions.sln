@@ -1,18 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.UnitTests", "ReadableExpressions.UnitTests\ReadableExpressions.UnitTests.csproj", "{A7BAC212-DA6C-4473-8043-006FF6967922}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{884A1D4E-7B9C-4411-A1E5-50B30F243FB1}"
 	ProjectSection(SolutionItems) = preProject
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
-		global.json = global.json
 		NuGetPack.bat = NuGetPack.bat
 		README.md = README.md
 		VersionInfo.cs = VersionInfo.cs
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.UnitTests", "ReadableExpressions.UnitTests\ReadableExpressions.UnitTests.csproj", "{A7BAC212-DA6C-4473-8043-006FF6967922}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Core", "ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj", "{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}"
 EndProject
@@ -30,7 +29,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visuali
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Vs11", "ReadableExpressions.Visualizers.Vs11\ReadableExpressions.Visualizers.Vs11.csproj", "{27506162-46CD-4BB6-9734-1CCF8207529A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ReadableExpressions", "ReadableExpressions\ReadableExpressions.xproj", "{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions", "ReadableExpressions\ReadableExpressions.csproj", "{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Net40", "ReadableExpressions.Net40\ReadableExpressions.Net40.csproj", "{7A33DA5B-5DEE-42CB-A354-A77766B635BA}"
 EndProject
