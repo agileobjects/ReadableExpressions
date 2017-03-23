@@ -70,15 +70,33 @@
 
         private static IEnumerable<Visualizer> GetRelevantVisualizers()
         {
-            return _thisAssembly
-                .GetManifestResourceNames()
-                .WithExtension("dll")
-                .Select(visualizerResourceName => new Visualizer
+            const string REGISTRY_KEY = @"SOFTWARE\Microsoft\VisualStudio";
+
+            using (var vsMachineKey = Registry.LocalMachine.OpenSubKey(REGISTRY_KEY))
+            {
+                if (vsMachineKey == null)
                 {
-                    ResourceName = visualizerResourceName,
-                    VsVersionNumber = GetVsVersionNumber(visualizerResourceName)
-                })
-                .Where(TryPopulateInstallPaths);
+                    return Enumerable.Empty<Visualizer>();
+                }
+
+                var vsSubKeyNames = vsMachineKey.GetSubKeyNames();
+
+                if (!vsSubKeyNames.Any())
+                {
+                    return Enumerable.Empty<Visualizer>();
+                }
+
+                return _thisAssembly
+                    .GetManifestResourceNames()
+                    .WithExtension("dll")
+                    .Select(visualizerResourceName => new Visualizer
+                    {
+                        ResourceName = visualizerResourceName,
+                        VsVersionNumber = GetVsVersionNumber(visualizerResourceName)
+                    })
+                    .SelectMany(visualizer => PopulateInstallPaths(visualizer, vsMachineKey, vsSubKeyNames))
+                    .ToArray();
+            }
         }
 
         private static readonly Regex _versionNumberMatcher =
@@ -94,32 +112,132 @@
             return int.Parse(matchValue);
         }
 
-        private static bool TryPopulateInstallPaths(Visualizer visualizer)
+        private static IEnumerable<Visualizer> PopulateInstallPaths(
+            Visualizer visualizer,
+            RegistryKey vsMachineKey,
+            IEnumerable<string> vsSubKeyNames)
         {
-            var registryKey = $@"SOFTWARE\Microsoft\VisualStudio\{visualizer.VsVersionNumber}.0";
+            ICollection<Visualizer> targetVisualizers;
 
-            using (var localMachineKey = Registry.LocalMachine.OpenSubKey(registryKey))
+            if (!TryPopulateInstallPaths(vsMachineKey, vsSubKeyNames, visualizer, out targetVisualizers))
             {
-                var vsInstallPath = localMachineKey?.GetValue("InstallDir") as string;
-
-                if (vsInstallPath == null)
-                {
-                    return false;
-                }
-
-                var indexOfIde = vsInstallPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
-                var pathToCommon7 = vsInstallPath.Substring(0, indexOfIde);
-                var pathToVisualizers = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
-                var visualizerAssemblyName = GetResourceFileName(visualizer.ResourceName);
-                var pathToExtensions = GetPathToExtensions(vsInstallPath);
-
-                visualizer.InstallPath = Path.Combine(pathToVisualizers, visualizerAssemblyName);
-                visualizer.VsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
-
-                PopulateVsSetupData(visualizer, localMachineKey, vsInstallPath);
-
-                return true;
+                yield break;
             }
+
+            foreach (var targetVisualizer in targetVisualizers)
+            {
+                using (targetVisualizer)
+                {
+                    var vsInstallPath = targetVisualizer.VsInstallDirectory;
+                    var indexOfIde = vsInstallPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
+                    var pathToCommon7 = vsInstallPath.Substring(0, indexOfIde);
+                    var pathToVisualizers = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
+                    var visualizerAssemblyName = GetResourceFileName(targetVisualizer.ResourceName);
+                    var pathToExtensions = GetPathToExtensions(vsInstallPath);
+
+                    targetVisualizer.InstallPath = Path.Combine(pathToVisualizers, visualizerAssemblyName);
+                    targetVisualizer.VsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
+
+                    PopulateVsSetupData(targetVisualizer);
+
+                    yield return targetVisualizer;
+                }
+            }
+        }
+
+        private static bool TryPopulateInstallPaths(
+            RegistryKey vsMachineKey,
+            IEnumerable<string> vsSubKeyNames,
+            Visualizer visualizer,
+            out ICollection<Visualizer> targetVisualizers)
+        {
+            targetVisualizers = new List<Visualizer>();
+
+            Visualizer targetVisualizer;
+
+            if (TryGetPreVersion15InstallPath(vsMachineKey, vsSubKeyNames, visualizer, out targetVisualizer))
+            {
+                targetVisualizers.Add(targetVisualizer);
+            }
+
+            if (TryGetPostVersion14InstallPath(vsSubKeyNames, visualizer, out targetVisualizer))
+            {
+                targetVisualizers.Add(targetVisualizer);
+            }
+
+            return targetVisualizers.Any();
+        }
+
+        private static bool TryGetPreVersion15InstallPath(
+            RegistryKey vsMachineKey,
+            IEnumerable<string> vsSubKeyNames,
+            Visualizer visualizer,
+            out Visualizer targetVisualizer)
+        {
+            var preVersion15Key = vsSubKeyNames.FirstOrDefault(name => name == visualizer.VsFullVersionNumber);
+
+            if (preVersion15Key == null)
+            {
+                targetVisualizer = null;
+                return false;
+            }
+
+            var vsSubKey = vsMachineKey.OpenSubKey(preVersion15Key);
+            var installPath = vsSubKey?.GetValue("InstallDir") as string;
+
+            if (string.IsNullOrWhiteSpace(installPath))
+            {
+                targetVisualizer = null;
+                return false;
+            }
+
+            targetVisualizer = visualizer.With(vsSubKey, installPath);
+            return true;
+        }
+
+        private static bool TryGetPostVersion14InstallPath(
+            IEnumerable<string> vsSubKeyNames,
+            Visualizer visualizer,
+            out Visualizer targetVisualizer)
+        {
+            var post2015Key = vsSubKeyNames.FirstOrDefault(name =>
+                name.StartsWith(visualizer.VsFullVersionNumber + "_", StringComparison.Ordinal));
+
+            if (post2015Key == null)
+            {
+                targetVisualizer = null;
+                return false;
+            }
+
+            var post2015Suffix = post2015Key.Substring(visualizer.VsFullVersionNumber.Length);
+            var post2015KeyPath = @"SOFTWARE\Microsoft\VisualStudio" + post2015Suffix + @"\Capabilities";
+
+            var post2015MachineKey = Registry.LocalMachine.OpenSubKey(post2015KeyPath);
+            var installPath = post2015MachineKey?.GetValue("ApplicationDescription") as string;
+
+            if (string.IsNullOrWhiteSpace(installPath))
+            {
+                targetVisualizer = null;
+                return false;
+            }
+
+            var indexOfIde = installPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
+
+            if (indexOfIde == -1)
+            {
+                targetVisualizer = null;
+                return false;
+            }
+
+            installPath = installPath.Substring(0, indexOfIde + "IDE".Length);
+
+            if (installPath.StartsWith("@", StringComparison.Ordinal))
+            {
+                installPath = installPath.Substring(1);
+            }
+
+            targetVisualizer = visualizer.With(post2015MachineKey, installPath);
+            return true;
         }
 
         private static string GetResourceFileName(string resourceName)
@@ -140,14 +258,14 @@
                 _thisAssemblyVersion.FileVersion);
         }
 
-        private static void PopulateVsSetupData(Visualizer visualizer, RegistryKey localMachineKey, string vsInstallPath)
+        private static void PopulateVsSetupData(Visualizer visualizer)
         {
-            var pathToDevEnv = Path.Combine(vsInstallPath, "devenv.exe");
+            var pathToDevEnv = Path.Combine(visualizer.VsInstallDirectory, "devenv.exe");
 
             if (File.Exists(pathToDevEnv))
             {
                 visualizer.VsExePath = pathToDevEnv;
-                visualizer.VsSetupArgument = localMachineKey?.GetValue("SetupCommandLine") as string ?? "/setup";
+                visualizer.VsSetupArgument = visualizer.RegistryKey?.GetValue("SetupCommandLine") as string ?? "/setup";
             }
         }
 
