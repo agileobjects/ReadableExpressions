@@ -4,7 +4,7 @@
     <Description>An extension method and set of Debugger Visualizers to produce a readable string version of an expression tree.</Description>
     <Copyright>2016 Steve Wilkes</Copyright>
     <AssemblyTitle>ReadableExpressions</AssemblyTitle>
-    <VersionPrefix>1.8.3</VersionPrefix>
+    <VersionPrefix>1.8.4</VersionPrefix>
     <Authors>Steve Wilkes</Authors>
     <TargetFrameworks>netstandard1.0;net40</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
