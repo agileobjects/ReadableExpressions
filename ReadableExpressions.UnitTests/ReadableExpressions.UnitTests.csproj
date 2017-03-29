@@ -85,9 +85,9 @@
     <Compile Include="WhenTranslatingMemberAccesses.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Net40\ReadableExpressions.Net40.csproj">
-      <Project>{7a33da5b-5dee-42cb-a354-a77766b635ba}</Project>
-      <Name>ReadableExpressions.Net40</Name>
+    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
+      <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>
+      <Name>ReadableExpressions</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
