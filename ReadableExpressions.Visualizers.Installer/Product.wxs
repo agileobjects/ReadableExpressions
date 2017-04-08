@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="AgileObjects.ReadableExpressions.Visualizers" Language="1033" Version="1.8.4.0"
+					 Manufacturer="AgileObjects" UpgradeCode="BB7C528F-ECFD-45F2-B50C-9F0A71EC8BE9">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate />
+
+    <InstallExecuteSequence>
+      <Custom Action="VisualizersInstall" Sequence="1" />
+
+      <Custom Action="VisualizersUninstall" After="InstallFinalize">
+        Installed AND NOT UPGRADINGPRODUCTCODE
+      </Custom>
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="AgileObjects.ReadableExpressions.Visualizers.Installer" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <CustomAction Id="VisualizersInstall" BinaryKey="VisualizersBinary"
+									DllEntry="Install" Execute="immediate" Return="check"/>
+
+    <CustomAction Id="VisualizersUninstall" BinaryKey="VisualizersBinary"
+									DllEntry="Uninstall" Execute="immediate" Return="check"/>
+
+    <Binary Id="VisualizersBinary" 
+            SourceFile="$(var.Installer.Custom.TargetDir)\ReadableExpressions.Visualizers.Installer.Custom.CA.dll"/>
+  </Fragment>
+</Wix>
