@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.10
+VisualStudioVersion = 15.0.26403.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{884A1D4E-7B9C-4411-A1E5-50B30F243FB1}"
 	ProjectSection(SolutionItems) = preProject
@@ -27,9 +27,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visuali
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions", "ReadableExpressions\ReadableExpressions.csproj", "{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}"
 EndProject
-Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "ReadableExpressions.Visualizers.Installer", "ReadableExpressions.Visualizers.Installer\ReadableExpressions.Visualizers.Installer.wixproj", "{1C83F266-D1B7-4910-8069-D82EACC06B6F}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Installer.Custom", "ReadableExpressions.Visualizers.Installer.Custom\ReadableExpressions.Visualizers.Installer.Custom.csproj", "{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}"
+EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "ReadableExpressions.Visualizers.Installer", "ReadableExpressions.Visualizers.Installer\ReadableExpressions.Visualizers.Installer.wixproj", "{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,18 +93,18 @@ Global
 		{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}.Release|Any CPU.Build.0 = Release|Any CPU
 		{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}.Release|x86.ActiveCfg = Release|Any CPU
 		{147DDCCE-CDD3-4DD0-8BA3-D3F2F239E161}.Release|x86.Build.0 = Release|Any CPU
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Debug|x86.ActiveCfg = Debug|x86
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Debug|x86.Build.0 = Debug|x86
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Release|Any CPU.ActiveCfg = Release|x86
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Release|x86.ActiveCfg = Release|x86
-		{1C83F266-D1B7-4910-8069-D82EACC06B6F}.Release|x86.Build.0 = Release|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Debug|x86.ActiveCfg = Debug|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Debug|x86.Build.0 = Debug|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Release|Any CPU.ActiveCfg = Release|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Release|x86.ActiveCfg = Release|x86
 		{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}.Release|x86.Build.0 = Release|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Debug|x86.ActiveCfg = Debug|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Debug|x86.Build.0 = Debug|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|Any CPU.ActiveCfg = Release|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|x86.ActiveCfg = Release|x86
+		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

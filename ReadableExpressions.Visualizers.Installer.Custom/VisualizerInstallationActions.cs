@@ -6,7 +6,6 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Security.Permissions;
     using System.Text;
     using System.Text.RegularExpressions;
     using Microsoft.Deployment.WindowsInstaller;
@@ -59,7 +58,6 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         private static string VsixManifest => _vsixManifestLoader.Value;
 
         [CustomAction]
-        [SecurityPermission(SecurityAction.Demand)]
         public static ActionResult Install(Session session)
         {
 #if DEBUG
@@ -86,7 +84,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             catch (Exception ex)
             {
                 Log(ex.ToString());
-                throw;
+                return ActionResult.Failure;
             }
             finally
             {
@@ -94,7 +92,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             }
         }
 
-        private static void Log(string message) => _session.Log(message);
+        private static void Log(string message) => _session?.Log(message);
 
         private static IEnumerable<Visualizer> GetRelevantVisualizers()
         {
@@ -278,13 +276,21 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         }
 
         [CustomAction]
-        [SecurityPermission(SecurityAction.Demand)]
-        public static void Uninstall(Session session)
+        public static ActionResult Uninstall(Session session)
         {
-            foreach (var visualizer in GetRelevantVisualizers())
+            try
             {
-                Delete(visualizer);
+                foreach (var visualizer in GetRelevantVisualizers())
+                {
+                    Delete(visualizer);
+                }
             }
+            catch
+            {
+                return ActionResult.Failure;
+            }
+
+            return ActionResult.Success;
         }
 
         private static void Delete(Visualizer visualizer)

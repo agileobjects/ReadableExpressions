@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="AgileObjects.ReadableExpressions.Visualizers" Language="1033" Version="1.8.4.0"
-					 Manufacturer="AgileObjects" UpgradeCode="BB7C528F-ECFD-45F2-B50C-9F0A71EC8BE9">
+  <Product Id="55937946-0bd4-4fe7-a7f2-ff565dd72e79" Version="1.8.4.0" Name="AgileObjects.ReadableExpressions.Visualizers"
+           Language="1033"  Manufacturer="AgileObjects" UpgradeCode="BB7C528F-ECFD-45F2-B50C-9F0A71EC8BE9">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate />
 
-    <InstallExecuteSequence>
-      <Custom Action="VisualizersInstall" Sequence="1" />
+    <Feature Id="ProductFeature" Title="AgileObjects.ReadableExpressions.Visualizers" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
 
-      <Custom Action="VisualizersUninstall" After="InstallFinalize">
-        Installed AND NOT UPGRADINGPRODUCTCODE
+    <InstallExecuteSequence>
+      <Custom Action="VisualizersInstall" After="InstallInitialize" />
+
+      <Custom Action="VisualizersUninstall" Before="InstallFinalize">
+        (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
     </InstallExecuteSequence>
   </Product>
@@ -19,19 +23,27 @@
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="INSTALLFOLDER" Name="AgileObjects.ReadableExpressions.Visualizers.Installer" />
+        <Directory Id="INSTALLFOLDER" Name="AgileObjects.ReadableExpressions.Visualizers" />
       </Directory>
     </Directory>
   </Fragment>
 
   <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="ProductComponent" Guid="3c7ec38f-cf7c-4cdc-845d-50f4f9f85fdf">
+        <CreateFolder/>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+  <Fragment>
+    <Binary Id="VisualizersBinary"
+            SourceFile="$(var.Installer.Custom.TargetDir)\ReadableExpressions.Visualizers.Installer.Custom.CA.dll"/>
+
     <CustomAction Id="VisualizersInstall" BinaryKey="VisualizersBinary"
-									DllEntry="Install" Execute="immediate" Return="check"/>
+                  DllEntry="Install" Impersonate="no" Execute="deferred" Return="check"/>
 
     <CustomAction Id="VisualizersUninstall" BinaryKey="VisualizersBinary"
-									DllEntry="Uninstall" Execute="immediate" Return="check"/>
-
-    <Binary Id="VisualizersBinary" 
-            SourceFile="$(var.Installer.Custom.TargetDir)\ReadableExpressions.Visualizers.Installer.Custom.CA.dll"/>
+                  DllEntry="Uninstall" Impersonate="no" Execute="deferred" Return="check"/>
   </Fragment>
 </Wix>

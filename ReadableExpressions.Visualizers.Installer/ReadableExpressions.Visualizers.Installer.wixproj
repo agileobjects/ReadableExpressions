@@ -4,9 +4,9 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.10</ProductVersion>
-    <ProjectGuid>1c83f266-d1b7-4910-8069-d82eacc06b6f</ProjectGuid>
+    <ProjectGuid>f2e07bd5-f32f-4c84-8c9f-30a90c6e8a52</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>AgileObjects.ReadableExpressions.Visualizers.Installer</OutputName>
+    <OutputName>AgileObjects.ReadableExpressions.Visualizers</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
