@@ -2,8 +2,6 @@
 {
     using System;
     using System.Linq.Expressions;
-    using System.Reflection;
-    using System.Reflection.Emit;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -406,6 +404,31 @@ if (true)
 Console.WriteLine(""One!"");
 Console.WriteLine(""One!"");
 return ((long?)1);";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldBreakLongMultipleConditionsOntoMultipleLines()
+        {
+            var intVariable1 = Expression.Variable(typeof(int), "thisVariableHasALongName");
+            var intVariable2 = Expression.Variable(typeof(int), "thisOtherVariableHasALongNameToo");
+            var int1IsGreaterThanInt2 = Expression.GreaterThan(intVariable1, intVariable2);
+            var int1IsNotEqualToInt2 = Expression.NotEqual(intVariable1, intVariable2);
+
+            var intIsInRange = Expression.AndAlso(int1IsGreaterThanInt2, int1IsNotEqualToInt2);
+            Expression<Action> writeYo = () => Console.WriteLine("Yo!");
+            var ifInRangeWriteYo = Expression.IfThen(intIsInRange, writeYo.Body);
+
+
+            var translated = ifInRangeWriteYo.ToReadableString();
+
+            const string EXPECTED = @"
+if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
+    (thisVariableHasALongName != thisOtherVariableHasALongNameToo))
+{
+    Console.WriteLine(""Yo!"");
+}";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }

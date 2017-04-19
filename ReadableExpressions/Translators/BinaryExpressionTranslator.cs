@@ -56,6 +56,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             };
         }
 
+        public static string GetOperator(Expression expression) => _operatorsByNodeType[expression.NodeType];
+
         public override string Translate(Expression expression, TranslationContext context)
         {
             var binary = (BinaryExpression)expression;
@@ -70,7 +72,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string Translate(BinaryExpression binary, TranslationContext context)
         {
             var left = TranslateOperand(binary.Left, context);
-            var @operator = _operatorsByNodeType[binary.NodeType];
+            var @operator = GetOperator(binary);
             var right = TranslateOperand(binary.Right, context);
 
             var operation = $"{left} {@operator} {right}";
@@ -115,7 +117,7 @@ checked
             return $"checked({operation})";
         }
 
-        private string TranslateAddition(BinaryExpression binary, TranslationContext context)
+        private static string TranslateAddition(BinaryExpression binary, TranslationContext context)
         {
             if ((binary.Left.Type != typeof(string)) && (binary.Right.Type != typeof(string)))
             {

@@ -3,9 +3,9 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
     using System;
     using System.Linq.Expressions;
 
-    internal class TernaryFormatter : FormattableExpressionBase
+    internal class FormattedTernary : FormattableExpressionBase
     {
-        public TernaryFormatter(
+        public FormattedTernary(
             Expression condition,
             CodeBlock ifTrue,
             CodeBlock ifFalse,

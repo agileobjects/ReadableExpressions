@@ -28,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (IsTernary(conditional))
             {
-                return new TernaryFormatter(conditional.Test, ifTrueBlock, ifFalseBlock, context);
+                return new FormattedTernary(conditional.Test, ifTrueBlock, ifFalseBlock, context);
             }
 
             var test = GetTest(conditional, context);
@@ -43,14 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string GetTest(ConditionalExpression conditional, TranslationContext context)
         {
-            var test = context.TranslateAsCodeBlock(conditional.Test);
-
-            if (test.IsMultiLine())
-            {
-                test = test.Indented().TrimStart();
-            }
-
-            return test.WithSurroundingParentheses(checkExisting: true);
+            return new FormattedCondition(conditional.Test, context);
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)
@@ -59,15 +52,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                    (conditional.Type == typeof(void));
         }
 
-        private static string IfStatement(string test, string body)
-        {
-            return $"if {test}{body}";
-        }
+        private static string IfStatement(string test, string body) => $"if {test}{body}";
 
-        private static bool IsTernary(Expression conditional)
-        {
-            return conditional.Type != typeof(void);
-        }
+        private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
 
         private static string ShortCircuitingIf(string test, CodeBlock ifTrue, CodeBlock ifFalse)
         {
@@ -94,7 +81,7 @@ if {test}{ifTrue.WithCurlyBraces()}
                 ? " " + ifFalse.WithoutCurlyBraces()
                 : ifFalse.WithCurlyBraces();
 
-            string ifElseBlock = $@"
+            var ifElseBlock = $@"
 if {test}{ifTrue.WithCurlyBraces()}
 else{ifFalseBlock}";
 
