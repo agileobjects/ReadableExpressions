@@ -22,16 +22,15 @@ namespace AgileObjects.ReadableExpressions.Translators
             var block = (BlockExpression)expression;
 
             var variables = GetVariableDeclarations(block, context);
-            var lines = GetBlockLines(block, context);
+            var statements = GetBlockStatements(block, context).ToArray();
+            var separator = GetStatementsSeparator(variables, statements);
 
-            lines = ProcessBlockContents(lines.ToArray(), block);
-
-            var blockContents = variables.Concat(lines);
+            var blockContents = variables.Concat(separator).Concat(statements);
 
             return string.Join(Environment.NewLine, blockContents);
         }
 
-        private IEnumerable<string> GetVariableDeclarations(
+        private IList<string> GetVariableDeclarations(
             BlockExpression block,
             TranslationContext context)
         {
@@ -44,10 +43,66 @@ namespace AgileObjects.ReadableExpressions.Translators
                     TypeName = vGrp.Key.GetFriendlyName(),
                     VariableNames = vGrp.Select(varName => _variableNameTranslator.Translate(varName))
                 })
-                .Select(varData => $"{varData.TypeName} {string.Join(", ", varData.VariableNames)};");
+                .Select(varData => $"{varData.TypeName} {string.Join(", ", varData.VariableNames)};")
+                .ToArray();
         }
 
-        private static IEnumerable<string> GetBlockLines(BlockExpression block, TranslationContext context)
+        private static IEnumerable<string> GetStatementsSeparator(
+            ICollection<string> variables,
+            IList<string> statements)
+        {
+            if ((variables.Count > 0) && LeaveBlankLineBefore(statements[0]))
+            {
+                yield return string.Empty;
+            }
+        }
+
+        private static IEnumerable<string> GetBlockStatements(
+            BlockExpression block,
+            TranslationContext context)
+        {
+            var lines = GetBlockLines(block, context);
+
+            var finalLineIndex = lines.Count - 1;
+
+            for (var i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+
+                if ((i > 0) && LeaveBlankLineBefore(line))
+                {
+                    yield return string.Empty;
+                }
+
+                if (i != finalLineIndex)
+                {
+                    yield return line;
+
+                    if (LeaveBlankLineAfter(line, lines[i + 1]))
+                    {
+                        yield return string.Empty;
+                    }
+
+                    continue;
+                }
+
+                if (DoNotAddReturnStatement(block, lines))
+                {
+                    yield return line;
+                    yield break;
+                }
+
+                if (CodeBlock.IsSingleStatement(line.SplitToLines()))
+                {
+                    yield return "return " + line;
+                    yield break;
+                }
+
+                yield return CodeBlock.InsertReturnKeyword(line);
+            }
+        }
+
+        private static IList<string> GetBlockLines(BlockExpression block, TranslationContext context)
         {
             return block
                 .Expressions
@@ -58,7 +113,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                     Translation = GetTerminatedStatementOrNull(exp, context)
                 })
                 .Where(d => d.Translation != null)
-                .Select(d => d.Translation);
+                .Select(d => d.Translation)
+                .ToArray();
         }
 
         private static bool Include(Expression expression)
@@ -135,40 +191,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return conditional.IfTrue.Type != conditional.IfFalse.Type;
         }
 
-        private static IEnumerable<string> ProcessBlockContents(IList<string> lines, BlockExpression block)
+        private static bool LeaveBlankLineBefore(string line)
         {
-            var finalLineIndex = lines.Count - 1;
-
-            for (var i = 0; i < lines.Count; i++)
-            {
-                var line = lines[i];
-
-                if (i != finalLineIndex)
-                {
-                    yield return line;
-
-                    if (LeaveBlankLineAfter(line, lines[i + 1]))
-                    {
-                        yield return string.Empty;
-                    }
-
-                    continue;
-                }
-
-                if (DoNotAddReturnStatement(block, lines))
-                {
-                    yield return line;
-                    yield break;
-                }
-
-                if (CodeBlock.IsSingleStatement(line.SplitToLines()))
-                {
-                    yield return "return " + line;
-                    yield break;
-                }
-
-                yield return CodeBlock.InsertReturnKeyword(line);
-            }
+            return line.StartsWith("if (") || line.StartsWith("switch ");
         }
 
         private static bool LeaveBlankLineAfter(string line, string nextLine)
@@ -179,12 +204,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool IsMultiLineStatement(string line)
         {
-            if (!line.Contains(Environment.NewLine))
-            {
-                return false;
-            }
-
-            return line
+            return line.IsMultiLine() && line
                 .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
                 .Any(l => !l.IsTerminated());
         }

@@ -217,6 +217,7 @@ var countThree = (byte)(countOne + countTwo);";
             const string EXPECTED = @"() =>
 {
     int count;
+
     if ((count = 5) < 10)
     {
     }
@@ -300,6 +301,7 @@ Console.WriteLine();";
 
             const string EXPECTED = @"
 int count;
+
 switch (i)
 {
     case 1:

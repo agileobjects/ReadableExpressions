@@ -406,6 +406,7 @@ catch
 try
 {
     var memoryStream = stream as MemoryStream;
+
     if (memoryStream != null)
     {
         return 
@@ -423,6 +424,7 @@ try
     }
 
     var fileStream = stream as FileStream;
+
     if (fileStream != null)
     {
         return 
@@ -771,6 +773,29 @@ return list
     .ToArray();";
 
             var translated = longChainblock.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldLeaveABlankLineBeforeAnIfStatement()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var zero = Expression.Constant(0);
+            var intVariableEqualsZero = Expression.Equal(intVariable, zero);
+            var doNothing = Expression.Default(typeof(void));
+            var ifIntEqualsZeroDoNothing = Expression.IfThen(intVariableEqualsZero, doNothing);
+
+            var block = Expression.Block(new[] { intVariable }, ifIntEqualsZeroDoNothing);
+
+            const string EXPECTED = @"
+int i;
+
+if (i == 0)
+{
+}";
+
+            var translated = block.ToReadableString();
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
