@@ -13,7 +13,7 @@
     <AssemblyOriginatorKeyFile>..\ReadableExpressions.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <PackageId>ReadableExpressions</PackageId>
+    <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agileobjects/ReadableExpressions/blob/master/LICENSE.md</PackageLicenseUrl>
