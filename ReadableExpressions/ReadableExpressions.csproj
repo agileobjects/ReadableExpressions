@@ -30,7 +30,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="0.2.0" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="0.2.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
