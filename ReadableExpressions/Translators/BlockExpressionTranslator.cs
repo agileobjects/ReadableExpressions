@@ -69,7 +69,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 var line = lines[i];
 
-                if ((i > 0) && LeaveBlankLineBefore(line))
+                if ((i > 0) && LeaveBlankLineBefore(line, lines[i - 1]))
                 {
                     yield return string.Empty;
                 }
@@ -191,8 +191,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             return conditional.IfTrue.Type != conditional.IfFalse.Type;
         }
 
-        private static bool LeaveBlankLineBefore(string line)
+        private static bool LeaveBlankLineBefore(string line, string previousLine = null)
         {
+            if ((previousLine != null) && LeaveBlankLineBefore(previousLine))
+            {
+                return false;
+            }
+
             return line.StartsWith("if (") || line.StartsWith("switch ");
         }
 

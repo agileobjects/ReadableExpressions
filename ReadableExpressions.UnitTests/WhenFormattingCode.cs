@@ -736,6 +736,36 @@ if (i == 0)
         }
 
         [TestMethod]
+        public void ShouldNotLeaveDoubleBlankLinesBetweenIfStatements()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var one = Expression.Constant(1);
+            var intVariableEqualsOne = Expression.Equal(intVariable, one);
+            var doNothing = Expression.Default(typeof(void));
+            var ifIntEqualsOneDoNothing = Expression.IfThen(intVariableEqualsOne, doNothing);
+
+            var block = Expression.Block(
+                new[] { intVariable },
+                ifIntEqualsOneDoNothing,
+                ifIntEqualsOneDoNothing);
+
+            const string EXPECTED = @"
+int i;
+
+if (i == 1)
+{
+}
+
+if (i == 1)
+{
+}";
+
+            var translated = block.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateMultilineBlockSingleMethodArguments()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
