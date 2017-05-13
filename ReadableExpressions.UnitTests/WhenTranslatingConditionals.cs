@@ -227,11 +227,13 @@ if (i == 0)
 {
     Console.WriteLine(""Hello"");
     Console.WriteLine(""Goodbye"");
+
     return i;
 }
 
 Console.WriteLine(""Goodbye"");
 Console.WriteLine(""Hello"");
+
 return i;
 ";
             Assert.AreEqual(EXPECTED.Trim(), translated);
@@ -403,6 +405,7 @@ if (true)
 
 Console.WriteLine(""One!"");
 Console.WriteLine(""One!"");
+
 return ((long?)1);";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);

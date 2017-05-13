@@ -187,6 +187,7 @@ return
     var i = 0;
     i = i + 1;
     i = i + 2;
+
     return i;
 }";
 
@@ -224,6 +225,7 @@ i = i + 1;
 return 
 {
     i = i + 2;
+
     return i;
 };";
 

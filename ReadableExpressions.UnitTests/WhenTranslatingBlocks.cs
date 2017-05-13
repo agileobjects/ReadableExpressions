@@ -120,6 +120,7 @@ var count = 0;
 {
     var count = 0;
     ++count;
+
     return count;
 }";
 
@@ -146,6 +147,7 @@ var count = 0;
             const string EXPECTED = @"() =>
 {
     var list = new List<int> { 1, 2, 3 };
+
     return list.ToArray();
 }";
 
@@ -356,6 +358,7 @@ switch (i)
 
             const string EXPECTED = @"
 var myString = yourString;
+
 return (myString ?? string.Empty);";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);

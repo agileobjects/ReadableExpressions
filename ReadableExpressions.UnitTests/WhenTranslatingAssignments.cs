@@ -86,6 +86,7 @@ checked
     {
         var one = Console.Read();
         var two = Console.Read();
+
         return (one + two);
     }
 }";
@@ -418,12 +419,14 @@ result = ((DateTime.Now.Hour % 2) == 0)
         var one = Console.Read();
         var two = Console.Read();
         var resultOne = one * two;
+
         return resultOne;
     }
     : {
         var three = Console.Read();
         var four = Console.Read();
         var resultTwo = three / four;
+
         return resultTwo;
     }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
@@ -504,6 +507,7 @@ result =
 {
     var one = Console.Read();
     var two = Console.Read();
+
     return (one - two);
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
@@ -533,6 +537,7 @@ result =
 {
     List<int> ints;
     Console.Read();
+
     return (ints == null)
         ? new List<int>()
         : {
@@ -640,6 +645,7 @@ result =
 guid =
 {
     var id = value;
+
     Guid guidValue;
     return Guid.TryParse((id != null) ? id.ToString() : null, out guidValue) ? guidValue : default(Guid);
 }";
@@ -687,6 +693,7 @@ guid =
 guid =
 {
     var id = value;
+
     Guid guidValue;
     return (id != null)
         ? Guid.TryParse(id.ToString(), out guidValue) ? guidValue : default(Guid)

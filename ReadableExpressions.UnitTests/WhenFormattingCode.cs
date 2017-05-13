@@ -215,6 +215,7 @@ value = threeIntsFunc.Invoke(
 string name;
 Func<string> getName = () => name;
 name = ""Fred"";
+
 return getName.Invoke();";
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
@@ -414,6 +415,7 @@ try
             try
             {
                 var msLength = memoryStream.Length;
+
                 return msLength;
             }
             catch
@@ -432,6 +434,7 @@ try
             try
             {
                 var fsLength = fileStream.Length;
+
                 return fsLength;
             }
             catch
@@ -800,6 +803,7 @@ ints.Add(
         var i = 3;
         i = i * 5;
         i = i / 3;
+
         return i;
     }
     catch

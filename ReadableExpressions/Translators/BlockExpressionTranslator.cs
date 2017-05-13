@@ -68,8 +68,10 @@ namespace AgileObjects.ReadableExpressions.Translators
             for (var i = 0; i < lines.Count; i++)
             {
                 var line = lines[i];
+                var isNotFirstLine = (i > 0);
+                var previousLine = isNotFirstLine ? lines[i - 1] : null;
 
-                if ((i > 0) && LeaveBlankLineBefore(line, lines[i - 1]))
+                if (isNotFirstLine && LeaveBlankLineBefore(line, previousLine))
                 {
                     yield return string.Empty;
                 }
@@ -90,6 +92,11 @@ namespace AgileObjects.ReadableExpressions.Translators
                 {
                     yield return line;
                     yield break;
+                }
+
+                if (isNotFirstLine && LeaveBlankLineBeforeReturn(line, previousLine))
+                {
+                    yield return string.Empty;
                 }
 
                 if (CodeBlock.IsSingleStatement(line.SplitToLines()))
@@ -218,6 +225,16 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static bool DoNotAddReturnStatement(BlockExpression block, ICollection<string> lines)
         {
             return (lines.Count <= 1) || !block.IsReturnable();
+        }
+
+        private static bool LeaveBlankLineBeforeReturn(string line, string previousLine)
+        {
+            if (previousLine.IsComment() || LeaveBlankLineAfter(previousLine, line))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }
