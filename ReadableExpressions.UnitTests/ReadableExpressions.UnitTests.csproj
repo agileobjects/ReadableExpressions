@@ -61,6 +61,7 @@
       <Link>VersionInfo.cs</Link>
     </Compile>
     <Compile Include="Extensions\WhenGettingAParentExpressionNode.cs" />
+    <Compile Include="Extensions\WhenGettingFriendlyNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />
     <Compile Include="WhenTranslatingStringConcatenation.cs" />
     <Compile Include="WhenTranslatingComments.cs" />

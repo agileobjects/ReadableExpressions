@@ -114,14 +114,36 @@
             return genericTypeName;
         }
 
-        private static string GetGenericTypeName(string typeName, int numberOfParameters, IEnumerable<Type> typeArguments)
+        private static string GetGenericTypeName(
+            string typeName,
+            int numberOfParameters,
+            IEnumerable<Type> typeArguments)
         {
             var typeGenericTypeArgumentFriendlyNames =
-                string.Join(", ", typeArguments.Select(tp => GetFriendlyName(tp)));
+                string.Join(", ", typeArguments.Select(GetFriendlyName));
 
             typeName = typeName.Replace(
                 "`" + numberOfParameters,
                 "<" + typeGenericTypeArgumentFriendlyNames + ">");
+
+            return typeName.StartsWith('<') ? GetAnonymousTypeName(typeName) : typeName;
+        }
+
+        private static string GetAnonymousTypeName(string typeName)
+        {
+            var anonTypeIndex = typeName.IndexOf("AnonymousType", StringComparison.Ordinal);
+
+            if (anonTypeIndex == -1)
+            {
+                return typeName;
+            }
+
+            typeName = typeName.Substring(anonTypeIndex);
+
+            var trimStartIndex = "AnonymousType".Length;
+            var argumentsStartIndex = typeName.IndexOf('<');
+
+            typeName = typeName.Remove(trimStartIndex, argumentsStartIndex - trimStartIndex);
 
             return typeName;
         }
@@ -137,10 +159,10 @@
         }
 
         /// <summary>
-        /// Returns a value indicating if the given <paramref name="type"/> is a Nullable&lt;T&gt;.
+        /// Returns a value indicating if the given <paramref name="type"/> is a Nullable{T}.
         /// </summary>
         /// <param name="type">The type for which to make the determination.</param>
-        /// <returns>True if the given <paramref name="type"/> is a Nullable&lt;T&gt;, otherwise false.</returns>
+        /// <returns>True if the given <paramref name="type"/> is a Nullable{T}, otherwise false.</returns>
         public static bool IsNullableType(this Type type)
         {
             return Nullable.GetUnderlyingType(type) != null;
