@@ -7,8 +7,6 @@
 
     internal static class InternalExpressionExtensions
     {
-        
-
         public static bool IsReturnable(this Expression expression)
         {
             if (expression.Type == typeof(void))
@@ -27,6 +25,7 @@
                 case ExpressionType.Add:
                 case ExpressionType.AddChecked:
                 case ExpressionType.Call:
+                case ExpressionType.Coalesce:
                 case ExpressionType.Conditional:
                 case ExpressionType.Convert:
                 case ExpressionType.ConvertChecked:

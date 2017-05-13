@@ -198,7 +198,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return false;
             }
 
-            return line.StartsWith("if (") || line.StartsWith("switch ");
+            return line.StartsWith("if (", StringComparison.Ordinal) ||
+                line.StartsWith("switch ", StringComparison.Ordinal);
         }
 
         private static bool LeaveBlankLineAfter(string line, string nextLine)

@@ -339,5 +339,26 @@ switch (i)
 
             Assert.AreEqual(EXPECTED, translated);
         }
+
+        [TestMethod]
+        public void ShouldIncludeAReturnStatementForACoalesce()
+        {
+            var stringVariable1 = Expression.Variable(typeof(string), "myString");
+            var stringVariable2 = Expression.Variable(typeof(string), "yourString");
+            var assignStrings = Expression.Assign(stringVariable1, stringVariable2);
+
+            var stringEmpty = Expression.Field(null, typeof(string), "Empty");
+            var variableOrNull = Expression.Coalesce(stringVariable1, stringEmpty);
+
+            var coalesceBlock = Expression.Block(assignStrings, variableOrNull);
+
+            var translated = coalesceBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var myString = yourString;
+return (myString ?? string.Empty);";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
     }
 }
