@@ -118,6 +118,11 @@ namespace AgileObjects.ReadableExpressions
                     }
 
                     return (expression.NodeType == ExpressionType.Convert);
+
+                case ExpressionType.Invoke:
+                    var invocation = (InvocationExpression)expression;
+
+                    return invocation.Expression.NodeType == ExpressionType.Lambda;
             }
 
             return false;

@@ -547,6 +547,23 @@ string.Join(
             Assert.AreEqual(EXPECTED, translated);
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/9
+        [TestMethod]
+        public void ShouldNotRemoveParenthesesFromALambdaInvokeResultAssignment()
+        {
+            Expression<Func<int, int, int>> intsAdder = (a, b) => a + b;
+            var one = Expression.Constant(1);
+            var two = Expression.Constant(2);
+            var lambdaInvocation = Expression.Invoke(intsAdder, one, two);
+            var result = Expression.Variable(typeof(int), "result");
+            var assignInvokeResult = Expression.Assign(result, lambdaInvocation);
+
+            const string EXPECTED = "result = ((a, b) => a + b).Invoke(1, 2)";
+            var translated = assignInvokeResult.ToReadableString();
+
+            Assert.AreEqual(EXPECTED, translated);
+        }
+
         [TestMethod]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
