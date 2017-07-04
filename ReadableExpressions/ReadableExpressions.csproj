@@ -26,7 +26,7 @@
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
     <AssemblyVersion>1.8.6.0</AssemblyVersion>
     <FileVersion>1.8.6.0</FileVersion>
-    <Version>1.8.6</Version>
+    <Version>1.8.7</Version>
   </PropertyGroup>
 
   <ItemGroup>

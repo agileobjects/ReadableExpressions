@@ -61,10 +61,10 @@
                 .ToDictionary(t => t.NodeType, t => t.Translator);
         }
 
-        public string Translate(Expression expression)
+        public string Translate(Expression expression, ReadableStringSettings settings)
         {
             var context = (expression != null)
-                ? TranslationContext.For(expression, Translate)
+                ? TranslationContext.For(expression, Translate, settings)
                 : null;
 
             return Translate(expression, context);

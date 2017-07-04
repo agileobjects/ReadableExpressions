@@ -120,12 +120,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var parametersString = context.TranslateParameters(arguments, method).WithParentheses();
-            var genericArguments = GetGenericArgumentsIfNecessary(method);
+            var genericArguments = GetGenericArgumentsIfNecessary(method, context.Settings.AlwaysUseExplicitGenericParameters);
 
             return method.Name + genericArguments + parametersString;
         }
 
-        private static string GetGenericArgumentsIfNecessary(IMethodInfo method)
+        private static string GetGenericArgumentsIfNecessary(IMethodInfo method, bool alwaysExplicit)
         {
             if (!method.IsGenericMethod)
             {
@@ -135,9 +135,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             var methodGenericDefinition = method.GetGenericMethodDefinition();
             var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
 
-            RemoveSpecifiedGenericTypeParameters(
-                methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
-                genericParameterTypes);
+			if (!alwaysExplicit)
+			{
+				RemoveSpecifiedGenericTypeParameters(
+					methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
+					genericParameterTypes);
+			}
 
             if (!genericParameterTypes.Any())
             {

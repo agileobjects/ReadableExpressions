@@ -15,27 +15,30 @@ namespace AgileObjects.ReadableExpressions
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
         private readonly Translator _globalTranslator;
+		private readonly ReadableStringSettings _settings;
 
-        private TranslationContext(ExpressionAnalysisVisitor analyzer, Translator globalTranslator)
+		private TranslationContext(ExpressionAnalysisVisitor analyzer, Translator globalTranslator, ReadableStringSettings settings)
         {
             _analyzer = analyzer;
             _globalTranslator = globalTranslator;
-        }
+			_settings = settings;
+		}
 
-        /// <summary>
-        /// Creates a <see cref="TranslationContext"/> containing information about the given
-        /// <paramref name="expression"/>.
-        /// </summary>
-        /// <param name="expression">
-        /// The <see cref="Expression"/> for which to create the <see cref="TranslationContext"/>.
-        /// </param>
-        /// <param name="globalTranslator">
-        /// A global <see cref="Translator"/> delegate with which to perform translations.
-        /// </param>
-        /// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
-        public static TranslationContext For(Expression expression, Translator globalTranslator)
+		/// <summary>
+		/// Creates a <see cref="TranslationContext"/> containing information about the given
+		/// <paramref name="expression"/>.
+		/// </summary>
+		/// <param name="expression">
+		/// The <see cref="Expression"/> for which to create the <see cref="TranslationContext"/>.
+		/// </param>
+		/// <param name="globalTranslator">
+		/// A global <see cref="Translator"/> delegate with which to perform translations.
+		/// </param>
+		/// <param name="settings">Configuration for the translation</param>
+		/// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
+		public static TranslationContext For(Expression expression, Translator globalTranslator, ReadableStringSettings settings)
         {
-            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression), globalTranslator);
+            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression), globalTranslator, settings);
         }
 
         /// <summary>
@@ -44,12 +47,17 @@ namespace AgileObjects.ReadableExpressions
         /// </summary>
         public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.JoinedAssignedVariables;
 
-        /// <summary>
-        /// Translates the given <paramref name="expression"/> to readable source code.
-        /// </summary>
-        /// <param name="expression">The <see cref="Expression"/> to translate.</param>
-        /// <returns>A source code translation of the given <paramref name="expression"/>.</returns>
-        public string Translate(Expression expression)
+		/// <summary>
+		/// Configuration for translation in this context
+		/// </summary>
+		public ReadableStringSettings Settings { get => _settings; }
+
+		/// <summary>
+		/// Translates the given <paramref name="expression"/> to readable source code.
+		/// </summary>
+		/// <param name="expression">The <see cref="Expression"/> to translate.</param>
+		/// <returns>A source code translation of the given <paramref name="expression"/>.</returns>
+		public string Translate(Expression expression)
         {
             return _globalTranslator.Invoke(expression, this);
         }
