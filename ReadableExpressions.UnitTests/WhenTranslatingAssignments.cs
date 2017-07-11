@@ -357,9 +357,20 @@ if ((i = 10) == 5)
 
             var translated = intToString.ToReadableString();
 
-            const string EXPECTED = @"i.ToString(value = null)";
+            Assert.AreEqual("i.ToString(value = null)", translated);
+        }
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        [TestMethod]
+        public void ShouldAssignAMultiplicationToStringResult()
+        {
+            Expression<Func<int, string>> timesThreeToString = i => (i * 3).ToString();
+
+            var stringVariable = Expression.Variable(typeof(string), "value");
+            var stringAssignment = Expression.Assign(stringVariable, timesThreeToString.Body);
+
+            var translated = stringAssignment.ToReadableString();
+
+            Assert.AreEqual("value = (i * 3).ToString()", translated);
         }
 
         [TestMethod]

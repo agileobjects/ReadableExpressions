@@ -117,7 +117,16 @@ namespace AgileObjects.ReadableExpressions
                         parentExpression = expression.GetParentOrNull();
                     }
 
-                    return (expression.NodeType == ExpressionType.Convert);
+                    switch (expression.NodeType)
+                    {
+                        case ExpressionType.Add:
+                        case ExpressionType.Convert:
+                        case ExpressionType.Multiply:
+                        case ExpressionType.Subtract:
+                            return true;
+                    }
+
+                    return false;
 
                 case ExpressionType.Invoke:
                     var invocation = (InvocationExpression)expression;
