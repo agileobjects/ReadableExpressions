@@ -120,12 +120,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             TranslationContext context)
         {
             var parametersString = context.TranslateParameters(arguments, method).WithParentheses();
-            var genericArguments = GetGenericArgumentsIfNecessary(method, context.Settings.AlwaysUseExplicitGenericParameters);
+            var genericArguments = GetGenericArgumentsIfNecessary(method, context);
 
             return method.Name + genericArguments + parametersString;
         }
 
-        private static string GetGenericArgumentsIfNecessary(IMethodInfo method, bool alwaysExplicit)
+        private static string GetGenericArgumentsIfNecessary(IMethodInfo method, TranslationContext context)
         {
             if (!method.IsGenericMethod)
             {
@@ -135,12 +135,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             var methodGenericDefinition = method.GetGenericMethodDefinition();
             var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
 
-			if (!alwaysExplicit)
-			{
-				RemoveSpecifiedGenericTypeParameters(
-					methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
-					genericParameterTypes);
-			}
+            if (context.Settings.UseImplicitGenericParameters)
+            {
+                RemoveSuppliedGenericTypeParameters(
+                    methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
+                    genericParameterTypes);
+            }
 
             if (!genericParameterTypes.Any())
             {
@@ -161,7 +161,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return $"<{string.Join(", ", argumentNames)}>";
         }
 
-        private static void RemoveSpecifiedGenericTypeParameters(
+        private static void RemoveSuppliedGenericTypeParameters(
             IEnumerable<Type> types,
             ICollection<Type> genericParameterTypes)
         {
@@ -174,7 +174,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 if (type.IsGenericType())
                 {
-                    RemoveSpecifiedGenericTypeParameters(type.GetGenericArguments(), genericParameterTypes);
+                    RemoveSuppliedGenericTypeParameters(type.GetGenericArguments(), genericParameterTypes);
                 }
             }
         }

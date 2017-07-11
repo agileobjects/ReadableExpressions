@@ -15,13 +15,15 @@ namespace AgileObjects.ReadableExpressions
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
         private readonly Translator _globalTranslator;
-        private readonly ReadableStringSettings _settings;
 
-        private TranslationContext(ExpressionAnalysisVisitor analyzer, Translator globalTranslator, ReadableStringSettings settings)
+        private TranslationContext(
+            ExpressionAnalysisVisitor analyzer,
+            Translator globalTranslator,
+            TranslationSettings settings)
         {
             _analyzer = analyzer;
             _globalTranslator = globalTranslator;
-            _settings = settings;
+            Settings = settings;
         }
 
         /// <summary>
@@ -34,11 +36,23 @@ namespace AgileObjects.ReadableExpressions
         /// <param name="globalTranslator">
         /// A global <see cref="Translator"/> delegate with which to perform translations.
         /// </param>
-        /// <param name="settings">Configuration for the translation</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
-        public static TranslationContext For(Expression expression, Translator globalTranslator, ReadableStringSettings settings)
+        public static TranslationContext For(
+            Expression expression,
+            Translator globalTranslator,
+            Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            return new TranslationContext(ExpressionAnalysisVisitor.Analyse(expression), globalTranslator, settings);
+            var analyzer = ExpressionAnalysisVisitor.Analyse(expression);
+            var settings = GetTranslationSettings(configuration);
+
+            return new TranslationContext(analyzer, globalTranslator, settings);
+        }
+
+        private static TranslationSettings GetTranslationSettings(
+            Func<TranslationSettings, TranslationSettings> configuration)
+        {
+            return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;
         }
 
         /// <summary>
@@ -50,7 +64,7 @@ namespace AgileObjects.ReadableExpressions
         /// <summary>
         /// Configuration for translation in this context
         /// </summary>
-        public ReadableStringSettings Settings { get => _settings; }
+        public TranslationSettings Settings { get; }
 
         /// <summary>
         /// Translates the given <paramref name="expression"/> to readable source code.

@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
@@ -61,10 +62,12 @@
                 .ToDictionary(t => t.NodeType, t => t.Translator);
         }
 
-        public string Translate(Expression expression, ReadableStringSettings settings)
+        public string Translate(
+            Expression expression, 
+            Func<TranslationSettings, TranslationSettings> configuration)
         {
             var context = (expression != null)
-                ? TranslationContext.For(expression, Translate, settings)
+                ? TranslationContext.For(expression, Translate, configuration)
                 : null;
 
             return Translate(expression, context);

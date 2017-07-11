@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
     using System.Linq.Expressions;
 
     /// <summary>
@@ -13,12 +14,14 @@
         /// Translates the given <paramref name="expression"/> to source-code string.
         /// </summary>
         /// <param name="expression">The Expression to translate.</param>
-        /// <param name="settings">Configuration options for the translation</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>The translated <paramref name="expression"/>.</returns>
-        public static string ToReadableString(this Expression expression, ReadableStringSettings settings = null)
+        public static string ToReadableString(
+            this Expression expression, 
+            Func<TranslationSettings, TranslationSettings> configuration = null)
         {
             return _translatorRegistry
-                .Translate(expression, settings ?? new ReadableStringSettings())?
+                .Translate(expression, configuration)?
                 .WithoutUnindents();
         }
     }

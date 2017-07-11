@@ -279,6 +279,16 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAMethodCallWithRequestedGenericArgumentsIncluded()
+        {
+            Expression<Action<IndexedProperty, string>> setFirstItem = (ip, str) => ip.SetFirst(str);
+
+            var translated = setFirstItem.Body.ToReadableString(c => c.UseExplicitGenericParameters);
+
+            Assert.AreEqual("ip.SetFirst<string>(str)", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAnOutParameterMethodCallWithoutGenericArgumentIncluded()
         {
             string result;
