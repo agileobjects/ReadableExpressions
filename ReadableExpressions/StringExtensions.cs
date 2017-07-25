@@ -193,7 +193,16 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            return context.Translate(value);
+            var stringValue = context.Translate(value);
+
+            switch (value.NodeType)
+            {
+                case ExpressionType.Conditional:
+                    stringValue = stringValue.WithSurroundingParentheses();
+                    break;
+            }
+
+            return stringValue;
         }
     }
 }

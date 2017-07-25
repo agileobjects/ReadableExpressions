@@ -238,5 +238,16 @@ checked
 
             Assert.AreEqual("i--", translated);
         }
+
+        [TestMethod]
+        public void ShouldMaintainRelevantParentheses()
+        {
+            Expression<Func<int, int, int, int>> mather =
+                (i, j, k) => (i + j) * k;
+
+            var translated = mather.Body.ToReadableString();
+
+            Assert.AreEqual("((i + j) * k)", translated);
+        }
     }
 }

@@ -77,5 +77,28 @@
 
             Assert.AreEqual("str1 + i + l", translated);
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/12
+        [TestMethod]
+        public void ShouldMaintainTernaryOperandParentheses()
+        {
+            Expression<Func<bool, string, string, string>> ternaryResultAdder =
+                (condition, ifTrue, ifFalse) => (condition ? ifTrue : ifFalse) + "Hello!";
+
+            var translated = ternaryResultAdder.Body.ToReadableString();
+
+            Assert.AreEqual("(condition ? ifTrue : ifFalse) + \"Hello!\"", translated);
+        }
+
+        [TestMethod]
+        public void ShouldMaintainNumericOperandParentheses()
+        {
+            Expression<Func<int, int, int, string>> mathResultAdder =
+                (i, j, k) => ((i - j) / k) + " Maths!";
+
+            var translated = mathResultAdder.Body.ToReadableString();
+
+            Assert.AreEqual("((i - j) / k) + \" Maths!\"", translated);
+        }
     }
 }
