@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>An extension method and set of Debugger Visualizers to produce a readable string version of an expression tree.</Description>
-    <Copyright>2016 Steve Wilkes</Copyright>
+    <Copyright>2017 Steve Wilkes</Copyright>
     <AssemblyTitle>ReadableExpressions</AssemblyTitle>
     <VersionPrefix>1.8.4</VersionPrefix>
     <Authors>Steve Wilkes</Authors>
@@ -24,9 +24,9 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.9.0.0</AssemblyVersion>
-    <FileVersion>1.9.0.0</FileVersion>
-    <Version>1.9.0</Version>
+    <AssemblyVersion>1.9.1.0</AssemblyVersion>
+    <FileVersion>1.9.1.0</FileVersion>
+    <Version>1.9.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
