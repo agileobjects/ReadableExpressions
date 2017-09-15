@@ -343,7 +343,7 @@ switch (i)
         }
 
         [TestMethod]
-        public void ShouldIncludeAReturnStatementForACoalesce()
+        public void ShouldIncludeAReturnKeywordForACoalesce()
         {
             var stringVariable1 = Expression.Variable(typeof(string), "myString");
             var stringVariable2 = Expression.Variable(typeof(string), "yourString");
@@ -361,6 +361,83 @@ var myString = yourString;
 
 return (myString ?? string.Empty);";
 
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIncludeAReturnKeywordForANewObjectStatement()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            var newList = Expression.New(typeof(List<string>).GetConstructors().First());
+            var rethrow = Expression.Rethrow(newList.Type);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(newList, globalCatchAndRethrow);
+
+            var tryCatchBlock = Expression.Block(tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    return new List<string>();
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIncludeAReturnKeywordForANewArrayStatement()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            var zero = Expression.Constant(0, typeof(int));
+            var newArray = Expression.NewArrayBounds(typeof(int), zero);
+            var rethrow = Expression.Rethrow(newArray.Type);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(newArray, globalCatchAndRethrow);
+
+            var tryCatchBlock = Expression.Block(tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    return new int[0];
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIncludeAReturnKeywordForANewArrayInitStatement()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            var zero = Expression.Constant(0, typeof(int));
+            var newArray = Expression.NewArrayInit(typeof(int), zero);
+            var rethrow = Expression.Rethrow(newArray.Type);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(newArray, globalCatchAndRethrow);
+
+            var tryCatchBlock = Expression.Block(tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    return new[] { 0 };
+}
+catch
+{
+    throw;
+}";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }

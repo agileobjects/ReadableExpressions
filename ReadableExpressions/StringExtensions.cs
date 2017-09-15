@@ -8,11 +8,30 @@ namespace AgileObjects.ReadableExpressions
 
     internal static class StringExtensions
     {
-        private static readonly char[] _terminatingCharacters = { ';', '}', ':', ',' };
+        private static readonly char[] _terminatingCharacters = { ';', ':', ',' };
 
         public static bool IsTerminated(this string codeLine)
         {
-            return codeLine.EndsWithAny(_terminatingCharacters) || codeLine.IsComment();
+            if (!codeLine.EndsWith('}'))
+            {
+                return codeLine.EndsWithAny(_terminatingCharacters) || codeLine.IsComment();
+            }
+
+            var lastNewLine = codeLine.LastIndexOf(Environment.NewLine, StringComparison.Ordinal);
+
+            var index = (lastNewLine != -1)
+                ? lastNewLine + Environment.NewLine.Length
+                : 0;
+
+            for (var end = codeLine.Length - 1; index < end; ++index)
+            {
+                if (codeLine[index] != ' ')
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public static string Unterminated(this string codeLine)
@@ -149,17 +168,17 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool EndsWith(this string value, char character)
         {
-            if (value == string.Empty)
-            {
-                return false;
-            }
-
-            return value[value.Length - 1] == character;
+            return (value != string.Empty) && value.EndsWithNoEmptyCheck(character);
         }
 
         private static bool EndsWithAny(this string value, IEnumerable<char> characters)
         {
-            return characters.Any(value.EndsWith);
+            return (value != string.Empty) && characters.Any(value.EndsWithNoEmptyCheck);
+        }
+
+        private static bool EndsWithNoEmptyCheck(this string value, char character)
+        {
+            return value[value.Length - 1] == character;
         }
 
         private const string CommentString = "// ";

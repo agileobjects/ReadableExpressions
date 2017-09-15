@@ -35,6 +35,9 @@
                 case ExpressionType.MemberAccess:
                 case ExpressionType.Multiply:
                 case ExpressionType.MultiplyChecked:
+                case ExpressionType.New:
+                case ExpressionType.NewArrayBounds:
+                case ExpressionType.NewArrayInit:
                 case ExpressionType.Parameter:
                 case ExpressionType.Subtract:
                 case ExpressionType.SubtractChecked:
