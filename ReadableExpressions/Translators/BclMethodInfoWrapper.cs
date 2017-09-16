@@ -2,16 +2,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+    using System.Diagnostics;
     using System.Reflection;
     using Extensions;
 
     internal class BclMethodInfoWrapper : IMethodInfo
     {
         private readonly MethodInfo _method;
-        private IEnumerable<Type> _genericArguments;
+        private Type[] _genericArguments;
 
-        public BclMethodInfoWrapper(MethodInfo method, IEnumerable<Type> genericArguments = null)
+        [DebuggerStepThrough]
+        public BclMethodInfoWrapper(MethodInfo method, Type[] genericArguments = null)
         {
             _method = method;
             _genericArguments = genericArguments;
@@ -26,16 +27,19 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public MethodInfo GetGenericMethodDefinition() => _method.GetGenericMethodDefinition();
 
-        public IEnumerable<Type> GetGenericArguments() =>
+        public IEnumerable<Type> GetGenericArguments() => GetGenericArgumentsArray();
+
+        private Type[] GetGenericArgumentsArray() =>
             (_genericArguments ?? (_genericArguments = _method.GetGenericArguments()));
 
         public IEnumerable<ParameterInfo> GetParameters() => _method.GetParameters();
 
         public Type GetGenericArgumentFor(Type parameterType)
         {
-            var parameterIndex = Array.IndexOf(_method.GetGenericArguments(), parameterType, 0);
+            var genericArguments = GetGenericArgumentsArray();
+            var parameterIndex = Array.IndexOf(genericArguments, parameterType, 0);
 
-            return _genericArguments.ElementAt(parameterIndex);
+            return genericArguments[parameterIndex];
         }
     }
 }

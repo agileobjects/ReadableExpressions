@@ -33,8 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             var methodCall = (MethodCallExpression)expression;
-            IEnumerable<Expression> methodArguments;
-            var methodCallSubject = GetMethodCallSubject(methodCall, context, out methodArguments);
+            var methodCallSubject = GetMethodCallSubject(methodCall, context, out var methodArguments);
 
             return GetMethodCall(
                 methodCallSubject,
@@ -46,9 +45,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public static string GetMethodCallSubject(MethodCallExpression methodCall, TranslationContext context)
         {
-            IEnumerable<Expression> arguments;
-
-            return GetMethodCallSubject(methodCall, context, out arguments);
+            // ReSharper disable once UnusedVariable
+            return GetMethodCallSubject(methodCall, context, out var arguments);
         }
 
         private static string GetMethodCallSubject(
@@ -153,12 +151,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Where(name => name != null)
                 .ToArray();
 
-            if (!argumentNames.Any())
-            {
-                return null;
-            }
-
-            return $"<{string.Join(", ", argumentNames)}>";
+            return argumentNames.Any() ? $"<{string.Join(", ", argumentNames)}>" : null;
         }
 
         private static void RemoveSuppliedGenericTypeParameters(

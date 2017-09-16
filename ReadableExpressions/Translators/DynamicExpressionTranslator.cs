@@ -40,13 +40,11 @@ namespace AgileObjects.ReadableExpressions.Translators
             // way to go.
             foreach (var translator in _translators)
             {
-                string translated;
-
                 if (translator.TryTranslate(
                     operationDescription,
                     dynamicExpression,
                     context,
-                    out translated))
+                    out var translated))
                 {
                     return translated;
                 }
@@ -201,7 +199,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
             }
 
-            private static IEnumerable<Type> GetGenericArgumentsOrNull(
+            private static Type[] GetGenericArgumentsOrNull(
                 MethodInfo method,
                 Expression[] methodArguments,
                 Type methodReturnType)

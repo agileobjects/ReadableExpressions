@@ -4,6 +4,8 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
     internal abstract class FormattableExpressionBase
     {
+        private const int MaxLineLength = 100;
+
         public static implicit operator string(FormattableExpressionBase expression)
         {
             return expression.ToString();
@@ -24,7 +26,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
         protected virtual bool SplitToMultipleLines(string translation)
         {
-            return (translation.Length > 100) || translation.IsMultiLine();
+            return (translation.Length > MaxLineLength) || translation.IsMultiLine();
         }
 
         public override string ToString()
