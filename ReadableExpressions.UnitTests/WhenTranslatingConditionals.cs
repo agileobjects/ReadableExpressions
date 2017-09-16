@@ -96,6 +96,27 @@ if (i < 1)
         }
 
         [TestMethod]
+        public void ShouldTranslateAMultipleClauseIfStatement()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var one = Expression.Constant(1);
+            var intVariableLessThanOne = Expression.LessThan(intVariable, one);
+            var intVariableMoreThanOne = Expression.GreaterThan(intVariable, one);
+            var intVariableInRange = Expression.AndAlso(intVariableLessThanOne, intVariableMoreThanOne);
+            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            var ifLessThanOneThenWrite = Expression.IfThen(intVariableInRange, writeHello.Body);
+
+            var translated = ifLessThanOneThenWrite.ToReadableString();
+
+            const string EXPECTED = @"
+if ((i < 1) && (i > 1))
+{
+    Console.WriteLine(""Hello"");
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAMultipleLineIfStatementTest()
         {
             var intVariable = Expression.Variable(typeof(int), "i");

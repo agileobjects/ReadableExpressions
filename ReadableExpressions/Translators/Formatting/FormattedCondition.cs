@@ -23,9 +23,15 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
                 test = test.Indented().TrimStart();
             }
 
-            _singleLineTest = test.WithSurroundingParentheses(checkExisting: true);
+            _singleLineTest = test.WithSurroundingParentheses(CheckExistingParentheses());
 
             MultipleLineTranslationFactory = GetMultipleLineTranslation;
+        }
+
+        private bool CheckExistingParentheses()
+        {
+            // ReSharper disable once UnusedVariable
+            return IsNotRelevantBinary(_condition, out BinaryExpression binary);
         }
 
         protected override Func<string> SingleLineTranslationFactory => () => _singleLineTest;
