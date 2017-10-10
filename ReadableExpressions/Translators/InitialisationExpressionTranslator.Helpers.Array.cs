@@ -16,9 +16,19 @@
 
             protected override string GetNewExpressionString(NewArrayExpression initialisation, TranslationContext context)
             {
+                if (initialisation.Expressions.Count == 0)
+                {
+                    return "new " + GetExplicitArrayType(initialisation) + "[0]";
+                }
+
                 var explicitType = GetExplicitArrayTypeIfRequired(initialisation);
 
                 return "new" + explicitType + "[]";
+            }
+
+            private static string GetExplicitArrayType(Expression initialisation)
+            {
+                return initialisation.Type.GetElementType().GetFriendlyName();
             }
 
             private static string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation)
@@ -34,7 +44,7 @@
                     return null;
                 }
 
-                return " " + initialisation.Type.GetElementType().GetFriendlyName();
+                return " " + GetExplicitArrayType(initialisation);
             }
 
             protected override IEnumerable<string> GetMemberInitialisations(

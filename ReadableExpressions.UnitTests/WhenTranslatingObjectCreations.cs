@@ -188,6 +188,16 @@ new IDisposable[]
         }
 
         [TestMethod]
+        public void ShouldTranslateAnEmptyNewArrayExpression()
+        {
+            var newArray = Expression.NewArrayInit(typeof(int), new List<Expression>(0));
+
+            var translated = newArray.ToReadableString();
+
+            Assert.AreEqual("new int[0]", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAStringConstantConstructorParameter()
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder("Hello!");
