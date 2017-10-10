@@ -34,6 +34,7 @@
                 case ExpressionType.Invoke:
                 case ExpressionType.ListInit:
                 case ExpressionType.MemberAccess:
+                case ExpressionType.MemberInit:
                 case ExpressionType.Multiply:
                 case ExpressionType.MultiplyChecked:
                 case ExpressionType.New:

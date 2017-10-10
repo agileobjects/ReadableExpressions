@@ -390,6 +390,38 @@ catch
         }
 
         [TestMethod]
+        public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            var newAddress = Expression.New(typeof(Address).GetConstructors().First());
+            var line1Property = newAddress.Type.GetMember("Line1").First();
+            var line1Value = Expression.Constant("Over here");
+            var line1Init = Expression.Bind(line1Property, line1Value);
+            var addressInit = Expression.MemberInit(newAddress, line1Init);
+            var rethrow = Expression.Rethrow(newAddress.Type);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(addressInit, globalCatchAndRethrow);
+
+            var tryCatchBlock = Expression.Block(tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    return new WhenTranslatingBlocks.Address
+    {
+        Line1 = ""Over here""
+    };
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldIncludeAReturnKeywordForANewListInitStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -469,5 +501,15 @@ catch
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
+
+        #region Helper Classes
+
+        private class Address
+        {
+            // ReSharper disable once UnusedMember.Local
+            public string Line1 { get; set; }
+        }
+
+        #endregion
     }
 }

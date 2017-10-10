@@ -34,9 +34,19 @@
 
             var numberOfNonIndentedLines = blockLines[0]
                 .SplitToLines()
-                .Count(line => line.IsNotIndented() && !line.StartsWith('{') && !line.StartsWith('}'));
+                .Count(RelevantNonIndentedLine);
 
             return numberOfNonIndentedLines == 1;
+        }
+
+        private CodeBlock(
+            Expression expression,
+            string[] blockLines,
+            bool isASingleStatement)
+        {
+            _expression = expression;
+            _blockLines = blockLines;
+            IsASingleStatement = isASingleStatement;
         }
 
         public bool IsASingleStatement { get; }
@@ -59,19 +69,26 @@
 
             return new CodeBlock(
                 _expression,
-                _blockLines.Select(line => line.Indented()).ToArray());
+                _blockLines.Select(line => line.Indented()).ToArray(),
+                IsASingleStatement);
         }
 
         public CodeBlock Insert(params string[] lines)
         {
-            return new CodeBlock(_expression, lines.Concat(_blockLines).ToArray());
+            return new CodeBlock(
+                _expression,
+                lines.Concat(_blockLines).ToArray(),
+                isASingleStatement: false);
         }
 
         public CodeBlock Append(params string[] lines)
         {
             AddSemiColonIfRequired();
 
-            return new CodeBlock(_expression, _blockLines.Concat(lines).ToArray());
+            return new CodeBlock(
+                _expression,
+                _blockLines.Concat(lines).ToArray(),
+                isASingleStatement: false);
         }
 
         public string WithCurlyBracesIfMultiStatement()
@@ -100,9 +117,7 @@
         {
             while (true)
             {
-                var block = expression as BlockExpression;
-
-                if (block == null)
+                if (!(expression is BlockExpression block))
                 {
                     return expression.NodeType == ExpressionType.Goto;
                 }
@@ -140,7 +155,10 @@
                 return this;
             }
 
-            return new CodeBlock(_expression, GetBlockLinesWithReturnKeyword(_blockLines));
+            return new CodeBlock(
+                _expression,
+                GetBlockLinesWithReturnKeyword(_blockLines),
+                IsASingleStatement);
         }
 
         public static string InsertReturnKeyword(string multiLineStatement)
@@ -166,10 +184,24 @@
 
         private void AddSemiColonIfRequired()
         {
-            if (IsASingleStatement && !_blockLines[0].IsTerminated())
+            if (!IsASingleStatement)
             {
-                _blockLines[0] += ";";
+                return;
             }
+
+            var block = (_blockLines.Length == 1)
+                ? _blockLines[0]
+                : string.Join(" ", _blockLines);
+
+            if (!block.IsTerminated())
+            {
+                _blockLines[_blockLines.Length - 1] += ";";
+            }
+        }
+
+        private static bool RelevantNonIndentedLine(string line)
+        {
+            return line.IsNotIndented() && !line.StartsWith('{') && !line.StartsWith('}');
         }
 
         private class BlockInfo
@@ -185,7 +217,7 @@
                 _lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
 
                 _lastStatementLines = _lastNonIndentedStatement.SplitToLines();
-                _lastNonIndentedLine = _lastStatementLines.Last(line => line.IsNotIndented());
+                _lastNonIndentedLine = _lastStatementLines.Last(RelevantNonIndentedLine);
             }
 
             public bool LastLineHasReturnKeyword =>
