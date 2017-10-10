@@ -31,6 +31,17 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateAnEmptyObjectInitialisation()
+        {
+            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var emptyInit = Expression.MemberInit(newMemoryStream, new List<MemberBinding>(0));
+
+            var translated = emptyInit.ToReadableString();
+
+            Assert.AreEqual("new MemoryStream()", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANewExpressionWithASingleInitialisation()
         {
             Expression<Func<MemoryStream>> createMemoryStream = () => new MemoryStream { Position = 0 };

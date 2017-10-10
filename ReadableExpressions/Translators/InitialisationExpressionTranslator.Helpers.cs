@@ -59,6 +59,16 @@
 
             protected static string GetInitialisation(string newExpression, string[] memberInitialisations)
             {
+                if (memberInitialisations.Length == 0)
+                {
+                    if (newExpression.EndsWith(')') || newExpression.EndsWith(']'))
+                    {
+                        return newExpression;
+                    }
+
+                    return newExpression + "()";
+                }
+
                 if ((newExpression.Length + memberInitialisations.Sum(init => init.Length + 2)) <= 40)
                 {
                     return $"{newExpression} {{ {string.Join(", ", memberInitialisations)} }}";

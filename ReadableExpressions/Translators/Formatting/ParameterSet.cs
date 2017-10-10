@@ -68,6 +68,12 @@
         private static string FormatParamsArray(string array)
         {
             var arrayValuesStart = array.IndexOf('{') + 1;
+
+            if (arrayValuesStart == 0)
+            {
+                return string.Empty;
+            }
+
             var arrayValuesEnd = array.LastIndexOf('}');
 
             var arrayValues = array
@@ -138,7 +144,7 @@
                 parameterType = method.GetGenericArgumentFor(parameter.ParameterType);
             }
 
-            return 
+            return
               !(parameterType.FullName.StartsWith("System.Action", StringComparison.Ordinal) ||
                 parameterType.FullName.StartsWith("System.Func", StringComparison.Ordinal)) ||
                 // ReSharper disable once PossibleUnintendedReferenceComparison
