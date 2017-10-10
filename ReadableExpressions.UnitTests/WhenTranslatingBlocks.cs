@@ -390,6 +390,35 @@ catch
         }
 
         [TestMethod]
+        public void ShouldIncludeAReturnKeywordForANewListInitStatement()
+        {
+            var exception = Expression.Variable(typeof(Exception), "ex");
+            var listConstructor = typeof(List<int>).GetConstructor(new[] { typeof(int) });
+            var one = Expression.Constant(1);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var newList = Expression.New(listConstructor, one);
+            var newListInit = Expression.ListInit(newList, one);
+            var rethrow = Expression.Rethrow(newListInit.Type);
+            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
+            var tryCatch = Expression.TryCatch(newListInit, globalCatchAndRethrow);
+
+            var tryCatchBlock = Expression.Block(tryCatch);
+
+            var translated = tryCatchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+try
+{
+    return new List<int>(1) { 1 };
+}
+catch
+{
+    throw;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldIncludeAReturnKeywordForANewArrayStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");

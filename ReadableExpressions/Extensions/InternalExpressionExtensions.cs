@@ -32,6 +32,7 @@
                 case ExpressionType.Default:
                 case ExpressionType.Divide:
                 case ExpressionType.Invoke:
+                case ExpressionType.ListInit:
                 case ExpressionType.MemberAccess:
                 case ExpressionType.Multiply:
                 case ExpressionType.MultiplyChecked:
