@@ -138,7 +138,8 @@
                 parameterType = method.GetGenericArgumentFor(parameter.ParameterType);
             }
 
-            return !(parameterType.FullName.StartsWith("System.Action", StringComparison.Ordinal) ||
+            return 
+              !(parameterType.FullName.StartsWith("System.Action", StringComparison.Ordinal) ||
                 parameterType.FullName.StartsWith("System.Func", StringComparison.Ordinal)) ||
                 // ReSharper disable once PossibleUnintendedReferenceComparison
                 (parameter.ParameterType.GetAssembly() != typeof(Action).GetAssembly());
