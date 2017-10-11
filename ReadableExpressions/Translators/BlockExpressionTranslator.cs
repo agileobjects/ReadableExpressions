@@ -169,6 +169,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return true;
 
                 case ExpressionType.Assign:
+                case ExpressionType.MemberInit:
                     return false;
             }
 
@@ -200,13 +201,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool LeaveBlankLineBefore(string line, string previousLine = null)
         {
-            if ((previousLine != null) && LeaveBlankLineBefore(previousLine))
+            if ((previousLine != null) && LeaveBlankLineAfter(previousLine, line))
             {
                 return false;
             }
 
             return line.StartsWith("if (", StringComparison.Ordinal) ||
-                line.StartsWith("switch ", StringComparison.Ordinal);
+                   line.StartsWith("switch ", StringComparison.Ordinal);
         }
 
         private static bool LeaveBlankLineAfter(string line, string nextLine)

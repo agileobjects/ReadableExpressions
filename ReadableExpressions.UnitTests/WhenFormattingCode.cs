@@ -786,6 +786,47 @@ if (i == 1)
         }
 
         [TestMethod]
+        public void ShouldNotLeaveDoubleBlankLinesBetweenInitAndIfStatements()
+        {
+            Expression<Action> writeWat = () => Console.WriteLine("Wat");
+            Expression<Func<long>> read = () => Console.Read();
+
+            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var valueBlock = Expression.Block(writeWat.Body, read.Body);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var positionInit = Expression.Bind(positionProperty, valueBlock);
+            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var one = Expression.Constant(1);
+            var intVariableEqualsOne = Expression.Equal(intVariable, one);
+            var doNothing = Expression.Default(typeof(void));
+            var ifIntEqualsOneDoNothing = Expression.IfThen(intVariableEqualsOne, doNothing);
+
+            var block = Expression.Block(memoryStreamInit, ifIntEqualsOneDoNothing);
+
+            const string EXPECTED = @"
+new MemoryStream
+{
+    Position = 
+    {
+        Console.WriteLine(""Wat"");
+
+        return ((long)Console.Read());
+    }
+};
+
+if (i == 1)
+{
+}";
+
+            var translated = block.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateMultilineBlockSingleMethodArguments()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
