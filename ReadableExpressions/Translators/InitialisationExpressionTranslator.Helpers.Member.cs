@@ -40,7 +40,7 @@
             private static string TranslateAssignmentBinding(MemberBinding binding, TranslationContext context)
             {
                 var assignment = (MemberAssignment)binding;
-                var value = context.Translate(assignment.Expression);
+                var value = context.TranslateAsCodeBlock(assignment.Expression);
 
                 return assignment.Member.Name + " = " + value;
             }

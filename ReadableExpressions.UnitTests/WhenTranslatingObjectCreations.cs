@@ -52,6 +52,35 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateANewExpressionWithAMultiLineInitialisationValue()
+        {
+            Expression<Action> writeWat = () => Console.WriteLine("Wat");
+            Expression<Func<long>> read = () => Console.Read();
+
+            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var valueBlock = Expression.Block(writeWat.Body, writeWat.Body, read.Body);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var positionInit = Expression.Bind(positionProperty, valueBlock);
+            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+
+            var translated = memoryStreamInit.ToReadableString();
+
+            const string EXPECTED = @"
+new MemoryStream
+{
+    Position = 
+    {
+        Console.WriteLine(""Wat"");
+        Console.WriteLine(""Wat"");
+
+        return ((long)Console.Read());
+    }
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANewExpressionWithMultipleInitialisations()
         {
             Expression<Func<MemoryStream>> createMemoryStream =
