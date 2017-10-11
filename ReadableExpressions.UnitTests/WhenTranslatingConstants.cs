@@ -352,6 +352,18 @@
             Assert.AreEqual("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
         }
 
+        [TestMethod]
+        public void ShouldTranslateAnActionWithMultipleNestedGenericParameters()
+        {
+            Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>> genericAction = fileInfo => { };
+
+            var actionConstant = Expression.Constant(genericAction);
+
+            var translated = actionConstant.ToReadableString();
+
+            Assert.AreEqual("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>", translated);
+        }
+
         // See https://github.com/agileobjects/ReadableExpressions/issues/5
         [TestMethod]
         public void ShouldTranslateDbNullValue()
@@ -376,6 +388,12 @@
             Assert.AreEqual("123", translated);
         }
     }
+
+    internal class GenericOne<T> { }
+
+    internal class GenericTwo<T> { }
+
+    internal class Generic<T1, T2, T3> { }
 
     internal enum OddNumber
     {

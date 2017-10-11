@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Collections.Generic;
     using System.Globalization;
     using System.Linq.Expressions;
 #if NET_STANDARD
@@ -32,9 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
 
-            string translation;
-
-            if (TryTranslateByTypeCode(constant, out translation))
+            if (TryTranslateByTypeCode(constant, out var translation))
             {
                 return translation;
             }
@@ -214,17 +211,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string FormatNumeric(decimal value)
         {
-            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString(CultureInfo.CurrentCulture);
         }
 
         private static string FormatNumeric(double value)
         {
-            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString(CultureInfo.CurrentCulture);
         }
 
         private static string FormatNumeric(float value)
         {
-            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString();
+            return (value % 1).Equals(0) ? value.ToString("0") : value.ToString(CultureInfo.CurrentCulture);
         }
 
         private static bool IsType(ConstantExpression constant, out string translation)
@@ -239,115 +236,115 @@ namespace AgileObjects.ReadableExpressions.Translators
             return false;
         }
 
-        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?<Type>Func|Action)`\d+\[(?<Arguments>.+)\]$");
+        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?:Func|Action)`\d+\[.+\]$");
 
         private static bool IsFunc(ConstantExpression constant, out string translation)
         {
             var match = _funcMatcher.Match(constant.Value.ToString());
 
-            if (!match.Success)
+            if (match.Success)
             {
-                translation = null;
-                return false;
+                translation = ParseFuncFrom(match.Value);
+                return true;
             }
 
-            var funcType = match.Groups["Type"].Value;
-            var argumentTypes = ParseArgumentNames(match.Groups["Arguments"].Value.Split(','));
-
-            translation = GetGenericTypeName(funcType, argumentTypes);
-            return true;
+            translation = null;
+            return false;
         }
 
         #region IsFunc Helpers
 
-        private static IEnumerable<string> ParseArgumentNames(params string[] arguments)
+        private static string ParseFuncFrom(string funcString)
         {
-            for (var i = 0; i < arguments.Length; i++)
+            var symbols = new[] { '`', ',', '[', ']' };
+            var parseIndex = 0;
+            var parsedFunc = string.Empty;
+
+            while (true)
             {
-                var argument = arguments[i];
-                var genericArgumentsIndex = argument.IndexOf('`');
+                var nextSymbolIndex = funcString.IndexOfAny(symbols, parseIndex);
 
-                if (genericArgumentsIndex == -1)
+                if (nextSymbolIndex == -1)
                 {
-                    yield return GetTypeName(argument);
-                    continue;
-                }
+                    var substring = funcString.Substring(parseIndex);
 
-                if (argument.StartsWith("System.Nullable`"))
-                {
-                    yield return GetNullableTypeName(argument);
-                    continue;
-                }
-
-                var genericTypeName = GetTypeName(argument.Substring(0, genericArgumentsIndex));
-                var genericTypeArgumentsStart = argument.IndexOf('[', genericArgumentsIndex) + 1;
-                argument = argument.Substring(genericTypeArgumentsStart);
-                var genericTypeArgumentsClosesNeeded = 1;
-                var genericTypeArgumentsString = argument;
-
-                if (i == arguments.Length - 1)
-                {
-                    genericTypeArgumentsString = RemoveFinalGenericArgumentsClose(genericTypeArgumentsString);
-                }
-                else
-                {
-                    while (i < arguments.Length - 1)
+                    if (substring.Length > 0)
                     {
-                        if (argument.IndexOf('`') != -1)
-                        {
-                            ++genericTypeArgumentsClosesNeeded;
-                        }
+                        var typeName = GetTypeName(substring);
 
-                        argument = arguments[++i];
-                        genericTypeArgumentsString += "," + argument;
+                        parsedFunc += typeName;
+                    }
+                    break;
+                }
 
-                        if (argument.EndsWith(']') && (argument[argument.Length - 2] != '['))
-                        {
-                            --genericTypeArgumentsClosesNeeded;
-                        }
+                var substringLength = nextSymbolIndex - parseIndex;
 
-                        if (genericTypeArgumentsClosesNeeded == 0)
-                        {
-                            genericTypeArgumentsString = RemoveFinalGenericArgumentsClose(genericTypeArgumentsString);
-                            break;
-                        }
+                if (substringLength > 0)
+                {
+                    var substring = funcString.Substring(parseIndex, substringLength);
+
+                    if (substring == "System.Nullable")
+                    {
+                        var nullableTypeIndex = parseIndex + "System.Nullable`1[".Length;
+                        var nullableTypeEndIndex = funcString.IndexOf(']', nullableTypeIndex);
+                        var nullableTypeLength = nullableTypeEndIndex - nullableTypeIndex;
+                        substring = funcString.Substring(nullableTypeIndex, nullableTypeLength);
+
+                        var typeName = GetTypeName(substring);
+
+                        parsedFunc += typeName + "?";
+                        parseIndex = nullableTypeEndIndex + 1;
+                        continue;
+                    }
+                    else
+                    {
+                        var typeName = GetTypeName(substring);
+
+                        parsedFunc += typeName;
+                        parseIndex = nextSymbolIndex + 1;
                     }
                 }
 
-                var genericTypeArguments = ParseArgumentNames(genericTypeArgumentsString.Split(','));
+                switch (funcString[nextSymbolIndex])
+                {
+                    case '`':
+                        parsedFunc += "<";
+                        parseIndex = funcString.IndexOf('[', parseIndex) + 1;
+                        continue;
 
-                yield return GetGenericTypeName(genericTypeName, genericTypeArguments);
+                    case ',':
+                        parsedFunc += ", ";
+
+                        if (substringLength == 0)
+                        {
+                            ++parseIndex;
+                        }
+                        continue;
+
+                    case '[':
+                        parsedFunc += "[]";
+                        ++parseIndex;
+                        continue;
+
+                    case ']':
+                        parsedFunc += ">";
+
+                        if (substringLength == 0)
+                        {
+                            ++parseIndex;
+                        }
+                        break;
+                }
             }
+
+            return parsedFunc;
         }
 
         private static string GetTypeName(string typeFullName)
         {
-            if (typeFullName.EndsWith("[]", StringComparison.Ordinal))
-            {
-                return GetTypeName(typeFullName.Substring(0, typeFullName.Length - 2)) + "[]";
-            }
-
             return typeFullName.GetSubstitutionOrNull() ??
                    typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
         }
-
-        private static readonly int _nullableTypeArgumentStart = "System.Nullable`1[".Length;
-
-        private static string GetNullableTypeName(string typeFullName)
-        {
-            var nullableTypeNameLength = typeFullName.Length - _nullableTypeArgumentStart - 1;
-            var nullableTypeName = typeFullName.Substring(_nullableTypeArgumentStart, nullableTypeNameLength);
-
-            return GetTypeName(nullableTypeName) + "?";
-        }
-
-        private static string RemoveFinalGenericArgumentsClose(string genericTypeArgumentsString)
-        {
-            return genericTypeArgumentsString.Substring(0, genericTypeArgumentsString.Length - 1);
-        }
-
-        private static string GetGenericTypeName(string typeName, IEnumerable<string> arguments)
-            => $"{typeName}<{string.Join(", ", arguments)}>";
 
         #endregion
 
