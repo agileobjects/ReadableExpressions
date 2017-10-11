@@ -19,19 +19,41 @@ namespace AgileObjects.ReadableExpressions
 
             var lastNewLine = codeLine.LastIndexOf(Environment.NewLine, StringComparison.Ordinal);
 
-            var index = (lastNewLine != -1)
-                ? lastNewLine + Environment.NewLine.Length
-                : 0;
-
-            for (var end = codeLine.Length - 1; index < end; ++index)
+            if (lastNewLine == -1)
             {
-                if (codeLine[index] != ' ')
+                return false;
+            }
+
+            var codeLines = codeLine.SplitToLines();
+
+            while (codeLines[0].StartsWith(IndentSpaces, StringComparison.Ordinal))
+            {
+                for (var i = 0; i < codeLines.Length; i++)
                 {
-                    return false;
+                    codeLines[i] = codeLines[i].Substring(IndentSpaces.Length);
                 }
             }
 
-            return true;
+            var lastNonIndentedCodeLine = codeLines
+                .Last(line => line.IsNonIndentedCodeLine());
+
+            if ((lastNonIndentedCodeLine == "catch") ||
+                 lastNonIndentedCodeLine.StartsWith("if ", StringComparison.Ordinal) ||
+                 lastNonIndentedCodeLine.StartsWith("while ", StringComparison.Ordinal) ||
+                (lastNonIndentedCodeLine == "finally") ||
+                 lastNonIndentedCodeLine.StartsWith("else if ", StringComparison.Ordinal) ||
+                (lastNonIndentedCodeLine == "else") ||
+                 lastNonIndentedCodeLine.StartsWith("switch ", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsNonIndentedCodeLine(this string line)
+        {
+            return line.IsNotIndented() && !line.StartsWith('{') && !line.StartsWith('}');
         }
 
         public static string Unterminated(this string codeLine)

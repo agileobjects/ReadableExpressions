@@ -34,7 +34,7 @@
 
             var numberOfNonIndentedLines = blockLines[0]
                 .SplitToLines()
-                .Count(RelevantNonIndentedLine);
+                .Count(line => line.IsNonIndentedCodeLine());
 
             return numberOfNonIndentedLines == 1;
         }
@@ -199,11 +199,6 @@
             }
         }
 
-        private static bool RelevantNonIndentedLine(string line)
-        {
-            return line.IsNotIndented() && !line.StartsWith('{') && !line.StartsWith('}');
-        }
-
         private class BlockInfo
         {
             private readonly string[] _blockLines;
@@ -217,7 +212,7 @@
                 _lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
 
                 _lastStatementLines = _lastNonIndentedStatement.SplitToLines();
-                _lastNonIndentedLine = _lastStatementLines.Last(RelevantNonIndentedLine);
+                _lastNonIndentedLine = _lastStatementLines.Last(line => line.IsNonIndentedCodeLine());
             }
 
             public bool LastLineHasReturnKeyword =>

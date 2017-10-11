@@ -189,7 +189,7 @@ return
     i = i + 2;
 
     return i;
-}";
+};";
 
             var translated = returnBlock.ToReadableString();
 

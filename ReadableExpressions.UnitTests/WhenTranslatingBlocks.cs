@@ -282,6 +282,45 @@ Console.WriteLine();";
         }
 
         [TestMethod]
+        public void ShouldTerminateAMultipleLineMemberInitAssignment()
+        {
+            Expression<Action> writeWat = () => Console.WriteLine("Wat");
+            Expression<Func<long>> read = () => Console.Read();
+
+            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var valueBlock = Expression.Block(writeWat.Body, read.Body);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var positionInit = Expression.Bind(positionProperty, valueBlock);
+            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+
+            var streamVariable = Expression.Variable(typeof(Stream), "stream");
+
+            var assignStream = Expression.Assign(streamVariable, memoryStreamInit);
+
+            var streamIsNull = Expression.Equal(streamVariable, Expression.Default(typeof(Stream)));
+
+            var ifNullAssign = Expression.IfThen(streamIsNull, assignStream);
+
+            var translated = ifNullAssign.ToReadableString();
+
+            const string EXPECTED = @"
+if (stream == null)
+{
+    stream = new MemoryStream
+    {
+        Position = 
+        {
+            Console.WriteLine(""Wat"");
+
+            return ((long)Console.Read());
+        }
+    };
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateASwitchWithMultipleVariableAssignments()
         {
             var countVariable = Expression.Variable(typeof(int), "count");

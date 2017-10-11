@@ -422,7 +422,7 @@ try
             {
                 throw new NotSupportedException();
             }
-        }
+        };
     }
 
     var fileStream = stream as FileStream;
@@ -441,7 +441,7 @@ try
             {
                 throw new IOException();
             }
-        }
+        };
     }
 
     return 0L;

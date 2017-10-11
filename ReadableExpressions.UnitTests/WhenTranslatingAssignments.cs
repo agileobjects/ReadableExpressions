@@ -528,8 +528,7 @@ result =
         [TestMethod]
         public void ShouldTranslateMultiStatementValueBlockAssignments()
         {
-            ParameterExpression existingInts;
-            var valueConditional = GetReturnStatementBlock(out existingInts);
+            var valueConditional = GetReturnStatementBlock(out var existingInts);
 
             Expression<Action> consoleRead = () => Console.Read();
 
@@ -567,7 +566,7 @@ result =
             }
 
             return ints;
-        }
+        };
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
@@ -576,8 +575,7 @@ result =
         [TestMethod]
         public void ShouldTranslateSingleStatementValueBlockAssignments()
         {
-            ParameterExpression existingInts;
-            var valueConditional = GetReturnStatementBlock(out existingInts);
+            var valueConditional = GetReturnStatementBlock(out var existingInts);
 
             var singleStatementValueBlock = Expression.Block(
                 new[] { existingInts },
@@ -610,7 +608,7 @@ result =
             }
 
             return ints;
-        }
+        };
 }";
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
