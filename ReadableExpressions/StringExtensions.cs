@@ -30,7 +30,10 @@ namespace AgileObjects.ReadableExpressions
             {
                 for (var i = 0; i < codeLines.Length; i++)
                 {
-                    codeLines[i] = codeLines[i].Substring(IndentSpaces.Length);
+                    if (codeLines[i].Length != 0)
+                    {
+                        codeLines[i] = codeLines[i].Substring(IndentSpaces.Length);
+                    }
                 }
             }
 
