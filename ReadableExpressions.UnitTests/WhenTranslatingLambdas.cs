@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -65,6 +67,21 @@
     i => (double)i";
 
             Assert.AreEqual(EXPECTED, translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateAQuotedLambdaQueryableProjection()
+        {
+            Expression<Func<IQueryable<int>, IQueryable<object>>> project =
+                items => items.Select(item => new { Number = item });
+
+            var translated = project.Body.ToReadableString();
+
+            const string EXPECTED = @"items.Select(
+    // Quoted to induce a closure:
+    item => new { Number = item })";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]

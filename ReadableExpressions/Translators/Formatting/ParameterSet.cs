@@ -242,7 +242,8 @@
                         {
                             hasSingleBlockArgument = hasSingleBlockArgument && a.IsMultiLine();
 
-                            return hasSingleBlockArgument ? a : a.Indented();
+                            return hasSingleBlockArgument || (_arguments[0].NodeType == ExpressionType.Quote)
+                                ? a : a.Indented();
                         });
 
                     if (hasSingleBlockArgument)
@@ -252,6 +253,13 @@
 
                     if (hasSingleLambdaArgument)
                     {
+                        if (_arguments[0].NodeType == ExpressionType.Quote)
+                        {
+                            return Environment.NewLine + parameters
+                                .Substring(Environment.NewLine.Length)
+                                .Substring(parameters.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                        }
+
                         return parameters.TrimStart();
                     }
 
@@ -277,6 +285,11 @@
         private bool IsSingleArgumentALambda()
         {
             var argument = _arguments[0];
+
+            if (argument.NodeType == ExpressionType.Quote)
+            {
+                argument = ((UnaryExpression)argument).Operand;
+            }
 
             if (argument.NodeType != ExpressionType.Lambda)
             {

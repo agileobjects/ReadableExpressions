@@ -24,7 +24,7 @@ namespace AgileObjects.ReadableExpressions
                 return false;
             }
 
-            var codeLines = codeLine.SplitToLines();
+            var codeLines = codeLine.TrimStart().SplitToLines();
 
             while (codeLines[0].StartsWith(IndentSpaces, StringComparison.Ordinal))
             {
@@ -97,7 +97,8 @@ namespace AgileObjects.ReadableExpressions
             return IndentSpaces + line;
         }
 
-        public static bool IsMultiLine(this string value) => value.Contains(Environment.NewLine);
+        public static bool IsMultiLine(this string value)
+            => (value != Environment.NewLine) && value.Contains(Environment.NewLine);
 
         private const string UnindentPlaceholder = "*unindent*";
 
@@ -188,7 +189,7 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool StartsWith(this string value, char character)
         {
-            return value[0] == character;
+            return (value.Length > 0) && (value[0] == character);
         }
 
         public static bool EndsWith(this string value, char character)

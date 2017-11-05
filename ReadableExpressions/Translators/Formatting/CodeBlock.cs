@@ -96,10 +96,7 @@
             return IsASingleStatement ? WithoutCurlyBraces().Unterminated() : WithCurlyBraces();
         }
 
-        public string WithoutCurlyBraces()
-        {
-            return GetCodeBlock();
-        }
+        public string WithoutCurlyBraces() => GetCodeBlock();
 
         public bool HasReturn()
         {

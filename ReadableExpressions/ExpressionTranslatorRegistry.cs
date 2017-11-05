@@ -63,7 +63,7 @@
         }
 
         public string Translate(
-            Expression expression, 
+            Expression expression,
             Func<TranslationSettings, TranslationSettings> configuration)
         {
             var context = (expression != null)
@@ -80,9 +80,7 @@
                 return null;
             }
 
-            IExpressionTranslator translator;
-
-            return _translatorsByType.TryGetValue(expression.NodeType, out translator)
+            return _translatorsByType.TryGetValue(expression.NodeType, out var translator)
                 ? translator.Translate(expression, context)
                 : expression.ToString();
         }

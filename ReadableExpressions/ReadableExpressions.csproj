@@ -27,6 +27,7 @@
     <AssemblyVersion>1.9.4.0</AssemblyVersion>
     <FileVersion>1.9.4.0</FileVersion>
     <Version>1.9.4</Version>
+    <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
   <ItemGroup>
