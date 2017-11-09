@@ -15,7 +15,7 @@ You can optionally maintain explicit generic arguments on method calls where the
 
 ### Debugger Visualizers
 An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
-[the Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/2d5de770-50e9-4dcf-87e9-ea1ed1b43b68).
+[the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
 
 ### Download
 You can download and install using [the NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), or 
