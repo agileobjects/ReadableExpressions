@@ -105,6 +105,18 @@ a =>
         }
 
         [TestMethod]
+        public void ShouldTranslateQuotedLambdaWithNoAnnotation()
+        {
+            Expression<Func<int, double>> intToDouble = i => i;
+
+            var quotedLambda = Expression.Quote(intToDouble);
+
+            var translated = quotedLambda.ToReadableString(o => o.NoQuotedLambdaComments);
+
+            Assert.AreEqual("i => (double)i", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateRuntimeVariables()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i1");

@@ -14,6 +14,11 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var quote = (UnaryExpression)expression;
 
+            if (context.Settings.DoNotCommentQuotedLambdas)
+            {
+                return context.TranslateAsCodeBlock(quote.Operand);
+            }
+
             var comment = ReadableExpression.Comment("Quoted to induce a closure:");
             var quotedLambdaBlock = Expression.Block(comment, quote.Operand);
 

@@ -25,5 +25,20 @@
         }
 
         internal bool UseImplicitGenericParameters { get; private set; }
+
+        /// <summary>
+        /// Do not annotate a Quoted Lambda Expression with a comment indicating that it has 
+        /// been Quoted.
+        /// </summary>
+        public TranslationSettings NoQuotedLambdaComments
+        {
+            get
+            {
+                DoNotCommentQuotedLambdas = true;
+                return this;
+            }
+        }
+
+        internal bool DoNotCommentQuotedLambdas { get; private set; }
     }
 }
