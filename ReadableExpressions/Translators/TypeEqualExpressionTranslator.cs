@@ -20,8 +20,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             try
             {
                 _reduceTypeEqualMethod = typeof(TypeBinaryExpression)
-                    .GetNonPublicInstanceMethods()
-                    .FirstOrDefault(m => m.Name == "ReduceTypeEqual");
+                    .GetNonPublicInstanceMethods("ReduceTypeEqual")
+                    .FirstOrDefault();
             }
             catch
             {
