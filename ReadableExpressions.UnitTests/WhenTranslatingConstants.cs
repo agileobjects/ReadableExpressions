@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Data.Common;
     using System.IO;
+    using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -386,6 +387,21 @@
             var translated = objectConstant.ToReadableString();
 
             Assert.AreEqual("123", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateALambdaConstant()
+        {
+            Expression<Func<int, int>> lambda =
+                num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index);
+
+            var lambdaConstant = Expression.Constant(lambda, lambda.GetType());
+
+            var translated = lambdaConstant.ToReadableString();
+
+            const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
     }
 

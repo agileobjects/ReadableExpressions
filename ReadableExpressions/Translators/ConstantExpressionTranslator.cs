@@ -31,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return constant.Type.GetFriendlyName() + "." + constant.Value;
             }
 
-            if (TryTranslateByTypeCode(constant, out var translation))
+            if (TryTranslateByTypeCode(constant, context, out var translation))
             {
                 return translation;
             }
@@ -39,7 +39,10 @@ namespace AgileObjects.ReadableExpressions.Translators
             return constant.Value.ToString();
         }
 
-        private static bool TryTranslateByTypeCode(ConstantExpression constant, out string translation)
+        private static bool TryTranslateByTypeCode(
+            ConstantExpression constant,
+            TranslationContext context,
+            out string translation)
         {
             switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
             {
@@ -78,6 +81,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 case NetStandardTypeCode.Object:
                     if (IsType(constant, out translation) ||
+                        IsLambda(constant, context, out translation) ||
                         IsFunc(constant, out translation) ||
                         IsDefault<Guid>(constant, out translation) ||
                         IsTimeSpan(constant, out translation))
@@ -229,6 +233,21 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (typeof(Type).IsAssignableFrom(constant.Type))
             {
                 translation = $"typeof({((Type)constant.Value).GetFriendlyName()})";
+                return true;
+            }
+
+            translation = null;
+            return false;
+        }
+
+        private static bool IsLambda(
+            ConstantExpression constant,
+            TranslationContext context,
+            out string translation)
+        {
+            if (constant.Value is LambdaExpression lambda)
+            {
+                translation = context.TranslateAsCodeBlock(lambda);
                 return true;
             }
 
