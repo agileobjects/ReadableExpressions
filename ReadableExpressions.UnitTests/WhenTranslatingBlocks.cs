@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
 
     [TestClass]
     public class WhenTranslatingBlocks
@@ -361,6 +362,45 @@ switch (i)
         }
 
         [TestMethod]
+        public void ShouldTranslateAMemberInitReturnValue()
+        {
+            var company = Expression.Variable(typeof(Company), "c");
+            var ceo = Expression.Variable(typeof(Employee), "ceo");
+            var ceoAddress = Expression.Property(ceo, "Address");
+
+            var assignCeo = Expression.Assign(ceo, Expression.Property(company, "Ceo"));
+
+            var newAddress = Expression.MemberInit(
+                Expression.New(typeof(Address).GetPublicInstanceConstructor()),
+                Expression.Bind(
+                    typeof(Address).GetPublicInstanceMember("Line1"),
+                    Expression.Property(ceoAddress, "Line1")));
+
+            var newEmployee = Expression.MemberInit(
+                Expression.New(typeof(Employee).GetPublicInstanceConstructor()),
+                Expression.Bind(
+                    typeof(Employee).GetPublicInstanceMember("Address"),
+                    newAddress)
+                );
+
+            var block = Expression.Block(assignCeo, newEmployee);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+var ceo = c.Ceo;
+
+return new WhenTranslatingBlocks.Employee
+{
+    Address = new WhenTranslatingBlocks.Address
+    {
+        Line1 = ceo.Address.Line1
+    }
+};";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldIgnoreABlankLabelTargetLine()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -375,10 +415,7 @@ switch (i)
 
             var translated = intAssignmentBlock.ToReadableString();
 
-            const string EXPECTED = @"var i = 0;";
-
-
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual("var i = 0;", translated);
         }
 
         [TestMethod]
@@ -542,6 +579,18 @@ catch
         }
 
         #region Helper Classes
+
+        private class Company
+        {
+            // ReSharper disable once UnusedMember.Local
+            public Employee Ceo { get; set; }
+        }
+
+        private class Employee
+        {
+            // ReSharper disable once UnusedMember.Local
+            public Address Address { get; set; }
+        }
 
         private class Address
         {

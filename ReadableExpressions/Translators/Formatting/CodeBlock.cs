@@ -206,7 +206,7 @@
             public BlockInfo(string[] blockLines)
             {
                 _blockLines = blockLines;
-                _lastNonIndentedStatement = blockLines.Last(line => line.IsNotIndented());
+                _lastNonIndentedStatement = blockLines.Last(line => line.IsNonIndentedCodeLine());
 
                 _lastStatementLines = _lastNonIndentedStatement.SplitToLines();
                 _lastNonIndentedLine = _lastStatementLines.Last(line => line.IsNonIndentedCodeLine());
