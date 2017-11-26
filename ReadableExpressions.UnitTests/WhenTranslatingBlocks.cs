@@ -136,7 +136,7 @@ var count = 0;
 
             var listAssignment = Expression.Assign(listVariable, createList.Body);
 
-            var toArrayMethod = typeof(Enumerable).GetMethod("ToArray");
+            var toArrayMethod = typeof(Enumerable).GetPublicStaticMethod("ToArray");
             var typedToArrayMethod = toArrayMethod.MakeGenericMethod(typeof(int));
             var listToArray = Expression.Call(typedToArrayMethod, listVariable);
 
