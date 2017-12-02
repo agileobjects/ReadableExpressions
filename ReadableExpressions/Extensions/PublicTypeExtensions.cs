@@ -3,9 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-#if NET_STANDARD
-    using System.Reflection;
-#endif
     using NetStandardPolyfills;
 
     /// <summary>
@@ -55,7 +52,7 @@
 
         private static string GetGenericTypeName(Type genericType)
         {
-            var typeGenericTypeArguments = genericType.GetGenericArguments();
+            var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
 
             if (!genericType.IsNested)
             {

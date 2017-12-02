@@ -3,9 +3,6 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Globalization;
     using System.Linq.Expressions;
-#if NET_STANDARD
-    using System.Reflection;
-#endif
     using System.Text.RegularExpressions;
     using Extensions;
     using NetStandardPolyfills;
@@ -230,7 +227,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static bool IsType(ConstantExpression constant, out string translation)
         {
-            if (typeof(Type).IsAssignableFrom(constant.Type))
+            if (constant.Type.IsAssignableTo(typeof(Type)))
             {
                 translation = $"typeof({((Type)constant.Value).GetFriendlyName()})";
                 return true;

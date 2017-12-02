@@ -6,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Text.RegularExpressions;
+    using NetStandardPolyfills;
 
     internal class DynamicExpressionTranslator : ExpressionTranslatorBase
     {
@@ -164,7 +165,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var subjectObject = dynamicExpression.Arguments.First();
                 var subject = context.Translate(subjectObject);
                 var methodName = match.Groups["MethodName"].Value;
-                var method = subjectObject.Type.GetMethod(methodName);
+                var method = subjectObject.Type.GetPublicMethod(methodName);
                 var methodArguments = dynamicExpression.Arguments.Skip(1).ToArray();
 
                 var methodInfo = GetMethodInfo(

@@ -167,7 +167,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 if (type.IsGenericType())
                 {
-                    RemoveSuppliedGenericTypeParameters(type.GetGenericArguments(), genericParameterTypes);
+                    RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
                 }
             }
         }
@@ -242,7 +242,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     invocationSubject = invocationSubject.WithSurroundingParentheses();
                 }
 
-                var invocationMethod = invocation.Expression.Type.GetMethod("Invoke");
+                var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
                 return _methodCallTranslator.Invoke(
                     invocationSubject,
@@ -270,8 +270,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 var property = methodCall
                     .Object?
                     .Type
-                    .GetProperties()
-                    .FirstOrDefault(p => p.GetAccessors().Contains(methodCall.Method));
+                    .GetPublicInstanceProperties()
+                    .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
 
                 if (property == null)
                 {

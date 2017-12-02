@@ -24,19 +24,14 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.9.5.0</AssemblyVersion>
-    <FileVersion>1.9.5.0</FileVersion>
-    <Version>1.9.5</Version>
+    <AssemblyVersion>1.9.6.0</AssemblyVersion>
+    <FileVersion>1.9.6.0</FileVersion>
+    <Version>1.9.6</Version>
     <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.0.0" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.4.0" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
@@ -46,6 +41,10 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.2.0" />
   </ItemGroup>
 
 </Project>
