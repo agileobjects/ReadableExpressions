@@ -24,9 +24,9 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.9.6.0</AssemblyVersion>
-    <FileVersion>1.9.6.0</FileVersion>
-    <Version>1.9.6</Version>
+    <AssemblyVersion>1.10.0.0</AssemblyVersion>
+    <FileVersion>1.10.0.0</FileVersion>
+    <Version>1.10.0</Version>
     <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
