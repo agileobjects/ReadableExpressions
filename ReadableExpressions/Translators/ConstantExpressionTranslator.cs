@@ -93,7 +93,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 case NetStandardTypeCode.String:
                     var stringValue = (string)constant.Value;
-                    translation = stringValue.IsComment() ? stringValue : $"\"{stringValue}\"";
+                    translation = stringValue.IsComment() 
+                        ? stringValue 
+                        : $"\"{stringValue.Replace("\"", "\\\"")}\"";
                     return true;
             }
 

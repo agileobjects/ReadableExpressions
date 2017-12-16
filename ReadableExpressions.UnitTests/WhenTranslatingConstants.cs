@@ -295,6 +295,16 @@
         }
 
         [TestMethod]
+        public void ShouldEscapteTranslatedStrings()
+        {
+            var stringConstant = Expression.Constant("Escape: \"THIS\"!");
+
+            var translated = stringConstant.ToReadableString();
+
+            Assert.AreEqual("\"Escape: \\\"THIS\\\"!\"", translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateADefaultGuid()
         {
             var guidConstant = Expression.Constant(default(Guid));
