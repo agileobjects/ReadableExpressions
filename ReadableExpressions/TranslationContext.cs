@@ -177,6 +177,8 @@ namespace AgileObjects.ReadableExpressions
             private readonly List<Expression> _assignedAssignments;
             private readonly Stack<BlockExpression> _blocks;
             private readonly Stack<object> _constructs;
+            private ICollection<LabelTarget> _namedLabelTargets;
+            private ICollection<GotoExpression> _gotoReturnGotos;
 
             private ExpressionAnalysisVisitor()
             {
@@ -185,8 +187,6 @@ namespace AgileObjects.ReadableExpressions
                 JoinedAssignedVariables = new List<ParameterExpression>();
                 JoinedAssignments = new List<BinaryExpression>();
                 _assignedAssignments = new List<Expression>();
-                NamedLabelTargets = new List<LabelTarget>();
-                GotoReturnGotos = new List<GotoExpression>();
                 ChainedMethodCalls = new List<MethodCallExpression>();
                 _blocks = new Stack<BlockExpression>();
                 _constructs = new Stack<object>();
@@ -236,9 +236,11 @@ namespace AgileObjects.ReadableExpressions
 
             public ICollection<BinaryExpression> JoinedAssignments { get; }
 
-            public ICollection<LabelTarget> NamedLabelTargets { get; }
+            public ICollection<LabelTarget> NamedLabelTargets
+                => _namedLabelTargets ?? (_namedLabelTargets = new List<LabelTarget>());
 
-            public ICollection<GotoExpression> GotoReturnGotos { get; }
+            public ICollection<GotoExpression> GotoReturnGotos
+                => _gotoReturnGotos ?? (_gotoReturnGotos = new List<GotoExpression>());
 
             public List<MethodCallExpression> ChainedMethodCalls { get; }
 
