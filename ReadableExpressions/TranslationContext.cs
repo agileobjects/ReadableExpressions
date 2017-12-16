@@ -71,10 +71,7 @@ namespace AgileObjects.ReadableExpressions
         /// </summary>
         /// <param name="expression">The <see cref="Expression"/> to translate.</param>
         /// <returns>A source code translation of the given <paramref name="expression"/>.</returns>
-        public string Translate(Expression expression)
-        {
-            return _globalTranslator.Invoke(expression, this);
-        }
+        public string Translate(Expression expression) => _globalTranslator.Invoke(expression, this);
 
         internal string TranslateAsCodeBlock(Expression expression)
         {
@@ -130,7 +127,7 @@ namespace AgileObjects.ReadableExpressions
         public bool IsNotJoinedAssignment(Expression expression)
         {
             return (expression.NodeType != ExpressionType.Assign) ||
-                !_analyzer.JoinedAssignments.Contains(expression);
+                  !_analyzer.JoinedAssignments.Contains(expression);
         }
 
         /// <summary>
@@ -143,9 +140,19 @@ namespace AgileObjects.ReadableExpressions
         /// otherwise false.
         /// </returns>
         public bool IsReferencedByGoto(LabelTarget labelTarget)
-        {
-            return _analyzer.NamedLabelTargets.Contains(labelTarget);
-        }
+            => _analyzer.NamedLabelTargets.Contains(labelTarget);
+
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
+        /// final statement in a block, and so should be rendered as a return statement.
+        /// </summary>
+        /// <param name="goto">The GotoExpression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// otherwise false.
+        /// </returns>
+        public bool GoesToReturnLabel(GotoExpression @goto)
+            => _analyzer.GotoReturnGotos.Contains(@goto);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
@@ -161,11 +168,14 @@ namespace AgileObjects.ReadableExpressions
             return _analyzer.ChainedMethodCalls.Contains(methodCall);
         }
 
+        #region Helper Class
+
         private class ExpressionAnalysisVisitor : ExpressionVisitor
         {
             private readonly Dictionary<BinaryExpression, object> _constructsByAssignment;
             private readonly List<ParameterExpression> _accessedVariables;
             private readonly List<Expression> _assignedAssignments;
+            private readonly Stack<BlockExpression> _blocks;
             private readonly Stack<object> _constructs;
 
             private ExpressionAnalysisVisitor()
@@ -176,7 +186,9 @@ namespace AgileObjects.ReadableExpressions
                 JoinedAssignments = new List<BinaryExpression>();
                 _assignedAssignments = new List<Expression>();
                 NamedLabelTargets = new List<LabelTarget>();
+                GotoReturnGotos = new List<GotoExpression>();
                 ChainedMethodCalls = new List<MethodCallExpression>();
+                _blocks = new Stack<BlockExpression>();
                 _constructs = new Stack<object>();
             }
 
@@ -226,6 +238,8 @@ namespace AgileObjects.ReadableExpressions
 
             public ICollection<LabelTarget> NamedLabelTargets { get; }
 
+            public ICollection<GotoExpression> GotoReturnGotos { get; }
+
             public List<MethodCallExpression> ChainedMethodCalls { get; }
 
             protected override Expression VisitParameter(ParameterExpression variable)
@@ -261,6 +275,17 @@ namespace AgileObjects.ReadableExpressions
                 _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
 
                 return base.VisitParameter(variable);
+            }
+
+            protected override Expression VisitBlock(BlockExpression block)
+            {
+                _blocks.Push(block);
+
+                var result = base.VisitBlock(block);
+
+                _blocks.Pop();
+
+                return result;
             }
 
             protected override Expression VisitBinary(BinaryExpression binary)
@@ -320,10 +345,26 @@ namespace AgileObjects.ReadableExpressions
 
             protected override Expression VisitGoto(GotoExpression @goto)
             {
-                if (@goto.Kind == GotoExpressionKind.Goto)
+                if (@goto.Kind != GotoExpressionKind.Goto)
                 {
-                    NamedLabelTargets.Add(@goto.Target);
+                    return base.VisitGoto(@goto);
                 }
+
+                var currentBlockFinalExpression = _blocks.Peek()?.Expressions.Last();
+
+                if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
+                {
+                    var returnLabel = (LabelExpression)currentBlockFinalExpression;
+
+                    if (@goto.Target == returnLabel.Target)
+                    {
+                        GotoReturnGotos.Add(@goto);
+
+                        return base.VisitGoto(@goto);
+                    }
+                }
+
+                NamedLabelTargets.Add(@goto.Target);
 
                 return base.VisitGoto(@goto);
             }
@@ -398,5 +439,7 @@ namespace AgileObjects.ReadableExpressions
 
             #endregion
         }
+
+        #endregion
     }
 }

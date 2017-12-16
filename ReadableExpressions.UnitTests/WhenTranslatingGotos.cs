@@ -93,6 +93,37 @@ Two:
         }
 
         [TestMethod]
+        public void ShouldTranslateAGotoReturnStatement()
+        {
+            var returnTarget = Expression.Label(typeof(int), "Return");
+
+            var numberParameter = Expression.Parameter(typeof(string), "i");
+            var numberEqualsOne = Expression.Equal(numberParameter, Expression.Constant("One"));
+            var returnOne = Expression.Goto(returnTarget, Expression.Constant(1));
+            var ifOneReturnOne = Expression.IfThen(numberEqualsOne, returnOne);
+
+            var returnLabel = Expression.Label(returnTarget, Expression.Constant(0));
+            var gotoBlock = Expression.Block(ifOneReturnOne, returnLabel);
+
+            var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
+            gotoLambda.Compile();
+
+            var translated = gotoLambda.ToReadableString();
+
+            const string EXPECTED = @"
+i =>
+{
+    if (i == ""One"")
+    {
+        return 1;
+    }
+
+    return 0;
+}";
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateAReturnStatementWithAValue()
         {
             var returnTarget = Expression.Label(typeof(int));
@@ -228,7 +259,6 @@ return
 
     return i;
 };";
-
             var translated = returnBlock.ToReadableString();
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);

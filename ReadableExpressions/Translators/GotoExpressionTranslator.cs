@@ -33,8 +33,15 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateContinue(GotoExpression continueExpression, TranslationContext context)
             => "continue;";
 
-        private static string TranslateGoto(GotoExpression gotoExpression, TranslationContext context)
-            => $"goto {gotoExpression.Target.Name};";
+        private static string TranslateGoto(GotoExpression @goto, TranslationContext context)
+        {
+            if (context.GoesToReturnLabel(@goto))
+            {
+                return TranslateReturn(@goto, context);
+            }
+
+            return $"goto {@goto.Target.Name};";
+        }
 
         private static string TranslateReturn(GotoExpression returnExpression, TranslationContext context)
         {
