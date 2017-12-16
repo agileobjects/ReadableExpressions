@@ -60,13 +60,7 @@
 
             var translated = quotedLambda.ToReadableString();
 
-            // The only place Quote expressions are used is nested 
-            // lambdas, so the translation will be indented:
-            const string EXPECTED = @"
-    // Quoted to induce a closure:
-    i => (double)i";
-
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.AreEqual("i => (double)i", translated);
         }
 
         [TestMethod]
@@ -77,11 +71,7 @@
 
             var translated = project.Body.ToReadableString();
 
-            const string EXPECTED = @"items.Select(
-    // Quoted to induce a closure:
-    item => new { Number = item })";
-
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.AreEqual("items.Select(item => new { Number = item })", translated);
         }
 
         [TestMethod]
@@ -96,24 +86,23 @@
 
             var translated = additionOuterLambda.ToReadableString();
 
-            const string EXPECTED = @"
-a =>
-    // Quoted to induce a closure:
-    b => a + b";
-
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.AreEqual("a => b => a + b", translated);
         }
 
         [TestMethod]
-        public void ShouldTranslateQuotedLambdaWithNoAnnotation()
+        public void ShouldTranslateQuotedLambdaWithAnAnnotation()
         {
             Expression<Func<int, double>> intToDouble = i => i;
 
             var quotedLambda = Expression.Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString(o => o.NoQuotedLambdaComments);
+            var translated = quotedLambda.ToReadableString(o => o.ShowQuotedLambdaComments);
 
-            Assert.AreEqual("i => (double)i", translated);
+            const string EXPECTED = @"
+    // Quoted to induce a closure:
+    i => (double)i";
+
+            Assert.AreEqual(EXPECTED, translated);
         }
 
         [TestMethod]

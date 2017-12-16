@@ -10,6 +10,7 @@
         internal TranslationSettings()
         {
             UseImplicitGenericParameters = true;
+            DoNotCommentQuotedLambdas = true;
         }
 
         /// <summary>
@@ -27,14 +28,14 @@
         internal bool UseImplicitGenericParameters { get; private set; }
 
         /// <summary>
-        /// Do not annotate a Quoted Lambda Expression with a comment indicating that it has 
+        /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
         /// been Quoted.
         /// </summary>
-        public TranslationSettings NoQuotedLambdaComments
+        public TranslationSettings ShowQuotedLambdaComments
         {
             get
             {
-                DoNotCommentQuotedLambdas = true;
+                DoNotCommentQuotedLambdas = false;
                 return this;
             }
         }
