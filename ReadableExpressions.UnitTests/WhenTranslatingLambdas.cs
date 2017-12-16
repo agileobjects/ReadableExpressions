@@ -1,7 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
-    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.Data.Entity;
     using System.Linq;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -75,6 +76,34 @@
         }
 
         [TestMethod]
+        public void ShouldTranslateADbSetQueryExpression()
+        {
+            var productQuery = new TestDbContext()
+                .Products
+                .AsNoTracking()
+                .Where(p => p.Id > 10)
+                .Select(p => new Product
+                {
+                    Id = p.Id,
+                    Name = p.Name
+                });
+
+            var translated = productQuery.Expression.ToReadableString();
+
+            const string EXPECTED = @"
+ObjectQuery<WhenTranslatingLambdas.Product>
+    .MergeAs(MergeOption.NoTracking)
+    .Where(p => p.Id > 10)
+    .Select(p => new WhenTranslatingLambdas.Product
+    {
+        Id = p.Id,
+        Name = p.Name
+    })";
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
         public void ShouldTranslateANestedQuotedLambda()
         {
             var intA = Expression.Parameter(typeof(int), "a");
@@ -116,5 +145,23 @@
 
             Assert.AreEqual("(i1, i2)", translated);
         }
+
+        #region Helper Methods
+
+        private class TestDbContext : DbContext
+        {
+            // ReSharper disable once UnusedAutoPropertyAccessor.Local
+            public DbSet<Product> Products { get; set; }
+        }
+
+        private class Product
+        {
+            [Key]
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        #endregion
     }
 }

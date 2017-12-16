@@ -33,7 +33,14 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return translation;
             }
 
-            return constant.Value.ToString();
+            var valueType = constant.Value.GetType();
+
+            if (valueType.IsPrimitive() || valueType.IsValueType())
+            {
+                return constant.Value.ToString();
+            }
+
+            return valueType.GetFriendlyName();
         }
 
         private static bool TryTranslateByTypeCode(
@@ -93,8 +100,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 case NetStandardTypeCode.String:
                     var stringValue = (string)constant.Value;
-                    translation = stringValue.IsComment() 
-                        ? stringValue 
+                    translation = stringValue.IsComment()
+                        ? stringValue
                         : $"\"{stringValue.Replace("\"", "\\\"")}\"";
                     return true;
             }

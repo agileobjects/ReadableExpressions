@@ -10,7 +10,6 @@
         internal TranslationSettings()
         {
             UseImplicitGenericParameters = true;
-            DoNotCommentQuotedLambdas = true;
         }
 
         /// <summary>
@@ -35,11 +34,13 @@
         {
             get
             {
-                DoNotCommentQuotedLambdas = false;
+                CommentQuotedLambdas = true;
                 return this;
             }
         }
 
-        internal bool DoNotCommentQuotedLambdas { get; private set; }
+        internal bool DoNotCommentQuotedLambdas => !CommentQuotedLambdas;
+
+        internal bool CommentQuotedLambdas { get; set; }
     }
 }

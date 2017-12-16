@@ -236,14 +236,17 @@
                         hasSingleBlockArgument = hasSingleLambdaArgument = false;
                     }
 
+                    var compensateForQuotedLambda =
+                        _context.Settings.CommentQuotedLambdas &&
+                       (_arguments[0].NodeType == ExpressionType.Quote);
+
                     var parameters = FormatParameters(
                         "," + Environment.NewLine,
                         a =>
                         {
                             hasSingleBlockArgument = hasSingleBlockArgument && a.IsMultiLine();
 
-                            return hasSingleBlockArgument || (_arguments[0].NodeType == ExpressionType.Quote)
-                                ? a : a.Indented();
+                            return hasSingleBlockArgument || compensateForQuotedLambda ? a : a.Indented();
                         });
 
                     if (hasSingleBlockArgument)
@@ -253,7 +256,7 @@
 
                     if (hasSingleLambdaArgument)
                     {
-                        if (_arguments[0].NodeType == ExpressionType.Quote)
+                        if (compensateForQuotedLambda)
                         {
                             return Environment.NewLine + parameters
                                 .Substring(Environment.NewLine.Length)
