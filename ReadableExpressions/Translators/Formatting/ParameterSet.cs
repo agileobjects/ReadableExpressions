@@ -7,6 +7,7 @@
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
+    using static System.Environment;
 
     internal class ParameterSet : FormattableExpressionBase
     {
@@ -81,7 +82,7 @@
                 .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.Trim(' '));
 
-            var arrayValuesString = string.Join(Environment.NewLine, arrayValues);
+            var arrayValuesString = string.Join(NewLine, arrayValues);
 
             return arrayValuesString;
         }
@@ -241,12 +242,22 @@
                        (_arguments[0].NodeType == ExpressionType.Quote);
 
                     var parameters = FormatParameters(
-                        "," + Environment.NewLine,
+                        "," + NewLine,
                         a =>
                         {
                             hasSingleBlockArgument = hasSingleBlockArgument && a.IsMultiLine();
 
-                            return hasSingleBlockArgument || compensateForQuotedLambda ? a : a.Indented();
+                            if (hasSingleBlockArgument || compensateForQuotedLambda)
+                            {
+                                return a;
+                            }
+
+                            if (a.StartsWithNewLine())
+                            {
+                                a = a.Substring(NewLine.Length);
+                            }
+
+                            return a.Indented();
                         });
 
                     if (hasSingleBlockArgument)
@@ -258,15 +269,15 @@
                     {
                         if (compensateForQuotedLambda)
                         {
-                            return Environment.NewLine + parameters
-                                .Substring(Environment.NewLine.Length)
-                                .Substring(parameters.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                            return NewLine + parameters
+                                .Substring(NewLine.Length)
+                                .Substring(parameters.IndexOf(NewLine, StringComparison.Ordinal));
                         }
 
                         return parameters.TrimStart();
                     }
 
-                    return Environment.NewLine + parameters;
+                    return NewLine + parameters;
                 };
             }
         }

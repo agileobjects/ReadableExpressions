@@ -26,7 +26,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             return "new " + typeName + parameters;
         }
-        private string GetAnonymousTypeCreation(NewExpression newExpression, TranslationContext context)
+        private static string GetAnonymousTypeCreation(NewExpression newExpression, TranslationContext context)
         {
             var constructorParameters = newExpression.Constructor.GetParameters();
 

@@ -6,6 +6,7 @@
     using System.Linq.Expressions;
     using System.Text;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
 
     [TestClass]
     public class WhenTranslatingObjectCreations
@@ -266,6 +267,47 @@ new IDisposable[]
             var translated = createStringBuilder.Body.ToReadableString();
 
             Assert.AreEqual("new StringBuilder(str)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateMultilineConstructorParameters()
+        {
+            Expression<Func<int>> consoleRead = () => Console.Read();
+
+            var catchAll = Expression.Catch(typeof(Exception), Expression.Default(typeof(int)));
+            var tryReadInt = Expression.TryCatch(consoleRead.Body, catchAll);
+
+            var createStringBuilder = Expression.New(
+                typeof(StringBuilder).GetPublicInstanceConstructor(typeof(int), typeof(int)),
+                tryReadInt,
+                tryReadInt);
+
+            const string EXPECTED = @"
+new StringBuilder(
+    {
+        try
+        {
+            return Console.Read();
+        }
+        catch
+        {
+            return default(int);
+        }
+    },
+    {
+        try
+        {
+            return Console.Read();
+        }
+        catch
+        {
+            return default(int);
+        }
+    })";
+
+            var translated = createStringBuilder.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
 
         [TestMethod]

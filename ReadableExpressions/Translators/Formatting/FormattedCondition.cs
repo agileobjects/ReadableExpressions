@@ -20,7 +20,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
             if (test.IsMultiLine())
             {
-                if (test.StartsWith(Environment.NewLine + '{'))
+                if (test.StartsWith(Environment.NewLine + '{', StringComparison.Ordinal))
                 {
                     test = test.Indented();
                 }
@@ -33,11 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
             MultipleLineTranslationFactory = GetMultipleLineTranslation;
         }
 
-        private bool CheckExistingParentheses()
-        {
-            // ReSharper disable once UnusedVariable
-            return IsNotRelevantBinary(_condition, out BinaryExpression binary);
-        }
+        private bool CheckExistingParentheses() => IsNotRelevantBinary(_condition, out var _);
 
         protected override Func<string> SingleLineTranslationFactory => () => _singleLineTest;
 
@@ -45,7 +41,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
         private string GetMultipleLineTranslation()
         {
-            if (IsNotRelevantBinary(_condition, out BinaryExpression conditionBinary))
+            if (IsNotRelevantBinary(_condition, out var conditionBinary))
             {
                 return _singleLineTest;
             }

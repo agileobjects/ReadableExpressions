@@ -5,6 +5,7 @@ namespace AgileObjects.ReadableExpressions
     using System.Linq;
     using System.Linq.Expressions;
     using Extensions;
+    using static System.Environment;
 
     internal static class StringExtensions
     {
@@ -17,7 +18,7 @@ namespace AgileObjects.ReadableExpressions
                 return codeLine.EndsWithAny(_terminatingCharacters) || codeLine.IsComment();
             }
 
-            var lastNewLine = codeLine.LastIndexOf(Environment.NewLine, StringComparison.Ordinal);
+            var lastNewLine = codeLine.LastIndexOf(NewLine, StringComparison.Ordinal);
 
             if (lastNewLine == -1)
             {
@@ -66,7 +67,7 @@ namespace AgileObjects.ReadableExpressions
                 : codeLine;
         }
 
-        private static readonly string[] _newLines = { Environment.NewLine };
+        private static readonly string[] _newLines = { NewLine };
 
         public static string[] SplitToLines(this string line, StringSplitOptions splitOptions = StringSplitOptions.None)
         {
@@ -90,7 +91,7 @@ namespace AgileObjects.ReadableExpressions
             if (line.IsMultiLine())
             {
                 return string.Join(
-                    Environment.NewLine,
+                    NewLine,
                     line.SplitToLines().Select(l => l.Indented()));
             }
 
@@ -98,7 +99,7 @@ namespace AgileObjects.ReadableExpressions
         }
 
         public static bool IsMultiLine(this string value)
-            => (value != Environment.NewLine) && value.Contains(Environment.NewLine);
+            => (value != NewLine) && value.Contains(NewLine);
 
         private const string UnindentPlaceholder = "*unindent*";
 
@@ -184,7 +185,7 @@ namespace AgileObjects.ReadableExpressions
 
         public static bool StartsWithNewLine(this string value)
         {
-            return value.StartsWith(Environment.NewLine, StringComparison.Ordinal);
+            return value.StartsWith(NewLine, StringComparison.Ordinal);
         }
 
         public static bool StartsWith(this string value, char character)
@@ -213,7 +214,7 @@ namespace AgileObjects.ReadableExpressions
         {
             return CommentString + text
                 .Trim()
-                .Replace(Environment.NewLine, Environment.NewLine + CommentString);
+                .Replace(NewLine, NewLine + CommentString);
         }
 
         public static bool IsComment(this string codeLine)
