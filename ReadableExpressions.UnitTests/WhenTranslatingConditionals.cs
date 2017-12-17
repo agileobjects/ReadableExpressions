@@ -3,6 +3,7 @@
     using System;
     using System.Linq.Expressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
 
     [TestClass]
     public class WhenTranslatingConditionals
@@ -276,7 +277,7 @@ return i;
         [TestMethod]
         public void ShouldNotWrapMethodCallTernaryConditionsInParentheses()
         {
-            var method = typeof(MethodCallHelper).GetMethod("MultipleParameterMethod");
+            var method = typeof(MethodCallHelper).GetPublicInstanceMethod("MultipleParameterMethod");
 
             var methodCall = Expression.Call(
                 Expression.Variable(typeof(MethodCallHelper), "helper"),

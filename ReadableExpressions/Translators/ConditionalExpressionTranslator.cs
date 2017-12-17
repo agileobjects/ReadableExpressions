@@ -42,9 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         private static string GetTest(ConditionalExpression conditional, TranslationContext context)
-        {
-            return new FormattedCondition(conditional.Test, context);
-        }
+            => new FormattedCondition(conditional.Test, context);
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)
         {

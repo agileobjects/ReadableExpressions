@@ -20,7 +20,12 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
             if (test.IsMultiLine())
             {
-                test = test.Indented().TrimStart();
+                if (test.StartsWith(Environment.NewLine + '{'))
+                {
+                    test = test.Indented();
+                }
+
+                test = test.TrimStart();
             }
 
             _singleLineTest = test.WithSurroundingParentheses(CheckExistingParentheses());

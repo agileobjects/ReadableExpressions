@@ -5,8 +5,8 @@
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Reflection;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
 
     [TestClass]
     public class WhenFormattingCode
@@ -37,7 +37,7 @@ var helper = new HelperClass(
         public void ShouldSplitMultipleArgumentListsOntoMultipleLines()
         {
             var intsMethod = typeof(HelperClass)
-                .GetMethod("GiveMeFourInts", BindingFlags.Public | BindingFlags.Instance);
+                .GetPublicInstanceMethod("GiveMeFourInts");
 
             var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
             var intVariable = Expression.Variable(typeof(int), "intVariable");
@@ -66,7 +66,7 @@ helper.GiveMeFourInts(
         public void ShouldSplitLongArgumentListsOntoMultipleLines()
         {
             var intsMethod = typeof(HelperClass)
-                .GetMethod("GiveMeSomeInts", BindingFlags.Public | BindingFlags.Instance);
+                .GetPublicInstanceMethod("GiveMeSomeInts");
 
             var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
@@ -476,6 +476,34 @@ string.Join(
     ""]"")";
 
             var translated = stringJoiner.Body.ToReadableString();
+
+            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+        }
+
+        [TestMethod]
+        public void ShouldIndentParamsArrayArgumentsInAnIfTest()
+        {
+            Expression<Func<bool>> stringTest = () =>
+                string.Join(",", "[", "i", "]", "[", "j", "]", "[", "k", "]") != string.Empty;
+
+            var doNothing = Expression.Default(typeof(void));
+            var ifTestDoNothing = Expression.IfThen(stringTest.Body, doNothing);
+
+            const string EXPECTED = @"
+if (string.Join(
+    "","",
+    ""["",
+    ""i"",
+    ""]"",
+    ""["",
+    ""j"",
+    ""]"",
+    ""["",
+    ""k"",
+    ""]"") != string.Empty)
+{
+}";
+            var translated = ifTestDoNothing.ToReadableString();
 
             Assert.AreEqual(EXPECTED.TrimStart(), translated);
         }
