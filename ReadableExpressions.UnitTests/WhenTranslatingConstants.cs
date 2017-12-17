@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Text.RegularExpressions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -295,7 +296,7 @@
         }
 
         [TestMethod]
-        public void ShouldEscapteTranslatedStrings()
+        public void ShouldEscapeTranslatedStrings()
         {
             var stringConstant = Expression.Constant("Escape: \"THIS\"!");
 
@@ -312,6 +313,16 @@
             var translated = guidConstant.ToReadableString();
 
             Assert.AreEqual("default(Guid)", translated);
+        }
+
+        [TestMethod]
+        public void ShouldTranslateARegex()
+        {
+            var regexConstant = Expression.Constant(new Regex("^[0-9]+$"));
+
+            var translated = regexConstant.ToReadableString();
+
+            Assert.AreEqual("Regex /* ^[0-9]+$ */", translated);
         }
 
         [TestMethod]

@@ -87,6 +87,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     if (IsType(constant, out translation) ||
                         IsLambda(constant, context, out translation) ||
                         IsFunc(constant, out translation) ||
+                        IsRegex(constant, out translation) ||
                         IsDefault<Guid>(constant, out translation) ||
                         IsTimeSpan(constant, out translation))
                     {
@@ -254,6 +255,18 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (constant.Value is LambdaExpression lambda)
             {
                 translation = context.TranslateAsCodeBlock(lambda);
+                return true;
+            }
+
+            translation = null;
+            return false;
+        }
+
+        private static bool IsRegex(ConstantExpression constant, out string translation)
+        {
+            if (constant.Type == typeof(Regex))
+            {
+                translation = nameof(Regex) + " /* " + constant.Value + " */";
                 return true;
             }
 
