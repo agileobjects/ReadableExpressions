@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
                 return test.WithoutSurroundingParentheses(condition);
             }
 
-            return test.WithSurroundingParentheses(checkExisting: true);
+            return test.WithSurroundingParentheses();
         }
 
         private static string GetBranch(CodeBlock codeBlock)

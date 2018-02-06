@@ -456,6 +456,27 @@ if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
 
             Assert.Equal(EXPECTED.TrimStart(), translated);
         }
+
+        [Fact]
+        public void ShouldTranslateAssignmentOutcomeTests()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intValue = Expression.Constant(123);
+            var intAssignment = Expression.Assign(intVariable, intValue);
+            var intDefault = Expression.Default(typeof(int));
+            var assignmentResultNotDefault = Expression.NotEqual(intAssignment, intDefault);
+            var doNothing = Expression.Default(typeof(void));
+            var ifNotdefaultDoNothing = Expression.IfThen(assignmentResultNotDefault, doNothing);
+
+            var translated = ifNotdefaultDoNothing.ToReadableString();
+
+            const string EXPECTED = @"
+if ((i = 123) != default(int))
+{
+}";
+
+            Assert.Equal(EXPECTED.TrimStart(), translated);
+        }
     }
 
     #region Helpers

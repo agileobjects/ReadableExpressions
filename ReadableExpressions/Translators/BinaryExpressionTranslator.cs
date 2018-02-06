@@ -92,7 +92,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var translation = context.Translate(expression);
 
             return expression.IsAssignment()
-                ? translation.WithSurroundingParentheses(checkExisting: true)
+                ? translation.WithSurroundingParentheses()
                 : translation;
         }
 

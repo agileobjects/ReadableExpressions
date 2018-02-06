@@ -36,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (WrapNegatedValue(valueToNegate, expression))
             {
-                valueToNegate = valueToNegate.WithSurroundingParentheses(checkExisting: true);
+                valueToNegate = valueToNegate.WithSurroundingParentheses();
             }
 
             return _negationsByNodeType[negationType] + valueToNegate;

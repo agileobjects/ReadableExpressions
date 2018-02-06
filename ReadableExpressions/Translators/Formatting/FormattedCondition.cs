@@ -28,12 +28,10 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
                 test = test.TrimStart();
             }
 
-            _singleLineTest = test.WithSurroundingParentheses(CheckExistingParentheses());
+            _singleLineTest = FinaliseCondition(test.WithSurroundingParentheses());
 
             MultipleLineTranslationFactory = GetMultipleLineTranslation;
         }
-
-        private bool CheckExistingParentheses() => IsNotRelevantBinary(_condition, out var _);
 
         protected override Func<string> SingleLineTranslationFactory => () => _singleLineTest;
 
@@ -54,7 +52,7 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {conditionLeft} {conditionOperator}
 {conditionRight.ToString().Indented()}".TrimStart().WithSurroundingParentheses();
 
-            return condition;
+            return FinaliseCondition(condition);
         }
 
         private static bool IsNotRelevantBinary(Expression condition, out BinaryExpression binary)
@@ -71,6 +69,11 @@ namespace AgileObjects.ReadableExpressions.Translators.Formatting
 
             binary = null;
             return true;
+        }
+
+        private static string FinaliseCondition(string condition)
+        {
+            return condition;
         }
     }
 }

@@ -120,14 +120,36 @@ namespace AgileObjects.ReadableExpressions
             return code;
         }
 
-        public static string WithSurroundingParentheses(this string value, bool checkExisting = false)
+        public static string WithSurroundingParentheses(this string value)
         {
-            if (checkExisting && value.HasSurroundingParentheses())
+            if (!value.HasSurroundingParentheses())
             {
-                return value;
+                return "(" + value + ")";
             }
 
-            return $"({value})";
+            var openParenthesesCount = 0;
+
+            for (var i = 1; i < value.Length - 1; ++i)
+            {
+                switch (value[i])
+                {
+                    case '(':
+                        ++openParenthesesCount;
+                        continue;
+
+                    case ')':
+                        --openParenthesesCount;
+
+                        if (openParenthesesCount < 0)
+                        {
+                            return "(" + value + ")";
+                        }
+
+                        continue;
+                }
+            }
+
+            return value;
         }
 
         public static string WithoutSurroundingParentheses(this string value, Expression expression)
