@@ -723,6 +723,40 @@ Enumerable
         }
 
         [Fact]
+        public void ShouldTranslateAComplexMethodArgument()
+        {
+            var intVariable = Expression.Variable(typeof(int), "intValue");
+            var dictionaryVariable = Expression.Variable(typeof(Dictionary<string, int>), "dictionary_String_IntValues");
+            var tryGetValueMethod = dictionaryVariable.Type.GetPublicInstanceMethod("TryGetValue", 2);
+            var key = Expression.Constant("NumberThatIWantToGet");
+            var tryGetValueCall = Expression.Call(dictionaryVariable, tryGetValueMethod, key, intVariable);
+
+            var defaultInt = Expression.Default(typeof(int));
+            var valueOrDefault = Expression.Condition(tryGetValueCall, intVariable, defaultInt);
+            var valueOrDefaultBlock = Expression.Block(new[] { intVariable }, valueOrDefault);
+
+            var helperCtor = typeof(HelperClass).GetPublicInstanceConstructors().First();
+            var helper = Expression.New(helperCtor, defaultInt, defaultInt, defaultInt);
+            var intsMethod = helper.Type.GetPublicInstanceMethod(nameof(HelperClass.GiveMeSomeInts));
+            var methodCall = Expression.Call(helper, intsMethod, defaultInt, valueOrDefaultBlock, defaultInt);
+
+            var translated = methodCall.ToReadableString();
+
+            const string EXPECTED = @"
+new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
+    default(int),
+    {
+        int intValue;
+        return dictionary_String_IntValues.TryGetValue(""NumberThatIWantToGet"", out intValue)
+            ? intValue
+            : default(int);
+    },
+    default(int))";
+
+            Assert.Equal(EXPECTED.TrimStart(), translated);
+        }
+
+        [Fact]
         public void ShouldTranslateNullToNull()
         {
             var translated = default(Expression).ToReadableString();
