@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>An extension method and set of Debugger Visualizers to produce a readable string version of an expression tree.</Description>
-    <Copyright>2017 Steve Wilkes</Copyright>
+    <Description>An extension method for the Expression class and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0 and .NET 4.0.</Description>
+    <Copyright>2018 Steve Wilkes</Copyright>
     <AssemblyTitle>ReadableExpressions</AssemblyTitle>
-    <VersionPrefix>1.8.4</VersionPrefix>
     <Authors>Steve Wilkes</Authors>
     <TargetFrameworks>netstandard1.0;net40</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -14,6 +13,7 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
+    <Title>ReadableExpressions</Title>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/agileobjects/ReadableExpressions/blob/master/LICENSE.md</PackageLicenseUrl>
@@ -24,9 +24,10 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.10.1.0</AssemblyVersion>
-    <FileVersion>1.10.1.0</FileVersion>
-    <Version>1.10.1</Version>
+    <AssemblyVersion>1.11.0.0</AssemblyVersion>
+    <FileVersion>1.11.0.0</FileVersion>
+    <VersionPrefix>1.11.0</VersionPrefix>
+    <Version>1.11.0</Version>
     <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
