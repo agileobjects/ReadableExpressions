@@ -5,33 +5,32 @@
     using System.IO;
     using System.Linq.Expressions;
     using System.Text;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingObjectCreations
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessNewExpression()
         {
             Expression<Func<object>> createObject = () => new object();
 
             var translated = createObject.Body.ToReadableString();
 
-            Assert.AreEqual("new Object()", translated);
+            Assert.Equal("new Object()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewExpressionWithParameters()
         {
             Expression<Func<DateTime>> createToday = () => new DateTime(2014, 08, 23);
 
             var translated = createToday.Body.ToReadableString();
 
-            Assert.AreEqual("new DateTime(2014, 8, 23)", translated);
+            Assert.Equal("new DateTime(2014, 8, 23)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnEmptyObjectInitialisation()
         {
             var newMemoryStream = Expression.New(typeof(MemoryStream));
@@ -39,20 +38,20 @@
 
             var translated = emptyInit.ToReadableString();
 
-            Assert.AreEqual("new MemoryStream()", translated);
+            Assert.Equal("new MemoryStream()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewExpressionWithASingleInitialisation()
         {
             Expression<Func<MemoryStream>> createMemoryStream = () => new MemoryStream { Position = 0 };
 
             var translated = createMemoryStream.Body.ToReadableString();
 
-            Assert.AreEqual("new MemoryStream { Position = 0L }", translated);
+            Assert.Equal("new MemoryStream { Position = 0L }", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewExpressionWithAMultiLineInitialisationValue()
         {
             Expression<Action> writeWat = () => Console.WriteLine("Wat");
@@ -78,10 +77,10 @@ new MemoryStream
         return ((long)Console.Read());
     }
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewExpressionWithMultipleInitialisations()
         {
             Expression<Func<MemoryStream>> createMemoryStream =
@@ -95,10 +94,10 @@ new MemoryStream
     Capacity = 10000,
     Position = 100L
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewExpressionWithNestedInitialisations()
         {
             Expression<Func<ContactDetails>> createContactDetails = () =>
@@ -134,10 +133,10 @@ new ContactDetails
         ""07896543210""
     }
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewListExpressionWithAdditions()
         {
             Expression<Func<List<decimal>>> createList =
@@ -145,10 +144,10 @@ new ContactDetails
 
             var translated = createList.Body.ToReadableString();
 
-            Assert.AreEqual("new List<decimal> { 1m, 2.005m, 3m }", translated);
+            Assert.Equal("new List<decimal> { 1m, 2.005m, 3m }", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewDictionaryExpressionWithAdditions()
         {
             Expression<Func<Dictionary<int, decimal>>> createList =
@@ -163,40 +162,40 @@ new Dictionary<int, decimal>
     { 2, 2m }
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewArrayExpression()
         {
             Expression<Func<int[]>> createArray = () => new int[5];
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new int[5]", translated);
+            Assert.Equal("new int[5]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANewGenericTypeArrayExpression()
         {
             Expression<Func<Tuple<decimal>[]>> createArray = () => new Tuple<decimal>[5];
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new Tuple<decimal>[5]", translated);
+            Assert.Equal("new Tuple<decimal>[5]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnImplicitTypeNewArrayExpressionWithAdditions()
         {
             Expression<Func<float[]>> createArray = () => new[] { 1.00f, 2.3f, 3.00f };
 
             var translated = createArray.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1f, 2.3f, 3f }", translated);
+            Assert.Equal("new[] { 1f, 2.3f, 3f }", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnExplicitTypeNewArrayExpressionWithAdditions()
         {
             Expression<Func<IDisposable[]>> createDisposables = () => new IDisposable[]
@@ -214,30 +213,30 @@ new IDisposable[]
     new MemoryStream()
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnEmptyNewArrayExpression()
         {
             var newArray = Expression.NewArrayInit(typeof(int), new List<Expression>(0));
 
             var translated = newArray.ToReadableString();
 
-            Assert.AreEqual("new int[0]", translated);
+            Assert.Equal("new int[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStringConstantConstructorParameter()
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder("Hello!");
 
             var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("new StringBuilder(\"Hello!\")", translated);
+            Assert.Equal("new StringBuilder(\"Hello!\")", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACharacterConstantConstructorParameter()
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder('f');
@@ -246,30 +245,30 @@ new IDisposable[]
 
             // Constant character expressions have .Type Int32, so they 
             // can't be differentiated from int constants :(
-            Assert.AreEqual($"new StringBuilder({((int)'f')})", translated);
+            Assert.Equal($"new StringBuilder({((int)'f')})", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateConstantConstructorParameters()
         {
             Expression<Func<StringBuilder>> createStringBuilder = () => new StringBuilder(1000, 10000);
 
             var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("new StringBuilder(1000, 10000)", translated);
+            Assert.Equal("new StringBuilder(1000, 10000)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterConstructorParameter()
         {
             Expression<Func<string, StringBuilder>> createStringBuilder = str => new StringBuilder(str);
 
             var translated = createStringBuilder.Body.ToReadableString();
 
-            Assert.AreEqual("new StringBuilder(str)", translated);
+            Assert.Equal("new StringBuilder(str)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateMultilineConstructorParameters()
         {
             Expression<Func<int>> consoleRead = () => Console.Read();
@@ -307,10 +306,10 @@ new StringBuilder(
 
             var translated = createStringBuilder.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnAnonymousTypeCreation()
         {
             var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
@@ -321,7 +320,7 @@ new StringBuilder(
 
             var translated = creation.ToReadableString();
 
-            Assert.AreEqual("new { ValueString = \"How much?!\", ValueInt = 100 }", translated);
+            Assert.Equal("new { ValueString = \"How much?!\", ValueInt = 100 }", translated);
         }
     }
 

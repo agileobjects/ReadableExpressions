@@ -5,42 +5,41 @@
     using System.Data.Entity;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingLambdas
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessLambda()
         {
             Expression<Func<int>> returnOneThousand = () => 1000;
 
             var translated = returnOneThousand.ToReadableString();
 
-            Assert.AreEqual("() => 1000", translated);
+            Assert.Equal("() => 1000", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASingleParameterLambda()
         {
             Expression<Func<int, int>> returnArgumentPlusOneTen = i => i + 10;
 
             var translated = returnArgumentPlusOneTen.ToReadableString();
 
-            Assert.AreEqual("i => i + 10", translated);
+            Assert.Equal("i => i + 10", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleParameterLambda()
         {
             Expression<Func<string, string, int>> convertStringsToInt = (str1, str2) => int.Parse(str1) + int.Parse(str2);
 
             var translated = convertStringsToInt.ToReadableString();
 
-            Assert.AreEqual("(str1, str2) => int.Parse(str1) + int.Parse(str2)", translated);
+            Assert.Equal("(str1, str2) => int.Parse(str1) + int.Parse(str2)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALambdaInvocation()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -48,11 +47,11 @@
 
             var translated = writeLineInvocation.ToReadableString();
 
-            Assert.AreEqual("(() => Console.WriteLine()).Invoke()", translated);
+            Assert.Equal("(() => Console.WriteLine()).Invoke()", translated);
         }
 
         // see http://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAQuotedLambda()
         {
             Expression<Func<int, double>> intToDouble = i => i;
@@ -61,10 +60,10 @@
 
             var translated = quotedLambda.ToReadableString();
 
-            Assert.AreEqual("i => (double)i", translated);
+            Assert.Equal("i => (double)i", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAQuotedLambdaQueryableProjection()
         {
             Expression<Func<IQueryable<int>, IQueryable<object>>> project =
@@ -72,10 +71,10 @@
 
             var translated = project.Body.ToReadableString();
 
-            Assert.AreEqual("items.Select(item => new { Number = item })", translated);
+            Assert.Equal("items.Select(item => new { Number = item })", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADbSetQueryExpression()
         {
             var productQuery = new TestDbContext()
@@ -100,10 +99,10 @@ ObjectQuery<WhenTranslatingLambdas.Product>
         Name = p.Name
     })";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANestedQuotedLambda()
         {
             var intA = Expression.Parameter(typeof(int), "a");
@@ -115,10 +114,10 @@ ObjectQuery<WhenTranslatingLambdas.Product>
 
             var translated = additionOuterLambda.ToReadableString();
 
-            Assert.AreEqual("a => b => a + b", translated);
+            Assert.Equal("a => b => a + b", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateQuotedLambdaWithAnAnnotation()
         {
             Expression<Func<int, double>> intToDouble = i => i;
@@ -131,10 +130,10 @@ ObjectQuery<WhenTranslatingLambdas.Product>
     // Quoted to induce a closure:
     i => (double)i";
 
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.Equal(EXPECTED, translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateRuntimeVariables()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i1");
@@ -143,7 +142,7 @@ ObjectQuery<WhenTranslatingLambdas.Product>
 
             var translated = runtimeVariables.ToReadableString();
 
-            Assert.AreEqual("(i1, i2)", translated);
+            Assert.Equal("(i1, i2)", translated);
         }
 
         #region Helper Methods

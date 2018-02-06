@@ -3,12 +3,11 @@
     using System;
     using System.IO;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingDebugInfo
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateDebugInfo()
         {
             var tempFileName = Path.GetTempFileName();
@@ -23,10 +22,10 @@
 // Debug to {tempFileName}, 1, 1 -> 2, 100
 Console.WriteLine(""Hello"");";
 
-            Assert.AreEqual(expected.TrimStart(), translated);
+            Assert.Equal(expected.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateClearDebugInfo()
         {
             var tempFileName = Path.GetTempFileName();
@@ -41,7 +40,7 @@ Console.WriteLine(""Hello"");";
 Console.WriteLine(""Hello"");
 // Clear debug info from {tempFileName}";
 
-            Assert.AreEqual(expected.TrimStart(), translated);
+            Assert.Equal(expected.TrimStart(), translated);
         }
     }
 }

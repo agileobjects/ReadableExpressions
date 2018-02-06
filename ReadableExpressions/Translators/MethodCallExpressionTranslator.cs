@@ -19,7 +19,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 new InvocationExpressionHandler(GetMethodCall),
                 new StringConcatenationHandler(),
-                new IndexedPropertyHandler(indexAccessTranslator)
+                new IndexedPropertyHandler(indexAccessTranslator),
+                new ImplicitOperatorHandler(),
+                new ExplicitOperatorHandler()
             };
         }
 
@@ -290,6 +292,46 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return _indexAccessTranslator.TranslateIndexAccess(
                     methodCall.Object,
                     methodCall.Arguments,
+                    context);
+            }
+        }
+
+        private class ImplicitOperatorHandler : SpecialCaseHandlerBase
+        {
+            public ImplicitOperatorHandler()
+                : base(IsImplicitOperatorCall)
+            {
+            }
+
+            private static bool IsImplicitOperatorCall(Expression expression)
+                => ((MethodCallExpression)expression).Method.IsImplicitOperator();
+
+            public override string Translate(Expression expression, TranslationContext context)
+            {
+                var methodCall = (MethodCallExpression)expression;
+
+                return context.TranslateAsCodeBlock(methodCall.Arguments.First());
+            }
+        }
+
+        private class ExplicitOperatorHandler : SpecialCaseHandlerBase
+        {
+            public ExplicitOperatorHandler()
+                : base(IsExplicitOperatorCall)
+            {
+            }
+
+            private static bool IsExplicitOperatorCall(Expression expression)
+                => ((MethodCallExpression)expression).Method.IsExplicitOperator();
+
+            public override string Translate(Expression expression, TranslationContext context)
+            {
+                var methodCall = (MethodCallExpression)expression;
+
+                return CastExpressionTranslator.Translate(
+                    methodCall.Arguments.First(),
+                    methodCall.Method,
+                    expression.Type,
                     context);
             }
         }

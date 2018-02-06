@@ -5,12 +5,12 @@
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingAssignments
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -18,10 +18,10 @@
 
             var translated = assignDefaultToInt.ToReadableString();
 
-            Assert.AreEqual("i = default(int)", translated);
+            Assert.Equal("i = default(int)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnAdditionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -29,10 +29,10 @@
 
             var translated = addOneAndAssign.ToReadableString();
 
-            Assert.AreEqual("i += 1", translated);
+            Assert.Equal("i += 1", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACheckedAdditionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -40,10 +40,10 @@
 
             var translated = addTenAndAssign.ToReadableString();
 
-            Assert.AreEqual("checked { i += 10 }", translated);
+            Assert.Equal("checked { i += 10 }", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASubtractionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -51,10 +51,10 @@
 
             var translated = substractTenAndAssign.ToReadableString();
 
-            Assert.AreEqual("i -= 10", translated);
+            Assert.Equal("i -= 10", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultiLineCheckedSubtractionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -91,10 +91,10 @@ checked
     }
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultiplicationAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -102,10 +102,10 @@ checked
 
             var translated = tripleAndAssign.ToReadableString();
 
-            Assert.AreEqual("i *= 3", translated);
+            Assert.Equal("i *= 3", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACheckedMultiplicationAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -113,10 +113,10 @@ checked
 
             var translated = doubleAndAssign.ToReadableString();
 
-            Assert.AreEqual("checked { i *= 2 }", translated);
+            Assert.Equal("checked { i *= 2 }", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADivisionAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -124,10 +124,10 @@ checked
 
             var translated = halveAndAssign.ToReadableString();
 
-            Assert.AreEqual("i /= 2", translated);
+            Assert.Equal("i /= 2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAModuloAssignment()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -135,10 +135,10 @@ checked
 
             var translated = moduloTwoAndAssign.ToReadableString();
 
-            Assert.AreEqual(@"i %= 2", translated);
+            Assert.Equal(@"i %= 2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAPowerAssignment()
         {
             var doubleVariable = Expression.Variable(typeof(double), "d");
@@ -147,10 +147,10 @@ checked
 
             var translated = powerTwoAssign.ToReadableString();
 
-            Assert.AreEqual("d **= 2d", translated);
+            Assert.Equal("d **= 2d", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABitwiseAndAssignment()
         {
             var intVariableOne = Expression.Variable(typeof(int), "i1");
@@ -159,10 +159,10 @@ checked
 
             var translated = bitwiseAndAssign.ToReadableString();
 
-            Assert.AreEqual("i1 &= i2", translated);
+            Assert.Equal("i1 &= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABitwiseOrAssignment()
         {
             var intVariableOne = Expression.Variable(typeof(int), "i1");
@@ -171,10 +171,10 @@ checked
 
             var translated = bitwiseOrAssign.ToReadableString();
 
-            Assert.AreEqual("i1 |= i2", translated);
+            Assert.Equal("i1 |= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABitwiseExclusiveOrAssignment()
         {
             var intVariableOne = Expression.Variable(typeof(int), "i1");
@@ -183,10 +183,10 @@ checked
 
             var translated = bitwiseExclusiveOrAssign.ToReadableString();
 
-            Assert.AreEqual("i1 ^= i2", translated);
+            Assert.Equal("i1 ^= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALeftShiftAssignment()
         {
             var intVariableOne = Expression.Variable(typeof(int), "i1");
@@ -195,10 +195,10 @@ checked
 
             var translated = leftShiftAndAssign.ToReadableString();
 
-            Assert.AreEqual("i1 <<= i2", translated);
+            Assert.Equal("i1 <<= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateARightShiftAssignment()
         {
             var intVariableOne = Expression.Variable(typeof(int), "i1");
@@ -207,10 +207,10 @@ checked
 
             var translated = rightShiftAndAssign.ToReadableString();
 
-            Assert.AreEqual("i1 >>= i2", translated);
+            Assert.Equal("i1 >>= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotWrapAnAssignmentValueInParentheses()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -219,10 +219,10 @@ checked
 
             var translated = assignment.ToReadableString();
 
-            Assert.AreEqual("i = 1 * 2", translated);
+            Assert.Equal("i = 1 * 2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANegatedBooleanAssignment()
         {
             var boolVariable1 = Expression.Variable(typeof(bool), "isItNot");
@@ -232,10 +232,10 @@ checked
 
             var translated = negated.ToReadableString();
 
-            Assert.AreEqual("!(isItNot = !isIt)", translated);
+            Assert.Equal("!(isItNot = !isIt)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldWrapAnAssignmentTernaryTestInParentheses()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i");
@@ -252,10 +252,10 @@ checked
 
             var translated = assignment.ToReadableString();
 
-            Assert.AreEqual("i = (j > 1) ? 3 : default(int)", translated);
+            Assert.Equal("i = (j > 1) ? 3 : default(int)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnAssignmentResultAssignment()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i");
@@ -265,10 +265,10 @@ checked
 
             var translated = setVariableOneToAssignmentResult.ToReadableString();
 
-            Assert.AreEqual("i = j = 1", translated);
+            Assert.Equal("i = j = 1", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABlockAssignmentResultAssignment()
         {
             var longVariable = Expression.Variable(typeof(long), "i");
@@ -288,10 +288,10 @@ checked
 int j;
 var i = ((long)(j = 10));";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAssignTheResultOfATryCatch()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -318,10 +318,10 @@ i =
     }
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAssignAVariableInAConditionalTest()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -336,10 +336,10 @@ if ((i = 10) == 5)
 {
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAssignAVariableInAMethodCallArgument()
         {
             var stringVariable = Expression.Variable(typeof(string), "value");
@@ -357,10 +357,10 @@ if ((i = 10) == 5)
 
             var translated = intToString.ToReadableString();
 
-            Assert.AreEqual("i.ToString(value = null)", translated);
+            Assert.Equal("i.ToString(value = null)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAssignAMultiplicationToStringResult()
         {
             Expression<Func<int, string>> timesThreeToString = i => (i * 3).ToString();
@@ -370,10 +370,10 @@ if ((i = 10) == 5)
 
             var translated = stringAssignment.ToReadableString();
 
-            Assert.AreEqual("value = (i * 3).ToString()", translated);
+            Assert.Equal("value = (i * 3).ToString()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleLineTernaryAssignment()
         {
             Expression<Action> consoleRead = () => Console.Read();
@@ -440,10 +440,10 @@ result = ((DateTime.Now.Hour % 2) == 0)
 
         return resultTwo;
     }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslatedMultipleLineValueBlockAssignments()
         {
             Expression<Func<string[], IEnumerable<int>>> linqSelect = ints => ints.Select(int.Parse);
@@ -483,11 +483,11 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
     })
     .ToArray();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translation);
+            Assert.Equal(EXPECTED.TrimStart(), translation);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANestedBlockAssignment()
         {
             Expression<Action> consoleRead = () => Console.Read();
@@ -521,11 +521,11 @@ result =
 
     return (one - two);
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateMultiStatementValueBlockAssignments()
         {
             var valueConditional = GetReturnStatementBlock(out var existingInts);
@@ -568,11 +568,11 @@ result =
             return ints;
         };
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateSingleStatementValueBlockAssignments()
         {
             var valueConditional = GetReturnStatementBlock(out var existingInts);
@@ -610,10 +610,10 @@ result =
             return ints;
         };
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithATernaryReturnValue()
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
@@ -633,7 +633,7 @@ result =
                 guidTryParseMethod,
                 Expression.Condition(
                     objectNotNull,
-                    Expression.Call(objectVariable, typeof(object).GetMethod("ToString")),
+                    Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                     Expression.Default(typeof(string))),
                 guidValue);
 
@@ -658,10 +658,10 @@ guid =
     Guid guidValue;
     return Guid.TryParse((id != null) ? id.ToString() : null, out guidValue) ? guidValue : default(Guid);
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithANestedTernaryReturnValue()
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
@@ -676,7 +676,7 @@ guid =
             var guidTryParse = Expression.Call(
                 null,
                 guidTryParseMethod,
-                Expression.Call(objectVariable, typeof(object).GetMethod("ToString")),
+                Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                 guidValue);
 
             var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
@@ -708,7 +708,7 @@ guid =
         ? Guid.TryParse(id.ToString(), out guidValue) ? guidValue : default(Guid)
         : default(Guid);
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
@@ -716,18 +716,18 @@ guid =
             existingInts = Expression.Variable(typeof(List<int>), "ints");
 
             var existingIntsEnumerator = Expression.Variable(typeof(List<int>.Enumerator), "enumerator");
-            var getEnumeratorMethod = existingInts.Type.GetMethod("GetEnumerator");
+            var getEnumeratorMethod = existingInts.Type.GetPublicInstanceMethod("GetEnumerator");
             var getEnumeratorCall = Expression.Call(existingInts, getEnumeratorMethod);
             var enumeratorAssignment = Expression.Assign(existingIntsEnumerator, getEnumeratorCall);
 
-            var enumeratorMoveNextMethod = existingIntsEnumerator.Type.GetMethod("MoveNext");
+            var enumeratorMoveNextMethod = existingIntsEnumerator.Type.GetPublicInstanceMethod("MoveNext");
             var enumeratorMoveNextCall = Expression.Call(existingIntsEnumerator, enumeratorMoveNextMethod);
 
             var enumeratorItem = Expression.Variable(typeof(int), "item");
             var enumeratorCurrent = Expression.Property(existingIntsEnumerator, "Current");
             var itemAssignment = Expression.Assign(enumeratorItem, enumeratorCurrent);
 
-            var intsAddMethod = existingInts.Type.GetMethod("Add");
+            var intsAddMethod = existingInts.Type.GetPublicInstanceMethod("Add");
             var intsAddCall = Expression.Call(existingInts, intsAddMethod, enumeratorItem);
 
             var addItemBlock = Expression.Block(

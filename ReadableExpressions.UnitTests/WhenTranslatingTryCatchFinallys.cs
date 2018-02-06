@@ -3,12 +3,11 @@
     using System;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingTryCatchFinallys
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithATopLevelGlobalCatch()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -26,10 +25,10 @@ try
 catch
 {
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryCatch()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -47,10 +46,10 @@ try
 catch (TimeoutException)
 {
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithAFilteredCatch()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -69,10 +68,10 @@ try
 catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
 {
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAnExplicitExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -92,11 +91,11 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/1
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAnImplicitExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -116,10 +115,10 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithExceptionUseAndRethrow()
         {
             Expression<Action<Exception>> writeException = ex => Console.Write(ex);
@@ -142,10 +141,10 @@ catch (Exception ex)
     Console.Write(ex);
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAWrappedExceptionThrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -172,10 +171,10 @@ catch (Exception ex)
 {
     throw new InvalidOperationException(""Wrapped!"", ex);
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryFinally()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -193,10 +192,10 @@ finally
 {
     Console.Write(""Goodbye"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryFault()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -214,10 +213,10 @@ fault
 {
     Console.Write(""Boom"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATryCatchFinally()
         {
             Expression<Action> writeHello = () => Console.Write("Hello");
@@ -252,7 +251,7 @@ finally
     Console.WriteLine(""Finished!"");
     Console.Write(""Goodbye"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 }

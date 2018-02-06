@@ -7,112 +7,111 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Text.RegularExpressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingConstants
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAString()
         {
             var stringConstant = Expression.Constant("hello!", typeof(string));
 
             var translated = stringConstant.ToReadableString();
 
-            Assert.AreEqual("\"hello!\"", translated);
+            Assert.Equal("\"hello!\"", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABoolean()
         {
             var boolConstant = Expression.Constant(true, typeof(bool));
 
             var translated = boolConstant.ToReadableString();
 
-            Assert.AreEqual("true", translated);
+            Assert.Equal("true", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALong()
         {
             var longConstant = Expression.Constant(123L, typeof(long));
 
             var translated = longConstant.ToReadableString();
 
-            Assert.AreEqual("123L", translated);
+            Assert.Equal("123L", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAWholeNumberFloat()
         {
             var floatConstant = Expression.Constant(890.0f, typeof(float));
 
             var translated = floatConstant.ToReadableString();
 
-            Assert.AreEqual("890f", translated);
+            Assert.Equal("890f", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANonWholeNumberNullableFloat()
         {
             var floatConstant = Expression.Constant(12.34f, typeof(float?));
 
             var translated = floatConstant.ToReadableString();
 
-            Assert.AreEqual("12.34f", translated);
+            Assert.Equal("12.34f", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAWholeNumberNullableDecimal()
         {
             var decimalConstant = Expression.Constant(456.00m, typeof(decimal?));
 
             var translated = decimalConstant.ToReadableString();
 
-            Assert.AreEqual("456m", translated);
+            Assert.Equal("456m", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANonWholeNumberDecimal()
         {
             var decimalConstant = Expression.Constant(6373282.64738m, typeof(decimal));
 
             var translated = decimalConstant.ToReadableString();
 
-            Assert.AreEqual("6373282.64738m", translated);
+            Assert.Equal("6373282.64738m", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAWholeNumberDouble()
         {
             var doubleConstant = Expression.Constant(999.0, typeof(double));
 
             var translated = doubleConstant.ToReadableString();
 
-            Assert.AreEqual("999d", translated);
+            Assert.Equal("999d", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANonWholeNumberDouble()
         {
             var doubleConstant = Expression.Constant(64739.7, typeof(double));
 
             var translated = doubleConstant.ToReadableString();
 
-            Assert.AreEqual("64739.7d", translated);
+            Assert.Equal("64739.7d", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAType()
         {
             var typeConstant = Expression.Constant(typeof(long), typeof(Type));
 
             var translated = typeConstant.ToReadableString();
 
-            Assert.AreEqual("typeof(long)", translated);
+            Assert.Equal("typeof(long)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAGenericRuntimeType()
         {
             var value = typeof(Dictionary<string, DateTime>);
@@ -122,210 +121,210 @@
 
             var translated = typeConstant.ToReadableString();
 
-            Assert.AreEqual("typeof(Dictionary<string, DateTime>)", translated);
+            Assert.Equal("typeof(Dictionary<string, DateTime>)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANullDefault()
         {
             var nullConstant = Expression.Constant(null, typeof(object));
 
             var translated = nullConstant.ToReadableString();
 
-            Assert.AreEqual("null", translated);
+            Assert.Equal("null", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnEnumMember()
         {
             var enumConstant = Expression.Constant(OddNumber.One, typeof(OddNumber));
 
             var translated = enumConstant.ToReadableString();
 
-            Assert.AreEqual("OddNumber.One", translated);
+            Assert.Equal("OddNumber.One", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADefaultDate()
         {
             var dateConstant = Expression.Constant(default(DateTime));
 
             var translated = dateConstant.ToReadableString();
 
-            Assert.AreEqual("default(DateTime)", translated);
+            Assert.Equal("default(DateTime)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADateTimeWithNoTime()
         {
             var dateConstant = Expression.Constant(new DateTime(2015, 07, 02));
 
             var translated = dateConstant.ToReadableString();
 
-            Assert.AreEqual("new DateTime(2015, 07, 02)", translated);
+            Assert.Equal("new DateTime(2015, 07, 02)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADateTimeWithATime()
         {
             var dateConstant = Expression.Constant(new DateTime(2016, 08, 01, 10, 23, 45));
 
             var translated = dateConstant.ToReadableString();
 
-            Assert.AreEqual("new DateTime(2016, 08, 01, 10, 23, 45)", translated);
+            Assert.Equal("new DateTime(2016, 08, 01, 10, 23, 45)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADateTimeWithMilliseconds()
         {
             var dateConstant = Expression.Constant(new DateTime(2017, 01, 10, 00, 00, 00, 123));
 
             var translated = dateConstant.ToReadableString();
 
-            Assert.AreEqual("new DateTime(2017, 01, 10, 00, 00, 00, 123)", translated);
+            Assert.Equal("new DateTime(2017, 01, 10, 00, 00, 00, 123)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADefaultTimeSpan()
         {
             var timeSpanConstant = Expression.Constant(default(TimeSpan));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("default(TimeSpan)", translated);
+            Assert.Equal("default(TimeSpan)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfDays()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromDays(1));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromDays(1)", translated);
+            Assert.Equal("TimeSpan.FromDays(1)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfHours()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromHours(2));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromHours(2)", translated);
+            Assert.Equal("TimeSpan.FromHours(2)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfMinutes()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromMinutes(10));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromMinutes(10)", translated);
+            Assert.Equal("TimeSpan.FromMinutes(10)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfSeconds()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromSeconds(58));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromSeconds(58)", translated);
+            Assert.Equal("TimeSpan.FromSeconds(58)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfMilliseconds()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromMilliseconds(923));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromMilliseconds(923)", translated);
+            Assert.Equal("TimeSpan.FromMilliseconds(923)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateATimeSpanOfTicks()
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromTicks(428));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("TimeSpan.FromTicks(428)", translated);
+            Assert.Equal("TimeSpan.FromTicks(428)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADayTimeSpanWithMilliseconds()
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(2, 3, 4, 5, 6));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("new TimeSpan(2, 3, 4, 5, 6)", translated);
+            Assert.Equal("new TimeSpan(2, 3, 4, 5, 6)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADayTimeSpanWithoutMilliseconds()
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(3, 4, 5, 6));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("new TimeSpan(3, 4, 5, 6)", translated);
+            Assert.Equal("new TimeSpan(3, 4, 5, 6)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnHourTimeSpan()
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(6, 5, 4));
 
             var translated = timeSpanConstant.ToReadableString();
 
-            Assert.AreEqual("new TimeSpan(6, 5, 4)", translated);
+            Assert.Equal("new TimeSpan(6, 5, 4)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADefaultString()
         {
             var nullStringConstant = Expression.Default(typeof(string));
 
             var translated = nullStringConstant.ToReadableString();
 
-            Assert.AreEqual("null", translated);
+            Assert.Equal("null", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldEscapeTranslatedStrings()
         {
             var stringConstant = Expression.Constant("Escape: \"THIS\"!");
 
             var translated = stringConstant.ToReadableString();
 
-            Assert.AreEqual("\"Escape: \\\"THIS\\\"!\"", translated);
+            Assert.Equal("\"Escape: \\\"THIS\\\"!\"", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADefaultGuid()
         {
             var guidConstant = Expression.Constant(default(Guid));
 
             var translated = guidConstant.ToReadableString();
 
-            Assert.AreEqual("default(Guid)", translated);
+            Assert.Equal("default(Guid)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateARegex()
         {
             var regexConstant = Expression.Constant(new Regex("^[0-9]+$"));
 
             var translated = regexConstant.ToReadableString();
 
-            Assert.AreEqual("Regex /* ^[0-9]+$ */", translated);
+            Assert.Equal("Regex /* ^[0-9]+$ */", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessFunc()
         {
             Func<object> stringFactory = () => "Factory!";
@@ -333,10 +332,10 @@
 
             var translated = funcConstant.ToReadableString();
 
-            Assert.AreEqual("Func<object>", translated);
+            Assert.Equal("Func<object>", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnAction()
         {
             Action<int, long> numberAdder = (i, l) => Console.WriteLine(i + l);
@@ -344,10 +343,10 @@
 
             var translated = actionConstant.ToReadableString();
 
-            Assert.AreEqual("Action<int, long>", translated);
+            Assert.Equal("Action<int, long>", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterisedAction()
         {
             Action<IDictionary<object, List<string>>> dictionaryPrinter = Console.WriteLine;
@@ -355,10 +354,10 @@
 
             var translated = actionConstant.ToReadableString();
 
-            Assert.AreEqual("Action<IDictionary<object, List<string>>>", translated);
+            Assert.Equal("Action<IDictionary<object, List<string>>>", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAFuncWithNestedGenericParameters()
         {
             Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>> dictionaryFactory =
@@ -371,10 +370,10 @@
 
             var translated = funcConstant.ToReadableString();
 
-            Assert.AreEqual("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
+            Assert.Equal("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnActionWithMultipleNestedGenericParameters()
         {
             Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>> genericAction = fileInfo => { };
@@ -383,11 +382,11 @@
 
             var translated = actionConstant.ToReadableString();
 
-            Assert.AreEqual("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>", translated);
+            Assert.Equal("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>", translated);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/5
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateDbNullValue()
         {
             var dbParameter = Expression.Variable(typeof(DbParameter), "param");
@@ -397,20 +396,20 @@
 
             var translated = setParamToDbNull.ToReadableString();
 
-            Assert.AreEqual("param.Value = DBNull.Value", translated);
+            Assert.Equal("param.Value = DBNull.Value", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnObjectConstant()
         {
             var objectConstant = Expression.Constant(123, typeof(object));
 
             var translated = objectConstant.ToReadableString();
 
-            Assert.AreEqual("123", translated);
+            Assert.Equal("123", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALambdaConstant()
         {
             Expression<Func<int, int>> lambda =
@@ -422,15 +421,17 @@
 
             const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 
+    // ReSharper disable UnusedTypeParameter
     internal class GenericOne<T> { }
 
     internal class GenericTwo<T> { }
 
     internal class Generic<T1, T2, T3> { }
+    // ReSharper restore UnusedTypeParameter
 
     internal enum OddNumber
     {

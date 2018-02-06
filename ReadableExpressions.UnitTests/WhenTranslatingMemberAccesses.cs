@@ -7,82 +7,82 @@
     using System.Globalization;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingMemberAccesses
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnArrayLengthExpression()
         {
             Expression<Func<string[], int>> getArrayLength = a => a.Length;
 
             var translated = getArrayLength.ToReadableString();
 
-            Assert.AreEqual("a => a.Length", translated);
+            Assert.Equal("a => a.Length", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInstanceCallExpression()
         {
             Expression<Func<object, string>> objectToString = o => o.ToString();
 
             var translated = objectToString.ToReadableString();
 
-            Assert.AreEqual("o => o.ToString()", translated);
+            Assert.Equal("o => o.ToString()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInstanceCallExpressionStaticMemberArgument()
         {
             Expression<Func<int, string>> intToFormattedString = i => i.ToString(CultureInfo.CurrentCulture);
 
             var translated = intToFormattedString.ToReadableString();
 
-            Assert.AreEqual("i => i.ToString(CultureInfo.CurrentCulture)", translated);
+            Assert.Equal("i => i.ToString(CultureInfo.CurrentCulture)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInstanceCallExpressionParameterArgument()
         {
             Expression<Func<int, CultureInfo, string>> intToFormattedString = (i, ci) => i.ToString(ci);
 
             var translated = intToFormattedString.ToReadableString();
 
-            Assert.AreEqual("(i, ci) => i.ToString(ci)", translated);
+            Assert.Equal("(i, ci) => i.ToString(ci)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessExtensionMethodCall()
         {
             Expression<Func<string[], bool>> arrayIsEmpty = a => a.Any();
 
             var translated = arrayIsEmpty.ToReadableString();
 
-            Assert.AreEqual("a => a.Any()", translated);
+            Assert.Equal("a => a.Any()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnExtensionMethodCallWithSimpleParameters()
         {
             Expression<Func<string[], IEnumerable<string>>> notTheFirstTwo = a => a.Skip(2);
 
             var translated = notTheFirstTwo.ToReadableString();
 
-            Assert.AreEqual("a => a.Skip(2)", translated);
+            Assert.Equal("a => a.Skip(2)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnExtensionMethodCallWithALambdaParameter()
         {
             Expression<Func<string[], bool>> noBlankStrings = a => a.All(i => i.Length != 0);
 
             var translated = noBlankStrings.ToReadableString();
 
-            Assert.AreEqual("a => a.All(i => i.Length != 0)", translated);
+            Assert.Equal("a => a.All(i => i.Length != 0)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStaticCallExpression()
         {
             // ReSharper disable once ReferenceEqualsWithValueType
@@ -90,80 +90,80 @@
 
             var translated = oneEqualsTwo.ToReadableString();
 
-            Assert.AreEqual("() => object.ReferenceEquals(1, 2)", translated);
+            Assert.Equal("() => object.ReferenceEquals(1, 2)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStaticCallExpressionOnAGenericType()
         {
             Expression<Action> doSomething = () => GenericHelper<Dictionary<DateTime, string>>.DoSomething();
 
             var translated = doSomething.Body.ToReadableString();
 
-            Assert.AreEqual("GenericHelper<Dictionary<DateTime, string>>.DoSomething()", translated);
+            Assert.Equal("GenericHelper<Dictionary<DateTime, string>>.DoSomething()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInstanceMemberExpression()
         {
             Expression<Func<DateTime, int>> getDateDay = d => d.Day;
 
             var translated = getDateDay.ToReadableString();
 
-            Assert.AreEqual("d => d.Day", translated);
+            Assert.Equal("d => d.Day", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStaticMemberExpression()
         {
             Expression<Func<DateTime>> getToday = () => DateTime.Today;
 
             var translated = getToday.ToReadableString();
 
-            Assert.AreEqual("() => DateTime.Today", translated);
+            Assert.Equal("() => DateTime.Today", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStaticMemberExpressionUsingTheDeclaringType()
         {
             Expression<Func<object>> getDefaultIndexedProperty = () => IndexedProperty.Default;
 
             var translated = getDefaultIndexedProperty.Body.ToReadableString();
 
-            Assert.AreEqual("IndexedProperty.Default", translated);
+            Assert.Equal("IndexedProperty.Default", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParamsArrayArgument()
         {
             Expression<Func<string, string[]>> splitString = str => str.Split('x', 'y', 'z');
 
             var translated = splitString.ToReadableString();
 
-            Assert.AreEqual("str => str.Split('x', 'y', 'z')", translated);
+            Assert.Equal("str => str.Split('x', 'y', 'z')", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnEmptyParamsArrayArgument()
         {
             Expression<Func<string, string>> combineStrings = str => ParamsHelper.OptionalParams(str);
 
             var translated = combineStrings.ToReadableString();
 
-            Assert.AreEqual("str => ParamsHelper.OptionalParams(str)", translated);
+            Assert.Equal("str => ParamsHelper.OptionalParams(str)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIndexedPropertyAccessExpression()
         {
             Expression<Func<IndexedProperty, int, object>> getPropertyIndex = (p, index) => p[index];
 
             var translated = getPropertyIndex.Body.ToReadableString();
 
-            Assert.AreEqual("p[index]", translated);
+            Assert.Equal("p[index]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAManualIndexedPropertyAccessExpression()
         {
             var indexedProperty = Expression.Variable(typeof(IndexedProperty), "p");
@@ -174,90 +174,90 @@
 
             var translated = indexerAccess.ToReadableString();
 
-            Assert.AreEqual("p[1]", translated);
+            Assert.Equal("p[1]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAStringIndexAccessExpression()
         {
             Expression<Func<string, char>> getFirstCharacter = str => str[0];
 
             var translated = getFirstCharacter.Body.ToReadableString();
 
-            Assert.AreEqual("str[0]", translated);
+            Assert.Equal("str[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnArrayIndexAccessExpression()
         {
             Expression<Func<int[], int>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.Equal("items[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIDictionaryIndexAccessExpression()
         {
             Expression<Func<IDictionary<int, string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.Equal("items[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADictionaryIndexAccessExpression()
         {
             Expression<Func<Dictionary<long, string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0L]", translated);
+            Assert.Equal("items[0L]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACollectionIndexAccessExpression()
         {
             Expression<Func<Collection<string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.Equal("items[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIListIndexAccessExpression()
         {
             Expression<Func<IList<string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.Equal("items[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAListIndexAccessExpression()
         {
             Expression<Func<List<string>, string>> getFirstItem = items => items[0];
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("items[0]", translated);
+            Assert.Equal("items[0]", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMethodCallWithGenericArgumentIncluded()
         {
             Expression<Func<IndexedProperty, string>> getFirstItem = ip => ip.GetFirst<string>();
 
             var translated = getFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("ip.GetFirst<string>()", translated);
+            Assert.Equal("ip.GetFirst<string>()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMethodCallWithPartlyImpliedTypeParameters()
         {
             Expression<Func<int, string>> convertIntToString =
@@ -265,30 +265,30 @@
 
             var translated = convertIntToString.Body.ToReadableString();
 
-            Assert.AreEqual("new ValueConverter().Convert<int, string>(i)", translated);
+            Assert.Equal("new ValueConverter().Convert<int, string>(i)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMethodCallWithoutGenericArgumentIncluded()
         {
             Expression<Action<IndexedProperty, string>> setFirstItem = (ip, str) => ip.SetFirst(str);
 
             var translated = setFirstItem.Body.ToReadableString();
 
-            Assert.AreEqual("ip.SetFirst(str)", translated);
+            Assert.Equal("ip.SetFirst(str)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMethodCallWithRequestedGenericArgumentsIncluded()
         {
             Expression<Action<IndexedProperty, string>> setFirstItem = (ip, str) => ip.SetFirst(str);
 
             var translated = setFirstItem.Body.ToReadableString(c => c.UseExplicitGenericParameters);
 
-            Assert.AreEqual("ip.SetFirst<string>(str)", translated);
+            Assert.Equal("ip.SetFirst<string>(str)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnOutParameterMethodCallWithoutGenericArgumentIncluded()
         {
             string result;
@@ -298,10 +298,10 @@
 
             var translated = convertIntToString.Body.ToReadableString();
 
-            Assert.AreEqual("new ValueConverter().TryConvert(i, out result)", translated);
+            Assert.Equal("new ValueConverter().TryConvert(i, out result)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANegatedMethodCall()
         {
             Expression<Func<List<int>, bool>> listDoesNotContainZero =
@@ -309,47 +309,47 @@
 
             var translated = listDoesNotContainZero.Body.ToReadableString();
 
-            Assert.AreEqual("!l.Contains(0, EqualityComparer<int>.Default)", translated);
+            Assert.Equal("!l.Contains(0, EqualityComparer<int>.Default)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotIncludeCapturedInstanceNames()
         {
             var helper = new CapturedInstanceHelper(5);
             var translated = helper.GetComparisonTranslation(3);
 
-            Assert.AreEqual("(_i == comparator)", translated);
+            Assert.Equal("(_i == comparator)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeOutParameterKeywords()
         {
             var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
             var one = Expression.Constant(1);
             var valueVariable = Expression.Variable(typeof(object), "value");
-            var tryGetMethod = typeof(IndexedProperty).GetMethod("TryGet");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
             var tryGetCall = Expression.Call(helperVariable, tryGetMethod, one, valueVariable);
 
             var translated = tryGetCall.ToReadableString();
 
-            Assert.AreEqual("ip.TryGet(1, out value)", translated);
+            Assert.Equal("ip.TryGet(1, out value)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeRefParameterKeywords()
         {
             var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
             var three = Expression.Constant(3);
             var valueVariable = Expression.Variable(typeof(object), "value");
-            var tryGetMethod = typeof(IndexedProperty).GetMethod("RefGet");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("RefGet");
             var tryGetCall = Expression.Call(helperVariable, tryGetMethod, three, valueVariable);
 
             var translated = tryGetCall.ToReadableString();
 
-            Assert.AreEqual("ip.RefGet(3, ref value)", translated);
+            Assert.Equal("ip.RefGet(3, ref value)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACustomEnumerableAddInitialiser()
         {
             Expression<Func<int, int, int, CustomAdder>> customAdder =
@@ -363,7 +363,61 @@ new CustomAdder
     { intOne, intTwo, intThree }
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
+        }
+
+        [Fact]
+        public void ShouldTranslateImplicitOperatorUse()
+        {
+            Expression<Func<string>> adderToString = () => new CustomAdder();
+
+            var stringVariable = Expression.Variable(typeof(string), "str");
+            var assignment = Expression.Assign(stringVariable, adderToString.Body);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.Equal("str = new CustomAdder()", translated);
+        }
+
+        [Fact]
+        public void ShouldTranslateImplicitMethodOperatorUse()
+        {
+            var stringVariable = Expression.Variable(typeof(string), "str");
+            var stringOperator = typeof(CustomAdder).GetImplicitOperator(o => o.To<string>());
+            var adderInstance = Expression.New(typeof(CustomAdder).GetPublicInstanceConstructor());
+            var operatorCall = Expression.Call(stringOperator, adderInstance);
+            var assignment = Expression.Assign(stringVariable, operatorCall);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.Equal("str = new CustomAdder()", translated);
+        }
+
+        [Fact]
+        public void ShouldTranslateExplicitOperatorUse()
+        {
+            Expression<Func<int>> adderToString = () => (int)new CustomAdder();
+
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var assignment = Expression.Assign(intVariable, adderToString.Body);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.Equal("i = (int)new CustomAdder()", translated);
+        }
+
+        [Fact]
+        public void ShouldTranslateExplicitMethodOperatorUse()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            var intOperator = typeof(CustomAdder).GetExplicitOperator(o => o.To<int>());
+            var adderInstance = Expression.New(typeof(CustomAdder).GetPublicInstanceConstructor());
+            var operatorCall = Expression.Call(intOperator, adderInstance);
+            var assignment = Expression.Assign(intVariable, operatorCall);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.Equal("i = (int)new CustomAdder()", translated);
         }
     }
 
@@ -450,6 +504,9 @@ new CustomAdder
 
     internal class CustomAdder : IEnumerable
     {
+        public static implicit operator string(CustomAdder adder) => adder.ToString();
+        public static explicit operator int(CustomAdder adder) => adder.GetHashCode();
+
         public void Add(int intOne, int intTwo, int intThree)
         {
         }

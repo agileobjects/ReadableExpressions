@@ -2,72 +2,71 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingComparisons
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnEqualityExpression()
         {
             Expression<Func<int, int, bool>> intsAreEqual = (i1, i2) => i1 == i2;
 
             var translated = intsAreEqual.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 == i2", translated);
+            Assert.Equal("(i1, i2) => i1 == i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALessThanExpression()
         {
             Expression<Func<int, int, bool>> firstLessThanSecond = (i1, i2) => i1 < i2;
 
             var translated = firstLessThanSecond.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 < i2", translated);
+            Assert.Equal("(i1, i2) => i1 < i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALessThanOrEqualExpression()
         {
             Expression<Func<int, int, bool>> firstLessThanOrEqualToSecond = (i1, i2) => i1 <= i2;
 
             var translated = firstLessThanOrEqualToSecond.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 <= i2", translated);
+            Assert.Equal("(i1, i2) => i1 <= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAGreaterThanOrEqualExpression()
         {
             Expression<Func<int, int, bool>> firstGreaterThanOrEqualToSecond = (i1, i2) => i1 >= i2;
 
             var translated = firstGreaterThanOrEqualToSecond.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 >= i2", translated);
+            Assert.Equal("(i1, i2) => i1 >= i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAGreaterThanExpression()
         {
             Expression<Func<int, int, bool>> firstGreaterThanSecond = (i1, i2) => i1 > i2;
 
             var translated = firstGreaterThanSecond.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 > i2", translated);
+            Assert.Equal("(i1, i2) => i1 > i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInequalityExpression()
         {
             Expression<Func<int, int, bool>> intsAreNotEqual = (i1, i2) => i1 != i2;
 
             var translated = intsAreNotEqual.ToReadableString();
 
-            Assert.AreEqual("(i1, i2) => i1 != i2", translated);
+            Assert.Equal("(i1, i2) => i1 != i2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAbbreviateBooleanTrueComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
@@ -75,10 +74,10 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsTrue.ToReadableString();
 
-            Assert.AreEqual("couldBe", translated);
+            Assert.Equal("couldBe", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAbbreviateBooleanFalseComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
@@ -86,10 +85,10 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsFalse.ToReadableString();
 
-            Assert.AreEqual("!couldBe", translated);
+            Assert.Equal("!couldBe", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAbbreviateNotBooleanTrueComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
@@ -97,10 +96,10 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsNotTrue.ToReadableString();
 
-            Assert.AreEqual("!couldBe", translated);
+            Assert.Equal("!couldBe", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAbbreviateNotBooleanFalseComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
@@ -108,10 +107,10 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsNotFalse.ToReadableString();
 
-            Assert.AreEqual("couldBe", translated);
+            Assert.Equal("couldBe", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldAbbreviateDefaultBooleanComparisons()
         {
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
@@ -119,7 +118,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = boolIsFalse.ToReadableString();
 
-            Assert.AreEqual("!couldBe", translated);
+            Assert.Equal("!couldBe", translated);
         }
     }
 }

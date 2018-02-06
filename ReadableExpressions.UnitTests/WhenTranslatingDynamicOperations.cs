@@ -4,12 +4,11 @@
     using System.Globalization;
     using System.Linq.Expressions;
     using Microsoft.CSharp.RuntimeBinder;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingDynamicOperations
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAPropertyReadAccess()
         {
             var lengthGetterSiteBinder = Binder.GetMember(
@@ -32,10 +31,10 @@
 
             var translated = dynamicLengthLambda.ToReadableString();
 
-            Assert.AreEqual("obj => obj.Length", translated);
+            Assert.Equal("obj => obj.Length", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAPropertyWriteAccess()
         {
             var positionSetterSiteBinder = Binder.SetMember(
@@ -62,10 +61,10 @@
 
             var translated = dynamicPositionLambda.ToReadableString();
 
-            Assert.AreEqual("(obj, position) => obj.Position = position", translated);
+            Assert.Equal("(obj, position) => obj.Position = position", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessMethodCall()
         {
             var objectToStringCallSiteBinder = Binder.InvokeMember(
@@ -89,10 +88,10 @@
 
             var translated = dynamicToStringLambda.ToReadableString();
 
-            Assert.AreEqual("obj => obj.ToString()", translated);
+            Assert.Equal("obj => obj.ToString()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACallToAMissingMethod()
         {
             // Just because the method doesn't exist doesn't mean
@@ -120,10 +119,10 @@
 
             var translated = dynamicYellHurrahLambda.ToReadableString();
 
-            Assert.AreEqual("obj => obj.YellHurrah()", translated);
+            Assert.Equal("obj => obj.YellHurrah()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterisedMethodCall()
         {
             var objectToStringCallSiteBinder = Binder.InvokeMember(
@@ -155,10 +154,10 @@
 
             var translated = dynamicToStringLambda.ToReadableString();
 
-            Assert.AreEqual("(obj, ci) => obj.ToString(ci)", translated);
+            Assert.Equal("(obj, ci) => obj.ToString(ci)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAGenericParameterisedMethodCall()
         {
             var valueConverterConvertCallSiteBinder = Binder.InvokeMember(
@@ -190,10 +189,10 @@
 
             var translated = dynamicConvertLambda.ToReadableString();
 
-            Assert.AreEqual("(valueConverter, value) => valueConverter.Convert<string, int>(value)", translated);
+            Assert.Equal("(valueConverter, value) => valueConverter.Convert<string, int>(value)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateACallWithTooFewParameters()
         {
             var valueConverterConvertCallSiteBinder = Binder.InvokeMember(
@@ -223,10 +222,10 @@
             var translated = dynamicConvertLambda.ToReadableString();
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
-            Assert.AreEqual("valueConverter => valueConverter.Convert()", translated);
+            Assert.Equal("valueConverter => valueConverter.Convert()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAParameterlessCallWithGenericParameters()
         {
             var typePrinterPrintCallSiteBinder = Binder.InvokeMember(
@@ -256,7 +255,7 @@
             var translated = dynamicPrintLambda.ToReadableString();
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
-            Assert.AreEqual("typePrinter => typePrinter.Print()", translated);
+            Assert.Equal("typePrinter => typePrinter.Print()", translated);
         }
 
         // ReSharper disable once UnusedMember.Local

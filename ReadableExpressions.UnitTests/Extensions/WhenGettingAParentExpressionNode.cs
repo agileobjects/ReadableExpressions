@@ -4,53 +4,53 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using ReadableExpressions.Extensions;
+    using Xunit;
 
     public class WhenGettingAParentExpressionNode
     {
-        [TestMethod]
+        [Fact]
         public void ShouldReturnAMemberAccessParent()
         {
             Expression<Func<Type, string>> personViewModelName = t => t.Name;
 
             var namePropertyParent = personViewModelName.Body.GetParentOrNull() as ParameterExpression;
 
-            Assert.IsNotNull(namePropertyParent);
-            Assert.AreEqual("t", namePropertyParent.Name);
+            Assert.NotNull(namePropertyParent);
+            Assert.Equal("t", namePropertyParent.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldReturnANestedMemberAccessParent()
         {
             Expression<Func<Type, string>> typeAssemblyImageVersion = t => t.Assembly.ImageRuntimeVersion;
 
             var typeAssemblyImageVersionParent = typeAssemblyImageVersion.Body.GetParentOrNull() as MemberExpression;
 
-            Assert.IsNotNull(typeAssemblyImageVersionParent);
-            Assert.AreEqual("Assembly", typeAssemblyImageVersionParent.Member.Name);
+            Assert.NotNull(typeAssemblyImageVersionParent);
+            Assert.Equal("Assembly", typeAssemblyImageVersionParent.Member.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldReturnAMemberMethodCallParent()
         {
             Expression<Func<Type, string>> typeAssemblyToString = p => p.Assembly.ToString();
 
             var assemblyToStringPropertyParent = typeAssemblyToString.Body.GetParentOrNull() as MemberExpression;
 
-            Assert.IsNotNull(assemblyToStringPropertyParent);
-            Assert.AreEqual("Assembly", assemblyToStringPropertyParent.Member.Name);
+            Assert.NotNull(assemblyToStringPropertyParent);
+            Assert.Equal("Assembly", assemblyToStringPropertyParent.Member.Name);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldReturnAnExtensionMethodCallParent()
         {
             Expression<Func<IEnumerable<Type>, Type[]>> typesToArray = ts => ts.ToArray();
 
             var typesToArrayPropertyParent = typesToArray.Body.GetParentOrNull() as ParameterExpression;
 
-            Assert.IsNotNull(typesToArrayPropertyParent);
-            Assert.AreEqual("ts", typesToArrayPropertyParent.Name);
+            Assert.NotNull(typesToArrayPropertyParent);
+            Assert.Equal("ts", typesToArrayPropertyParent.Name);
         }
     }
 }

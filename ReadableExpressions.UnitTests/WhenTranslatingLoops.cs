@@ -2,12 +2,11 @@
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingLoops
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnInfiniteLoop()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -20,10 +19,10 @@ while (true)
 {
     Console.WriteLine();
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALoopWithABreakStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -48,10 +47,10 @@ while (true)
     Console.WriteLine();
     ++i;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALoopWithAContinueStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -79,7 +78,7 @@ while (true)
     Console.Write(""Finished!"");
     return;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 }

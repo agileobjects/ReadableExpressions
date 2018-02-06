@@ -5,13 +5,12 @@
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenFormattingCode
     {
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongConstructorArgumentListsOntoMultipleLines()
         {
             var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
@@ -30,10 +29,10 @@ var helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitMultipleArgumentListsOntoMultipleLines()
         {
             var intsMethod = typeof(HelperClass)
@@ -59,10 +58,10 @@ helper.GiveMeFourInts(
     intVariable,
     intVariable)";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongArgumentListsOntoMultipleLines()
         {
             var intsMethod = typeof(HelperClass)
@@ -80,10 +79,10 @@ helper.GiveMeSomeInts(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongInvokeArgumentListsOntoMultipleLines()
         {
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
@@ -102,10 +101,10 @@ threeIntsAction.Invoke(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongTernariesOntoMultipleLines()
         {
             Expression<Func<int, int>> longTernary =
@@ -120,10 +119,10 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
     ? veryLongNamedVariable * veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) * veryLongNamedVariable";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongNestedTernariesOntoMultipleLines()
         {
             Expression<Func<int, int>> longTernary =
@@ -142,10 +141,10 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         : veryLongNamedVariable - veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) + veryLongNamedVariable";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongTernaryOptionsOntoMultipleLines()
         {
             var oneEqualsTwo = Expression.Equal(Expression.Constant(1), Expression.Constant(2));
@@ -168,10 +167,10 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         thisVariableReallyHasAVeryLongNameIndeed,
         thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongAssignmentsOntoMultipleLines()
         {
             var intVariable = Expression.Variable(typeof(int), "value");
@@ -190,10 +189,10 @@ value = threeIntsFunc.Invoke(
     threeIntsFunc.Invoke(10, 1, thisVariableReallyHasAVeryLongNameIndeed),
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldDeclareAVariableIfUsedBeforeInitialisation()
         {
             var nameVariable = Expression.Variable(typeof(string), "name");
@@ -218,10 +217,10 @@ name = ""Fred"";
 
 return getName.Invoke();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotVarAssignAVariableOfNonImpliedType()
         {
             var intsVariable = Expression.Variable(typeof(IEnumerable<int>), "ints");
@@ -232,10 +231,10 @@ return getName.Invoke();";
 
             var translated = block.ToReadableString();
 
-            Assert.AreEqual("IEnumerable<int> ints = new int[2];", translated);
+            Assert.Equal("IEnumerable<int> ints = new int[2];", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotVarAssignATernaryValueWithDifferingTypeBranches()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -255,10 +254,10 @@ return getName.Invoke();";
 
             var translated = assignBlock.ToReadableString();
 
-            Assert.AreEqual("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();", translated);
+            Assert.Equal("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotVarAssignAnOuterBlockDeclaredVariable()
         {
             var nameVariable = Expression.Variable(typeof(string), "name");
@@ -290,10 +289,10 @@ Action writeNameTwice = () =>
 name = ""Alice"";
 writeNameTwice.Invoke();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldVarAssignVariablesInSiblingBlocks()
         {
             var intVariable1 = Expression.Variable(typeof(int), "i");
@@ -320,10 +319,10 @@ else
 {
     var j = 2;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotVarAssignAVariableAssignedInATryButUsedInACatch()
         {
             Expression<Func<int, Exception>> exceptionFactory = number => new Exception(number.ToString());
@@ -349,10 +348,10 @@ catch
 {
     throw new Exception(number.ToString());
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldVarAssignAVariableUsedInNestedConstructs()
         {
             var returnLabel = Expression.Label(typeof(long), "Return");
@@ -453,10 +452,10 @@ catch
 
             var translated = overallTryCatch.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotIndentParamsArrayArguments()
         {
             Expression<Func<string>> stringJoiner = () =>
@@ -477,10 +476,10 @@ string.Join(
 
             var translated = stringJoiner.Body.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIndentParamsArrayArgumentsInAnIfTest()
         {
             Expression<Func<bool>> stringTest = () =>
@@ -505,28 +504,28 @@ if (string.Join(
 }";
             var translated = ifTestDoNothing.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnExtensionExpressionType()
         {
             var extension = new ExtensionExpression();
             var translated = extension.ToReadableString();
 
-            Assert.AreEqual(extension.ToString(), translated);
+            Assert.Equal(extension.ToString(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnUnknownExpressionType()
         {
             var unknown = new UnknownExpression();
             var translated = unknown.ToReadableString();
 
-            Assert.AreEqual(unknown.ToString(), translated);
+            Assert.Equal(unknown.ToString(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldOnlyRemoveParenthesesIfNecessary()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -534,7 +533,7 @@ if (string.Join(
 
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
-            var intToStringMethod = typeof(object).GetMethod("ToString");
+            var intToStringMethod = typeof(object).GetPublicInstanceMethod("ToString");
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
 
             Expression<Func<string>> emptyString = () => string.Empty;
@@ -546,10 +545,10 @@ if (string.Join(
 
             var translated = toStringOrEmptyString.ToReadableString();
 
-            Assert.AreEqual("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
+            Assert.Equal("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotRemoveParenthesesFromACastObjectChainedMethodCall()
         {
             Expression<Func<IList<int>, string[]>> intArrayConverter =
@@ -560,10 +559,10 @@ if (string.Join(
 
             var translated = assignment.ToReadableString();
 
-            Assert.AreEqual("strings = ((int[])ints).ToString().Split(',')", translated);
+            Assert.Equal("strings = ((int[])ints).ToString().Split(',')", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotRemoveParenthesesFromMultiParameterLambdaArguments()
         {
             Expression<Func<IEnumerable<string>, string[]>> stringsConverter =
@@ -572,11 +571,11 @@ if (string.Join(
             const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
             var translated = stringsConverter.Body.ToReadableString();
 
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.Equal(EXPECTED, translated);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/9
-        [TestMethod]
+        [Fact]
         public void ShouldNotRemoveParenthesesFromALambdaInvokeResultAssignment()
         {
             Expression<Func<int, int, int>> intsAdder = (a, b) => a + b;
@@ -589,10 +588,10 @@ if (string.Join(
             const string EXPECTED = "result = ((a, b) => a + b).Invoke(1, 2)";
             var translated = assignInvokeResult.ToReadableString();
 
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.Equal(EXPECTED, translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
             Expression<Func<IEnumerable<TimeSpan>>> selectTimeSpans =
@@ -600,10 +599,10 @@ if (string.Join(
 
             var translated = selectTimeSpans.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)", translated);
+            Assert.Equal("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldUseMethodGroupsForInstanceMethods()
         {
             Expression<Func<IntConverter, IEnumerable<string>>> selectStrings =
@@ -611,10 +610,10 @@ if (string.Join(
 
             var translated = selectStrings.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1, 2, 3 }.Select(converter.Convert)", translated);
+            Assert.Equal("new[] { 1, 2, 3 }.Select(converter.Convert)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldUseMethodGroupsForLocalFuncs()
         {
             Func<int, string> intConverter = i => i.ToString();
@@ -624,10 +623,10 @@ if (string.Join(
 
             var translated = selectStrings.Body.ToReadableString();
 
-            Assert.AreEqual("new[] { 1, 2, 3 }.Select(intConverter)", translated);
+            Assert.Equal("new[] { 1, 2, 3 }.Select(intConverter)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldConvertAnExtensionMethodArgumentToAMethodGroup()
         {
             Expression<Func<List<int>, IEnumerable<int>, bool>> allItemsContained =
@@ -635,10 +634,10 @@ if (string.Join(
 
             var translated = allItemsContained.Body.ToReadableString();
 
-            Assert.AreEqual("list.All(items.Contains)", translated);
+            Assert.Equal("list.All(items.Contains)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldConvertAStaticMethodArgumentToAMethodGroup()
         {
             Expression<Func<List<double>, IEnumerable<TimeSpan>>> parseTimeSpans =
@@ -646,10 +645,10 @@ if (string.Join(
 
             var translated = parseTimeSpans.Body.ToReadableString();
 
-            Assert.AreEqual("list.Select(TimeSpan.FromDays)", translated);
+            Assert.Equal("list.Select(TimeSpan.FromDays)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldConvertAnInstanceMethodArgumentToAMethodGroup()
         {
             Expression<Action<List<int>, ICollection<int>>> copy =
@@ -657,10 +656,10 @@ if (string.Join(
 
             var translated = copy.Body.ToReadableString();
 
-            Assert.AreEqual("list.ForEach(items.Add)", translated);
+            Assert.Equal("list.ForEach(items.Add)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldConvertADelegateMethodArgumentToAMethodGroup()
         {
             Func<IntEvaluator, int, bool> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
@@ -670,10 +669,10 @@ if (string.Join(
 
             var translated = listContainsEvaluator.Body.ToReadableString();
 
-            Assert.AreEqual("evaluatorInvoker.Invoke(list.Contains, i)", translated);
+            Assert.Equal("evaluatorInvoker.Invoke(list.Contains, i)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotConvertAModifyingArgumentToAMethodGroup()
         {
             Expression<Action<List<int>, ICollection<string>>> copy =
@@ -681,10 +680,10 @@ if (string.Join(
 
             var translated = copy.Body.ToReadableString();
 
-            Assert.AreEqual("list.ForEach(i => items.Add(i.ToString()))", translated);
+            Assert.Equal("list.ForEach(i => items.Add(i.ToString()))", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotConvertAModifyingReturnTypeToAMethodGroup()
         {
             Func<IntEvaluatorNullable, int, bool?> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
@@ -694,10 +693,10 @@ if (string.Join(
 
             var translated = listContainsEvaluator.Body.ToReadableString();
 
-            Assert.AreEqual("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)", translated);
+            Assert.Equal("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldSplitLongChainedMethodsOntoMultipleLines()
         {
             Expression<Func<IEnumerable<int>>> longMethodChain = () =>
@@ -720,18 +719,18 @@ Enumerable
     .OrderByDescending(i => i)
     .ToList()";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateNullToNull()
         {
             var translated = default(Expression).ToReadableString();
 
-            Assert.IsNull(translated);
+            Assert.Null(translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldLeaveABlankLineAfterAMultipleLineExpression()
         {
             Expression<Func<List<int>, IEnumerable<int>>> longCallChain = list => list
@@ -757,10 +756,10 @@ return list
 
             var translated = longChainblock.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldLeaveABlankLineBeforeAnIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -780,10 +779,10 @@ if (i == 0)
 
             var translated = block.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotLeaveDoubleBlankLinesBetweenIfStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -810,10 +809,10 @@ if (i == 1)
 
             var translated = block.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotLeaveDoubleBlankLinesBetweenInitAndIfStatements()
         {
             Expression<Action> writeWat = () => Console.WriteLine("Wat");
@@ -851,10 +850,10 @@ if (i == 1)
 
             var translated = block.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateMultilineBlockSingleMethodArguments()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -878,7 +877,7 @@ if (i == 1)
             var tryCatch = Expression.TryCatch(argumentBlock, catchBlock);
 
             var collectionVariable = Expression.Variable(typeof(ICollection<int>), "ints");
-            var addMethod = collectionVariable.Type.GetMethod("Add");
+            var addMethod = collectionVariable.Type.GetPublicInstanceMethod("Add");
             var addMethodCall = Expression.Call(collectionVariable, addMethod, tryCatch);
 
             const string EXPECTED = @"
@@ -901,7 +900,7 @@ ints.Add(
 
             var translated = addMethodCall.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 

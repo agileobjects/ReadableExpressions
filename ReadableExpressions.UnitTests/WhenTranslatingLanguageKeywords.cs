@@ -2,30 +2,29 @@
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingLanguageKeywords
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADefaultExpression()
         {
             var defaultInt = Expression.Default(typeof(uint));
             var translated = defaultInt.ToReadableString();
 
-            Assert.AreEqual("default(uint)", translated);
+            Assert.Equal("default(uint)", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIgnoreADefaultVoidExpression()
         {
             var defaultVoid = Expression.Default(typeof(void));
             var translated = defaultVoid.ToReadableString();
 
-            Assert.IsNull(translated);
+            Assert.Null(translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldEscapeAKeywordVariable()
         {
             VerifyIsEscaped("int");
@@ -55,10 +54,10 @@
             var variable = Expression.Variable(typeof(bool), keyword);
             var translated = variable.ToReadableString();
 
-            Assert.AreEqual("@" + keyword, translated);
+            Assert.Equal("@" + keyword, translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADeclaredBlockVariableKeyword()
         {
             var variable = Expression.Variable(typeof(string), "string");
@@ -70,7 +69,7 @@
 string @string;
 Console.WriteLine(""La la la"");";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 }

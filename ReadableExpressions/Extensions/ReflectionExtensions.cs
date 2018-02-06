@@ -8,8 +8,14 @@
     {
         [DebuggerStepThrough]
         public static bool IsExtensionMethod(this MethodInfo method)
-        {
-            return method.IsStatic && method.IsDefined(typeof(ExtensionAttribute), false);
-        }
+            => method.IsStatic && method.IsDefined(typeof(ExtensionAttribute), false);
+
+        [DebuggerStepThrough]
+        public static bool IsImplicitOperator(this MethodInfo method)
+            => method.IsSpecialName && method.IsStatic && (method.Name == "op_Implicit");
+
+        [DebuggerStepThrough]
+        public static bool IsExplicitOperator(this MethodInfo method)
+            => method.IsSpecialName && method.IsStatic && (method.Name == "op_Explicit");
     }
 }

@@ -61,12 +61,27 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateCastCore(Expression expression, TranslationContext context)
         {
             var cast = (UnaryExpression)expression;
-            var typeName = cast.Type.GetFriendlyName();
-            var subject = context.Translate(cast.Operand);
 
-            if (cast.Operand.NodeType == ExpressionType.Assign)
+            return Translate(cast.Operand, cast.Method, cast.Type, context);
+        }
+
+        public static string Translate(
+            Expression castValue,
+            MethodInfo castMethod,
+            Type resultType,
+            TranslationContext context)
+        {
+            var typeName = resultType.GetFriendlyName();
+            var subject = context.Translate(castValue);
+
+            if (castValue.NodeType == ExpressionType.Assign)
             {
                 subject = subject.WithSurroundingParentheses();
+            }
+
+            if (castMethod?.IsImplicitOperator() == true)
+            {
+                return subject;
             }
 
             return $"(({typeName}){subject})";

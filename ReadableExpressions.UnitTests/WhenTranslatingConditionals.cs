@@ -2,13 +2,12 @@
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingConditionals
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASingleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -24,10 +23,10 @@ if (i < 1)
 {
     Console.Write(""Less than"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAShortCircuitingIfStatement()
         {
             var oneCastToDouble = Expression.Convert(Expression.Constant(1), typeof(double?));
@@ -48,10 +47,10 @@ if (true)
 
 return null;";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIfStatementWithAConditional()
         {
             var guidVariable = Expression.Variable(typeof(Guid), "guid");
@@ -71,10 +70,10 @@ if ((guid != default(Guid)) ? guid != Guid.Empty : false)
 {
     Console.Write(""GUID FUN!"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleLineIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -93,10 +92,10 @@ if (i < 1)
     Console.WriteLine(""Hello"");
     Console.WriteLine(""There"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleClauseIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -114,10 +113,10 @@ if ((i < 1) && (i > 1))
 {
     Console.WriteLine(""Hello"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleLineIfStatementTest()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -150,10 +149,10 @@ if ({
 {
     write = () => Console.WriteLine(""Hello"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIfElseStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -174,10 +173,10 @@ else
 {
     Console.WriteLine(""Goodbye"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnIfElseIfStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -199,10 +198,10 @@ else if (i == 2)
 {
     Console.WriteLine(""Two"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateMultipleLineVoidIfElseStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -227,10 +226,10 @@ else
     Console.WriteLine(""Goodbye"");
     Console.WriteLine(""Hello"");
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleLineNonVoidIfElseStatements()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -258,10 +257,10 @@ Console.WriteLine(""Hello"");
 
 return i;
 ";
-            Assert.AreEqual(EXPECTED.Trim(), translated);
+            Assert.Equal(EXPECTED.Trim(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotWrapSingleExpressionTernaryConditionsInParentheses()
         {
             var ternary = Expression.Condition(
@@ -271,10 +270,10 @@ return i;
 
             var translated = ternary.ToReadableString();
 
-            Assert.AreEqual("false ? 1 : 2", translated);
+            Assert.Equal("false ? 1 : 2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotWrapMethodCallTernaryConditionsInParentheses()
         {
             var method = typeof(MethodCallHelper).GetPublicInstanceMethod("MultipleParameterMethod");
@@ -292,10 +291,10 @@ return i;
 
             var translated = ternary.ToReadableString();
 
-            Assert.AreEqual("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2", translated);
+            Assert.Equal("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASwitchStatement()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -326,10 +325,10 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASwitchStatementWithADefault()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -369,10 +368,10 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASwitchStatementWithMultiLineCases()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -403,10 +402,10 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeReturnKeywordsForConstantsAndCasts()
         {
             var nullLong = Expression.Constant(null, typeof(long?));
@@ -430,10 +429,10 @@ Console.WriteLine(""One!"");
 
 return ((long?)1);";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldBreakLongMultipleConditionsOntoMultipleLines()
         {
             var intVariable1 = Expression.Variable(typeof(int), "thisVariableHasALongName");
@@ -455,7 +454,7 @@ if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
     Console.WriteLine(""Yo!"");
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 

@@ -2,12 +2,11 @@
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingGotos
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateGotoStatements()
         {
             var labelTargetOne = Expression.Label(typeof(void), "One");
@@ -60,10 +59,10 @@ Console.Write(""One"");
 Two:
 Console.Write(""Two"");
 ";
-            Assert.AreEqual(EXPECTED.Trim(), translated);
+            Assert.Equal(EXPECTED.Trim(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldUnindentGotoTargetLabels()
         {
             var labelTargetOne = Expression.Label(typeof(void), "One");
@@ -89,10 +88,10 @@ One:
 Two:
     goto One;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAGotoReturnStatement()
         {
             var returnTarget = Expression.Label(typeof(int), "Return");
@@ -120,10 +119,10 @@ i =>
 
     return 0;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAReturnStatementWithAValue()
         {
             var returnTarget = Expression.Label(typeof(int));
@@ -158,10 +157,10 @@ i =>
 
     return 0;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotIncludeLabelNamesWithoutAGoto()
         {
             var returnLabelTarget = Expression.Label(typeof(bool), "ReturnTarget");
@@ -186,10 +185,10 @@ if (i < 1)
 
 return false;";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAReturnStatementWithABlock()
         {
             var returnLabelTarget = Expression.Label(typeof(int));
@@ -224,10 +223,10 @@ return
 
             var translated = returnBlock.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateALabelWithABlockDefaultValue()
         {
             var returnLabelTarget = Expression.Label(typeof(int), "Return");
@@ -261,7 +260,7 @@ return
 };";
             var translated = returnBlock.ToReadableString();
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 }

@@ -2,22 +2,21 @@
 {
     using System;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingComments
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASingleLineComment()
         {
             var comment = ReadableExpression.Comment("Not worth commenting on");
 
             var translated = comment.ToReadableString();
 
-            Assert.AreEqual("// Not worth commenting on", translated);
+            Assert.Equal("// Not worth commenting on", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleLineComment()
         {
             var comment = ReadableExpression.Comment(@"
@@ -30,10 +29,10 @@ but I will anyway");
 // Not worth commenting on
 // but I will anyway";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateABlockWithAComment()
         {
             var comment = ReadableExpression.Comment("Anyone listening?");
@@ -47,10 +46,10 @@ but I will anyway");
 // Anyone listening?
 Console.Beep();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAConditionalBranchWithAComment()
         {
             var comment = ReadableExpression.Comment("Maths works");
@@ -65,7 +64,7 @@ if (1 == 1)
 {
     // Maths works
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
     }
 }

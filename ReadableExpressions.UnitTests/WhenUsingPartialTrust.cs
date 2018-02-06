@@ -5,52 +5,43 @@
     using System.Security;
     using System.Security.Policy;
     using Microsoft.CSharp.RuntimeBinder;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Xunit;
 
-    [TestClass]
     public class WhenUsingPartialTrust
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASimpleAssignment()
         {
             ExecuteInPartialTrust(helper =>
             {
-                var translated = helper.TranslateSimpleAssignment();
-
-                Assert.AreEqual("i = 0", translated);
+                helper.TestSimpleAssignmentTranslation();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateADynamicExpression()
         {
             ExecuteInPartialTrust(helper =>
             {
-                var translated = helper.TranslateDynamicExpression();
-
-                Assert.AreEqual("obj => obj.Length", translated);
+                helper.TestDynamicExpressionTranslation();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAValueTypeTypeEqualExpression()
         {
             ExecuteInPartialTrust(helper =>
             {
-                var translated = helper.TranslateIntTypeEqualExpression();
-
-                Assert.AreEqual("(i TypeOf typeof(long))", translated);
+                helper.TestIntTypeEqualExpressionTranslation();
             });
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAnObjectTypeEqualExpression()
         {
             ExecuteInPartialTrust(helper =>
             {
-                var translated = helper.TranslateObjectTypeEqualExpression();
-
-                Assert.AreEqual("(o is string)", translated);
+                helper.TestObjectTypeEqualExpressionTranslation();
             });
         }
 
@@ -75,6 +66,7 @@
 
                 var helperType = typeof(TranslationHelper);
 
+                // ReSharper disable once AssignNullToNotNullAttribute
                 var helper = (TranslationHelper)partialTrustDomain
                     .CreateInstanceAndUnwrap(helperType.Assembly.FullName, helperType.FullName);
 
@@ -92,15 +84,16 @@
 
     public class TranslationHelper : MarshalByRefObject
     {
-        public string TranslateSimpleAssignment()
+        public void TestSimpleAssignmentTranslation()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var assignment = Expression.Assign(intVariable, Expression.Constant(0));
+            var translated = assignment.ToReadableString();
 
-            return assignment.ToReadableString();
+            Assert.Equal("i = 0", translated);
         }
 
-        public string TranslateDynamicExpression()
+        public void TestDynamicExpressionTranslation()
         {
             var lengthGetterSiteBinder = Binder.GetMember(
                 CSharpBinderFlags.None,
@@ -120,23 +113,27 @@
 
             dynamicLengthLambda.Compile();
 
-            return dynamicLengthLambda.ToReadableString();
+            var translated = dynamicLengthLambda.ToReadableString();
+
+            Assert.Equal("obj => obj.Length", translated);
         }
 
-        public string TranslateIntTypeEqualExpression()
+        public void TestIntTypeEqualExpressionTranslation()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
+            var translated = intIsLong.ToReadableString();
 
-            return intIsLong.ToReadableString();
+            Assert.Equal("(i TypeOf typeof(long))", translated);
         }
 
-        public string TranslateObjectTypeEqualExpression()
+        public void TestObjectTypeEqualExpressionTranslation()
         {
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
+            var translated = objectIsString.ToReadableString();
 
-            return objectIsString.ToReadableString();
+            Assert.Equal("(o is string)", translated);
         }
     }
 }

@@ -5,13 +5,12 @@
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
     using NetStandardPolyfills;
+    using Xunit;
 
-    [TestClass]
     public class WhenTranslatingBlocks
     {
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANoVariableBlockWithNoReturnValue()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -27,10 +26,10 @@ Console.WriteLine();
 Console.Read();
 Console.Beep();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateANoVariableBlockLambdaWithAReturnValue()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -48,10 +47,10 @@ Console.Beep();";
     return Console.Read();
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAVariableBlockWithNoReturnValue()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
@@ -71,10 +70,10 @@ Console.Beep();";
 var count = 0;
 ++count;";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithNoReturnValue()
         {
             var countVariable = Expression.Variable(typeof(short), "count");
@@ -96,10 +95,10 @@ var count = 0;
     --count;
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnValue()
         {
             var countVariable = Expression.Variable(typeof(ushort), "count");
@@ -125,10 +124,10 @@ var count = 0;
     return count;
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnExpression()
         {
             var listVariable = Expression.Variable(typeof(List<int>), "list");
@@ -152,10 +151,10 @@ var count = 0;
     return list.ToArray();
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleAccessVariableBlockWithNoReturnValue()
         {
             var countVariable = Expression.Variable(typeof(ulong), "count");
@@ -173,10 +172,10 @@ var count = 0;
 var count = 10;
 count += 2;";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMultipleVariableBlockWithNoReturnValue()
         {
             var countOneVariable = Expression.Variable(typeof(int), "countOne");
@@ -201,10 +200,10 @@ var countOne = 1;
 var countTwo = 2;
 var countThree = (byte)(countOne + countTwo);";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAVariableAssignmentWithinACondition()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
@@ -226,10 +225,10 @@ var countThree = (byte)(countOne + countTwo);";
     }
 }";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateNestedBlocks()
         {
             Expression<Action> writeLine = () => Console.WriteLine();
@@ -245,10 +244,10 @@ Console.WriteLine();
 Console.Beep();
 Console.WriteLine();";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIgnoreAVariableOnlyBlockStatement()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
@@ -262,15 +261,15 @@ Console.WriteLine();";
 
             const string EXPECTED = "() => false";
 
-            Assert.AreEqual(EXPECTED, translated);
+            Assert.Equal(EXPECTED, translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldNotTerminateMethodCallArguments()
         {
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
-            var intToStringMethod = typeof(int).GetMethods().First(m => m.Name == "ToString");
+            var intToStringMethod = typeof(int).GetPublicInstanceMethods("ToString").First();
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
             var intToStringBlock = Expression.Block(intToStringCall);
             Expression<Func<string, StreamReader>> openTextFile = str => File.OpenText(str);
@@ -279,10 +278,10 @@ Console.WriteLine();";
 
             var translated = openTextFileCall.ToReadableString();
 
-            Assert.AreEqual("File.OpenText(((int)o).ToString())", translated);
+            Assert.Equal("File.OpenText(((int)o).ToString())", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTerminateAMultipleLineMemberInitAssignment()
         {
             Expression<Action> writeWat = () => Console.WriteLine("Wat");
@@ -318,10 +317,10 @@ if (stream == null)
         }
     };
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateASwitchWithMultipleVariableAssignments()
         {
             var countVariable = Expression.Variable(typeof(int), "count");
@@ -358,10 +357,10 @@ switch (i)
         count = 0;
         break;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldTranslateAMemberInitReturnValue()
         {
             var company = Expression.Variable(typeof(Company), "c");
@@ -397,10 +396,10 @@ return new WhenTranslatingBlocks.Employee
         Line1 = ceo.Address.Line1
     }
 };";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIgnoreABlankLabelTargetLine()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -415,10 +414,10 @@ return new WhenTranslatingBlocks.Employee
 
             var translated = intAssignmentBlock.ToReadableString();
 
-            Assert.AreEqual("var i = 0;", translated);
+            Assert.Equal("var i = 0;", translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForACoalesce()
         {
             var stringVariable1 = Expression.Variable(typeof(string), "myString");
@@ -437,10 +436,10 @@ var myString = yourString;
 
 return (myString ?? string.Empty);";
 
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForANewObjectStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -462,10 +461,10 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -494,10 +493,10 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForANewListInitStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -523,10 +522,10 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForANewArrayStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -549,10 +548,10 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
-        [TestMethod]
+        [Fact]
         public void ShouldIncludeAReturnKeywordForANewArrayInitStatement()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
@@ -575,7 +574,7 @@ catch
 {
     throw;
 }";
-            Assert.AreEqual(EXPECTED.TrimStart(), translated);
+            Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
         #region Helper Classes
