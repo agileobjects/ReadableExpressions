@@ -72,6 +72,16 @@
         }
 
         [Fact]
+        public void ShouldUseFriendlyNamesForNestedGenericTypes()
+        {
+            var genericListEnumeratorType = Expression.Constant(typeof(GenericTestHelper<int>), typeof(Type));
+
+            var translated = genericListEnumeratorType.ToReadableString();
+
+            Assert.Equal("typeof(WhenGettingFriendlyNames.GenericTestHelper<int>)", translated);
+        }
+
+        [Fact]
         public void ShouldUseFriendlyNamesForGenericMultiplyNestedTypes()
         {
             var nestedGenericType = Expression.Constant(
@@ -82,5 +92,14 @@
 
             Assert.Equal("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)", translated);
         }
+
+        #region Helper Classes
+
+        // ReSharper disable once UnusedTypeParameter
+        private class GenericTestHelper<T>
+        {
+        }
+
+        #endregion
     }
 }

@@ -53,13 +53,12 @@
         private static string GetGenericTypeName(Type genericType)
         {
             var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
+            var genericTypeName = GetGenericTypeName(genericType.Name, typeGenericTypeArguments.Length, typeGenericTypeArguments);
 
             if (!genericType.IsNested)
             {
-                return GetGenericTypeName(genericType.Name, typeGenericTypeArguments.Length, typeGenericTypeArguments);
+                return genericTypeName;
             }
-
-            var genericTypeName = genericType.Name;
 
             // ReSharper disable once PossibleNullReferenceException
             while (genericType.IsNested)
