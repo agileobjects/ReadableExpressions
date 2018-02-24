@@ -973,16 +973,7 @@ ints.Add(
     {
         public override ExpressionType NodeType => ExpressionType.Extension;
 
-        protected override Expression VisitChildren(ExpressionVisitor visitor)
-        {
-            // See CommentExpression for why this is necessary:
-            return this;
-        }
-
-        public override string ToString()
-        {
-            return "Exteeennndddiiiinnngg";
-        }
+        public override string ToString() => "Exteeennndddiiiinnngg";
     }
 
     internal class UnknownExpression : Expression

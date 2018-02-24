@@ -200,7 +200,10 @@ namespace AgileObjects.ReadableExpressions
 
                 var coreExpression = GetCoreExpression(expression);
 
-                analyzer.Visit(coreExpression);
+                if ((expression.NodeType != ExpressionType.Extension) || expression.CanReduce)
+                {
+                    analyzer.Visit(coreExpression);
+                }
 
                 return analyzer;
             }
