@@ -711,6 +711,18 @@ guid =
             Assert.Equal(EXPECTED.TrimStart(), translated);
         }
 
+        [Fact]
+        public void ShouldTranslateAnExtensionAssignment()
+        {
+            var value = new ExtensionExpression(typeof(int));
+            var extensionVariable = Expression.Variable(value.Type, "ext");
+            var assignment = Expression.Assign(extensionVariable, value);
+
+            var translated = assignment.ToReadableString();
+
+            Assert.Equal("ext = " + value, translated);
+        }
+
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
         {
             existingInts = Expression.Variable(typeof(List<int>), "ints");

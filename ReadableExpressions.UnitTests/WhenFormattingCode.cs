@@ -971,7 +971,22 @@ ints.Add(
 
     internal class ExtensionExpression : Expression
     {
+        public ExtensionExpression(Type type = null)
+        {
+            Type = type ?? typeof(object);
+        }
+
         public override ExpressionType NodeType => ExpressionType.Extension;
+
+        public override Type Type { get; }
+
+        protected override Expression VisitChildren(ExpressionVisitor visitor)
+        {
+            // The default implementation of VisitChildren falls over 
+            // if the Expression is not reducible. Short-circuit that 
+            // with this:
+            return this;
+        }
 
         public override string ToString() => "Exteeennndddiiiinnngg";
     }
