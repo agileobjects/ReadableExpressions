@@ -2,10 +2,16 @@
 {
     using System;
     using System.IO;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingDebugInfo
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingDebugInfo : TestClassBase
     {
         [Fact]
         public void ShouldTranslateDebugInfo()
@@ -13,16 +19,16 @@
             var tempFileName = Path.GetTempFileName();
             var debugInfoFile = Expression.SymbolDocument(tempFileName);
             var debugInfo = Expression.DebugInfo(debugInfoFile, 1, 1, 2, 100);
-            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
             var debuggedBlock = Expression.Block(debugInfo, writeHello.Body);
 
-            var translated = debuggedBlock.ToReadableString();
+            var translated = ToReadableString(debuggedBlock);
 
             var expected = $@"
 // Debug to {tempFileName}, 1, 1 -> 2, 100
 Console.WriteLine(""Hello"");";
 
-            Assert.Equal(expected.TrimStart(), translated);
+            translated.ShouldBe(expected.TrimStart());
         }
 
         [Fact]
@@ -31,16 +37,16 @@ Console.WriteLine(""Hello"");";
             var tempFileName = Path.GetTempFileName();
             var debugInfoFile = Expression.SymbolDocument(tempFileName);
             var clearDebugInfo = Expression.ClearDebugInfo(debugInfoFile);
-            Expression<Action> writeHello = () => Console.WriteLine("Hello");
+            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
             var debuggedBlock = Expression.Block(writeHello.Body, clearDebugInfo);
 
-            var translated = debuggedBlock.ToReadableString();
+            var translated = ToReadableString(debuggedBlock);
 
             var expected = $@"
 Console.WriteLine(""Hello"");
 // Clear debug info from {tempFileName}";
 
-            Assert.Equal(expected.TrimStart(), translated);
+            translated.ShouldBe(expected.TrimStart());
         }
     }
 }

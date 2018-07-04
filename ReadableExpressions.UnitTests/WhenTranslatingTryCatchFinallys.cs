@@ -2,20 +2,26 @@
 {
     using System;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingTryCatchFinallys
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingTryCatchFinallys : TestClassBase
     {
         [Fact]
         public void ShouldTranslateATryWithATopLevelGlobalCatch()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
             var exception = Expression.Variable(typeof(Exception), "ex");
             var globalCatch = Expression.Catch(exception, Expression.Empty());
             var tryCatch = Expression.TryCatch(writeHello.Body, globalCatch);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -25,18 +31,18 @@ try
 catch
 {
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            EXPECTED.TrimStart().ShouldBe(translated);
         }
 
         [Fact]
         public void ShouldTranslateATryCatch()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
             var exception = Expression.Variable(typeof(TimeoutException), "timeoutEx");
             var timeoutCatch = Expression.Catch(exception, Expression.Empty());
             var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -46,19 +52,19 @@ try
 catch (TimeoutException)
 {
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryWithAFilteredCatch()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
-            Expression<Func<TimeoutException, bool>> filter = timeoutEx => timeoutEx.Data != null;
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
+            var filter = CreateLambda((TimeoutException timeoutEx) => timeoutEx.Data != null);
             var exception = filter.Parameters.First();
             var timeoutCatch = Expression.Catch(exception, Expression.Empty(), filter.Body);
             var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -68,19 +74,19 @@ try
 catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
 {
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAnExplicitExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
-            Expression<Action> writeHello = () => Console.Write("Hello");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
             var rethrow = Expression.Throw(exception);
             var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
             var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -91,7 +97,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/1
@@ -99,12 +105,12 @@ catch
         public void ShouldTranslateATryWithATopLevelCatchWithAnImplicitExceptionRethrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
-            Expression<Action> writeHello = () => Console.WriteLine("Goodbye");
+            var writeHello = CreateLambda(() => Console.WriteLine("Goodbye"));
             var rethrow = Expression.Rethrow();
             var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
             var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -115,21 +121,21 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithExceptionUseAndRethrow()
         {
-            Expression<Action<Exception>> writeException = ex => Console.Write(ex);
+            var writeException = CreateLambda((Exception ex) => Console.Write(ex));
             var exception = writeException.Parameters.First();
-            Expression<Action> writeHello = () => Console.Write("Hello");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
             var rethrow = Expression.Throw(exception);
             var writeExceptionAndRethrow = Expression.Block(writeException.Body, rethrow);
             var globalCatch = Expression.Catch(exception, writeExceptionAndRethrow);
             var tryCatch = Expression.TryCatch(writeHello.Body, globalCatch);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -141,14 +147,14 @@ catch (Exception ex)
     Console.Write(ex);
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAWrappedExceptionThrow()
         {
             var exception = Expression.Variable(typeof(Exception), "ex");
-            Expression<Action> writeBoom = () => Console.Write("BOOM?");
+            var writeBoom = CreateLambda(() => Console.Write("BOOM?"));
 
             var wrappedException = Expression.New(
                 // ReSharper disable once AssignNullToNotNullAttribute
@@ -160,7 +166,7 @@ catch (Exception ex)
             var globalCatch = Expression.Catch(exception, throwWrapped);
             var tryCatch = Expression.TryCatch(writeBoom.Body, globalCatch);
 
-            var translated = tryCatch.ToReadableString();
+            var translated = ToReadableString(tryCatch);
 
             const string EXPECTED = @"
 try
@@ -171,17 +177,17 @@ catch (Exception ex)
 {
     throw new InvalidOperationException(""Wrapped!"", ex);
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryFinally()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
-            Expression<Action> writeGoodbye = () => Console.Write("Goodbye");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
+            var writeGoodbye = CreateLambda(() => Console.Write("Goodbye"));
             var tryFinally = Expression.TryCatchFinally(writeHello.Body, writeGoodbye.Body);
 
-            var translated = tryFinally.ToReadableString();
+            var translated = ToReadableString(tryFinally);
 
             const string EXPECTED = @"
 try
@@ -192,17 +198,17 @@ finally
 {
     Console.Write(""Goodbye"");
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryFault()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
-            Expression<Action> writeBoom = () => Console.Write("Boom");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
+            var writeBoom = CreateLambda(() => Console.Write("Boom"));
             var tryFault = Expression.TryFault(writeHello.Body, writeBoom.Body);
 
-            var translated = tryFault.ToReadableString();
+            var translated = ToReadableString(tryFault);
 
             const string EXPECTED = @"
 try
@@ -213,25 +219,25 @@ fault
 {
     Console.Write(""Boom"");
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateATryCatchFinally()
         {
-            Expression<Action> writeHello = () => Console.Write("Hello");
-            Expression<Action<NotSupportedException>> writeNotSupported = ex => Console.Write("NotSupported!");
+            var writeHello = CreateLambda(() => Console.Write("Hello"));
+            var writeNotSupported = CreateLambda((NotSupportedException ex) => Console.Write("NotSupported!"));
             var notSupportedCatchBlock = Expression.Catch(writeNotSupported.Parameters.First(), writeNotSupported.Body);
-            Expression<Action<Exception>> writeException = ex => Console.Write(ex);
+            var writeException = CreateLambda((Exception ex) => Console.Write(ex));
             var topLevelCatchBlock = Expression.Catch(writeException.Parameters.First(), writeException.Body);
 
-            Expression<Action> writeFinished = () => Console.WriteLine("Finished!");
-            Expression<Action> writeGoodbye = () => Console.Write("Goodbye");
+            var writeFinished = CreateLambda(() => Console.WriteLine("Finished!"));
+            var writeGoodbye = CreateLambda(() => Console.Write("Goodbye"));
             var finallyBlock = Expression.Block(writeFinished.Body, writeGoodbye.Body);
 
             var tryCatchFinally = Expression.TryCatchFinally(writeHello.Body, finallyBlock, notSupportedCatchBlock, topLevelCatchBlock);
 
-            var translated = tryCatchFinally.ToReadableString();
+            var translated = ToReadableString(tryCatchFinally);
 
             const string EXPECTED = @"
 try
@@ -251,7 +257,7 @@ finally
     Console.WriteLine(""Finished!"");
     Console.Write(""Goodbye"");
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 }

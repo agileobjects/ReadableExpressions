@@ -1,12 +1,18 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
-    using System.Linq.Expressions;
     using System.Security;
     using System.Security.Policy;
+#if !NET35
     using Microsoft.CSharp.RuntimeBinder;
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
+    [NUnit.Framework.TestFixture]
+#endif
     public class WhenUsingPartialTrust
     {
         [Fact]
@@ -18,6 +24,7 @@
             });
         }
 
+#if !NET35
         [Fact]
         public void ShouldTranslateADynamicExpression()
         {
@@ -26,6 +33,7 @@
                 helper.TestDynamicExpressionTranslation();
             });
         }
+#endif
 
         [Fact]
         public void ShouldTranslateAValueTypeTypeEqualExpression()
@@ -51,12 +59,20 @@
 
             try
             {
+#if NET35
+                var evidence = new Evidence(new object[] { new Zone(SecurityZone.Internet) }, new object[0]);
+#else
                 var evidence = new Evidence();
                 evidence.AddHostEvidence(new Zone(SecurityZone.Internet));
-
+#endif
                 var permissions = new NamedPermissionSet(
                     "PartialTrust",
-                    SecurityManager.GetStandardSandbox(evidence));
+#if NET35
+                    new NamedPermissionSet("Internet")
+#else
+                    SecurityManager.GetStandardSandbox(evidence)
+#endif
+                    );
 
                 partialTrustDomain = AppDomain.CreateDomain(
                     "PartialTrust",
@@ -88,11 +104,12 @@
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var assignment = Expression.Assign(intVariable, Expression.Constant(0));
-            var translated = assignment.ToReadableString();
+            var translated = TestClassBase.ToReadableString(assignment);
 
-            Assert.Equal("i = 0", translated);
+            translated.ShouldBe("i = 0");
         }
 
+#if !NET35
         public void TestDynamicExpressionTranslation()
         {
             var lengthGetterSiteBinder = Binder.GetMember(
@@ -115,25 +132,26 @@
 
             var translated = dynamicLengthLambda.ToReadableString();
 
-            Assert.Equal("obj => obj.Length", translated);
+            translated.ShouldBe("obj => obj.Length");
         }
+#endif
 
         public void TestIntTypeEqualExpressionTranslation()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
-            var translated = intIsLong.ToReadableString();
+            var translated = TestClassBase.ToReadableString(intIsLong);
 
-            Assert.Equal("(i TypeOf typeof(long))", translated);
+            translated.ShouldBe("(i TypeOf typeof(long))");
         }
 
         public void TestObjectTypeEqualExpressionTranslation()
         {
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
-            var translated = objectIsString.ToReadableString();
+            var translated = TestClassBase.ToReadableString(objectIsString);
 
-            Assert.Equal("(o is string)", translated);
+            translated.ShouldBe("(o is string)");
         }
     }
 }

@@ -1,103 +1,105 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
-    using System;
-    using System.Linq.Expressions;
+#if !NET35
     using Xunit;
+#else
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingStringConcatenation
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingStringConcatenation : TestClassBase
     {
         [Fact]
         public void ShouldTranslateATwoArgumentConcatenation()
         {
-            Expression<Func<string, string, string>> concat = (str1, str2) => str1 + str2;
+            var concat = CreateLambda((string str1, string str2) => str1 + str2);
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("str1 + str2", translated);
+            translated.ShouldBe("str1 + str2");
         }
 
         [Fact]
         public void ShouldTranslateAThreeArgumentConcatenation()
         {
-            Expression<Func<string, string, string, string>> concat = (str1, str2, str3) => str1 + str2 + str3;
+            var concat = CreateLambda((string str1, string str2, string str3) => str1 + str2 + str3);
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("str1 + str2 + str3", translated);
+            translated.ShouldBe("str1 + str2 + str3");
         }
 
         [Fact]
         public void ShouldTranslateAMixedTypeTwoArgumentConcatenation()
         {
-            Expression<Func<string, int, string>> concat = (str1, i) => i + str1;
+            var concat = CreateLambda((string str1, int i) => i + str1);
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("i + str1", translated);
+            translated.ShouldBe("i + str1");
         }
 
         [Fact]
         public void ShouldExcludeAnExplictParameterlessToStringCall()
         {
-            Expression<Func<string, int, string>> concat = (str1, i) => i.ToString() + str1;
+            var concat = CreateLambda((string str1, int i) => i.ToString() + str1);
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("i + str1", translated);
+            translated.ShouldBe("i + str1");
         }
 
         [Fact]
         public void ShouldTranslateAnExplicitTwoArgumentConcatenation()
         {
-            Expression<Func<string, string, string>> concat = (str1, str2) => string.Concat(str1, str2);
+            var concat = CreateLambda((string str1, string str2) => string.Concat(str1, str2));
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("str1 + str2", translated);
+            translated.ShouldBe("str1 + str2");
         }
 
         [Fact]
         public void ShouldTranslateAnExplicitThreeArgumentConcatenation()
         {
-            Expression<Func<string, string, string, string>> concat =
-                (str1, str2, str3) => string.Concat(str1, str2, str3);
+            var concat = CreateLambda((string str1, string str2, string str3)
+                => string.Concat(str1, str2, str3));
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("str1 + str2 + str3", translated);
+            translated.ShouldBe("str1 + str2 + str3");
         }
 
         [Fact]
         public void ShouldTranslateAnExplicitMixedTypeThreeArgumentConcatenation()
         {
-            Expression<Func<string, int, long, string>> concat = (str1, i, l) => string.Concat(str1, i, l);
+            var concat = CreateLambda((string str1, int i, long l) => string.Concat(str1, i, l));
 
-            var translated = concat.Body.ToReadableString();
+            var translated = ToReadableString(concat.Body);
 
-            Assert.Equal("str1 + i + l", translated);
+            translated.ShouldBe("str1 + i + l");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/12
         [Fact]
         public void ShouldMaintainTernaryOperandParentheses()
         {
-            Expression<Func<bool, string, string, string>> ternaryResultAdder =
-                (condition, ifTrue, ifFalse) => (condition ? ifTrue : ifFalse) + "Hello!";
+            var ternaryResultAdder = CreateLambda((bool condition, string ifTrue, string ifFalse)
+                => (condition ? ifTrue : ifFalse) + "Hello!");
 
-            var translated = ternaryResultAdder.Body.ToReadableString();
+            var translated = ToReadableString(ternaryResultAdder.Body);
 
-            Assert.Equal("(condition ? ifTrue : ifFalse) + \"Hello!\"", translated);
+            translated.ShouldBe("(condition ? ifTrue : ifFalse) + \"Hello!\"");
         }
 
         [Fact]
         public void ShouldMaintainNumericOperandParentheses()
         {
-            Expression<Func<int, int, int, string>> mathResultAdder =
-                (i, j, k) => ((i - j) / k) + " Maths!";
+            var mathResultAdder = CreateLambda((int i, int j, int k) => ((i - j) / k) + " Maths!");
 
-            var translated = mathResultAdder.Body.ToReadableString();
+            var translated = ToReadableString(mathResultAdder.Body);
 
-            Assert.Equal("((i - j) / k) + \" Maths!\"", translated);
+            translated.ShouldBe("((i - j) / k) + \" Maths!\"");
         }
     }
 }

@@ -5,20 +5,26 @@
     using System.Data.Common;
     using System.IO;
     using System.Linq;
-    using System.Linq.Expressions;
     using System.Text.RegularExpressions;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingConstants
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingConstants : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAString()
         {
             var stringConstant = Expression.Constant("hello!", typeof(string));
 
-            var translated = stringConstant.ToReadableString();
+            var translated = ToReadableString(stringConstant);
 
-            Assert.Equal("\"hello!\"", translated);
+            translated.ShouldBe("\"hello!\"");
         }
 
         [Fact]
@@ -26,9 +32,9 @@
         {
             var boolConstant = Expression.Constant(true, typeof(bool));
 
-            var translated = boolConstant.ToReadableString();
+            var translated = ToReadableString(boolConstant);
 
-            Assert.Equal("true", translated);
+            translated.ShouldBe("true");
         }
 
         [Fact]
@@ -36,9 +42,9 @@
         {
             var longConstant = Expression.Constant(123L, typeof(long));
 
-            var translated = longConstant.ToReadableString();
+            var translated = ToReadableString(longConstant);
 
-            Assert.Equal("123L", translated);
+            translated.ShouldBe("123L");
         }
 
         [Fact]
@@ -46,9 +52,9 @@
         {
             var floatConstant = Expression.Constant(890.0f, typeof(float));
 
-            var translated = floatConstant.ToReadableString();
+            var translated = ToReadableString(floatConstant);
 
-            Assert.Equal("890f", translated);
+            translated.ShouldBe("890f");
         }
 
         [Fact]
@@ -56,9 +62,9 @@
         {
             var floatConstant = Expression.Constant(12.34f, typeof(float?));
 
-            var translated = floatConstant.ToReadableString();
+            var translated = ToReadableString(floatConstant);
 
-            Assert.Equal("12.34f", translated);
+            translated.ShouldBe("12.34f");
         }
 
         [Fact]
@@ -66,9 +72,9 @@
         {
             var decimalConstant = Expression.Constant(456.00m, typeof(decimal?));
 
-            var translated = decimalConstant.ToReadableString();
+            var translated = ToReadableString(decimalConstant);
 
-            Assert.Equal("456m", translated);
+            translated.ShouldBe("456m");
         }
 
         [Fact]
@@ -76,9 +82,9 @@
         {
             var decimalConstant = Expression.Constant(6373282.64738m, typeof(decimal));
 
-            var translated = decimalConstant.ToReadableString();
+            var translated = ToReadableString(decimalConstant);
 
-            Assert.Equal("6373282.64738m", translated);
+            translated.ShouldBe("6373282.64738m");
         }
 
         [Fact]
@@ -86,9 +92,9 @@
         {
             var doubleConstant = Expression.Constant(999.0, typeof(double));
 
-            var translated = doubleConstant.ToReadableString();
+            var translated = ToReadableString(doubleConstant);
 
-            Assert.Equal("999d", translated);
+            translated.ShouldBe("999d");
         }
 
         [Fact]
@@ -96,9 +102,9 @@
         {
             var doubleConstant = Expression.Constant(64739.7, typeof(double));
 
-            var translated = doubleConstant.ToReadableString();
+            var translated = ToReadableString(doubleConstant);
 
-            Assert.Equal("64739.7d", translated);
+            translated.ShouldBe("64739.7d");
         }
 
         [Fact]
@@ -106,9 +112,9 @@
         {
             var typeConstant = Expression.Constant(typeof(long), typeof(Type));
 
-            var translated = typeConstant.ToReadableString();
+            var translated = ToReadableString(typeConstant);
 
-            Assert.Equal("typeof(long)", translated);
+            translated.ShouldBe("typeof(long)");
         }
 
         [Fact]
@@ -119,9 +125,9 @@
             // ReSharper disable once PossibleMistakenCallToGetType.2
             var typeConstant = Expression.Constant(value, value.GetType());
 
-            var translated = typeConstant.ToReadableString();
+            var translated = ToReadableString(typeConstant);
 
-            Assert.Equal("typeof(Dictionary<string, DateTime>)", translated);
+            translated.ShouldBe("typeof(Dictionary<string, DateTime>)");
         }
 
         [Fact]
@@ -129,9 +135,9 @@
         {
             var nullConstant = Expression.Constant(null, typeof(object));
 
-            var translated = nullConstant.ToReadableString();
+            var translated = ToReadableString(nullConstant);
 
-            Assert.Equal("null", translated);
+            translated.ShouldBe("null");
         }
 
         [Fact]
@@ -139,9 +145,9 @@
         {
             var enumConstant = Expression.Constant(OddNumber.One, typeof(OddNumber));
 
-            var translated = enumConstant.ToReadableString();
+            var translated = ToReadableString(enumConstant);
 
-            Assert.Equal("OddNumber.One", translated);
+            translated.ShouldBe("OddNumber.One");
         }
 
         [Fact]
@@ -149,9 +155,9 @@
         {
             var dateConstant = Expression.Constant(default(DateTime));
 
-            var translated = dateConstant.ToReadableString();
+            var translated = ToReadableString(dateConstant);
 
-            Assert.Equal("default(DateTime)", translated);
+            translated.ShouldBe("default(DateTime)");
         }
 
         [Fact]
@@ -159,9 +165,9 @@
         {
             var dateConstant = Expression.Constant(new DateTime(2015, 07, 02));
 
-            var translated = dateConstant.ToReadableString();
+            var translated = ToReadableString(dateConstant);
 
-            Assert.Equal("new DateTime(2015, 07, 02)", translated);
+            translated.ShouldBe("new DateTime(2015, 07, 02)");
         }
 
         [Fact]
@@ -169,9 +175,9 @@
         {
             var dateConstant = Expression.Constant(new DateTime(2016, 08, 01, 10, 23, 45));
 
-            var translated = dateConstant.ToReadableString();
+            var translated = ToReadableString(dateConstant);
 
-            Assert.Equal("new DateTime(2016, 08, 01, 10, 23, 45)", translated);
+            translated.ShouldBe("new DateTime(2016, 08, 01, 10, 23, 45)");
         }
 
         [Fact]
@@ -179,9 +185,9 @@
         {
             var dateConstant = Expression.Constant(new DateTime(2017, 01, 10, 00, 00, 00, 123));
 
-            var translated = dateConstant.ToReadableString();
+            var translated = ToReadableString(dateConstant);
 
-            Assert.Equal("new DateTime(2017, 01, 10, 00, 00, 00, 123)", translated);
+            translated.ShouldBe("new DateTime(2017, 01, 10, 00, 00, 00, 123)");
         }
 
         [Fact]
@@ -189,9 +195,9 @@
         {
             var timeSpanConstant = Expression.Constant(default(TimeSpan));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("default(TimeSpan)", translated);
+            translated.ShouldBe("default(TimeSpan)");
         }
 
         [Fact]
@@ -199,9 +205,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromDays(1));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromDays(1)", translated);
+            translated.ShouldBe("TimeSpan.FromDays(1)");
         }
 
         [Fact]
@@ -209,9 +215,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromHours(2));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromHours(2)", translated);
+            translated.ShouldBe("TimeSpan.FromHours(2)");
         }
 
         [Fact]
@@ -219,9 +225,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromMinutes(10));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromMinutes(10)", translated);
+            translated.ShouldBe("TimeSpan.FromMinutes(10)");
         }
 
         [Fact]
@@ -229,9 +235,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromSeconds(58));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromSeconds(58)", translated);
+            translated.ShouldBe("TimeSpan.FromSeconds(58)");
         }
 
         [Fact]
@@ -239,9 +245,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromMilliseconds(923));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromMilliseconds(923)", translated);
+            translated.ShouldBe("TimeSpan.FromMilliseconds(923)");
         }
 
         [Fact]
@@ -249,9 +255,9 @@
         {
             var timeSpanConstant = Expression.Constant(TimeSpan.FromTicks(428));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("TimeSpan.FromTicks(428)", translated);
+            translated.ShouldBe("TimeSpan.FromTicks(428)");
         }
 
         [Fact]
@@ -259,9 +265,9 @@
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(2, 3, 4, 5, 6));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("new TimeSpan(2, 3, 4, 5, 6)", translated);
+            translated.ShouldBe("new TimeSpan(2, 3, 4, 5, 6)");
         }
 
         [Fact]
@@ -269,9 +275,9 @@
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(3, 4, 5, 6));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("new TimeSpan(3, 4, 5, 6)", translated);
+            translated.ShouldBe("new TimeSpan(3, 4, 5, 6)");
         }
 
         [Fact]
@@ -279,9 +285,9 @@
         {
             var timeSpanConstant = Expression.Constant(new TimeSpan(6, 5, 4));
 
-            var translated = timeSpanConstant.ToReadableString();
+            var translated = ToReadableString(timeSpanConstant);
 
-            Assert.Equal("new TimeSpan(6, 5, 4)", translated);
+            translated.ShouldBe("new TimeSpan(6, 5, 4)");
         }
 
         [Fact]
@@ -289,9 +295,9 @@
         {
             var nullStringConstant = Expression.Default(typeof(string));
 
-            var translated = nullStringConstant.ToReadableString();
+            var translated = ToReadableString(nullStringConstant);
 
-            Assert.Equal("null", translated);
+            translated.ShouldBe("null");
         }
 
         [Fact]
@@ -299,9 +305,9 @@
         {
             var stringConstant = Expression.Constant("Escape: \"THIS\"!");
 
-            var translated = stringConstant.ToReadableString();
+            var translated = ToReadableString(stringConstant);
 
-            Assert.Equal("\"Escape: \\\"THIS\\\"!\"", translated);
+            translated.ShouldBe("\"Escape: \\\"THIS\\\"!\"");
         }
 
         [Fact]
@@ -309,9 +315,9 @@
         {
             var guidConstant = Expression.Constant(default(Guid));
 
-            var translated = guidConstant.ToReadableString();
+            var translated = ToReadableString(guidConstant);
 
-            Assert.Equal("default(Guid)", translated);
+            translated.ShouldBe("default(Guid)");
         }
 
         [Fact]
@@ -319,9 +325,9 @@
         {
             var regexConstant = Expression.Constant(new Regex("^[0-9]+$"));
 
-            var translated = regexConstant.ToReadableString();
+            var translated = ToReadableString(regexConstant);
 
-            Assert.Equal("Regex /* ^[0-9]+$ */", translated);
+            translated.ShouldBe("Regex /* ^[0-9]+$ */");
         }
 
         [Fact]
@@ -330,9 +336,9 @@
             Func<object> stringFactory = () => "Factory!";
             var funcConstant = Expression.Constant(stringFactory);
 
-            var translated = funcConstant.ToReadableString();
+            var translated = ToReadableString(funcConstant);
 
-            Assert.Equal("Func<object>", translated);
+            translated.ShouldBe("Func<object>");
         }
 
         [Fact]
@@ -341,9 +347,9 @@
             Action<int, long> numberAdder = (i, l) => Console.WriteLine(i + l);
             var actionConstant = Expression.Constant(numberAdder);
 
-            var translated = actionConstant.ToReadableString();
+            var translated = ToReadableString(actionConstant);
 
-            Assert.Equal("Action<int, long>", translated);
+            translated.ShouldBe("Action<int, long>");
         }
 
         [Fact]
@@ -352,9 +358,9 @@
             Action<IDictionary<object, List<string>>> dictionaryPrinter = Console.WriteLine;
             var actionConstant = Expression.Constant(dictionaryPrinter);
 
-            var translated = actionConstant.ToReadableString();
+            var translated = ToReadableString(actionConstant);
 
-            Assert.Equal("Action<IDictionary<object, List<string>>>", translated);
+            translated.ShouldBe("Action<IDictionary<object, List<string>>>");
         }
 
         [Fact]
@@ -368,9 +374,9 @@
 
             var funcConstant = Expression.Constant(dictionaryFactory);
 
-            var translated = funcConstant.ToReadableString();
+            var translated = ToReadableString(funcConstant);
 
-            Assert.Equal("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>", translated);
+            translated.ShouldBe("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>");
         }
 
         [Fact]
@@ -380,9 +386,9 @@
 
             var actionConstant = Expression.Constant(genericAction);
 
-            var translated = actionConstant.ToReadableString();
+            var translated = ToReadableString(actionConstant);
 
-            Assert.Equal("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>", translated);
+            translated.ShouldBe("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/5
@@ -394,9 +400,9 @@
             var dbNull = Expression.Constant(DBNull.Value, typeof(DBNull));
             var setParamToDbNull = Expression.Assign(parameterValue, dbNull);
 
-            var translated = setParamToDbNull.ToReadableString();
+            var translated = ToReadableString(setParamToDbNull);
 
-            Assert.Equal("param.Value = DBNull.Value", translated);
+            translated.ShouldBe("param.Value = DBNull.Value");
         }
 
         [Fact]
@@ -404,24 +410,24 @@
         {
             var objectConstant = Expression.Constant(123, typeof(object));
 
-            var translated = objectConstant.ToReadableString();
+            var translated = ToReadableString(objectConstant);
 
-            Assert.Equal("123", translated);
+            translated.ShouldBe("123");
         }
 
         [Fact]
         public void ShouldTranslateALambdaConstant()
         {
-            Expression<Func<int, int>> lambda =
-                num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index);
+            var lambda = CreateLambda((int num)
+                => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index));
 
             var lambdaConstant = Expression.Constant(lambda, lambda.GetType());
 
-            var translated = lambdaConstant.ToReadableString();
+            var translated = ToReadableString(lambdaConstant);
 
             const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 

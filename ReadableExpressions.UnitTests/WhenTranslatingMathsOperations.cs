@@ -1,19 +1,25 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingMathsOperations
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingMathsOperations : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAnAdditionExpression()
         {
-            Expression<Func<int, int, int>> addInts = (i1, i2) => i1 + i2;
+            var addInts = CreateLambda((int i1, int i2) => i1 + i2);
 
-            var translated = addInts.ToReadableString();
+            var translated = ToReadableString(addInts);
 
-            Assert.Equal("(i1, i2) => i1 + i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 + i2");
         }
 
         [Fact]
@@ -28,19 +34,19 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 intParameter1,
                 intParameter2);
 
-            var translated = checkedAdditionLambda.ToReadableString();
+            var translated = ToReadableString(checkedAdditionLambda);
 
-            Assert.Equal("(a, b) => checked(a + b)", translated);
+            translated.ShouldBe("(a, b) => checked(a + b)");
         }
 
         [Fact]
         public void ShouldTranslateASubtractionExpression()
         {
-            Expression<Func<int, int, int>> subtractInts = (i1, i2) => i1 - i2;
+            var subtractInts = CreateLambda((int i1, int i2) => i1 - i2);
 
-            var translated = subtractInts.ToReadableString();
+            var translated = ToReadableString(subtractInts);
 
-            Assert.Equal("(i1, i2) => i1 - i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 - i2");
         }
 
         [Fact]
@@ -55,19 +61,19 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 intParameter1,
                 intParameter2);
 
-            var translated = checkedSubtractionLambda.ToReadableString();
+            var translated = ToReadableString(checkedSubtractionLambda);
 
-            Assert.Equal("(a, b) => checked(a - b)", translated);
+            translated.ShouldBe("(a, b) => checked(a - b)");
         }
 
         [Fact]
         public void ShouldTranslateANegationExpression()
         {
-            Expression<Func<int, int>> negateInts = i => -i;
+            var negateInts = CreateLambda((int i) => -i);
 
-            var translated = negateInts.ToReadableString();
+            var translated = ToReadableString(negateInts);
 
-            Assert.Equal("i => -i", translated);
+            translated.ShouldBe("i => -i");
         }
 
         [Fact]
@@ -77,25 +83,25 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var checkedNegation = Expression.NegateChecked(intParameter);
             var checkedNegationLambda = Expression.Lambda<Func<int, int>>(checkedNegation, intParameter);
 
-            var translated = checkedNegationLambda.ToReadableString();
+            var translated = ToReadableString(checkedNegationLambda);
 
-            Assert.Equal("i => -i", translated);
+            translated.ShouldBe("i => -i");
         }
 
         [Fact]
         public void ShouldTranslateAMultiplicationExpression()
         {
-            Expression<Func<int, int, int>> multiplyInts = (i1, i2) => i1 * i2;
+            var multiplyInts = CreateLambda((int i1, int i2) => i1 * i2);
 
-            var translated = multiplyInts.ToReadableString();
+            var translated = ToReadableString(multiplyInts);
 
-            Assert.Equal("(i1, i2) => i1 * i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 * i2");
         }
 
         [Fact]
         public void ShouldTranslateACheckedMultiplicationExpression()
         {
-            Expression<Action> consoleRead = () => Console.Read();
+            var consoleRead = CreateLambda(() => Console.Read());
 
             var variableOne = Expression.Variable(typeof(int), "one");
             var variableTwo = Expression.Variable(typeof(int), "two");
@@ -114,7 +120,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Expression.Parameter(typeof(int), "i");
             var checkedMultiplication = Expression.MultiplyChecked(valueOneBlock, intVariable);
 
-            var translated = checkedMultiplication.ToReadableString();
+            var translated = ToReadableString(checkedMultiplication);
 
             const string EXPECTED = @"
 checked
@@ -127,7 +133,7 @@ checked
     } * i
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -137,39 +143,39 @@ checked
             var variableTwo = Expression.Variable(typeof(double), "d2");
             var varOneToThePowerOfVarTwo = Expression.Power(variableOne, variableTwo);
 
-            var translated = varOneToThePowerOfVarTwo.ToReadableString();
+            var translated = ToReadableString(varOneToThePowerOfVarTwo);
 
-            Assert.Equal("(d1 ** d2)", translated);
+            translated.ShouldBe("(d1 ** d2)");
         }
 
         [Fact]
         public void ShouldTranslateADivisionExpression()
         {
-            Expression<Func<int, int, int>> divideInts = (i1, i2) => i1 / i2;
+            var divideInts = CreateLambda((int i1, int i2) => i1 / i2);
 
-            var translated = divideInts.ToReadableString();
+            var translated = ToReadableString(divideInts);
 
-            Assert.Equal("(i1, i2) => i1 / i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 / i2");
         }
 
         [Fact]
         public void ShouldTranslateAModuloExpression()
         {
-            Expression<Func<int, int, int>> findModulo = (i1, i2) => i1 % i2;
+            var findModulo = CreateLambda((int i1, int i2) => i1 % i2);
 
-            var translated = findModulo.Body.ToReadableString();
+            var translated = ToReadableString(findModulo.Body);
 
-            Assert.Equal("(i1 % i2)", translated);
+            translated.ShouldBe("(i1 % i2)");
         }
 
         [Fact]
         public void ShouldMaintainExpressionParenthesis()
         {
-            Expression<Func<int, int, int>> operationWithBrackets = (i1, i2) => (i1 / i2) * i1;
+            var operationWithBrackets = CreateLambda((int i1, int i2) => (i1 / i2) * i1);
 
-            var translated = operationWithBrackets.ToReadableString();
+            var translated = ToReadableString(operationWithBrackets);
 
-            Assert.Equal("(i1, i2) => (i1 / i2) * i1", translated);
+            translated.ShouldBe("(i1, i2) => (i1 / i2) * i1");
         }
 
         [Fact]
@@ -178,9 +184,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var increment = Expression.Increment(intVariable);
 
-            var translated = increment.ToReadableString();
+            var translated = ToReadableString(increment);
 
-            Assert.Equal("++i", translated);
+            translated.ShouldBe("++i");
         }
 
         [Fact]
@@ -189,9 +195,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var preIncrement = Expression.PreIncrementAssign(intVariable);
 
-            var translated = preIncrement.ToReadableString();
+            var translated = ToReadableString(preIncrement);
 
-            Assert.Equal("++i", translated);
+            translated.ShouldBe("++i");
         }
 
         [Fact]
@@ -200,9 +206,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var postIncrement = Expression.PostIncrementAssign(intVariable);
 
-            var translated = postIncrement.ToReadableString();
+            var translated = ToReadableString(postIncrement);
 
-            Assert.Equal("i++", translated);
+            translated.ShouldBe("i++");
         }
 
         [Fact]
@@ -211,9 +217,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var decrement = Expression.Decrement(intVariable);
 
-            var translated = decrement.ToReadableString();
+            var translated = ToReadableString(decrement);
 
-            Assert.Equal("--i", translated);
+            translated.ShouldBe("--i");
         }
 
         [Fact]
@@ -222,9 +228,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var preDecrement = Expression.PreDecrementAssign(intVariable);
 
-            var translated = preDecrement.ToReadableString();
+            var translated = ToReadableString(preDecrement);
 
-            Assert.Equal("--i", translated);
+            translated.ShouldBe("--i");
         }
 
         [Fact]
@@ -233,20 +239,19 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var postDecrement = Expression.PostDecrementAssign(intVariable);
 
-            var translated = postDecrement.ToReadableString();
+            var translated = ToReadableString(postDecrement);
 
-            Assert.Equal("i--", translated);
+            translated.ShouldBe("i--");
         }
 
         [Fact]
         public void ShouldMaintainRelevantParentheses()
         {
-            Expression<Func<int, int, int, int>> mather =
-                (i, j, k) => (i + j) * k;
+            var mather = CreateLambda((int i, int j, int k) => (i + j) * k);
 
-            var translated = mather.Body.ToReadableString();
+            var translated = ToReadableString(mather.Body);
 
-            Assert.Equal("((i + j) * k)", translated);
+            translated.ShouldBe("((i + j) * k)");
         }
     }
 }

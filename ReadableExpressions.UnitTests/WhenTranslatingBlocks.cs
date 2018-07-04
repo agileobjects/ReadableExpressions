@@ -4,42 +4,49 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Linq.Expressions;
     using NetStandardPolyfills;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
 
-    public class WhenTranslatingBlocks
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingBlocks : TestClassBase
     {
         [Fact]
         public void ShouldTranslateANoVariableBlockWithNoReturnValue()
         {
-            Expression<Action> writeLine = () => Console.WriteLine();
-            Expression<Func<int>> read = () => Console.Read();
-            Expression<Action> beep = () => Console.Beep();
+            var writeLine = CreateLambda(() => Console.WriteLine());
+            var beep = CreateLambda(() => Console.Beep());
+            var read = CreateLambda(() => Console.Read());
 
             var consoleBlock = Expression.Block(writeLine.Body, read.Body, beep.Body);
 
-            var translated = consoleBlock.ToReadableString();
+            var translated = ToReadableString(consoleBlock);
 
             const string EXPECTED = @"
 Console.WriteLine();
 Console.Read();
 Console.Beep();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateANoVariableBlockLambdaWithAReturnValue()
         {
-            Expression<Action> writeLine = () => Console.WriteLine();
-            Expression<Func<int>> read = () => Console.Read();
+            var writeLine = CreateLambda(() => Console.WriteLine());
+            var read = CreateLambda(() => Console.Read());
             var returnReadResult = Expression.Return(Expression.Label(typeof(int)), read.Body, typeof(int));
 
             var consoleBlock = Expression.Block(writeLine.Body, returnReadResult);
             var consoleLambda = Expression.Lambda<Func<int>>(consoleBlock);
 
-            var translated = consoleLambda.ToReadableString();
+            var translated = ToReadableString(consoleLambda);
 
             const string EXPECTED = @"() =>
 {
@@ -47,7 +54,7 @@ Console.Beep();";
     return Console.Read();
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -64,13 +71,13 @@ Console.Beep();";
                 incrementCount,
                 returnVoid);
 
-            var translated = countBlock.ToReadableString();
+            var translated = ToReadableString(countBlock);
 
             const string EXPECTED = @"
 var count = 0;
 ++count;";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -87,7 +94,7 @@ var count = 0;
 
             var countLambda = Expression.Lambda<Action>(countBlock);
 
-            var translated = countLambda.ToReadableString();
+            var translated = ToReadableString(countLambda);
 
             const string EXPECTED = @"() =>
 {
@@ -95,7 +102,7 @@ var count = 0;
     --count;
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -114,7 +121,7 @@ var count = 0;
 
             var countLambda = Expression.Lambda<Func<ushort>>(countBlock);
 
-            var translated = countLambda.ToReadableString();
+            var translated = ToReadableString(countLambda);
 
             const string EXPECTED = @"() =>
 {
@@ -124,14 +131,14 @@ var count = 0;
     return count;
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnExpression()
         {
             var listVariable = Expression.Variable(typeof(List<int>), "list");
-            Expression<Func<List<int>>> createList = () => new List<int> { 1, 2, 3 };
+            var createList = CreateLambda(() => new List<int> { 1, 2, 3 });
 
             var listAssignment = Expression.Assign(listVariable, createList.Body);
 
@@ -142,7 +149,7 @@ var count = 0;
             var listBlock = Expression.Block(new[] { listVariable }, listAssignment, listToArray);
             var listLambda = Expression.Lambda<Func<int[]>>(listBlock);
 
-            var translated = listLambda.ToReadableString();
+            var translated = ToReadableString(listLambda);
 
             const string EXPECTED = @"() =>
 {
@@ -151,7 +158,7 @@ var count = 0;
     return list.ToArray();
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -166,13 +173,13 @@ var count = 0;
                 assignTenToCount,
                 addTwoToCount);
 
-            var translated = countBlock.ToReadableString();
+            var translated = ToReadableString(countBlock);
 
             const string EXPECTED = @"
 var count = 10;
 count += 2;";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -193,14 +200,14 @@ count += 2;";
                 assignTwoToCountTwo,
                 assignSumToCountThree);
 
-            var translated = countBlock.ToReadableString();
+            var translated = ToReadableString(countBlock);
 
             const string EXPECTED = @"
 var countOne = 1;
 var countTwo = 2;
 var countThree = (byte)(countOne + countTwo);";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -214,7 +221,7 @@ var countThree = (byte)(countOne + countTwo);";
             var countBlock = Expression.Block(new[] { countVariable }, ifResultIsLessThanTenDoNothing);
             var countLambda = Expression.Lambda<Action>(countBlock);
 
-            var translated = countLambda.ToReadableString();
+            var translated = ToReadableString(countLambda);
 
             const string EXPECTED = @"() =>
 {
@@ -225,26 +232,26 @@ var countThree = (byte)(countOne + countTwo);";
     }
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateNestedBlocks()
         {
-            Expression<Action> writeLine = () => Console.WriteLine();
-            Expression<Action> beep = () => Console.Beep();
+            var writeLine = CreateLambda(() => Console.WriteLine());
+            var beep = CreateLambda(() => Console.Beep());
 
             var innerBlock = Expression.Block(writeLine.Body, beep.Body);
             var outerBlock = Expression.Block(innerBlock, writeLine.Body);
 
-            var translated = outerBlock.ToReadableString();
+            var translated = ToReadableString(outerBlock);
 
             const string EXPECTED = @"
 Console.WriteLine();
 Console.Beep();
 Console.WriteLine();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -257,11 +264,11 @@ Console.WriteLine();";
 
             var countLambda = Expression.Lambda<Action>(countBlock);
 
-            var translated = countLambda.ToReadableString();
+            var translated = ToReadableString(countLambda);
 
             const string EXPECTED = "() => false";
 
-            Assert.Equal(EXPECTED, translated);
+            translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
@@ -272,20 +279,20 @@ Console.WriteLine();";
             var intToStringMethod = typeof(int).GetPublicInstanceMethods("ToString").First();
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
             var intToStringBlock = Expression.Block(intToStringCall);
-            Expression<Func<string, StreamReader>> openTextFile = str => File.OpenText(str);
+            var openTextFile = CreateLambda((string str) => File.OpenText(str));
             var openTextFileMethod = ((MethodCallExpression)openTextFile.Body).Method;
             var openTextFileCall = Expression.Call(openTextFileMethod, intToStringBlock);
 
-            var translated = openTextFileCall.ToReadableString();
+            var translated = ToReadableString(openTextFileCall);
 
-            Assert.Equal("File.OpenText(((int)o).ToString())", translated);
+            translated.ShouldBe("File.OpenText(((int)o).ToString())");
         }
 
         [Fact]
         public void ShouldTerminateAMultipleLineMemberInitAssignment()
         {
-            Expression<Action> writeWat = () => Console.WriteLine("Wat");
-            Expression<Func<long>> read = () => Console.Read();
+            var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
+            var read = CreateLambda(() => Console.Read());
 
             var newMemoryStream = Expression.New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");
@@ -302,7 +309,7 @@ Console.WriteLine();";
 
             var ifNullAssign = Expression.IfThen(streamIsNull, assignStream);
 
-            var translated = ifNullAssign.ToReadableString();
+            var translated = ToReadableString(ifNullAssign);
 
             const string EXPECTED = @"
 if (stream == null)
@@ -317,7 +324,7 @@ if (stream == null)
         }
     };
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -338,7 +345,7 @@ if (stream == null)
 
             var switchBlock = Expression.Block(new[] { countVariable }, switchStatement);
 
-            var translated = switchBlock.ToReadableString();
+            var translated = ToReadableString(switchBlock);
 
             const string EXPECTED = @"
 int count;
@@ -357,7 +364,7 @@ switch (i)
         count = 0;
         break;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -384,7 +391,7 @@ switch (i)
 
             var block = Expression.Block(assignCeo, newEmployee);
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
             const string EXPECTED = @"
 var ceo = c.Ceo;
@@ -396,7 +403,7 @@ return new WhenTranslatingBlocks.Employee
         Line1 = ceo.Address.Line1
     }
 };";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -412,9 +419,9 @@ return new WhenTranslatingBlocks.Employee
                 intAssignment,
                 Expression.Label(labelTarget));
 
-            var translated = intAssignmentBlock.ToReadableString();
+            var translated = ToReadableString(intAssignmentBlock);
 
-            Assert.Equal("var i = 0;", translated);
+            translated.ShouldBe("var i = 0;");
         }
 
         [Fact]
@@ -429,14 +436,14 @@ return new WhenTranslatingBlocks.Employee
 
             var coalesceBlock = Expression.Block(assignStrings, variableOrNull);
 
-            var translated = coalesceBlock.ToReadableString();
+            var translated = ToReadableString(coalesceBlock);
 
             const string EXPECTED = @"
 var myString = yourString;
 
 return (myString ?? string.Empty);";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -450,7 +457,7 @@ return (myString ?? string.Empty);";
 
             var tryCatchBlock = Expression.Block(tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -461,7 +468,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -479,7 +486,7 @@ catch
 
             var tryCatchBlock = Expression.Block(tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -493,7 +500,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -511,7 +518,7 @@ catch
 
             var tryCatchBlock = Expression.Block(tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -522,7 +529,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -537,7 +544,7 @@ catch
 
             var tryCatchBlock = Expression.Block(tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -548,7 +555,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -563,7 +570,7 @@ catch
 
             var tryCatchBlock = Expression.Block(tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -574,7 +581,7 @@ catch
 {
     throw;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         #region Helper Classes

@@ -1,22 +1,28 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingGotos
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingGotos : TestClassBase
     {
         [Fact]
         public void ShouldTranslateGotoStatements()
         {
             var labelTargetOne = Expression.Label(typeof(void), "One");
             var labelOne = Expression.Label(labelTargetOne);
-            Expression<Action> writeOne = () => Console.Write("One");
+            var writeOne = CreateLambda(() => Console.Write("One"));
             var gotoOne = Expression.Goto(labelTargetOne);
 
             var labelTargetTwo = Expression.Label(typeof(void), "Two");
             var labelTwo = Expression.Label(labelTargetTwo);
-            Expression<Action> writeTwo = () => Console.Write("Two");
+            var writeTwo = CreateLambda(() => Console.Write("Two"));
             var gotoTwo = Expression.Goto(labelTargetTwo);
 
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -26,7 +32,7 @@
             var ifTwoGotoTwo = Expression.IfThen(intEqualsTwo, gotoTwo);
             var gotoOneOrTwo = Expression.IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
 
-            Expression<Action> writeNeither = () => Console.Write("Neither");
+            var writeNeither = CreateLambda(() => Console.Write("Neither"));
             var returnFromBlock = Expression.Return(Expression.Label());
 
             var block = Expression.Block(
@@ -38,7 +44,7 @@
                 labelTwo,
                 writeTwo.Body);
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
             const string EXPECTED = @"
 if (i == 1)
@@ -59,7 +65,7 @@ Console.Write(""One"");
 Two:
 Console.Write(""Two"");
 ";
-            Assert.Equal(EXPECTED.Trim(), translated);
+            translated.ShouldBe(EXPECTED.Trim());
         }
 
         [Fact]
@@ -77,7 +83,7 @@ Console.Write(""Two"");
 
             var ifTrueGoto = Expression.IfThen(Expression.Constant(true), gotoBlock);
 
-            var translated = ifTrueGoto.ToReadableString();
+            var translated = ToReadableString(ifTrueGoto);
 
             const string EXPECTED = @"
 if (true)
@@ -88,7 +94,7 @@ One:
 Two:
     goto One;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -107,7 +113,7 @@ Two:
             var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
-            var translated = gotoLambda.ToReadableString();
+            var translated = ToReadableString(gotoLambda);
 
             const string EXPECTED = @"
 i =>
@@ -119,7 +125,7 @@ i =>
 
     return 0;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -141,7 +147,7 @@ i =>
             var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
-            var translated = gotoLambda.ToReadableString();
+            var translated = ToReadableString(gotoLambda);
 
             const string EXPECTED = @"
 i =>
@@ -157,7 +163,7 @@ i =>
 
     return 0;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -175,7 +181,7 @@ i =>
                 ifLessThanOneReturnTrue,
                 Expression.Label(returnLabelTarget, Expression.Constant(false)));
 
-            var translated = testBlock.ToReadableString();
+            var translated = ToReadableString(testBlock);
 
             const string EXPECTED = @"
 if (i < 1)
@@ -185,7 +191,7 @@ if (i < 1)
 
 return false;";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -221,9 +227,9 @@ return
     return i;
 };";
 
-            var translated = returnBlock.ToReadableString();
+            var translated = ToReadableString(returnBlock);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -258,9 +264,9 @@ return
 
     return i;
 };";
-            var translated = returnBlock.ToReadableString();
+            var translated = ToReadableString(returnBlock);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 }

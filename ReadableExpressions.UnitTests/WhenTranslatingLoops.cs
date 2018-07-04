@@ -1,25 +1,31 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingLoops
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingLoops : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAnInfiniteLoop()
         {
-            Expression<Action> writeLine = () => Console.WriteLine();
+            var writeLine = CreateLambda(() => Console.WriteLine());
             var loop = Expression.Loop(writeLine.Body);
 
-            var translated = loop.ToReadableString();
+            var translated = ToReadableString(loop);
 
             const string EXPECTED = @"
 while (true)
 {
     Console.WriteLine();
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -29,12 +35,12 @@ while (true)
             var intGreaterThanTwo = Expression.GreaterThan(intVariable, Expression.Constant(2));
             var breakLoop = Expression.Break(Expression.Label());
             var ifGreaterThanTwoBreak = Expression.IfThen(intGreaterThanTwo, breakLoop);
-            Expression<Action> writeLine = () => Console.WriteLine();
+            var writeLine = CreateLambda(() => Console.WriteLine());
             var incrementVariable = Expression.Increment(intVariable);
             var loopBody = Expression.Block(ifGreaterThanTwoBreak, writeLine.Body, incrementVariable);
             var loop = Expression.Loop(loopBody, breakLoop.Target);
 
-            var translated = loop.ToReadableString();
+            var translated = ToReadableString(loop);
 
             const string EXPECTED = @"
 while (true)
@@ -47,7 +53,7 @@ while (true)
     Console.WriteLine();
     ++i;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -59,12 +65,12 @@ while (true)
             var continueLoop = Expression.Continue(Expression.Label());
             var incrementAndContinue = Expression.Block(incrementVariable, continueLoop);
             var ifLessThanThreeContinue = Expression.IfThen(intLessThanThree, incrementAndContinue);
-            Expression<Action> writeFinished = () => Console.Write("Finished!");
+            var writeFinished = CreateLambda(() => Console.Write("Finished!"));
             var returnFromLoop = Expression.Return(Expression.Label());
             var loopBody = Expression.Block(ifLessThanThreeContinue, writeFinished.Body, returnFromLoop);
             var loop = Expression.Loop(loopBody, returnFromLoop.Target, continueLoop.Target);
 
-            var translated = loop.ToReadableString();
+            var translated = ToReadableString(loop);
 
             const string EXPECTED = @"
 while (true)
@@ -78,7 +84,7 @@ while (true)
     Console.Write(""Finished!"");
     return;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 }

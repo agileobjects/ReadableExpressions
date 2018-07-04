@@ -1,79 +1,85 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Linq;
+#if !NET35
     using System.ComponentModel.DataAnnotations;
     using System.Data.Entity;
-    using System.Linq;
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingLambdas
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingLambdas : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAParameterlessLambda()
         {
-            Expression<Func<int>> returnOneThousand = () => 1000;
+            var returnOneThousand = CreateLambda(() => 1000);
 
-            var translated = returnOneThousand.ToReadableString();
+            var translated = ToReadableString(returnOneThousand);
 
-            Assert.Equal("() => 1000", translated);
+            translated.ShouldBe("() => 1000");
         }
 
         [Fact]
         public void ShouldTranslateASingleParameterLambda()
         {
-            Expression<Func<int, int>> returnArgumentPlusOneTen = i => i + 10;
+            var returnArgumentPlusOneTen = CreateLambda((int i) => i + 10);
 
-            var translated = returnArgumentPlusOneTen.ToReadableString();
+            var translated = ToReadableString(returnArgumentPlusOneTen);
 
-            Assert.Equal("i => i + 10", translated);
+            translated.ShouldBe("i => i + 10");
         }
 
         [Fact]
         public void ShouldTranslateAMultipleParameterLambda()
         {
-            Expression<Func<string, string, int>> convertStringsToInt = (str1, str2) => int.Parse(str1) + int.Parse(str2);
+            var convertStringsToInt = CreateLambda((string str1, string str2) => int.Parse(str1) + int.Parse(str2));
 
-            var translated = convertStringsToInt.ToReadableString();
+            var translated = ToReadableString(convertStringsToInt);
 
-            Assert.Equal("(str1, str2) => int.Parse(str1) + int.Parse(str2)", translated);
+            translated.ShouldBe("(str1, str2) => int.Parse(str1) + int.Parse(str2)");
         }
 
         [Fact]
         public void ShouldTranslateALambdaInvocation()
         {
-            Expression<Action> writeLine = () => Console.WriteLine();
+            var writeLine = CreateLambda(() => Console.WriteLine());
             var writeLineInvocation = Expression.Invoke(writeLine);
 
-            var translated = writeLineInvocation.ToReadableString();
+            var translated = ToReadableString(writeLineInvocation);
 
-            Assert.Equal("(() => Console.WriteLine()).Invoke()", translated);
+            translated.ShouldBe("(() => Console.WriteLine()).Invoke()");
         }
 
         // see http://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do
         [Fact]
         public void ShouldTranslateAQuotedLambda()
         {
-            Expression<Func<int, double>> intToDouble = i => i;
+            var intToDouble = CreateLambda((int i) => (double)i);
 
             var quotedLambda = Expression.Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString();
+            var translated = ToReadableString(quotedLambda);
 
-            Assert.Equal("i => (double)i", translated);
+            translated.ShouldBe("i => (double)i");
         }
 
         [Fact]
         public void ShouldTranslateAQuotedLambdaQueryableProjection()
         {
-            Expression<Func<IQueryable<int>, IQueryable<object>>> project =
-                items => items.Select(item => new { Number = item });
+            var project = CreateLambda((IQueryable<int> items) => items.Select(item => new { Number = item }));
 
-            var translated = project.Body.ToReadableString();
+            var translated = ToReadableString(project.Body);
 
-            Assert.Equal("items.Select(item => new { Number = item })", translated);
+            translated.ShouldBe("items.Select(item => new { Number = item })");
         }
 
+#if !NET35
         [Fact]
         public void ShouldTranslateADbSetQueryExpression()
         {
@@ -99,8 +105,9 @@ ObjectQuery<WhenTranslatingLambdas.Product>
         Name = p.Name
     })";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
+#endif
 
         [Fact]
         public void ShouldTranslateANestedQuotedLambda()
@@ -112,25 +119,25 @@ ObjectQuery<WhenTranslatingLambdas.Product>
             var quotedInnerLambda = Expression.Quote(additionInnerLambda);
             var additionOuterLambda = Expression.Lambda(quotedInnerLambda, intA);
 
-            var translated = additionOuterLambda.ToReadableString();
+            var translated = ToReadableString(additionOuterLambda);
 
-            Assert.Equal("a => b => a + b", translated);
+            translated.ShouldBe("a => b => a + b");
         }
 
         [Fact]
         public void ShouldTranslateQuotedLambdaWithAnAnnotation()
         {
-            Expression<Func<int, double>> intToDouble = i => i;
+            var intToDouble = CreateLambda((int i) => (double)i);
 
             var quotedLambda = Expression.Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString(o => o.ShowQuotedLambdaComments);
+            var translated = ToReadableString(quotedLambda, o => o.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
     // Quoted to induce a closure:
     i => (double)i";
 
-            Assert.Equal(EXPECTED, translated);
+            translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
@@ -140,11 +147,12 @@ ObjectQuery<WhenTranslatingLambdas.Product>
             var intVariable2 = Expression.Variable(typeof(int), "i2");
             var runtimeVariables = Expression.RuntimeVariables(intVariable1, intVariable2);
 
-            var translated = runtimeVariables.ToReadableString();
+            var translated = ToReadableString(runtimeVariables);
 
-            Assert.Equal("(i1, i2)", translated);
+            translated.ShouldBe("(i1, i2)");
         }
 
+#if !NET35
         #region Helper Methods
 
         private class TestDbContext : DbContext
@@ -162,5 +170,6 @@ ObjectQuery<WhenTranslatingLambdas.Product>
         }
 
         #endregion
+#endif
     }
 }
