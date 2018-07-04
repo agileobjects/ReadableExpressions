@@ -114,7 +114,6 @@
     </Compile>
     <Compile Include="Extensions\WhenGettingAParentExpressionNode.cs" />
     <Compile Include="Extensions\WhenGettingFriendlyNames.cs" />
-    <Compile Include="LinqExpressionToDlrExpressionConverter.cs" />
     <Compile Include="ShouldExtensions.cs" />
     <Compile Include="TestClassBase.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />

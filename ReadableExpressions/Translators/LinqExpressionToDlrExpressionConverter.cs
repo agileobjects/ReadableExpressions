@@ -1,11 +1,20 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Net35
+﻿#if NET35
+namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using Microsoft.Scripting.Ast;
+    using Expression = Microsoft.Scripting.Ast.Expression;
     using LinqExp = System.Linq.Expressions;
 
-    internal static class LinqExpressionToDlrExpressionConverter
+    /// <summary>
+    /// Converts a .NET 3.5 Linq Expression object into a DynamicLanguageRuntime Expression object.
+    /// </summary>
+    public static class LinqExpressionToDlrExpressionConverter
     {
+        /// <summary>
+        /// Converts the given <paramref name="linqExpression"/> into a DynamicLanguageRuntime Expression.
+        /// </summary>
+        /// <param name="linqExpression">The Linq Expression to convert.</param>
+        /// <returns>The given <paramref name="linqExpression"/> converted into a DynamicLanguageRuntime Expression.</returns>
         public static Expression Convert(LinqExp.Expression linqExpression)
         {
             switch (linqExpression.NodeType)
@@ -108,3 +117,4 @@
         }
     }
 }
+#endif
