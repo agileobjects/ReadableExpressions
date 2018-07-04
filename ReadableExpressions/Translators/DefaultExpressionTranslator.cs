@@ -1,6 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using DefaultExpression = Microsoft.Scripting.Ast.DefaultExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using Extensions;
 
     internal class DefaultExpressionTranslator : ExpressionTranslatorBase

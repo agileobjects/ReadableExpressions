@@ -3,7 +3,13 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using DynamicExpression = Microsoft.Scripting.Ast.DynamicExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using System.Reflection;
     using System.Text.RegularExpressions;
     using NetStandardPolyfills;

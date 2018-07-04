@@ -1,7 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using TypeBinaryExpression = Microsoft.Scripting.Ast.TypeBinaryExpression;
+#endif
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;

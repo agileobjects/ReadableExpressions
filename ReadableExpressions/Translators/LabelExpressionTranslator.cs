@@ -1,7 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using LabelExpression = Microsoft.Scripting.Ast.LabelExpression;
+#endif
 
     internal class LabelExpressionTranslator : ExpressionTranslatorBase
     {
@@ -30,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             if (context.IsReferencedByGoto(label.Target))
             {
-                return string.IsNullOrWhiteSpace(label.Target.Name)
+                return label.Target.Name.IsNullOrWhiteSpace()
                    ? null
                    : Environment.NewLine + label.Target.Name.Unindented() + ":";
             }

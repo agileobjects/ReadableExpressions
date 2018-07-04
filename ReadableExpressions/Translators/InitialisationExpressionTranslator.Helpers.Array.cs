@@ -2,7 +2,12 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using NewArrayExpression = Microsoft.Scripting.Ast.NewArrayExpression;
+#endif
     using Extensions;
 
     internal partial class InitialisationExpressionTranslator

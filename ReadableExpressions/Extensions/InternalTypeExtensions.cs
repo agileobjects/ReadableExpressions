@@ -1,11 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System.Collections.Generic;
-#if NET_STANDARD
-    using System.Reflection;
-#endif
 
-    internal static class TypeExtensions
+    internal static class InternalTypeExtensions
     {
         private static readonly Dictionary<string, string> _typeNameSubstitutions = new Dictionary<string, string>
         {

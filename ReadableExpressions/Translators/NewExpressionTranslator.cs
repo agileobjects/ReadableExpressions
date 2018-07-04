@@ -1,7 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using NewExpression = Microsoft.Scripting.Ast.NewExpression;
+#endif
     using Extensions;
     using NetStandardPolyfills;
 
@@ -34,7 +40,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Arguments
                 .Select((arg, i) => constructorParameters[i].Name + " = " + context.Translate(arg));
 
-            var argumentsString = string.Join(", ", arguments);
+            var argumentsString = arguments.Join(", ");
 
             return "new { " + argumentsString + " }";
         }

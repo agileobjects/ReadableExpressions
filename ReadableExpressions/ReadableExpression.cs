@@ -1,6 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+
+#endif
 
     /// <summary>
     /// A factory class providing the Comment Expression
@@ -14,8 +20,6 @@
         /// <param name="text">The text of the comment to create, without slashes or /* */.</param>
         /// <returns>A <see cref="ConstantExpression"/> representing a code comment.</returns>
         public static ConstantExpression Comment(string text)
-        {
-            return Expression.Constant(text.AsComment());
-        }
+            => Expression.Constant(text.AsComment());
     }
 }

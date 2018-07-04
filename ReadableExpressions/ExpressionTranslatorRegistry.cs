@@ -3,7 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using Translators;
 
     internal class ExpressionTranslatorRegistry

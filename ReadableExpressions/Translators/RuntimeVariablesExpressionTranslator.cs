@@ -1,6 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using RuntimeVariablesExpression = Microsoft.Scripting.Ast.RuntimeVariablesExpression;
+
+#endif
 
     internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
     {

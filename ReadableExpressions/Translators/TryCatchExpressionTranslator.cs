@@ -2,7 +2,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using CatchBlock = Microsoft.Scripting.Ast.CatchBlock;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using ExpressionVisitor = Microsoft.Scripting.Ast.ExpressionVisitor;
+    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
+    using TryExpression = Microsoft.Scripting.Ast.TryExpression;
+    using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
+#endif
     using Extensions;
 
     internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
@@ -17,7 +27,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var tryCatchFinally = (TryExpression)expression;
 
             var tryBody = context.TranslateCodeBlock(tryCatchFinally.Body);
-            var catchBlocks = string.Join(string.Empty, tryCatchFinally.Handlers.Select(h => GetCatchBlock(h, context)));
+            var catchBlocks = tryCatchFinally.Handlers.Select(h => GetCatchBlock(h, context)).Join(string.Empty);
             var faultBlock = GetFaultBlock(tryCatchFinally.Fault, context);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally, context);
 

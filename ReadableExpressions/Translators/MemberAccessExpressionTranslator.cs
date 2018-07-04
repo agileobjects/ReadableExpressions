@@ -1,6 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using MemberExpression = Microsoft.Scripting.Ast.MemberExpression;
+#endif
     using Extensions;
 
     internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase

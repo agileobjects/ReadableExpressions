@@ -1,6 +1,12 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ConditionalExpression = Microsoft.Scripting.Ast.ConditionalExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using Extensions;
     using Formatting;
 

@@ -3,7 +3,13 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using SwitchExpression = Microsoft.Scripting.Ast.SwitchExpression;
+#endif
     using Formatting;
 
     internal class SwitchExpressionTranslator : ExpressionTranslatorBase
@@ -29,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, context);
 
-            var switchCaseLines = string.Join(Environment.NewLine + Environment.NewLine, switchCases);
+            var switchCaseLines = switchCases.Join(Environment.NewLine + Environment.NewLine);
 
             var @switch = $@"
 switch ({switchValue})

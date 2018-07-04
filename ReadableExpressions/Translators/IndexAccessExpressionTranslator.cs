@@ -1,7 +1,14 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using IndexExpression = Microsoft.Scripting.Ast.IndexExpression;
+#endif
 
     internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
     {

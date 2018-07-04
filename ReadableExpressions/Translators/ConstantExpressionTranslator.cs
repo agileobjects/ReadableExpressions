@@ -2,7 +2,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Globalization;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using LambdaExpression = Microsoft.Scripting.Ast.LambdaExpression;
+#endif
     using System.Text.RegularExpressions;
     using Extensions;
     using NetStandardPolyfills;
