@@ -1,8 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
     using System.Linq.Expressions;
-    using Translators;
+#endif
 
     /// <summary>
     /// Provides the Expression translation extension method.
@@ -21,14 +24,8 @@
             this Expression expression,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            #if NET35
-            var linqExpression = LinqExpressionToDlrExpressionConverter.Convert(expression);
-            #else
-            var linqExpression = expression;
-            #endif
-
             return _translatorRegistry
-                .Translate(linqExpression, configuration)?
+                .Translate(expression, configuration)?
                 .WithoutUnindents();
         }
     }

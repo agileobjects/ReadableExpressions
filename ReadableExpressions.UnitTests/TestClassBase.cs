@@ -3,7 +3,7 @@
     using System;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Translators;
+    using Net35;
     using LinqExp = System.Linq.Expressions;
 #else
     using System.Linq.Expressions;
@@ -34,7 +34,7 @@
             => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         internal static string ToReadableString(Expression expression, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => DlrExpressionToLinqExpressionConverter.Convert(expression).ToReadableString();
+            => expression.ToReadableString();
 #else
         protected static LambdaExpression CreateLambda(Expression<Action> lambda) => lambda;
 

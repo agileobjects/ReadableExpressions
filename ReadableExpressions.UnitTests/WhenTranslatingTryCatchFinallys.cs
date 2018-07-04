@@ -31,7 +31,7 @@ try
 catch
 {
 }";
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]

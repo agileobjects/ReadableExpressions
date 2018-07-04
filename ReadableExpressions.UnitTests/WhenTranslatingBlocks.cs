@@ -292,7 +292,7 @@ Console.WriteLine();";
         public void ShouldTerminateAMultipleLineMemberInitAssignment()
         {
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
-            var read = CreateLambda(() => Console.Read());
+            var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = Expression.New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");

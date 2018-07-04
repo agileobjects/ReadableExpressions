@@ -373,7 +373,7 @@ new CustomAdder
         [Fact]
         public void ShouldTranslateImplicitOperatorUse()
         {
-            var adderToString = CreateLambda(() => new CustomAdder());
+            var adderToString = CreateLambda<string>(() => new CustomAdder());
 
             var stringVariable = Expression.Variable(typeof(string), "str");
             var assignment = Expression.Assign(stringVariable, adderToString.Body);

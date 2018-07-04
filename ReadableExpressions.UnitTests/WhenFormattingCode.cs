@@ -38,7 +38,7 @@ var helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -67,7 +67,7 @@ helper.GiveMeFourInts(
     intVariable,
     intVariable)";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -88,7 +88,7 @@ helper.GiveMeSomeInts(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -110,7 +110,7 @@ threeIntsAction.Invoke(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -128,7 +128,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
     ? veryLongNamedVariable * veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) * veryLongNamedVariable";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -150,7 +150,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         : veryLongNamedVariable - veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) + veryLongNamedVariable";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -176,7 +176,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         thisVariableReallyHasAVeryLongNameIndeed,
         thisVariableReallyHasAVeryLongNameIndeed)";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -198,7 +198,7 @@ value = threeIntsFunc.Invoke(
     threeIntsFunc.Invoke(10, 1, thisVariableReallyHasAVeryLongNameIndeed),
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -226,7 +226,7 @@ name = ""Fred"";
 
 return getName.Invoke();";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -298,7 +298,7 @@ Action writeNameTwice = () =>
 name = ""Alice"";
 writeNameTwice.Invoke();";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -328,7 +328,7 @@ else
 {
     var j = 2;
 }";
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -357,7 +357,7 @@ catch
 {
     throw new Exception(number.ToString());
 }";
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -461,7 +461,7 @@ catch
 
             var translated = ToReadableString(overallTryCatch);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -471,7 +471,7 @@ catch
                 JoinStrings(",", "[", "i", "]", "[", "j", "]", "[", "k", "]"));
 
             const string EXPECTED = @"
-string.Join(
+WhenFormattingCode.JoinStrings(
     "","",
     ""["",
     ""i"",
@@ -485,7 +485,7 @@ string.Join(
 
             var translated = ToReadableString(stringJoiner.Body);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -498,7 +498,7 @@ string.Join(
             var ifTestDoNothing = Expression.IfThen(stringTest.Body, doNothing);
 
             const string EXPECTED = @"
-if (string.Join(
+if (WhenFormattingCode.JoinStrings(
     "","",
     ""["",
     ""i"",
@@ -513,7 +513,7 @@ if (string.Join(
 }";
             var translated = ToReadableString(ifTestDoNothing);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -575,7 +575,7 @@ if (string.Join(
         public void ShouldNotRemoveParenthesesFromMultiParameterLambdaArguments()
         {
             var stringsConverter = CreateLambda(
-                (IEnumerable<string> strings) => strings.Select((str, i) => JoinStrings(i + ": ", str)).ToArray());
+                (IEnumerable<string> strings) => strings.Select((str, i) => string.Join(i + ": ", new[] { str })).ToArray());
 
             const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
             var translated = ToReadableString(stringsConverter.Body);
@@ -726,7 +726,7 @@ Enumerable
     .OrderByDescending(i => i)
     .ToList()";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -760,7 +760,7 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
     },
     default(int))";
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -797,7 +797,7 @@ return list
 
             var translated = ToReadableString(longChainblock);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -820,7 +820,7 @@ if (i == 0)
 
             var translated = ToReadableString(block);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -850,14 +850,14 @@ if (i == 1)
 
             var translated = ToReadableString(block);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldNotLeaveDoubleBlankLinesBetweenInitAndIfStatements()
         {
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
-            var read = CreateLambda(() => Console.Read());
+            var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = Expression.New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");
@@ -891,7 +891,7 @@ if (i == 1)
 
             var translated = ToReadableString(block);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -941,7 +941,7 @@ ints.Add(
 
             var translated = ToReadableString(addMethodCall);
 
-            EXPECTED.TrimStart().ShouldBe(translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // ReSharper disable once UnusedParameter.Local

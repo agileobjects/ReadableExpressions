@@ -32,6 +32,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                     break;
                 case Drl.ExpressionType.ArrayIndex:
                     break;
+                
+                case Drl.ExpressionType.Block:
+                    return Expression.Block
+                
                 case Drl.ExpressionType.Call:
                     break;
                 case Drl.ExpressionType.Coalesce:

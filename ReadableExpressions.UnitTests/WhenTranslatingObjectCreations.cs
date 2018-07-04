@@ -62,12 +62,11 @@
         public void ShouldTranslateANewExpressionWithAMultiLineInitialisationValue()
         {
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
-            var read = CreateLambda(() => Console.Read());
+            var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = Expression.New(typeof(MemoryStream));
-            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var positionProperty = newMemoryStream.Type.GetPublicInstanceProperty(nameof(MemoryStream.Position));
             var valueBlock = Expression.Block(writeWat.Body, writeWat.Body, read.Body);
-            // ReSharper disable once AssignNullToNotNullAttribute
             var positionInit = Expression.Bind(positionProperty, valueBlock);
             var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
 

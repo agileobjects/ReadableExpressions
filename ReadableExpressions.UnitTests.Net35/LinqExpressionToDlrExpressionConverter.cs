@@ -1,27 +1,17 @@
-﻿#if NET35
-namespace AgileObjects.ReadableExpressions.Translators
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Net35
 {
     using System;
     using Microsoft.Scripting.Ast;
     using LinqExp = System.Linq.Expressions;
 
-    /// <summary>
-    /// Converts a Linq Expression object to a DynamicRuntimeLibrary Expression object.
-    /// </summary>
-    public class LinqExpressionToDlrExpressionConverter
+    internal static class LinqExpressionToDlrExpressionConverter
     {
-        /// <summary>
-        /// Converts the given <paramref name="linqExpression"/> to a DynamicRuntimeLibrary Expression object.
-        /// </summary>
-        /// <param name="linqExpression">The Linq Expression to convert.</param>
-        /// <returns>The converted DynamicRuntimeLibrary Expression.</returns>
         public static Expression Convert(LinqExp.Expression linqExpression)
         {
             switch (linqExpression.NodeType)
             {
                 case LinqExp.ExpressionType.Add:
                     break;
-
                 case LinqExp.ExpressionType.AddChecked:
                     break;
                 case LinqExp.ExpressionType.And:
@@ -39,8 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 case LinqExp.ExpressionType.Conditional:
                     break;
                 case LinqExp.ExpressionType.Constant:
-                    return Expression.Constant(((LinqExp.ConstantExpression)linqExpression).Value, linqExpression.Type);
-
+                    break;
                 case LinqExp.ExpressionType.Convert:
                     break;
                 case LinqExp.ExpressionType.ConvertChecked:
@@ -115,9 +104,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     break;
             }
 
-            throw new NotSupportedException(
-                "Unable to convert Expressions of type " + linqExpression.NodeType);
+            throw new NotSupportedException("Can't convert a " + linqExpression.NodeType);
         }
     }
 }
-#endif
