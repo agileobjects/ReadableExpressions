@@ -3,7 +3,15 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
+    using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
+    using ConditionalExpression = Microsoft.Scripting.Ast.ConditionalExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using Extensions;
     using Formatting;
 
@@ -27,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var blockContents = variables.Concat(separator).Concat(statements);
 
-            return string.Join(Environment.NewLine, blockContents);
+            return blockContents.Join(Environment.NewLine);
         }
 
         private IList<string> GetVariableDeclarations(
@@ -43,7 +51,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     TypeName = vGrp.Key.GetFriendlyName(),
                     VariableNames = vGrp.Select(varName => _variableNameTranslator.Translate(varName))
                 })
-                .Select(varData => $"{varData.TypeName} {string.Join(", ", varData.VariableNames)};")
+                .Select(varData => $"{varData.TypeName} {varData.VariableNames.Join(", ")};")
                 .ToArray();
         }
 

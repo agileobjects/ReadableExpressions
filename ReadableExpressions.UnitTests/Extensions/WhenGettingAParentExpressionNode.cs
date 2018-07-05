@@ -3,54 +3,62 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Linq.Expressions;
     using ReadableExpressions.Extensions;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using MemberExpression = Microsoft.Scripting.Ast.MemberExpression;
+    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenGettingAParentExpressionNode
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenGettingAParentExpressionNode : TestClassBase
     {
         [Fact]
         public void ShouldReturnAMemberAccessParent()
         {
-            Expression<Func<Type, string>> personViewModelName = t => t.Name;
+            var personViewModelName = CreateLambda((Type t) => t.Name);
 
             var namePropertyParent = personViewModelName.Body.GetParentOrNull() as ParameterExpression;
 
-            Assert.NotNull(namePropertyParent);
-            Assert.Equal("t", namePropertyParent.Name);
+            namePropertyParent.ShouldNotBeNull();
+            namePropertyParent.Name.ShouldBe("t");
         }
 
         [Fact]
         public void ShouldReturnANestedMemberAccessParent()
         {
-            Expression<Func<Type, string>> typeAssemblyImageVersion = t => t.Assembly.ImageRuntimeVersion;
+            var typeAssemblyImageVersion = CreateLambda((Type t) => t.Assembly.ImageRuntimeVersion);
 
             var typeAssemblyImageVersionParent = typeAssemblyImageVersion.Body.GetParentOrNull() as MemberExpression;
 
-            Assert.NotNull(typeAssemblyImageVersionParent);
-            Assert.Equal("Assembly", typeAssemblyImageVersionParent.Member.Name);
+            typeAssemblyImageVersionParent.ShouldNotBeNull();
+            typeAssemblyImageVersionParent.Member.Name.ShouldBe("Assembly");
         }
 
         [Fact]
         public void ShouldReturnAMemberMethodCallParent()
         {
-            Expression<Func<Type, string>> typeAssemblyToString = p => p.Assembly.ToString();
+            var typeAssemblyToString = CreateLambda((Type t) => t.Assembly.ToString());
 
             var assemblyToStringPropertyParent = typeAssemblyToString.Body.GetParentOrNull() as MemberExpression;
 
-            Assert.NotNull(assemblyToStringPropertyParent);
-            Assert.Equal("Assembly", assemblyToStringPropertyParent.Member.Name);
+            assemblyToStringPropertyParent.ShouldNotBeNull();
+            assemblyToStringPropertyParent.Member.Name.ShouldBe("Assembly");
         }
 
         [Fact]
         public void ShouldReturnAnExtensionMethodCallParent()
         {
-            Expression<Func<IEnumerable<Type>, Type[]>> typesToArray = ts => ts.ToArray();
+            var typesToArray = CreateLambda((IEnumerable<Type> ts) => ts.ToArray());
 
             var typesToArrayPropertyParent = typesToArray.Body.GetParentOrNull() as ParameterExpression;
 
-            Assert.NotNull(typesToArrayPropertyParent);
-            Assert.Equal("ts", typesToArrayPropertyParent.Name);
+            typesToArrayPropertyParent.ShouldNotBeNull();
+            typesToArrayPropertyParent.Name.ShouldBe("ts");
         }
     }
 }

@@ -3,7 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+
+#endif
 
     internal partial class InitialisationExpressionTranslator
     {
@@ -74,9 +79,9 @@
                     return $"{newExpression} {{ {string.Join(", ", memberInitialisations)} }}";
                 }
 
-                var initialisationBlock = string.Join(
-                    "," + Environment.NewLine,
-                    memberInitialisations.Select(init => init.Indented()));
+                var initialisationBlock = memberInitialisations
+                    .Select(init => init.Indented())
+                    .Join("," + Environment.NewLine);
 
                 var initialisation = $@"
 {newExpression}

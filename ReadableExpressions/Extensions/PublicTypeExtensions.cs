@@ -116,7 +116,7 @@
             IEnumerable<Type> typeArguments)
         {
             var typeGenericTypeArgumentFriendlyNames =
-                string.Join(", ", typeArguments.Select(GetFriendlyName));
+                typeArguments.Select(GetFriendlyName).Join(", ");
 
             typeName = typeName.Replace(
                 "`" + numberOfParameters,

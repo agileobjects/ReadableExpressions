@@ -2,7 +2,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
     using Extensions;
 
     internal class BinaryExpressionTranslator : ExpressionTranslatorBase

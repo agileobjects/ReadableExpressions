@@ -1,69 +1,74 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
-    using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingComparisons
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingComparisons : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAnEqualityExpression()
         {
-            Expression<Func<int, int, bool>> intsAreEqual = (i1, i2) => i1 == i2;
+            var intsAreEqual = CreateLambda((int i1, int i2) => i1 == i2);
 
-            var translated = intsAreEqual.ToReadableString();
+            var translated = ToReadableString(intsAreEqual);
 
-            Assert.Equal("(i1, i2) => i1 == i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 == i2");
         }
 
         [Fact]
         public void ShouldTranslateALessThanExpression()
         {
-            Expression<Func<int, int, bool>> firstLessThanSecond = (i1, i2) => i1 < i2;
+            var firstLessThanSecond = CreateLambda((int i1, int i2) => i1 < i2);
 
-            var translated = firstLessThanSecond.ToReadableString();
+            var translated = ToReadableString(firstLessThanSecond);
 
-            Assert.Equal("(i1, i2) => i1 < i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 < i2");
         }
 
         [Fact]
         public void ShouldTranslateALessThanOrEqualExpression()
         {
-            Expression<Func<int, int, bool>> firstLessThanOrEqualToSecond = (i1, i2) => i1 <= i2;
+            var firstLessThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 <= i2);
 
-            var translated = firstLessThanOrEqualToSecond.ToReadableString();
+            var translated = ToReadableString(firstLessThanOrEqualToSecond);
 
-            Assert.Equal("(i1, i2) => i1 <= i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 <= i2");
         }
 
         [Fact]
         public void ShouldTranslateAGreaterThanOrEqualExpression()
         {
-            Expression<Func<int, int, bool>> firstGreaterThanOrEqualToSecond = (i1, i2) => i1 >= i2;
+            var firstGreaterThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 >= i2);
 
-            var translated = firstGreaterThanOrEqualToSecond.ToReadableString();
+            var translated = ToReadableString(firstGreaterThanOrEqualToSecond);
 
-            Assert.Equal("(i1, i2) => i1 >= i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 >= i2");
         }
 
         [Fact]
         public void ShouldTranslateAGreaterThanExpression()
         {
-            Expression<Func<int, int, bool>> firstGreaterThanSecond = (i1, i2) => i1 > i2;
+            var firstGreaterThanSecond = CreateLambda((int i1, int i2) => i1 > i2);
 
-            var translated = firstGreaterThanSecond.ToReadableString();
+            var translated = ToReadableString(firstGreaterThanSecond);
 
-            Assert.Equal("(i1, i2) => i1 > i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 > i2");
         }
 
         [Fact]
         public void ShouldTranslateAnInequalityExpression()
         {
-            Expression<Func<int, int, bool>> intsAreNotEqual = (i1, i2) => i1 != i2;
+            var intsAreNotEqual = CreateLambda((int i1, int i2) => i1 != i2);
 
-            var translated = intsAreNotEqual.ToReadableString();
+            var translated = ToReadableString(intsAreNotEqual);
 
-            Assert.Equal("(i1, i2) => i1 != i2", translated);
+            translated.ShouldBe("(i1, i2) => i1 != i2");
         }
 
         [Fact]
@@ -72,9 +77,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
             var boolIsTrue = Expression.Equal(boolVariable, Expression.Constant(true));
 
-            var translated = boolIsTrue.ToReadableString();
+            var translated = ToReadableString(boolIsTrue);
 
-            Assert.Equal("couldBe", translated);
+            translated.ShouldBe("couldBe");
         }
 
         [Fact]
@@ -83,9 +88,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
             var boolIsFalse = Expression.Equal(Expression.Constant(false), boolVariable);
 
-            var translated = boolIsFalse.ToReadableString();
+            var translated = ToReadableString(boolIsFalse);
 
-            Assert.Equal("!couldBe", translated);
+            translated.ShouldBe("!couldBe");
         }
 
         [Fact]
@@ -94,9 +99,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
             var boolIsNotTrue = Expression.NotEqual(Expression.Constant(true), boolVariable);
 
-            var translated = boolIsNotTrue.ToReadableString();
+            var translated = ToReadableString(boolIsNotTrue);
 
-            Assert.Equal("!couldBe", translated);
+            translated.ShouldBe("!couldBe");
         }
 
         [Fact]
@@ -105,9 +110,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
             var boolIsNotFalse = Expression.NotEqual(boolVariable, Expression.Constant(false));
 
-            var translated = boolIsNotFalse.ToReadableString();
+            var translated = ToReadableString(boolIsNotFalse);
 
-            Assert.Equal("couldBe", translated);
+            translated.ShouldBe("couldBe");
         }
 
         [Fact]
@@ -116,9 +121,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "couldBe");
             var boolIsFalse = Expression.Equal(Expression.Default(typeof(bool)), boolVariable);
 
-            var translated = boolIsFalse.ToReadableString();
+            var translated = ToReadableString(boolIsFalse);
 
-            Assert.Equal("!couldBe", translated);
+            translated.ShouldBe("!couldBe");
         }
     }
 }

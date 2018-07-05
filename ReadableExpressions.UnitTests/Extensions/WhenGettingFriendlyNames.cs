@@ -2,11 +2,17 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq.Expressions;
     using ReadableExpressions.Extensions;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenGettingFriendlyNames
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenGettingFriendlyNames : TestClassBase
     {
         [Fact]
         public void ShouldUseFriendlyNamesForArrays()
@@ -15,19 +21,19 @@
             var assignNull = Expression.Assign(intArrayVariable, Expression.Default(intArrayVariable.Type));
             var assignNullBlock = Expression.Block(new[] { intArrayVariable }, assignNull);
 
-            var translated = assignNullBlock.ToReadableString();
+            var translated = ToReadableString(assignNullBlock);
 
-            Assert.Equal("var ints = default(int[]);", translated);
+            translated.ShouldBe("var ints = default(int[]);");
         }
 
         [Fact]
         public void ShouldUseFriendlyNamesForCharacters()
         {
-            Expression<Func<char, double>> characterToNumeric = c => char.GetNumericValue(c);
+            var characterToNumeric = CreateLambda((char c) => char.GetNumericValue(c));
 
-            var translated = characterToNumeric.ToReadableString();
+            var translated = ToReadableString(characterToNumeric);
 
-            Assert.Equal("c => char.GetNumericValue(c)", translated);
+            translated.ShouldBe("c => char.GetNumericValue(c)");
         }
 
         [Fact]
@@ -37,7 +43,7 @@
 
             var friendlyName = anon.GetType().GetFriendlyName();
 
-            Assert.Equal("AnonymousType<int, string>", friendlyName);
+            friendlyName.ShouldBe("AnonymousType<int, string>");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/6
@@ -46,9 +52,9 @@
         {
             var nestedType = Expression.Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
 
-            var translated = nestedType.ToReadableString();
+            var translated = ToReadableString(nestedType);
 
-            Assert.Equal("typeof(OuterClass.InnerClass.Nested)", translated);
+            translated.ShouldBe("typeof(OuterClass.InnerClass.Nested)");
         }
 
         [Fact]
@@ -56,9 +62,9 @@
         {
             var newNestedTypeList = Expression.New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
 
-            var translated = newNestedTypeList.ToReadableString();
+            var translated = ToReadableString(newNestedTypeList);
 
-            Assert.Equal("new List<OuterClass.InnerClass>()", translated);
+            translated.ShouldBe("new List<OuterClass.InnerClass>()");
         }
 
         [Fact]
@@ -66,9 +72,9 @@
         {
             var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
 
-            var translated = genericListEnumeratorType.ToReadableString();
+            var translated = ToReadableString(genericListEnumeratorType);
 
-            Assert.Equal("typeof(List<string>.Enumerator)", translated);
+            translated.ShouldBe("typeof(List<string>.Enumerator)");
         }
 
         [Fact]
@@ -76,9 +82,9 @@
         {
             var genericListEnumeratorType = Expression.Constant(typeof(GenericTestHelper<int>), typeof(Type));
 
-            var translated = genericListEnumeratorType.ToReadableString();
+            var translated = ToReadableString(genericListEnumeratorType);
 
-            Assert.Equal("typeof(WhenGettingFriendlyNames.GenericTestHelper<int>)", translated);
+            translated.ShouldBe("typeof(WhenGettingFriendlyNames.GenericTestHelper<int>)");
         }
 
         [Fact]
@@ -88,9 +94,9 @@
                 typeof(OuterGeneric<int>.InnerGeneric<long>.Nested),
                 typeof(Type));
 
-            var translated = nestedGenericType.ToReadableString();
+            var translated = ToReadableString(nestedGenericType);
 
-            Assert.Equal("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)", translated);
+            translated.ShouldBe("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)");
         }
 
         #region Helper Classes

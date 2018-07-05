@@ -1,4 +1,5 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿#if !NET35
+namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Globalization;
@@ -6,7 +7,7 @@
     using Microsoft.CSharp.RuntimeBinder;
     using Xunit;
 
-    public class WhenTranslatingDynamicOperations
+    public class WhenTranslatingDynamicOperations : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAPropertyReadAccess()
@@ -29,9 +30,9 @@
 
             dynamicLengthLambda.Compile();
 
-            var translated = dynamicLengthLambda.ToReadableString();
+            var translated = ToReadableString(dynamicLengthLambda);
 
-            Assert.Equal("obj => obj.Length", translated);
+            translated.ShouldBe("obj => obj.Length");
         }
 
         [Fact]
@@ -59,9 +60,9 @@
 
             dynamicPositionLambda.Compile();
 
-            var translated = dynamicPositionLambda.ToReadableString();
+            var translated = ToReadableString(dynamicPositionLambda);
 
-            Assert.Equal("(obj, position) => obj.Position = position", translated);
+            translated.ShouldBe("(obj, position) => obj.Position = position");
         }
 
         [Fact]
@@ -86,9 +87,9 @@
 
             dynamicToStringLambda.Compile();
 
-            var translated = dynamicToStringLambda.ToReadableString();
+            var translated = ToReadableString(dynamicToStringLambda);
 
-            Assert.Equal("obj => obj.ToString()", translated);
+            translated.ShouldBe("obj => obj.ToString()");
         }
 
         [Fact]
@@ -117,9 +118,9 @@
 
             dynamicYellHurrahLambda.Compile();
 
-            var translated = dynamicYellHurrahLambda.ToReadableString();
+            var translated = ToReadableString(dynamicYellHurrahLambda);
 
-            Assert.Equal("obj => obj.YellHurrah()", translated);
+            translated.ShouldBe("obj => obj.YellHurrah()");
         }
 
         [Fact]
@@ -152,9 +153,9 @@
 
             dynamicToStringLambda.Compile();
 
-            var translated = dynamicToStringLambda.ToReadableString();
+            var translated = ToReadableString(dynamicToStringLambda);
 
-            Assert.Equal("(obj, ci) => obj.ToString(ci)", translated);
+            translated.ShouldBe("(obj, ci) => obj.ToString(ci)");
         }
 
         [Fact]
@@ -187,9 +188,9 @@
 
             dynamicConvertLambda.Compile();
 
-            var translated = dynamicConvertLambda.ToReadableString();
+            var translated = ToReadableString(dynamicConvertLambda);
 
-            Assert.Equal("(valueConverter, value) => valueConverter.Convert<string, int>(value)", translated);
+            translated.ShouldBe("(valueConverter, value) => valueConverter.Convert<string, int>(value)");
         }
 
         [Fact]
@@ -219,10 +220,10 @@
 
             dynamicConvertLambda.Compile();
 
-            var translated = dynamicConvertLambda.ToReadableString();
+            var translated = ToReadableString(dynamicConvertLambda);
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
-            Assert.Equal("valueConverter => valueConverter.Convert()", translated);
+            translated.ShouldBe("valueConverter => valueConverter.Convert()");
         }
 
         [Fact]
@@ -252,10 +253,10 @@
 
             dynamicPrintLambda.Compile();
 
-            var translated = dynamicPrintLambda.ToReadableString();
+            var translated = ToReadableString(dynamicPrintLambda);
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
-            Assert.Equal("typePrinter => typePrinter.Print()", translated);
+            translated.ShouldBe("typePrinter => typePrinter.Print()");
         }
 
         // ReSharper disable once UnusedMember.Local
@@ -279,3 +280,4 @@
         }
     }
 }
+#endif

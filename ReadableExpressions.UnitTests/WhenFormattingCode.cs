@@ -4,11 +4,20 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Linq.Expressions;
     using NetStandardPolyfills;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using ExpressionVisitor = Microsoft.Scripting.Ast.ExpressionVisitor;
+    using Fact = NUnit.Framework.TestAttribute;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
 
-    public class WhenFormattingCode
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenFormattingCode : TestClassBase
     {
         [Fact]
         public void ShouldSplitLongConstructorArgumentListsOntoMultipleLines()
@@ -21,7 +30,7 @@
 
             var longArgumentListBlock = Expression.Block(new[] { helperVariable }, helperAssignment);
 
-            var translated = longArgumentListBlock.ToReadableString();
+            var translated = ToReadableString(longArgumentListBlock);
 
             const string EXPECTED = @"
 var helper = new HelperClass(
@@ -29,7 +38,7 @@ var helper = new HelperClass(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -49,7 +58,7 @@ var helper = new HelperClass(
                 intVariable,
                 intVariable);
 
-            var translated = intsMethodCall.ToReadableString();
+            var translated = ToReadableString(intsMethodCall);
 
             const string EXPECTED = @"
 helper.GiveMeFourInts(
@@ -58,7 +67,7 @@ helper.GiveMeFourInts(
     intVariable,
     intVariable)";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -71,7 +80,7 @@ helper.GiveMeFourInts(
             var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
             var intsMethodCall = Expression.Call(helperVariable, intsMethod, longVariable, longVariable, longVariable);
 
-            var translated = intsMethodCall.ToReadableString();
+            var translated = ToReadableString(intsMethodCall);
 
             const string EXPECTED = @"
 helper.GiveMeSomeInts(
@@ -79,7 +88,7 @@ helper.GiveMeSomeInts(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -91,7 +100,7 @@ helper.GiveMeSomeInts(
 
             var longArgumentListBlock = Expression.Block(new[] { longVariable, threeIntsAction }, threeIntsCall);
 
-            var translated = longArgumentListBlock.ToReadableString();
+            var translated = ToReadableString(longArgumentListBlock);
 
             const string EXPECTED = @"
 int thisVariableReallyHasAVeryLongNameIndeed;
@@ -101,38 +110,38 @@ threeIntsAction.Invoke(
     thisVariableReallyHasAVeryLongNameIndeed,
     thisVariableReallyHasAVeryLongNameIndeed);";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldSplitLongTernariesOntoMultipleLines()
         {
-            Expression<Func<int, int>> longTernary =
-                veryLongNamedVariable => veryLongNamedVariable > 10
+            var longTernary = CreateLambda((int veryLongNamedVariable) =>
+                veryLongNamedVariable > 10
                     ? veryLongNamedVariable * veryLongNamedVariable
-                    : veryLongNamedVariable * veryLongNamedVariable * veryLongNamedVariable;
+                    : veryLongNamedVariable * veryLongNamedVariable * veryLongNamedVariable);
 
-            var translated = longTernary.ToReadableString();
+            var translated = ToReadableString(longTernary);
 
             const string EXPECTED = @"
 veryLongNamedVariable => (veryLongNamedVariable > 10)
     ? veryLongNamedVariable * veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) * veryLongNamedVariable";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldSplitLongNestedTernariesOntoMultipleLines()
         {
-            Expression<Func<int, int>> longTernary =
-                veryLongNamedVariable => (veryLongNamedVariable > 10)
+            var longTernary = CreateLambda((int veryLongNamedVariable) =>
+                (veryLongNamedVariable > 10)
                     ? (veryLongNamedVariable > 100)
                         ? veryLongNamedVariable * veryLongNamedVariable
                         : veryLongNamedVariable - veryLongNamedVariable
-                    : veryLongNamedVariable * veryLongNamedVariable + veryLongNamedVariable;
+                    : veryLongNamedVariable * veryLongNamedVariable + veryLongNamedVariable);
 
-            var translated = longTernary.ToReadableString();
+            var translated = ToReadableString(longTernary);
 
             const string EXPECTED = @"
 veryLongNamedVariable => (veryLongNamedVariable > 10)
@@ -141,7 +150,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         : veryLongNamedVariable - veryLongNamedVariable
     : (veryLongNamedVariable * veryLongNamedVariable) + veryLongNamedVariable";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -157,7 +166,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
 
             var ternary = Expression.Condition(oneEqualsTwo, defaultInt, threeIntsCall);
 
-            var translated = ternary.ToReadableString();
+            var translated = ToReadableString(ternary);
 
             const string EXPECTED = @"
 (1 == 2)
@@ -167,7 +176,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         thisVariableReallyHasAVeryLongNameIndeed,
         thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -181,7 +190,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
 
             var assignment = Expression.Assign(intVariable, threeIntsCall);
 
-            var translated = assignment.ToReadableString();
+            var translated = ToReadableString(assignment);
 
             const string EXPECTED = @"
 value = threeIntsFunc.Invoke(
@@ -189,7 +198,7 @@ value = threeIntsFunc.Invoke(
     threeIntsFunc.Invoke(10, 1, thisVariableReallyHasAVeryLongNameIndeed),
     thisVariableReallyHasAVeryLongNameIndeed)";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -208,7 +217,7 @@ value = threeIntsFunc.Invoke(
                 nameAssignment,
                 getNameCall);
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
             const string EXPECTED = @"
 string name;
@@ -217,7 +226,7 @@ name = ""Fred"";
 
 return getName.Invoke();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -229,9 +238,9 @@ return getName.Invoke();";
 
             var block = Expression.Block(new[] { intsVariable }, assignment);
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
-            Assert.Equal("IEnumerable<int> ints = new int[2];", translated);
+            translated.ShouldBe("IEnumerable<int> ints = new int[2];");
         }
 
         [Fact]
@@ -252,9 +261,9 @@ return getName.Invoke();";
             var assignResult = Expression.Assign(resultVariable, newArrayOrList);
             var assignBlock = Expression.Block(new[] { resultVariable }, assignResult);
 
-            var translated = assignBlock.ToReadableString();
+            var translated = ToReadableString(assignBlock);
 
-            Assert.Equal("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();", translated);
+            translated.ShouldBe("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();");
         }
 
         [Fact]
@@ -262,7 +271,7 @@ return getName.Invoke();";
         {
             var nameVariable = Expression.Variable(typeof(string), "name");
             var writeNameTwiceVariable = Expression.Variable(typeof(Action), "writeNameTwice");
-            Expression<Action> writeLine = () => Console.WriteLine(default(string));
+            var writeLine = CreateLambda(() => Console.WriteLine(default(string)));
             var writeLineMethod = ((MethodCallExpression)writeLine.Body).Method;
             var writeLineCall = Expression.Call(writeLineMethod, nameVariable);
             var writeNameTwice = Expression.Block(writeLineCall, writeLineCall);
@@ -276,7 +285,7 @@ return getName.Invoke();";
                 Expression.Block(writeNameTwiceAssignment),
                 Expression.Block(nameAssignment, writeNameTwiceCall));
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
             const string EXPECTED = @"
 string name;
@@ -289,7 +298,7 @@ Action writeNameTwice = () =>
 name = ""Alice"";
 writeNameTwice.Invoke();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -308,7 +317,7 @@ writeNameTwice.Invoke();";
                 variable1Block,
                 variable2Block);
 
-            var translated = assign1Or2.ToReadableString();
+            var translated = ToReadableString(assign1Or2);
 
             const string EXPECTED = @"
 if (true)
@@ -319,13 +328,13 @@ else
 {
     var j = 2;
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldNotVarAssignAVariableAssignedInATryButUsedInACatch()
         {
-            Expression<Func<int, Exception>> exceptionFactory = number => new Exception(number.ToString());
+            var exceptionFactory = CreateLambda((int number) => new Exception(number.ToString()));
             var intVariable = exceptionFactory.Parameters.First();
             var newException = exceptionFactory.Body;
 
@@ -336,7 +345,7 @@ else
             var tryCatch = Expression.TryCatch(assignmentBlock, catchBlock);
             var tryCatchBlock = Expression.Block(new[] { intVariable }, tryCatch);
 
-            var translated = tryCatchBlock.ToReadableString();
+            var translated = ToReadableString(tryCatchBlock);
 
             const string EXPECTED = @"
 int number;
@@ -348,7 +357,7 @@ catch
 {
     throw new Exception(number.ToString());
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -450,19 +459,19 @@ catch
     return -1L;
 }";
 
-            var translated = overallTryCatch.ToReadableString();
+            var translated = ToReadableString(overallTryCatch);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldNotIndentParamsArrayArguments()
         {
-            Expression<Func<string>> stringJoiner = () =>
-                string.Join(",", "[", "i", "]", "[", "j", "]", "[", "k", "]");
+            var stringJoiner = CreateLambda(() =>
+                JoinStrings(",", "[", "i", "]", "[", "j", "]", "[", "k", "]"));
 
             const string EXPECTED = @"
-string.Join(
+WhenFormattingCode.JoinStrings(
     "","",
     ""["",
     ""i"",
@@ -474,22 +483,22 @@ string.Join(
     ""k"",
     ""]"")";
 
-            var translated = stringJoiner.Body.ToReadableString();
+            var translated = ToReadableString(stringJoiner.Body);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldIndentParamsArrayArgumentsInAnIfTest()
         {
-            Expression<Func<bool>> stringTest = () =>
-                string.Join(",", "[", "i", "]", "[", "j", "]", "[", "k", "]") != string.Empty;
+            var stringTest = CreateLambda(() =>
+                JoinStrings(",", "[", "i", "]", "[", "j", "]", "[", "k", "]") != string.Empty);
 
             var doNothing = Expression.Default(typeof(void));
             var ifTestDoNothing = Expression.IfThen(stringTest.Body, doNothing);
 
             const string EXPECTED = @"
-if (string.Join(
+if (WhenFormattingCode.JoinStrings(
     "","",
     ""["",
     ""i"",
@@ -502,27 +511,27 @@ if (string.Join(
     ""]"") != string.Empty)
 {
 }";
-            var translated = ifTestDoNothing.ToReadableString();
+            var translated = ToReadableString(ifTestDoNothing);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateAnExtensionExpressionType()
         {
             var extension = new ExtensionExpression();
-            var translated = extension.ToReadableString();
+            var translated = ToReadableString(extension);
 
-            Assert.Equal(extension.ToString(), translated);
+            extension.ToString().ShouldBe(translated);
         }
 
         [Fact]
         public void ShouldTranslateAnUnknownExpressionType()
         {
             var unknown = new UnknownExpression();
-            var translated = unknown.ToReadableString();
+            var translated = ToReadableString(unknown);
 
-            Assert.Equal(unknown.ToString(), translated);
+            unknown.ToString().ShouldBe(translated);
         }
 
         [Fact]
@@ -536,49 +545,55 @@ if (string.Join(
             var intToStringMethod = typeof(object).GetPublicInstanceMethod("ToString");
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
 
-            Expression<Func<string>> emptyString = () => string.Empty;
+            var emptyString = CreateLambda(() => string.Empty);
 
             var toStringOrEmptyString = Expression.Condition(
                 intVariableIsOne,
                 emptyString.Body,
                 intToStringCall);
 
-            var translated = toStringOrEmptyString.ToReadableString();
+            var translated = ToReadableString(toStringOrEmptyString);
 
-            Assert.Equal("(i == 1) ? string.Empty : ((int)o).ToString()", translated);
+            translated.ShouldBe("(i == 1) ? string.Empty : ((int)o).ToString()");
         }
 
         [Fact]
         public void ShouldNotRemoveParenthesesFromACastObjectChainedMethodCall()
         {
-            Expression<Func<IList<int>, string[]>> intArrayConverter =
-                ints => ((int[])ints).ToString().Split(',');
+            var intArrayConverter = CreateLambda(
+                (IList<int> ints) => ((int[])ints).ToString().Split(','));
 
             var stringArrayVariable = Expression.Variable(typeof(string[]), "strings");
             var assignment = Expression.Assign(stringArrayVariable, intArrayConverter.Body);
 
-            var translated = assignment.ToReadableString();
+            var translated = ToReadableString(assignment);
 
-            Assert.Equal("strings = ((int[])ints).ToString().Split(',')", translated);
+            translated.ShouldBe("strings = ((int[])ints).ToString().Split(',')");
         }
 
         [Fact]
         public void ShouldNotRemoveParenthesesFromMultiParameterLambdaArguments()
         {
-            Expression<Func<IEnumerable<string>, string[]>> stringsConverter =
-                strings => strings.Select((str, i) => string.Join(i + ": ", str)).ToArray();
+            var stringsConverter = CreateLambda(
+                (IEnumerable<string> strings) => strings.Select((str, i) => string.Join(i + ": ", new[] { str })).ToArray());
 
+#if NET35
+            // string.Join()'s set of arguments is not a params array in .NET 3.5:
+            const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", new[] { str })).ToArray()";
+#else
             const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
-            var translated = stringsConverter.Body.ToReadableString();
+#endif
 
-            Assert.Equal(EXPECTED, translated);
+            var translated = ToReadableString(stringsConverter.Body);
+
+            translated.ShouldBe(EXPECTED);
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/9
         [Fact]
         public void ShouldNotRemoveParenthesesFromALambdaInvokeResultAssignment()
         {
-            Expression<Func<int, int, int>> intsAdder = (a, b) => a + b;
+            var intsAdder = CreateLambda((int a, int b) => a + b);
             var one = Expression.Constant(1);
             var two = Expression.Constant(2);
             var lambdaInvocation = Expression.Invoke(intsAdder, one, two);
@@ -586,31 +601,30 @@ if (string.Join(
             var assignInvokeResult = Expression.Assign(result, lambdaInvocation);
 
             const string EXPECTED = "result = ((a, b) => a + b).Invoke(1, 2)";
-            var translated = assignInvokeResult.ToReadableString();
+            var translated = ToReadableString(assignInvokeResult);
 
-            Assert.Equal(EXPECTED, translated);
+            translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
-            Expression<Func<IEnumerable<TimeSpan>>> selectTimeSpans =
-                () => new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays);
+            var selectTimeSpans = CreateLambda(() => new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays));
 
-            var translated = selectTimeSpans.Body.ToReadableString();
+            var translated = ToReadableString(selectTimeSpans.Body);
 
-            Assert.Equal("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)", translated);
+            translated.ShouldBe("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)");
         }
 
         [Fact]
         public void ShouldUseMethodGroupsForInstanceMethods()
         {
-            Expression<Func<IntConverter, IEnumerable<string>>> selectStrings =
-                converter => new[] { 1, 2, 3 }.Select(converter.Convert);
+            var selectStrings = CreateLambda((IntConverter converter)
+                => new[] { 1, 2, 3 }.Select(converter.Convert));
 
-            var translated = selectStrings.Body.ToReadableString();
+            var translated = ToReadableString(selectStrings.Body);
 
-            Assert.Equal("new[] { 1, 2, 3 }.Select(converter.Convert)", translated);
+            translated.ShouldBe("new[] { 1, 2, 3 }.Select(converter.Convert)");
         }
 
         [Fact]
@@ -618,45 +632,44 @@ if (string.Join(
         {
             Func<int, string> intConverter = i => i.ToString();
 
-            Expression<Func<IEnumerable<string>>> selectStrings =
-                () => new[] { 1, 2, 3 }.Select(intConverter);
+            var selectStrings = CreateLambda(() => new[] { 1, 2, 3 }.Select(intConverter));
 
-            var translated = selectStrings.Body.ToReadableString();
+            var translated = ToReadableString(selectStrings.Body);
 
-            Assert.Equal("new[] { 1, 2, 3 }.Select(intConverter)", translated);
+            translated.ShouldBe("new[] { 1, 2, 3 }.Select(intConverter)");
         }
 
         [Fact]
         public void ShouldConvertAnExtensionMethodArgumentToAMethodGroup()
         {
-            Expression<Func<List<int>, IEnumerable<int>, bool>> allItemsContained =
-                (list, items) => list.All(i => items.Contains(i));
+            var allItemsContained = CreateLambda((List<int> list, IEnumerable<int> items)
+                => list.All(i => items.Contains(i)));
 
-            var translated = allItemsContained.Body.ToReadableString();
+            var translated = ToReadableString(allItemsContained.Body);
 
-            Assert.Equal("list.All(items.Contains)", translated);
+            translated.ShouldBe("list.All(items.Contains)");
         }
 
         [Fact]
         public void ShouldConvertAStaticMethodArgumentToAMethodGroup()
         {
-            Expression<Func<List<double>, IEnumerable<TimeSpan>>> parseTimeSpans =
-                list => list.Select(i => TimeSpan.FromDays(i));
+            var parseTimeSpans = CreateLambda((List<double> list)
+                 => list.Select(i => TimeSpan.FromDays(i)));
 
-            var translated = parseTimeSpans.Body.ToReadableString();
+            var translated = ToReadableString(parseTimeSpans.Body);
 
-            Assert.Equal("list.Select(TimeSpan.FromDays)", translated);
+            translated.ShouldBe("list.Select(TimeSpan.FromDays)");
         }
 
         [Fact]
         public void ShouldConvertAnInstanceMethodArgumentToAMethodGroup()
         {
-            Expression<Action<List<int>, ICollection<int>>> copy =
-                (list, items) => list.ForEach(i => items.Add(i));
+            var copy = CreateLambda((List<int> list, ICollection<int> items) =>
+                list.ForEach(i => items.Add(i)));
 
-            var translated = copy.Body.ToReadableString();
+            var translated = ToReadableString(copy.Body);
 
-            Assert.Equal("list.ForEach(items.Add)", translated);
+            translated.ShouldBe("list.ForEach(items.Add)");
         }
 
         [Fact]
@@ -664,23 +677,23 @@ if (string.Join(
         {
             Func<IntEvaluator, int, bool> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
 
-            Expression<Func<List<int>, int, bool>> listContainsEvaluator =
-                (list, i) => evaluatorInvoker.Invoke(x => list.Contains(x), i);
+            var listContainsEvaluator = CreateLambda((List<int> list, int i)
+                => evaluatorInvoker.Invoke(x => list.Contains(x), i));
 
-            var translated = listContainsEvaluator.Body.ToReadableString();
+            var translated = ToReadableString(listContainsEvaluator.Body);
 
-            Assert.Equal("evaluatorInvoker.Invoke(list.Contains, i)", translated);
+            translated.ShouldBe("evaluatorInvoker.Invoke(list.Contains, i)");
         }
 
         [Fact]
         public void ShouldNotConvertAModifyingArgumentToAMethodGroup()
         {
-            Expression<Action<List<int>, ICollection<string>>> copy =
-                (list, items) => list.ForEach(i => items.Add(i.ToString()));
+            var copy = CreateLambda((List<int> list, ICollection<string> items)
+                 => list.ForEach(i => items.Add(i.ToString())));
 
-            var translated = copy.Body.ToReadableString();
+            var translated = ToReadableString(copy.Body);
 
-            Assert.Equal("list.ForEach(i => items.Add(i.ToString()))", translated);
+            translated.ShouldBe("list.ForEach(i => items.Add(i.ToString()))");
         }
 
         [Fact]
@@ -688,27 +701,27 @@ if (string.Join(
         {
             Func<IntEvaluatorNullable, int, bool?> evaluatorInvoker = (evaluator, i) => evaluator.Invoke(i);
 
-            Expression<Func<List<int>, int, bool?>> listContainsEvaluator =
-                (list, i) => evaluatorInvoker.Invoke(x => list.Contains(x), i);
+            var listContainsEvaluator = CreateLambda((List<int> list, int i)
+                => evaluatorInvoker.Invoke(x => list.Contains(x), i));
 
-            var translated = listContainsEvaluator.Body.ToReadableString();
+            var translated = ToReadableString(listContainsEvaluator.Body);
 
-            Assert.Equal("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)", translated);
+            translated.ShouldBe("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)");
         }
 
         [Fact]
         public void ShouldSplitLongChainedMethodsOntoMultipleLines()
         {
-            Expression<Func<IEnumerable<int>>> longMethodChain = () =>
+            var longMethodChain = CreateLambda(() =>
                 Enumerable
                     .Range(1, 10)
                     .Select(Convert.ToInt64)
                     .ToArray()
                     .Select(Convert.ToInt32)
                     .OrderByDescending(i => i)
-                    .ToList();
+                    .ToList());
 
-            var translated = longMethodChain.Body.ToReadableString();
+            var translated = ToReadableString(longMethodChain.Body);
 
             const string EXPECTED = @"
 Enumerable
@@ -719,7 +732,7 @@ Enumerable
     .OrderByDescending(i => i)
     .ToList()";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -740,7 +753,7 @@ Enumerable
             var intsMethod = helper.Type.GetPublicInstanceMethod(nameof(HelperClass.GiveMeSomeInts));
             var methodCall = Expression.Call(helper, intsMethod, defaultInt, valueOrDefaultBlock, defaultInt);
 
-            var translated = methodCall.ToReadableString();
+            var translated = ToReadableString(methodCall);
 
             const string EXPECTED = @"
 new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
@@ -753,25 +766,25 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
     },
     default(int))";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateNullToNull()
         {
-            var translated = default(Expression).ToReadableString();
+            var translated = ToReadableString(default(Expression));
 
-            Assert.Null(translated);
+            translated.ShouldBeNull();
         }
 
         [Fact]
         public void ShouldLeaveABlankLineAfterAMultipleLineExpression()
         {
-            Expression<Func<List<int>, IEnumerable<int>>> longCallChain = list => list
+            var longCallChain = CreateLambda((List<int> list) => list
                 .Select(i => i * 2)
                 .Select(i => i * 3)
                 .Select(i => i * 4)
-                .ToArray();
+                .ToArray());
 
             var longChainblock = Expression.Block(longCallChain.Body, longCallChain.Body);
 
@@ -788,9 +801,9 @@ return list
     .Select(i => i * 4)
     .ToArray();";
 
-            var translated = longChainblock.ToReadableString();
+            var translated = ToReadableString(longChainblock);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -811,9 +824,9 @@ if (i == 0)
 {
 }";
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -841,16 +854,16 @@ if (i == 1)
 {
 }";
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldNotLeaveDoubleBlankLinesBetweenInitAndIfStatements()
         {
-            Expression<Action> writeWat = () => Console.WriteLine("Wat");
-            Expression<Func<long>> read = () => Console.Read();
+            var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
+            var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = Expression.New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");
@@ -882,9 +895,9 @@ if (i == 1)
 {
 }";
 
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -932,10 +945,13 @@ ints.Add(
     }
 })";
 
-            var translated = addMethodCall.ToReadableString();
+            var translated = ToReadableString(addMethodCall);
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static string JoinStrings(params string[] strings) => null;
     }
 
     #region Helper Classes
@@ -971,7 +987,22 @@ ints.Add(
 
     internal class ExtensionExpression : Expression
     {
+        public ExtensionExpression(Type type = null)
+        {
+            Type = type ?? typeof(object);
+        }
+
         public override ExpressionType NodeType => ExpressionType.Extension;
+
+        public override Type Type { get; }
+
+        protected override Expression VisitChildren(ExpressionVisitor visitor)
+        {
+            // The default implementation of VisitChildren falls over 
+            // if the Expression is not reducible. Short-circuit that 
+            // with this:
+            return this;
+        }
 
         public override string ToString() => "Exteeennndddiiiinnngg";
     }

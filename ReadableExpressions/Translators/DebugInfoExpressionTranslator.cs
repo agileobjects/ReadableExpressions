@@ -1,7 +1,14 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Globalization;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using DebugInfoExpression = Microsoft.Scripting.Ast.DebugInfoExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+
+#endif
 
     internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
     {

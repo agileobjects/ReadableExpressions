@@ -1,19 +1,25 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingComments
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingComments : TestClassBase
     {
         [Fact]
         public void ShouldTranslateASingleLineComment()
         {
             var comment = ReadableExpression.Comment("Not worth commenting on");
 
-            var translated = comment.ToReadableString();
+            var translated = ToReadableString(comment);
 
-            Assert.Equal("// Not worth commenting on", translated);
+            translated.ShouldBe("// Not worth commenting on");
         }
 
         [Fact]
@@ -23,30 +29,30 @@
 Not worth commenting on
 but I will anyway");
 
-            var translated = comment.ToReadableString();
+            var translated = ToReadableString(comment);
 
             const string EXPECTED = @"
 // Not worth commenting on
 // but I will anyway";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslateABlockWithAComment()
         {
             var comment = ReadableExpression.Comment("Anyone listening?");
-            Expression<Action> beep = () => Console.Beep();
+            var beep = CreateLambda(() => Console.Beep());
 
             var commentedBeep = Expression.Block(comment, beep.Body);
 
-            var translated = commentedBeep.ToReadableString();
+            var translated = ToReadableString(commentedBeep);
 
             const string EXPECTED = @"
 // Anyone listening?
 Console.Beep();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -57,14 +63,14 @@ Console.Beep();";
             var oneEqualsOne = Expression.Equal(one, one);
             var ifOneEqualsOneComment = Expression.IfThen(oneEqualsOne, comment);
 
-            var translated = ifOneEqualsOneComment.ToReadableString();
+            var translated = ToReadableString(ifOneEqualsOneComment);
 
             const string EXPECTED = @"
 if (1 == 1)
 {
     // Maths works
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 }

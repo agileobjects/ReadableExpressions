@@ -3,13 +3,38 @@ namespace AgileObjects.ReadableExpressions
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using InvocationExpression = Microsoft.Scripting.Ast.InvocationExpression;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+#endif
     using Extensions;
     using static System.Environment;
 
-    internal static class StringExtensions
+    internal static class InternalStringExtensionstensionstensions
     {
         private static readonly char[] _terminatingCharacters = { ';', ':', ',' };
+
+        public static string Join(this IEnumerable<string> items, string separator)
+        {
+#if NET35
+            return string.Join(separator, items.ToArray());
+#else
+            return string.Join(separator, items);
+#endif
+        }
+
+        public static bool IsNullOrWhiteSpace(this string value)
+        {
+#if NET35
+            return (value == null) || (value.Trim() == string.Empty);
+#else
+            return string.IsNullOrWhiteSpace(value);
+#endif
+        }
 
         public static bool IsTerminated(this string codeLine)
         {
@@ -90,9 +115,7 @@ namespace AgileObjects.ReadableExpressions
 
             if (line.IsMultiLine())
             {
-                return string.Join(
-                    NewLine,
-                    line.SplitToLines().Select(l => l.Indented()));
+                return line.SplitToLines().Select(l => l.Indented()).Join(NewLine);
             }
 
             return IndentSpaces + line;
@@ -245,9 +268,7 @@ namespace AgileObjects.ReadableExpressions
         }
 
         public static string ToStringConcatenation(this IEnumerable<Expression> strings, TranslationContext context)
-        {
-            return string.Join(" + ", strings.Select((str => GetStringValue(str, context))));
-        }
+            => strings.Select(str => GetStringValue(str, context)).Join(" + ");
 
         private static string GetStringValue(Expression value, TranslationContext context)
         {

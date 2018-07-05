@@ -1,27 +1,33 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingLanguageKeywords
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingLanguageKeywords : TestClassBase
     {
         [Fact]
         public void ShouldTranslateADefaultExpression()
         {
             var defaultInt = Expression.Default(typeof(uint));
-            var translated = defaultInt.ToReadableString();
+            var translated = ToReadableString(defaultInt);
 
-            Assert.Equal("default(uint)", translated);
+            translated.ShouldBe("default(uint)");
         }
 
         [Fact]
         public void ShouldIgnoreADefaultVoidExpression()
         {
             var defaultVoid = Expression.Default(typeof(void));
-            var translated = defaultVoid.ToReadableString();
+            var translated = ToReadableString(defaultVoid);
 
-            Assert.Null(translated);
+            translated.ShouldBeNull();
         }
 
         [Fact]
@@ -52,24 +58,24 @@
         private static void VerifyIsEscaped(string keyword)
         {
             var variable = Expression.Variable(typeof(bool), keyword);
-            var translated = variable.ToReadableString();
+            var translated = ToReadableString(variable);
 
-            Assert.Equal("@" + keyword, translated);
+            translated.ShouldBe("@" + keyword);
         }
 
         [Fact]
         public void ShouldTranslateADeclaredBlockVariableKeyword()
         {
             var variable = Expression.Variable(typeof(string), "string");
-            Expression<Action> writeLine = () => Console.WriteLine("La la la");
+            var writeLine = CreateLambda(() => Console.WriteLine("La la la"));
             var block = Expression.Block(new[] { variable }, writeLine.Body);
-            var translated = block.ToReadableString();
+            var translated = ToReadableString(block);
 
             const string EXPECTED = @"
 string @string;
 Console.WriteLine(""La la la"");";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
 }

@@ -2,7 +2,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
+#endif
     using Extensions;
 
     internal class ParameterExpressionTranslator : ExpressionTranslatorBase
@@ -12,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         internal ParameterExpressionTranslator()
             : base(ExpressionType.Parameter)
         {
-            _keywords = TypeExtensions
+            _keywords = InternalTypeExtensions
                 .TypeNames
                 .Concat(new[]
                 {

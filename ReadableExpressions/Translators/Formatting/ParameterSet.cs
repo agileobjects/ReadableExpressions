@@ -3,9 +3,16 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using LambdaExpression = Microsoft.Scripting.Ast.LambdaExpression;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+    using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
+#endif
     using System.Reflection;
-    using Extensions;
     using NetStandardPolyfills;
     using static System.Environment;
 
@@ -82,7 +89,7 @@
                 .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
                 .Select(line => line.Trim(' '));
 
-            var arrayValuesString = string.Join(NewLine, arrayValues);
+            var arrayValuesString = arrayValues.Join(NewLine);
 
             return arrayValuesString;
         }
@@ -324,12 +331,11 @@
                 extraFormatter = s => s;
             }
 
-            return string.Join(
-                separator,
-                _arguments
-                    .Select(TranslateArgument)
-                    .Select(extraFormatter)
-                    .Where(arg => arg != string.Empty));
+            return _arguments
+                .Select(TranslateArgument)
+                .Select(extraFormatter)
+                .Where(arg => arg != string.Empty)
+                .Join(separator);
         }
 
         private string TranslateArgument(Expression argument, int parameterIndex)

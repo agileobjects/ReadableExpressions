@@ -1,7 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+
+#endif
 
     /// <summary>
     /// Defines a method which translates an <see cref="Expression"/> into a source code string.

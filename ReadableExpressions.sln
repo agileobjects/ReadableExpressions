@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visuali
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "ReadableExpressions.Visualizers.Installer", "ReadableExpressions.Visualizers.Installer\ReadableExpressions.Visualizers.Installer.wixproj", "{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.UnitTests.Net35", "ReadableExpressions.UnitTests.Net35\ReadableExpressions.UnitTests.Net35.csproj", "{9EB2525F-48E7-4057-98E5-7FE325ECCD32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,8 +107,19 @@ Global
 		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|Any CPU.ActiveCfg = Release|x86
 		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|x86.ActiveCfg = Release|x86
 		{F2E07BD5-F32F-4C84-8C9F-30A90C6E8A52}.Release|x86.Build.0 = Release|x86
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Debug|x86.Build.0 = Debug|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Release|x86.ActiveCfg = Release|Any CPU
+		{9EB2525F-48E7-4057-98E5-7FE325ECCD32}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7EFE121E-7A84-43A4-8C76-7EE70DF2736A}
 	EndGlobalSection
 EndGlobal

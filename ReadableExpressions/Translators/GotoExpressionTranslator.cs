@@ -2,7 +2,15 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using GotoExpression = Microsoft.Scripting.Ast.GotoExpression;
+    using GotoExpressionKind = Microsoft.Scripting.Ast.GotoExpressionKind;
+
+#endif
 
     internal class GotoExpressionTranslator : ExpressionTranslatorBase
     {

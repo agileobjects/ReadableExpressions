@@ -1,7 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+
+#endif
 
     internal partial class InitialisationExpressionTranslator : ExpressionTranslatorBase
     {
@@ -19,8 +25,6 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         public override string Translate(Expression expression, TranslationContext context)
-        {
-            return _helpersByNodeType[expression.NodeType].Translate(expression, context);
-        }
+            => _helpersByNodeType[expression.NodeType].Translate(expression, context);
     }
 }

@@ -3,7 +3,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using InvocationExpression = Microsoft.Scripting.Ast.InvocationExpression;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+#endif
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;

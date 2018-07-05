@@ -3,7 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+#endif
 
     internal static class InternalExpressionExtensions
     {

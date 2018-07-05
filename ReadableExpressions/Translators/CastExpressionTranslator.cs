@@ -3,9 +3,19 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+    using TypeBinaryExpression = Microsoft.Scripting.Ast.TypeBinaryExpression;
+    using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
+#endif
     using System.Reflection;
     using Extensions;
+    using NetStandardPolyfills;
 
     internal class CastExpressionTranslator : ExpressionTranslatorBase
     {
@@ -45,8 +55,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 (operand.Type == typeof(Delegate)) &&
                 ((methodCall = ((MethodCallExpression)operand)).Method.Name == "CreateDelegate"))
             {
+#if NET35
+                var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Arguments.Last()).Value;
+#else
                 // ReSharper disable once PossibleNullReferenceException
                 var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Object).Value;
+#endif
 
                 var methodSubject = subjectMethod.IsStatic
                     ? subjectMethod.DeclaringType.GetFriendlyName()

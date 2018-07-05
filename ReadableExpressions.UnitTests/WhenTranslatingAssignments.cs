@@ -4,11 +4,19 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Linq.Expressions;
     using NetStandardPolyfills;
+#if !NET35
+    using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
 
-    public class WhenTranslatingAssignments
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingAssignments : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAnAssignment()
@@ -16,9 +24,9 @@
             var intVariable = Expression.Variable(typeof(int), "i");
             var assignDefaultToInt = Expression.Assign(intVariable, Expression.Default(typeof(int)));
 
-            var translated = assignDefaultToInt.ToReadableString();
+            var translated = ToReadableString(assignDefaultToInt);
 
-            Assert.Equal("i = default(int)", translated);
+            translated.ShouldBe("i = default(int)");
         }
 
         [Fact]
@@ -27,9 +35,9 @@
             var intVariable = Expression.Variable(typeof(int), "i");
             var addOneAndAssign = Expression.AddAssign(intVariable, Expression.Constant(1));
 
-            var translated = addOneAndAssign.ToReadableString();
+            var translated = ToReadableString(addOneAndAssign);
 
-            Assert.Equal("i += 1", translated);
+            translated.ShouldBe("i += 1");
         }
 
         [Fact]
@@ -38,9 +46,9 @@
             var intVariable = Expression.Variable(typeof(int), "i");
             var addTenAndAssign = Expression.AddAssignChecked(intVariable, Expression.Constant(10));
 
-            var translated = addTenAndAssign.ToReadableString();
+            var translated = ToReadableString(addTenAndAssign);
 
-            Assert.Equal("checked { i += 10 }", translated);
+            translated.ShouldBe("checked { i += 10 }");
         }
 
         [Fact]
@@ -49,9 +57,9 @@
             var intVariable = Expression.Variable(typeof(int), "i");
             var substractTenAndAssign = Expression.SubtractAssign(intVariable, Expression.Constant(10));
 
-            var translated = substractTenAndAssign.ToReadableString();
+            var translated = ToReadableString(substractTenAndAssign);
 
-            Assert.Equal("i -= 10", translated);
+            translated.ShouldBe("i -= 10");
         }
 
         [Fact]
@@ -59,7 +67,7 @@
         {
             var intVariable = Expression.Variable(typeof(int), "i");
 
-            Expression<Action> consoleRead = () => Console.Read();
+            var consoleRead = CreateLambda(() => Console.Read());
 
             var variableOne = Expression.Variable(typeof(int), "one");
             var variableTwo = Expression.Variable(typeof(int), "two");
@@ -77,7 +85,7 @@
 
             var substractOneAndAssign = Expression.SubtractAssignChecked(intVariable, valueBlock);
 
-            var translated = substractOneAndAssign.ToReadableString();
+            var translated = ToReadableString(substractOneAndAssign);
 
             const string EXPECTED = @"
 checked
@@ -91,7 +99,7 @@ checked
     }
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -100,9 +108,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var tripleAndAssign = Expression.MultiplyAssign(intVariable, Expression.Constant(3));
 
-            var translated = tripleAndAssign.ToReadableString();
+            var translated = ToReadableString(tripleAndAssign);
 
-            Assert.Equal("i *= 3", translated);
+            translated.ShouldBe("i *= 3");
         }
 
         [Fact]
@@ -111,9 +119,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var doubleAndAssign = Expression.MultiplyAssignChecked(intVariable, Expression.Constant(2));
 
-            var translated = doubleAndAssign.ToReadableString();
+            var translated = ToReadableString(doubleAndAssign);
 
-            Assert.Equal("checked { i *= 2 }", translated);
+            translated.ShouldBe("checked { i *= 2 }");
         }
 
         [Fact]
@@ -122,9 +130,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var halveAndAssign = Expression.DivideAssign(intVariable, Expression.Constant(2));
 
-            var translated = halveAndAssign.ToReadableString();
+            var translated = ToReadableString(halveAndAssign);
 
-            Assert.Equal("i /= 2", translated);
+            translated.ShouldBe("i /= 2");
         }
 
         [Fact]
@@ -133,9 +141,9 @@ checked
             var intVariable = Expression.Variable(typeof(int), "i");
             var moduloTwoAndAssign = Expression.ModuloAssign(intVariable, Expression.Constant(2));
 
-            var translated = moduloTwoAndAssign.ToReadableString();
+            var translated = ToReadableString(moduloTwoAndAssign);
 
-            Assert.Equal(@"i %= 2", translated);
+            translated.ShouldBe(@"i %= 2");
         }
 
         [Fact]
@@ -145,9 +153,9 @@ checked
             var doubleTwo = Expression.Constant(2.0, typeof(double));
             var powerTwoAssign = Expression.PowerAssign(doubleVariable, doubleTwo);
 
-            var translated = powerTwoAssign.ToReadableString();
+            var translated = ToReadableString(powerTwoAssign);
 
-            Assert.Equal("d **= 2d", translated);
+            translated.ShouldBe("d **= 2d");
         }
 
         [Fact]
@@ -157,9 +165,9 @@ checked
             var intVariableTwo = Expression.Variable(typeof(int), "i2");
             var bitwiseAndAssign = Expression.AndAssign(intVariableOne, intVariableTwo);
 
-            var translated = bitwiseAndAssign.ToReadableString();
+            var translated = ToReadableString(bitwiseAndAssign);
 
-            Assert.Equal("i1 &= i2", translated);
+            translated.ShouldBe("i1 &= i2");
         }
 
         [Fact]
@@ -169,9 +177,9 @@ checked
             var intVariableTwo = Expression.Variable(typeof(int), "i2");
             var bitwiseOrAssign = Expression.OrAssign(intVariableOne, intVariableTwo);
 
-            var translated = bitwiseOrAssign.ToReadableString();
+            var translated = ToReadableString(bitwiseOrAssign);
 
-            Assert.Equal("i1 |= i2", translated);
+            translated.ShouldBe("i1 |= i2");
         }
 
         [Fact]
@@ -181,9 +189,9 @@ checked
             var intVariableTwo = Expression.Variable(typeof(int), "i2");
             var bitwiseExclusiveOrAssign = Expression.ExclusiveOrAssign(intVariableOne, intVariableTwo);
 
-            var translated = bitwiseExclusiveOrAssign.ToReadableString();
+            var translated = ToReadableString(bitwiseExclusiveOrAssign);
 
-            Assert.Equal("i1 ^= i2", translated);
+            translated.ShouldBe("i1 ^= i2");
         }
 
         [Fact]
@@ -193,9 +201,9 @@ checked
             var intVariableTwo = Expression.Variable(typeof(int), "i2");
             var leftShiftAndAssign = Expression.LeftShiftAssign(intVariableOne, intVariableTwo);
 
-            var translated = leftShiftAndAssign.ToReadableString();
+            var translated = ToReadableString(leftShiftAndAssign);
 
-            Assert.Equal("i1 <<= i2", translated);
+            translated.ShouldBe("i1 <<= i2");
         }
 
         [Fact]
@@ -205,9 +213,9 @@ checked
             var intVariableTwo = Expression.Variable(typeof(int), "i2");
             var rightShiftAndAssign = Expression.RightShiftAssign(intVariableOne, intVariableTwo);
 
-            var translated = rightShiftAndAssign.ToReadableString();
+            var translated = ToReadableString(rightShiftAndAssign);
 
-            Assert.Equal("i1 >>= i2", translated);
+            translated.ShouldBe("i1 >>= i2");
         }
 
         [Fact]
@@ -217,9 +225,9 @@ checked
             var oneMultipliedByTwo = Expression.Multiply(Expression.Constant(1), Expression.Constant(2));
             var assignment = Expression.Assign(intVariable, oneMultipliedByTwo);
 
-            var translated = assignment.ToReadableString();
+            var translated = ToReadableString(assignment);
 
-            Assert.Equal("i = 1 * 2", translated);
+            translated.ShouldBe("i = 1 * 2");
         }
 
         [Fact]
@@ -230,9 +238,9 @@ checked
             var assignBool = Expression.Assign(boolVariable1, Expression.IsFalse(boolVariable2));
             var negated = Expression.Not(assignBool);
 
-            var translated = negated.ToReadableString();
+            var translated = ToReadableString(negated);
 
-            Assert.Equal("!(isItNot = !isIt)", translated);
+            translated.ShouldBe("!(isItNot = !isIt)");
         }
 
         [Fact]
@@ -250,9 +258,9 @@ checked
 
             var assignment = Expression.Assign(intVariable1, threeOrDefault);
 
-            var translated = assignment.ToReadableString();
+            var translated = ToReadableString(assignment);
 
-            Assert.Equal("i = (j > 1) ? 3 : default(int)", translated);
+            translated.ShouldBe("i = (j > 1) ? 3 : default(int)");
         }
 
         [Fact]
@@ -263,9 +271,9 @@ checked
             var assignVariable2 = Expression.Assign(intVariable2, Expression.Constant(1));
             var setVariableOneToAssignmentResult = Expression.Assign(intVariable1, assignVariable2);
 
-            var translated = setVariableOneToAssignmentResult.ToReadableString();
+            var translated = ToReadableString(setVariableOneToAssignmentResult);
 
-            Assert.Equal("i = j = 1", translated);
+            translated.ShouldBe("i = j = 1");
         }
 
         [Fact]
@@ -282,13 +290,13 @@ checked
                 new[] { longVariable, intVariable },
                 setLongVariableToAssignmentResult);
 
-            var translated = assignmentBlock.ToReadableString();
+            var translated = ToReadableString(assignmentBlock);
 
             const string EXPECTED = @"
 int j;
 var i = ((long)(j = 10));";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -296,14 +304,14 @@ var i = ((long)(j = 10));";
         {
             var intVariable = Expression.Variable(typeof(int), "i");
 
-            Expression<Func<int>> read = () => Console.Read();
+            var read = CreateLambda(() => Console.Read());
 
             var returnDefault = Expression.Catch(typeof(IOException), Expression.Default(typeof(int)));
             var readOrDefault = Expression.TryCatch(read.Body, returnDefault);
 
             var assignReadOrDefault = Expression.Assign(intVariable, readOrDefault);
 
-            var translated = assignReadOrDefault.ToReadableString();
+            var translated = ToReadableString(assignReadOrDefault);
 
             const string EXPECTED = @"
 i =
@@ -318,7 +326,7 @@ i =
     }
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -329,14 +337,14 @@ i =
             var isAssignmentFive = Expression.Equal(assignVariable, Expression.Constant(5));
             var ifFiveDoNothing = Expression.IfThen(isAssignmentFive, Expression.Empty());
 
-            var translated = ifFiveDoNothing.ToReadableString();
+            var translated = ToReadableString(ifFiveDoNothing);
 
             const string EXPECTED = @"
 if ((i = 10) == 5)
 {
 }";
 
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -355,28 +363,28 @@ if ((i = 10) == 5)
 
             var intToString = Expression.Call(intVariable, intToStringMethod, setStringVariableToNull);
 
-            var translated = intToString.ToReadableString();
+            var translated = ToReadableString(intToString);
 
-            Assert.Equal("i.ToString(value = null)", translated);
+            translated.ShouldBe("i.ToString(value = null)");
         }
 
         [Fact]
         public void ShouldAssignAMultiplicationToStringResult()
         {
-            Expression<Func<int, string>> timesThreeToString = i => (i * 3).ToString();
+            var timesThreeToString = CreateLambda((int i) => (i * 3).ToString());
 
             var stringVariable = Expression.Variable(typeof(string), "value");
             var stringAssignment = Expression.Assign(stringVariable, timesThreeToString.Body);
 
-            var translated = stringAssignment.ToReadableString();
+            var translated = ToReadableString(stringAssignment);
 
-            Assert.Equal("value = (i * 3).ToString()", translated);
+            translated.ShouldBe("value = (i * 3).ToString()");
         }
 
         [Fact]
         public void ShouldTranslateAMultipleLineTernaryAssignment()
         {
-            Expression<Action> consoleRead = () => Console.Read();
+            var consoleRead = CreateLambda(() => Console.Read());
 
             var variableOne = Expression.Variable(typeof(int), "one");
             var variableTwo = Expression.Variable(typeof(int), "two");
@@ -422,7 +430,7 @@ if ((i = 10) == 5)
             var resultVariable = Expression.Variable(typeof(int), "result");
             var resultAssignment = Expression.Assign(resultVariable, conditional);
 
-            var translated = resultAssignment.ToReadableString();
+            var translated = ToReadableString(resultAssignment);
 
             const string EXPECTED = @"
 result = ((DateTime.Now.Hour % 2) == 0)
@@ -440,20 +448,20 @@ result = ((DateTime.Now.Hour % 2) == 0)
 
         return resultTwo;
     }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
         public void ShouldTranslatedMultipleLineValueBlockAssignments()
         {
-            Expression<Func<string[], IEnumerable<int>>> linqSelect = ints => ints.Select(int.Parse);
+            var linqSelect = CreateLambda((string[] ints) => ints.Select(int.Parse));
             var selectMethod = ((MethodCallExpression)linqSelect.Body).Method;
 
-            Expression<Func<string[]>> getStringArray = () => new[] { "1", "2", "blah" };
+            var getStringArray = CreateLambda(() => new[] { "1", "2", "blah" });
             var stringArray = getStringArray.Body;
 
             // ReSharper disable once RedundantAssignment
-            Expression<Func<string, int, int>> intTryParse = (str, value) => int.TryParse(str, out value) ? value : 0;
+            var intTryParse = CreateLambda((string str, int value) => int.TryParse(str, out value) ? value : 0);
             var stringParameter = intTryParse.Parameters[0];
             var intVariable = intTryParse.Parameters[1];
             var tryParseTernary = intTryParse.Body;
@@ -463,7 +471,7 @@ result = ((DateTime.Now.Hour % 2) == 0)
 
             var selectCall = Expression.Call(selectMethod, stringArray, tryParseLambda);
 
-            Expression<Func<IEnumerable<int>, int[]>> linqToArray = ints => ints.ToArray();
+            var linqToArray = CreateLambda((IEnumerable<int> ints) => ints.ToArray());
             var toArrayMethod = ((MethodCallExpression)linqToArray.Body).Method;
 
             var toArrayCall = Expression.Call(toArrayMethod, selectCall);
@@ -472,7 +480,7 @@ result = ((DateTime.Now.Hour % 2) == 0)
             var assignment = Expression.Assign(resultVariable, toArrayCall);
             var assignmentBlock = Expression.Block(assignment);
 
-            var translation = assignmentBlock.ToReadableString();
+            var translation = ToReadableString(assignmentBlock);
 
             const string EXPECTED = @"
 IList<int> result = new[] { ""1"", ""2"", ""blah"" }
@@ -483,14 +491,14 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
     })
     .ToArray();";
 
-            Assert.Equal(EXPECTED.TrimStart(), translation);
+            translation.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
         [Fact]
         public void ShouldTranslateANestedBlockAssignment()
         {
-            Expression<Action> consoleRead = () => Console.Read();
+            var consoleRead = CreateLambda(() => Console.Read());
 
             var variableOne = Expression.Variable(typeof(int), "one");
             var variableTwo = Expression.Variable(typeof(int), "two");
@@ -511,7 +519,7 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
             var resultVariable = Expression.Variable(typeof(int), "result");
             var resultOneAssignment = Expression.Assign(resultVariable, wrappingBlock);
 
-            var translated = resultOneAssignment.ToReadableString();
+            var translated = ToReadableString(resultOneAssignment);
 
             const string EXPECTED = @"
 result =
@@ -521,7 +529,7 @@ result =
 
     return (one - two);
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
@@ -530,7 +538,7 @@ result =
         {
             var valueConditional = GetReturnStatementBlock(out var existingInts);
 
-            Expression<Action> consoleRead = () => Console.Read();
+            var consoleRead = CreateLambda(() => Console.Read());
 
             var multiStatementValueBlock = Expression.Block(
                 new[] { existingInts },
@@ -540,7 +548,7 @@ result =
             var resultVariable = Expression.Variable(multiStatementValueBlock.Type, "result");
             var resultOneAssignment = Expression.Assign(resultVariable, multiStatementValueBlock);
 
-            var translated = resultOneAssignment.ToReadableString();
+            var translated = ToReadableString(resultOneAssignment);
 
             const string EXPECTED = @"
 result =
@@ -568,7 +576,7 @@ result =
             return ints;
         };
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/7
@@ -584,7 +592,7 @@ result =
             var resultVariable = Expression.Variable(singleStatementValueBlock.Type, "result");
             var resultOneAssignment = Expression.Assign(resultVariable, singleStatementValueBlock);
 
-            var translated = resultOneAssignment.ToReadableString();
+            var translated = ToReadableString(resultOneAssignment);
 
             const string EXPECTED = @"
 result =
@@ -610,7 +618,7 @@ result =
             return ints;
         };
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -618,47 +626,42 @@ result =
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
             var objectValue = Expression.Variable(typeof(object), "value");
-            var guidVariable = Expression.Variable(typeof(Guid), "guid");
-            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
-
-            var guidTryParseMethod = typeof(Guid)
-                .GetMethods()
-                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
+            var intVariable = Expression.Variable(typeof(int), "num");
+            var intValue = Expression.Variable(typeof(int), "numValue");
 
             var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultGuid = Expression.Default(typeof(Guid));
+            var defaultInt = Expression.Default(typeof(int));
 
-            var guidTryParse = Expression.Call(
-                null,
-                guidTryParseMethod,
+            var intTryParse = Expression.Call(
+                typeof(int).GetPublicStaticMethod("TryParse", parameterCount: 2),
                 Expression.Condition(
                     objectNotNull,
                     Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                     Expression.Default(typeof(string))),
-                guidValue);
+                intValue);
 
-            var objectAsGuidOrDefault = Expression.Condition(guidTryParse, guidValue, defaultGuid);
+            var objectAsIntOrDefault = Expression.Condition(intTryParse, intValue, defaultInt);
 
-            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+            var intParseInnerBlock = Expression.Block(new[] { intValue }, objectAsIntOrDefault);
 
-            var guidParseOuterBlock = Expression.Block(
+            var intParseOuterBlock = Expression.Block(
                 new[] { objectVariable },
                 Expression.Assign(objectVariable, objectValue),
-                guidParseInnerBlock);
+                intParseInnerBlock);
 
-            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+            var intAssignment = Expression.Assign(intVariable, intParseOuterBlock);
 
-            var translated = guidAssignment.ToReadableString();
+            var translated = ToReadableString(intAssignment);
 
             const string EXPECTED = @"
-guid =
+num =
 {
     var id = value;
 
-    Guid guidValue;
-    return Guid.TryParse((id != null) ? id.ToString() : null, out guidValue) ? guidValue : default(Guid);
+    int numValue;
+    return int.TryParse((id != null) ? id.ToString() : null, out numValue) ? numValue : default(int);
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -666,49 +669,57 @@ guid =
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
             var objectValue = Expression.Variable(typeof(object), "value");
-            var guidVariable = Expression.Variable(typeof(Guid), "guid");
-            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
+            var longVariable = Expression.Variable(typeof(long), "number");
+            var longValue = Expression.Variable(typeof(long), "numberValue");
 
-            var guidTryParseMethod = typeof(Guid)
-                .GetMethods()
-                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
-
-            var guidTryParse = Expression.Call(
+            var longTryParse = Expression.Call(
                 null,
-                guidTryParseMethod,
+                typeof(long).GetPublicStaticMethod("TryParse", parameterCount: 2),
                 Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
-                guidValue);
+                longValue);
 
             var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultGuid = Expression.Default(typeof(Guid));
+            var defaultlong = Expression.Default(typeof(long));
 
-            var objectAsGuidOrDefault = Expression.Condition(
+            var objectAslongOrDefault = Expression.Condition(
                 objectNotNull,
-                Expression.Condition(guidTryParse, guidValue, defaultGuid),
-                defaultGuid);
+                Expression.Condition(longTryParse, longValue, defaultlong),
+                defaultlong);
 
-            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+            var longParseInnerBlock = Expression.Block(new[] { longValue }, objectAslongOrDefault);
 
-            var guidParseOuterBlock = Expression.Block(
+            var longParseOuterBlock = Expression.Block(
                 new[] { objectVariable },
                 Expression.Assign(objectVariable, objectValue),
-                guidParseInnerBlock);
+                longParseInnerBlock);
 
-            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+            var longAssignment = Expression.Assign(longVariable, longParseOuterBlock);
 
-            var translated = guidAssignment.ToReadableString();
+            var translated = ToReadableString(longAssignment);
 
             const string EXPECTED = @"
-guid =
+number =
 {
     var id = value;
 
-    Guid guidValue;
+    long numberValue;
     return (id != null)
-        ? Guid.TryParse(id.ToString(), out guidValue) ? guidValue : default(Guid)
-        : default(Guid);
+        ? long.TryParse(id.ToString(), out numberValue) ? numberValue : default(long)
+        : default(long);
 }";
-            Assert.Equal(EXPECTED.TrimStart(), translated);
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnExtensionAssignment()
+        {
+            var value = new ExtensionExpression(typeof(int));
+            var extensionVariable = Expression.Variable(value.Type, "ext");
+            var assignment = Expression.Assign(extensionVariable, value);
+
+            var translated = ToReadableString(assignment);
+
+            translated.ShouldBe("ext = " + value);
         }
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)

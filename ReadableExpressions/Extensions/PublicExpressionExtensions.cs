@@ -1,7 +1,15 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using MemberExpression = Microsoft.Scripting.Ast.MemberExpression;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+#endif
+    using NetStandardPolyfills;
 
     /// <summary>
     /// Provides a set of static extension methods for Expression information.
@@ -20,7 +28,7 @@
         public static Expression GetSubject(this MethodCallExpression methodCall)
         {
             return methodCall.Method.IsExtensionMethod()
-                ? methodCall.Arguments.First() : methodCall.Object;
+                 ? methodCall.Arguments.First() : methodCall.Object;
         }
 
         /// <summary>

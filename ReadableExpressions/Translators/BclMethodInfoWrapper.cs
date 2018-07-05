@@ -4,7 +4,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Reflection;
-    using Extensions;
+    using NetStandardPolyfills;
 
     internal class BclMethodInfoWrapper : IMethodInfo
     {

@@ -1,4 +1,5 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿#if !NET35
+namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Linq.Expressions;
@@ -88,9 +89,9 @@
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var assignment = Expression.Assign(intVariable, Expression.Constant(0));
-            var translated = assignment.ToReadableString();
+            var translated = TestClassBase.ToReadableString(assignment);
 
-            Assert.Equal("i = 0", translated);
+            translated.ShouldBe("i = 0");
         }
 
         public void TestDynamicExpressionTranslation()
@@ -115,25 +116,26 @@
 
             var translated = dynamicLengthLambda.ToReadableString();
 
-            Assert.Equal("obj => obj.Length", translated);
+            translated.ShouldBe("obj => obj.Length");
         }
 
         public void TestIntTypeEqualExpressionTranslation()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
             var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
-            var translated = intIsLong.ToReadableString();
+            var translated = TestClassBase.ToReadableString(intIsLong);
 
-            Assert.Equal("(i TypeOf typeof(long))", translated);
+            translated.ShouldBe("(i TypeOf typeof(long))");
         }
 
         public void TestObjectTypeEqualExpressionTranslation()
         {
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
-            var translated = objectIsString.ToReadableString();
+            var translated = TestClassBase.ToReadableString(objectIsString);
 
-            Assert.Equal("(o is string)", translated);
+            translated.ShouldBe("(o is string)");
         }
     }
 }
+#endif

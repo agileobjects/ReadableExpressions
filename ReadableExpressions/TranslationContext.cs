@@ -2,8 +2,29 @@ namespace AgileObjects.ReadableExpressions
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
+    using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
+    using CatchBlock = Microsoft.Scripting.Ast.CatchBlock;
+    using ConditionalExpression = Microsoft.Scripting.Ast.ConditionalExpression;
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using ExpressionVisitor = Microsoft.Scripting.Ast.ExpressionVisitor;
+    using GotoExpression = Microsoft.Scripting.Ast.GotoExpression;
+    using GotoExpressionKind = Microsoft.Scripting.Ast.GotoExpressionKind;
+    using LabelExpression = Microsoft.Scripting.Ast.LabelExpression;
+    using LabelTarget = Microsoft.Scripting.Ast.LabelTarget;
+    using LambdaExpression = Microsoft.Scripting.Ast.LambdaExpression;
+    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
+    using SwitchCase = Microsoft.Scripting.Ast.SwitchCase;
+    using TryExpression = Microsoft.Scripting.Ast.TryExpression;
+    using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
+#endif
     using Extensions;
     using Translators;
     using Translators.Formatting;
@@ -107,6 +128,16 @@ namespace AgileObjects.ReadableExpressions
 
             return new CodeBlock(body, bodyString);
         }
+
+#if NET35
+        internal ParameterSet TranslateParameters<TExpression>(
+            ReadOnlyCollection<TExpression> parameters,
+            IMethodInfo method = null)
+            where TExpression : Expression
+        {
+            return new ParameterSet(method, parameters.Cast<Expression>().ToArray(), this);
+        }
+#endif
 
         internal ParameterSet TranslateParameters(
             IEnumerable<Expression> parameters,
@@ -321,9 +352,7 @@ namespace AgileObjects.ReadableExpressions
             }
 
             private bool VariableHasNotYetBeenAccessed(Expression variable)
-            {
-                return !_accessedVariables.Contains(variable);
-            }
+                => !_accessedVariables.Contains(variable);
 
             private void AddAssignmentIfAppropriate(Expression assignedValue)
             {

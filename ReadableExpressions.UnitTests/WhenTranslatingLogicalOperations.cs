@@ -1,79 +1,85 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Microsoft.Scripting.Ast;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingLogicalOperations
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingLogicalOperations : TestClassBase
     {
         [Fact]
         public void ShouldTranslateAnAndOperation()
         {
-            Expression<Func<bool, bool, bool>> bothBoolsAreTheSame = (b1, b2) => b1 && b2;
+            var bothBoolsAreTheSame = CreateLambda((bool b1, bool b2) => b1 && b2);
 
-            var translated = bothBoolsAreTheSame.Body.ToReadableString();
+            var translated = ToReadableString(bothBoolsAreTheSame.Body);
 
-            Assert.Equal("(b1 && b2)", translated);
+            translated.ShouldBe("(b1 && b2)");
         }
 
         [Fact]
         public void ShouldTranslateABitwiseAndOperation()
         {
-            Expression<Func<bool, bool, bool>> bitwiseAnd = (b1, b2) => b1 & b2;
+            var bitwiseAnd = CreateLambda((bool b1, bool b2) => b1 & b2);
 
-            var translated = bitwiseAnd.Body.ToReadableString();
+            var translated = ToReadableString(bitwiseAnd.Body);
 
-            Assert.Equal("(b1 & b2)", translated);
+            translated.ShouldBe("(b1 & b2)");
         }
 
         [Fact]
         public void ShouldTranslateAnOrOperation()
         {
-            Expression<Func<bool, bool, bool>> eitherBoolsIsTrue = (b1, b2) => b1 || b2;
+            var eitherBoolsIsTrue = CreateLambda((bool b1, bool b2) => b1 || b2);
 
-            var translated = eitherBoolsIsTrue.Body.ToReadableString();
+            var translated = ToReadableString(eitherBoolsIsTrue.Body);
 
-            Assert.Equal("(b1 || b2)", translated);
+            translated.ShouldBe("(b1 || b2)");
         }
 
         [Fact]
         public void ShouldTranslateABitwiseOrOperation()
         {
-            Expression<Func<bool, bool, bool>> bitwiseOr = (b1, b2) => b1 | b2;
+            var bitwiseOr = CreateLambda((bool b1, bool b2) => b1 | b2);
 
-            var translated = bitwiseOr.Body.ToReadableString();
+            var translated = ToReadableString(bitwiseOr.Body);
 
-            Assert.Equal("(b1 | b2)", translated);
+            translated.ShouldBe("(b1 | b2)");
         }
 
         [Fact]
         public void ShouldTranslateABitwiseExclusiveOrOperation()
         {
-            Expression<Func<bool, bool, bool>> bitwiseExclusiveOr = (b1, b2) => b1 ^ b2;
+            var bitwiseExclusiveOr = CreateLambda((bool b1, bool b2) => b1 ^ b2);
 
-            var translated = bitwiseExclusiveOr.Body.ToReadableString();
+            var translated = ToReadableString(bitwiseExclusiveOr.Body);
 
-            Assert.Equal("(b1 ^ b2)", translated);
+            translated.ShouldBe("(b1 ^ b2)");
         }
 
         [Fact]
         public void ShouldTranslateABitwiseLeftShiftOperation()
         {
-            Expression<Func<int, int, int>> bitwiseLeftShift = (i1, i2) => i1 << i2;
+            var bitwiseLeftShift = CreateLambda((int i1, int i2) => i1 << i2);
 
-            var translated = bitwiseLeftShift.Body.ToReadableString();
+            var translated = ToReadableString(bitwiseLeftShift.Body);
 
-            Assert.Equal("(i1 << i2)", translated);
+            translated.ShouldBe("(i1 << i2)");
         }
 
         [Fact]
         public void ShouldTranslateABitwiseRightShiftOperation()
         {
-            Expression<Func<int, int, int>> bitwiseRightShift = (i1, i2) => i1 >> i2;
+            var bitwiseRightShift = CreateLambda((int i1, int i2) => i1 >> i2);
 
-            var translated = bitwiseRightShift.Body.ToReadableString();
+            var translated = ToReadableString(bitwiseRightShift.Body);
 
-            Assert.Equal("(i1 >> i2)", translated);
+            translated.ShouldBe("(i1 >> i2)");
         }
 
         [Fact]
@@ -82,9 +88,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Expression.Variable(typeof(int), "i");
             var unaryPlus = Expression.UnaryPlus(intVariable);
 
-            var translated = unaryPlus.ToReadableString();
+            var translated = ToReadableString(unaryPlus);
 
-            Assert.Equal("+i", translated);
+            translated.ShouldBe("+i");
         }
 
         [Fact]
@@ -93,39 +99,39 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Expression.Variable(typeof(int), "i");
             var onesComplement = Expression.OnesComplement(intVariable);
 
-            var translated = onesComplement.ToReadableString();
+            var translated = ToReadableString(onesComplement);
 
-            Assert.Equal("~i", translated);
+            translated.ShouldBe("~i");
         }
 
         [Fact]
         public void ShouldTranslateACoalesceOperation()
         {
-            Expression<Func<bool?, bool, bool>> oneOrTwo = (b1, b2) => b1 ?? b2;
+            var oneOrTwo = CreateLambda((bool? b1, bool b2) => b1 ?? b2);
 
-            var translated = oneOrTwo.Body.ToReadableString();
+            var translated = ToReadableString(oneOrTwo.Body);
 
-            Assert.Equal("(b1 ?? b2)", translated);
+            translated.ShouldBe("(b1 ?? b2)");
         }
 
         [Fact]
         public void ShouldTranslateAConditionalOperation()
         {
-            Expression<Func<int, string>> whatSize = i => (i < 8) ? "Too small" : "Too big";
+            var whatSize = CreateLambda((int i) => (i < 8) ? "Too small" : "Too big");
 
-            var translated = whatSize.Body.ToReadableString();
+            var translated = ToReadableString(whatSize.Body);
 
-            Assert.Equal("(i < 8) ? \"Too small\" : \"Too big\"", translated);
+            translated.ShouldBe("(i < 8) ? \"Too small\" : \"Too big\"");
         }
 
         [Fact]
         public void ShouldTranslateAnIsTypeExpression()
         {
-            Expression<Func<object, bool>> objectIsDisposable = o => o is IDisposable;
+            var objectIsDisposable = CreateLambda((object o) => o is IDisposable);
 
-            var translated = objectIsDisposable.Body.ToReadableString();
+            var translated = ToReadableString(objectIsDisposable.Body);
 
-            Assert.Equal("(o is IDisposable)", translated);
+            translated.ShouldBe("(o is IDisposable)");
         }
 
         [Fact]
@@ -134,9 +140,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Expression.Variable(typeof(int), "i");
             var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
 
-            var translated = intIsLong.ToReadableString();
+            var translated = ToReadableString(intIsLong);
 
-            Assert.Equal("false", translated);
+            translated.ShouldBe("false");
         }
 
         [Fact]
@@ -145,9 +151,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var nullableLongVariable = Expression.Variable(typeof(long?), "l");
             var nullableLongIsNullableLong = Expression.TypeEqual(nullableLongVariable, typeof(long?));
 
-            var translated = nullableLongIsNullableLong.ToReadableString();
+            var translated = ToReadableString(nullableLongIsNullableLong);
 
-            Assert.Equal("(l != null)", translated);
+            translated.ShouldBe("(l != null)");
         }
 
         [Fact]
@@ -156,9 +162,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intConstant = Expression.Constant(123, typeof(int));
             var intConstantIsInt = Expression.TypeEqual(intConstant, typeof(int));
 
-            var translated = intConstantIsInt.ToReadableString();
+            var translated = ToReadableString(intConstantIsInt);
 
-            Assert.Equal("true", translated);
+            translated.ShouldBe("true");
         }
 
         [Fact]
@@ -167,9 +173,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
 
-            var translated = objectIsString.ToReadableString();
+            var translated = ToReadableString(objectIsString);
 
-            Assert.Equal("((o != null) && (o.GetType() == typeof(string)))", translated);
+            translated.ShouldBe("((o != null) && (o.GetType() == typeof(string)))");
         }
 
         [Fact]
@@ -178,9 +184,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "b");
             var boolIsTrue = Expression.IsTrue(boolVariable);
 
-            var translated = boolIsTrue.ToReadableString();
+            var translated = ToReadableString(boolIsTrue);
 
-            Assert.Equal("b", translated);
+            translated.ShouldBe("b");
         }
 
         [Fact]
@@ -189,9 +195,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Expression.Variable(typeof(bool), "b");
             var boolIsFalse = Expression.IsFalse(boolVariable);
 
-            var translated = boolIsFalse.ToReadableString();
+            var translated = ToReadableString(boolIsFalse);
 
-            Assert.Equal("!b", translated);
+            translated.ShouldBe("!b");
         }
     }
 }

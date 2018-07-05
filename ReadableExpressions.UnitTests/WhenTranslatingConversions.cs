@@ -2,19 +2,25 @@
 {
     using System;
     using System.IO;
+#if !NET35
     using System.Linq.Expressions;
     using Xunit;
+#else
+    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Fact = NUnit.Framework.TestAttribute;
 
-    public class WhenTranslatingConversions
+    [NUnit.Framework.TestFixture]
+#endif
+    public class WhenTranslatingConversions : TestClassBase
     {
         [Fact]
         public void ShouldTranslateACastExpression()
         {
-            Expression<Func<int, double>> intToDouble = i => (double)i;
+            var intToDouble = CreateLambda((int i) => (double)i);
 
-            var translated = intToDouble.ToReadableString();
+            var translated = ToReadableString(intToDouble);
 
-            Assert.Equal("i => (double)i", translated);
+            translated.ShouldBe("i => (double)i");
         }
 
         [Fact]
@@ -25,49 +31,49 @@
 
             var checkedCastLambda = Expression.Lambda<Func<int, short>>(checkedCast, intParameter);
 
-            var translated = checkedCastLambda.ToReadableString();
+            var translated = ToReadableString(checkedCastLambda);
 
-            Assert.Equal("i => (short)i", translated);
+            translated.ShouldBe("i => (short)i");
         }
 
         [Fact]
         public void ShouldTranslateACastToNullableExpression()
         {
-            Expression<Func<long, long?>> longToNullable = l => (long?)l;
+            var longToNullable = CreateLambda((long l) => (long?)l);
 
-            var translated = longToNullable.ToReadableString();
+            var translated = ToReadableString(longToNullable);
 
-            Assert.Equal("l => (long?)l", translated);
+            translated.ShouldBe("l => (long?)l");
         }
 
         [Fact]
         public void ShouldUseParenthesisInCasting()
         {
-            Expression<Func<object, int>> castDateTimeHour = o => ((DateTime)o).Hour;
+            var castDateTimeHour = CreateLambda((object o) => ((DateTime)o).Hour);
 
-            var translated = castDateTimeHour.ToReadableString();
+            var translated = ToReadableString(castDateTimeHour);
 
-            Assert.Equal("o => ((DateTime)o).Hour", translated);
+            translated.ShouldBe("o => ((DateTime)o).Hour");
         }
 
         [Fact]
         public void ShouldTranslateANegationExpression()
         {
-            Expression<Func<bool, bool>> negator = b => !b;
+            var negator = CreateLambda((bool b) => !b);
 
-            var translated = negator.ToReadableString();
+            var translated = ToReadableString(negator);
 
-            Assert.Equal("b => !b", translated);
+            translated.ShouldBe("b => !b");
         }
 
         [Fact]
         public void ShouldTranslateAnAsCastExpression()
         {
-            Expression<Func<Stream, IDisposable>> streamAsDisposable = stream => stream as IDisposable;
+            var streamAsDisposable = CreateLambda((Stream stream) => stream as IDisposable);
 
-            var translated = streamAsDisposable.Body.ToReadableString();
+            var translated = ToReadableString(streamAsDisposable.Body);
 
-            Assert.Equal("(stream as IDisposable)", translated);
+            translated.ShouldBe("(stream as IDisposable)");
         }
 
         [Fact]
@@ -76,9 +82,9 @@
             var objectVariable = Expression.Variable(typeof(object), "o");
             var unboxObjectToInt = Expression.Unbox(objectVariable, typeof(int));
 
-            var translated = unboxObjectToInt.ToReadableString();
+            var translated = ToReadableString(unboxObjectToInt);
 
-            Assert.Equal("((int)o)", translated);
+            translated.ShouldBe("((int)o)");
         }
     }
 }

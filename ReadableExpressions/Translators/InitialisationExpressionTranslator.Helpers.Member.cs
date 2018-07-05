@@ -3,7 +3,18 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if !NET35
     using System.Linq.Expressions;
+#else
+    using ElementInit = Microsoft.Scripting.Ast.ElementInit;
+    using MemberAssignment = Microsoft.Scripting.Ast.MemberAssignment;
+    using MemberBinding = Microsoft.Scripting.Ast.MemberBinding;
+    using MemberListBinding = Microsoft.Scripting.Ast.MemberListBinding;
+    using MemberMemberBinding = Microsoft.Scripting.Ast.MemberMemberBinding;
+    using MemberBindingType = Microsoft.Scripting.Ast.MemberBindingType;
+    using MemberInitExpression = Microsoft.Scripting.Ast.MemberInitExpression;
+    using NewExpression = Microsoft.Scripting.Ast.NewExpression;
+#endif
 
     internal partial class InitialisationExpressionTranslator
     {
