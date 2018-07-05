@@ -1,6 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
-    using System.Linq;
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -10,20 +10,20 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class NewArrayExpressionTranslator : ExpressionTranslatorBase
+    internal struct NewArrayExpressionTranslator : IExpressionTranslator
     {
-        internal NewArrayExpressionTranslator()
-            : base(ExpressionType.NewArrayBounds)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.NewArrayBounds; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var newArray = (NewArrayExpression)expression;
 
             var arrayTypeName = expression.Type.GetElementType().GetFriendlyName();
 
-            var bounds = newArray.Expressions.Select(context.Translate).Join("[]");
+            var bounds = newArray.Expressions.Project(context.Translate).Join("[]");
 
             return $"new {arrayTypeName}[{bounds}]";
         }

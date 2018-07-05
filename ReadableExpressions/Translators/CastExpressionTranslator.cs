@@ -17,7 +17,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class CastExpressionTranslator : ExpressionTranslatorBase
+    internal struct CastExpressionTranslator : IExpressionTranslator
     {
         private static readonly Dictionary<ExpressionType, Translator> _translatorsByType =
             new Dictionary<ExpressionType, Translator>
@@ -29,15 +29,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.Unbox] = TranslateCastCore,
             };
 
-        internal CastExpressionTranslator()
-            : base(_translatorsByType.Keys.ToArray())
-        {
-        }
+        public IEnumerable<ExpressionType> NodeTypes => _translatorsByType.Keys;
 
-        public override string Translate(Expression expression, TranslationContext context)
-        {
-            return _translatorsByType[expression.NodeType].Invoke(expression, context);
-        }
+        public string Translate(Expression expression, TranslationContext context)
+            => _translatorsByType[expression.NodeType].Invoke(expression, context);
 
         private static string TranslateCast(Expression expression, TranslationContext context)
         {

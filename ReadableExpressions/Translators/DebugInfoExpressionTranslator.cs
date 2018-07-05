@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
     using System.Globalization;
 #if !NET35
     using System.Linq.Expressions;
@@ -10,14 +11,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
 #endif
 
-    internal class DebugInfoExpressionTranslator : ExpressionTranslatorBase
+    internal struct DebugInfoExpressionTranslator : IExpressionTranslator
     {
-        public DebugInfoExpressionTranslator()
-            : base(ExpressionType.DebugInfo)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.DebugInfo; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var debugInfo = (DebugInfoExpression)expression;
 

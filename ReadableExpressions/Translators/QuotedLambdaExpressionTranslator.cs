@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -9,14 +10,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
 #endif
 
-    internal class QuotedLambdaExpressionTranslator : ExpressionTranslatorBase
+    internal struct QuotedLambdaExpressionTranslator : IExpressionTranslator
     {
-        public QuotedLambdaExpressionTranslator()
-            : base(ExpressionType.Quote)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Quote; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var quote = (UnaryExpression)expression;
 

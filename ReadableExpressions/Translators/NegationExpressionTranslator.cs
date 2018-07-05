@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
-    using System.Linq;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -10,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
 #endif
 
-    internal class NegationExpressionTranslator : ExpressionTranslatorBase
+    internal struct NegationExpressionTranslator : IExpressionTranslator
     {
         private static readonly Dictionary<ExpressionType, string> _negationsByNodeType = new Dictionary<ExpressionType, string>
         {
@@ -19,22 +19,17 @@ namespace AgileObjects.ReadableExpressions.Translators
             [ExpressionType.NegateChecked] = "-"
         };
 
-        internal NegationExpressionTranslator()
-            : base(_negationsByNodeType.Keys.ToArray())
-        {
-        }
+        public IEnumerable<ExpressionType> NodeTypes => _negationsByNodeType.Keys;
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var negation = (UnaryExpression)expression;
 
             return Translate(expression.NodeType, negation.Operand, context);
         }
 
-        public string TranslateNot(Expression expression, TranslationContext context)
-        {
-            return Translate(ExpressionType.Not, expression, context);
-        }
+        public static string TranslateNot(Expression expression, TranslationContext context) 
+            => Translate(ExpressionType.Not, expression, context);
 
         private static string Translate(ExpressionType negationType, Expression expression, TranslationContext context)
         {

@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -9,14 +10,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class DefaultExpressionTranslator : ExpressionTranslatorBase
+    internal struct DefaultExpressionTranslator : IExpressionTranslator
     {
-        public DefaultExpressionTranslator()
-            : base(ExpressionType.Default)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Default; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var defaultExpression = (DefaultExpression)expression;
 
@@ -30,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 : Translate(defaultExpression);
         }
 
-        internal string Translate(DefaultExpression defaultExpression)
+        internal static string Translate(DefaultExpression defaultExpression)
         {
             if (defaultExpression.Type == typeof(string))
             {

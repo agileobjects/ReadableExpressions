@@ -5,6 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Extensions;
     using Microsoft.Scripting.Ast;
     using Expression = Microsoft.Scripting.Ast.Expression;
     using LinqExp = System.Linq.Expressions;
@@ -194,7 +195,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 return Expression.Invoke(
                     ConvertExp(linqInvoke.Expression),
-                    linqInvoke.Arguments.Select(ConvertExp));
+                    linqInvoke.Arguments.Project(ConvertExp));
             }
 
             private Expression Convert(LinqExp.TypeBinaryExpression linqTypeBinary)
@@ -204,7 +205,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 return Expression.ListInit(
                     Convert(linqListInit.NewExpression),
-                    linqListInit.Initializers.Select(Convert));
+                    linqListInit.Initializers.Project(Convert));
             }
 
             private NewExpression Convert(LinqExp.NewExpression linqNew)
@@ -212,25 +213,25 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return (linqNew.Members != null)
                     ? Expression.New(
                           linqNew.Constructor,
-                          linqNew.Arguments.Select(ConvertExp),
+                          linqNew.Arguments.Project(ConvertExp),
                           linqNew.Members)
                     : Expression.New(
                           linqNew.Constructor,
-                          linqNew.Arguments.Select(ConvertExp));
+                          linqNew.Arguments.Project(ConvertExp));
             }
 
             private ElementInit Convert(LinqExp.ElementInit linqElementInit)
             {
                 return Expression.ElementInit(
                     linqElementInit.AddMethod,
-                    linqElementInit.Arguments.Select(ConvertExp));
+                    linqElementInit.Arguments.Project(ConvertExp));
             }
 
             private Expression Convert(LinqExp.NewArrayExpression linqNewArray, Func<Type, IEnumerable<Expression>, Expression> factory)
             {
                 return factory.Invoke(
                     linqNewArray.Type.GetElementType(),
-                    linqNewArray.Expressions.Select(ConvertExp));
+                    linqNewArray.Expressions.Project(ConvertExp));
             }
 
             private Expression Convert(LinqExp.ConditionalExpression linqConditional)
@@ -245,7 +246,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 return Expression.MemberInit(
                     Convert(linqMemberInit.NewExpression),
-                    linqMemberInit.Bindings.Select(Convert));
+                    linqMemberInit.Bindings.Project(Convert));
             }
 
             private MemberBinding Convert(LinqExp.MemberBinding linqBinding)
@@ -264,14 +265,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                         return Expression.MemberBind(
                             linqMemberBinding.Member,
-                            linqMemberBinding.Bindings.Select(Convert));
+                            linqMemberBinding.Bindings.Project(Convert));
 
                     case LinqExp.MemberBindingType.ListBinding:
                         var linqListBinding = (LinqExp.MemberListBinding)linqBinding;
 
                         return Expression.ListBind(
                             linqListBinding.Member,
-                            linqListBinding.Initializers.Select(Convert));
+                            linqListBinding.Initializers.Project(Convert));
 
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -316,7 +317,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             private Expression Convert(LinqExp.MethodCallExpression linqCall)
             {
-                var arguments = linqCall.Arguments.Select(arg =>
+                var arguments = linqCall.Arguments.Project(arg =>
                     (arg.NodeType == LinqExp.ExpressionType.Quote)
                         ? Expression.Constant(((LinqExp.UnaryExpression)arg).Operand, arg.Type)
                         : ConvertExp(arg));
@@ -339,7 +340,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return Expression.Lambda(
                     linqLambda.Type,
                     ConvertExp(linqLambda.Body),
-                    linqLambda.Parameters.Select(Convert));
+                    linqLambda.Parameters.Project(Convert));
             }
 
             private ParameterExpression Convert(LinqExp.ParameterExpression linqParam)

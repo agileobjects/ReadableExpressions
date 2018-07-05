@@ -9,6 +9,7 @@
     using Expression = Microsoft.Scripting.Ast.Expression;
     using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
 #endif
+    using Extensions;
     using Translators;
 
     internal class ExpressionTranslatorRegistry
@@ -17,49 +18,41 @@
 
         public ExpressionTranslatorRegistry()
         {
-            var defaultTranslator = new DefaultExpressionTranslator();
-            var assignmentTranslator = new AssignmentExpressionTranslator(defaultTranslator);
-            var negationTranslator = new NegationExpressionTranslator();
-            var parameterTranslator = new ParameterExpressionTranslator();
-            var memberAccessTranslator = new MemberAccessExpressionTranslator();
-            var indexAccessTranslator = new IndexAccessExpressionTranslator();
-            var methodCallTranslator = new MethodCallExpressionTranslator(indexAccessTranslator);
-
-            var translators = new List<IExpressionTranslator>
+            var translators = new IExpressionTranslator[]
             {
-                new ArrayLengthExpressionTranslator(),
-                assignmentTranslator,
-                new BinaryExpressionTranslator(negationTranslator),
-                new BlockExpressionTranslator(parameterTranslator),
-                new CastExpressionTranslator(),
-                new ConditionalExpressionTranslator(),
-                new ConstantExpressionTranslator(),
-                new DebugInfoExpressionTranslator(),
-                defaultTranslator,
-                new DynamicExpressionTranslator(memberAccessTranslator, assignmentTranslator, methodCallTranslator),
-                new ExtensionExpressionTranslator(),
-                new GotoExpressionTranslator(),
-                indexAccessTranslator,
-                new InitialisationExpressionTranslator(methodCallTranslator),
-                new LabelExpressionTranslator(),
-                new LambdaExpressionTranslator(),
-                new LoopExpressionTranslator(),
-                memberAccessTranslator,
-                methodCallTranslator,
-                negationTranslator,
-                new NewArrayExpressionTranslator(),
-                new NewExpressionTranslator(),
-                parameterTranslator,
-                new QuotedLambdaExpressionTranslator(),
-                new RuntimeVariablesExpressionTranslator(),
-                new SwitchExpressionTranslator(),
-                new TryCatchExpressionTranslator(),
-                new TypeEqualExpressionTranslator(),
-                new UnaryExpressionTranslator()
+                default(ArrayLengthExpressionTranslator),
+                default(AssignmentExpressionTranslator),
+                default(BinaryExpressionTranslator),
+                default(BlockExpressionTranslator),
+                default(CastExpressionTranslator),
+                default(ConditionalExpressionTranslator),
+                default(ConstantExpressionTranslator),
+                default(DebugInfoExpressionTranslator),
+                default(DefaultExpressionTranslator),
+                default(DynamicExpressionTranslator),
+                default(ExtensionExpressionTranslator),
+                default(GotoExpressionTranslator),
+                default(IndexAccessExpressionTranslator),
+                default(InitialisationExpressionTranslator),
+                default(LabelExpressionTranslator),
+                default(LambdaExpressionTranslator),
+                default(LoopExpressionTranslator),
+                default(MemberAccessExpressionTranslator),
+                default(MethodCallExpressionTranslator),
+                default(NegationExpressionTranslator),
+                default(NewArrayExpressionTranslator),
+                default(NewExpressionTranslator),
+                default(ParameterExpressionTranslator),
+                default(QuotedLambdaExpressionTranslator),
+                default(RuntimeVariablesExpressionTranslator),
+                default(SwitchExpressionTranslator),
+                default(TryCatchExpressionTranslator),
+                default(TypeEqualExpressionTranslator),
+                default(UnaryExpressionTranslator)
             };
 
             _translatorsByType = translators
-                .SelectMany(t => t.NodeTypes.Select(nt => new
+                .SelectMany(t => t.NodeTypes.Project(nt => new
                 {
                     NodeType = nt,
                     Translator = t

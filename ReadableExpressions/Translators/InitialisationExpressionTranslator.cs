@@ -9,22 +9,27 @@ namespace AgileObjects.ReadableExpressions.Translators
 
 #endif
 
-    internal partial class InitialisationExpressionTranslator : ExpressionTranslatorBase
+    internal partial struct InitialisationExpressionTranslator : IExpressionTranslator
     {
-        private readonly Dictionary<ExpressionType, IInitExpressionHelper> _helpersByNodeType;
-
-        internal InitialisationExpressionTranslator(MethodCallExpressionTranslator methodCallTranslator)
-            : base(ExpressionType.ListInit, ExpressionType.MemberInit, ExpressionType.NewArrayInit)
-        {
-            _helpersByNodeType = new Dictionary<ExpressionType, IInitExpressionHelper>
+        private static readonly Dictionary<ExpressionType, IInitExpressionHelper> _helpersByNodeType =
+            new Dictionary<ExpressionType, IInitExpressionHelper>
             {
                 [ExpressionType.ListInit] = new ListInitExpressionHelper(),
-                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(methodCallTranslator),
+                [ExpressionType.MemberInit] = new MemberInitExpressionHelper(),
                 [ExpressionType.NewArrayInit] = new ArrayInitExpressionHelper()
             };
+
+        public IEnumerable<ExpressionType> NodeTypes
+        {
+            get
+            {
+                yield return ExpressionType.ListInit;
+                yield return ExpressionType.MemberInit;
+                yield return ExpressionType.NewArrayInit;
+            }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
             => _helpersByNodeType[expression.NodeType].Translate(expression, context);
     }
 }

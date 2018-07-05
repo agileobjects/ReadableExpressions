@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
-    using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -12,7 +12,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class BinaryExpressionTranslator : ExpressionTranslatorBase
+    internal struct BinaryExpressionTranslator : IExpressionTranslator
     {
         private delegate string BinaryTranslator(BinaryExpression comparison, TranslationContext context);
 
@@ -47,31 +47,23 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly ExpressionType[] _checkedOperatorTypes =
             _operatorsByNodeType.GetCheckedExpressionTypes();
 
-        private readonly NegationExpressionTranslator _negationTranslator;
-        private readonly Dictionary<ExpressionType, BinaryTranslator> _translatorsByNodeType;
-
-        internal BinaryExpressionTranslator(NegationExpressionTranslator negationTranslator)
-            : base(_operatorsByNodeType.Keys.ToArray())
-        {
-            _negationTranslator = negationTranslator;
-
-            _translatorsByNodeType = new Dictionary<ExpressionType, BinaryTranslator>
+        private static readonly Dictionary<ExpressionType, BinaryTranslator> _translatorsByNodeType =
+            new Dictionary<ExpressionType, BinaryTranslator>
             {
                 [ExpressionType.Add] = TranslateAddition,
                 [ExpressionType.Equal] = TranslateEqualityComparison,
                 [ExpressionType.NotEqual] = TranslateEqualityComparison
             };
-        }
 
         public static string GetOperator(Expression expression) => _operatorsByNodeType[expression.NodeType];
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public IEnumerable<ExpressionType> NodeTypes => _operatorsByNodeType.Keys;
+
+        public string Translate(Expression expression, TranslationContext context)
         {
             var binary = (BinaryExpression)expression;
 
-            BinaryTranslator translator;
-
-            return _translatorsByNodeType.TryGetValue(expression.NodeType, out translator)
+            return _translatorsByNodeType.TryGetValue(expression.NodeType, out var translator)
                 ? translator.Invoke(binary, context)
                 : Translate(binary, context);
         }
@@ -107,7 +99,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             ExpressionType operatorType,
             string operation)
         {
-            if (!_checkedOperatorTypes.Contains(operatorType))
+            if (Array.IndexOf(_checkedOperatorTypes, operatorType) == -1)
             {
                 return operation.WithSurroundingParentheses();
             }
@@ -134,11 +126,9 @@ checked
             return new[] { binary.Left, binary.Right }.ToStringConcatenation(context);
         }
 
-        private string TranslateEqualityComparison(BinaryExpression comparison, TranslationContext context)
+        private static string TranslateEqualityComparison(BinaryExpression comparison, TranslationContext context)
         {
-            StandaloneBoolean standalone;
-
-            return TryGetStandaloneBoolean(comparison, out standalone)
+            return TryGetStandaloneBoolean(comparison, out var standalone)
                 ? Translate(standalone, context)
                 : Translate(comparison, context);
         }
@@ -167,11 +157,11 @@ checked
                    (expression.Type == typeof(bool));
         }
 
-        private string Translate(StandaloneBoolean standalone, TranslationContext context)
+        private static string Translate(StandaloneBoolean standalone, TranslationContext context)
         {
             return standalone.IsComparisonToTrue
                 ? TranslateOperand(standalone.Boolean, context)
-                : _negationTranslator.TranslateNot(standalone.Boolean, context);
+                : NegationExpressionTranslator.TranslateNot(standalone.Boolean, context);
         }
 
         private class StandaloneBoolean

@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -8,14 +9,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
 #endif
 
-    internal class ArrayLengthExpressionTranslator : ExpressionTranslatorBase
+    internal struct ArrayLengthExpressionTranslator : IExpressionTranslator
     {
-        internal ArrayLengthExpressionTranslator()
-            : base(ExpressionType.ArrayLength)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.ArrayLength; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var arrayAccess = context.Translate(((UnaryExpression)expression).Operand);
 

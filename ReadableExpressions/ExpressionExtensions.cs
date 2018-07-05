@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
     using Translators;
@@ -18,7 +19,7 @@
 
 #if NET35
         /// <summary>
-        /// Translates the given <paramref name="expression"/> to source-code string.
+        /// Translates the given Linq <paramref name="expression"/> to a source-code string.
         /// </summary>
         /// <param name="expression">The Expression to translate.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>
@@ -33,7 +34,7 @@
         }
 #endif
         /// <summary>
-        /// Translates the given <paramref name="expression"/> to source-code string.
+        /// Translates the given <paramref name="expression"/> to a source-code string.
         /// </summary>
         /// <param name="expression">The Expression to translate.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>

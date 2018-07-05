@@ -1,6 +1,8 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Collections.Generic;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -9,14 +11,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using LabelExpression = Microsoft.Scripting.Ast.LabelExpression;
 #endif
 
-    internal class LabelExpressionTranslator : ExpressionTranslatorBase
+    internal struct LabelExpressionTranslator : IExpressionTranslator
     {
-        public LabelExpressionTranslator()
-            : base(ExpressionType.Label)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Label; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var label = (LabelExpression)expression;
 

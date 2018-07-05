@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Linq;
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -15,19 +15,19 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class TryCatchExpressionTranslator : ExpressionTranslatorBase
+    internal struct TryCatchExpressionTranslator : IExpressionTranslator
     {
-        public TryCatchExpressionTranslator()
-            : base(ExpressionType.Try)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Try; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var tryCatchFinally = (TryExpression)expression;
 
             var tryBody = context.TranslateCodeBlock(tryCatchFinally.Body);
-            var catchBlocks = tryCatchFinally.Handlers.Select(h => GetCatchBlock(h, context)).Join(string.Empty);
+            var catchBlocks = tryCatchFinally.Handlers.Project(h => GetCatchBlock(h, context)).Join(string.Empty);
             var faultBlock = GetFaultBlock(tryCatchFinally.Fault, context);
             var finallyBlock = GetFinallyBlock(tryCatchFinally.Finally, context);
 

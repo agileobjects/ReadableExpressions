@@ -10,7 +10,7 @@
 #endif
     using Extensions;
 
-    internal partial class InitialisationExpressionTranslator
+    internal partial struct InitialisationExpressionTranslator
     {
         private class ArrayInitExpressionHelper : InitExpressionHelperBase<NewArrayExpression, NewArrayExpression>
         {
@@ -40,7 +40,7 @@
             {
                 var expressionTypes = initialisation
                     .Expressions
-                    .Select(exp => exp.Type)
+                    .Project(exp => exp.Type)
                     .Distinct()
                     .ToArray();
 
@@ -56,7 +56,7 @@
                 NewArrayExpression arrayInitialisation,
                 TranslationContext context)
             {
-                return arrayInitialisation.Expressions.Select(context.TranslateAsCodeBlock);
+                return arrayInitialisation.Expressions.Project(context.TranslateAsCodeBlock);
             }
         }
     }

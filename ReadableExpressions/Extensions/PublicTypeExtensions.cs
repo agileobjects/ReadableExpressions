@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using NetStandardPolyfills;
 
     /// <summary>
@@ -116,7 +115,7 @@
             IEnumerable<Type> typeArguments)
         {
             var typeGenericTypeArgumentFriendlyNames =
-                typeArguments.Select(GetFriendlyName).Join(", ");
+                typeArguments.Project(GetFriendlyName).Join(", ");
 
             typeName = typeName.Replace(
                 "`" + numberOfParameters,

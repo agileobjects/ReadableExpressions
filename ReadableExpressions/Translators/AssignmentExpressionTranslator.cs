@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System;
     using System.Collections.Generic;
-    using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -12,7 +12,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class AssignmentExpressionTranslator : ExpressionTranslatorBase
+    internal struct AssignmentExpressionTranslator : IExpressionTranslator
     {
         private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
             new Dictionary<ExpressionType, string>
@@ -37,15 +37,9 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static readonly ExpressionType[] _checkedAssignmentTypes =
             _symbolsByNodeType.GetCheckedExpressionTypes();
 
-        private readonly DefaultExpressionTranslator _defaultTranslator;
+        public IEnumerable<ExpressionType> NodeTypes => _symbolsByNodeType.Keys;
 
-        internal AssignmentExpressionTranslator(DefaultExpressionTranslator defaultTranslator)
-            : base(_symbolsByNodeType.Keys.ToArray())
-        {
-            _defaultTranslator = defaultTranslator;
-        }
-
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var assignment = (BinaryExpression)expression;
             var target = context.Translate(assignment.Left);
@@ -53,7 +47,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return GetAssignment(target, expression.NodeType, assignment.Right, context);
         }
 
-        internal string GetAssignment(
+        internal static string GetAssignment(
             string target,
             ExpressionType assignmentType,
             Expression value,
@@ -62,7 +56,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var symbol = _symbolsByNodeType[assignmentType];
 
             var valueString = (value.NodeType == ExpressionType.Default)
-                ? _defaultTranslator.Translate((DefaultExpression)value)
+                ? DefaultExpressionTranslator.Translate((DefaultExpression)value)
                 : GetValueTranslation(value, context);
 
             var assignment = target + " " + symbol;
@@ -101,7 +95,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             ExpressionType assignmentType,
             string assignment)
         {
-            if (!_checkedAssignmentTypes.Contains(assignmentType))
+            if (Array.IndexOf(_checkedAssignmentTypes, assignmentType) == -1)
             {
                 return assignment;
             }

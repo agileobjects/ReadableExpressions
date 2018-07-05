@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
     using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
@@ -12,14 +13,9 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class TypeEqualExpressionTranslator : ExpressionTranslatorBase
+    internal struct TypeEqualExpressionTranslator : IExpressionTranslator
     {
         private static readonly MethodInfo _reduceTypeEqualMethod;
-
-        public TypeEqualExpressionTranslator()
-            : base(ExpressionType.TypeEqual)
-        {
-        }
 
         static TypeEqualExpressionTranslator()
         {
@@ -35,7 +31,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public IEnumerable<ExpressionType> NodeTypes
+        {
+            get { yield return ExpressionType.TypeEqual; }
+        }
+
+        public string Translate(Expression expression, TranslationContext context)
         {
             if (_reduceTypeEqualMethod == null)
             {

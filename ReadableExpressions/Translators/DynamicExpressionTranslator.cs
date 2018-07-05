@@ -12,29 +12,24 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using System.Reflection;
     using System.Text.RegularExpressions;
+    using Extensions;
     using NetStandardPolyfills;
 
-    internal class DynamicExpressionTranslator : ExpressionTranslatorBase
+    internal struct DynamicExpressionTranslator : IExpressionTranslator
     {
-        private readonly IEnumerable<DynamicOperationTranslatorBase> _translators;
-
-        public DynamicExpressionTranslator(
-            MemberAccessExpressionTranslator memberAccessTranslator,
-            AssignmentExpressionTranslator assignmentTranslator,
-            MethodCallExpressionTranslator methodCallTranslator)
-            : base(ExpressionType.Dynamic)
+        private static readonly DynamicOperationTranslatorBase[] _translators =
         {
-            var dynamicMemberAccessTranslator = new DynamicMemberAccessTranslator(memberAccessTranslator);
+            new DynamicMemberAccessTranslator(),
+            new DynamicMemberWriteTranslator(),
+            new DynamicMethodCallTranslator()
+        };
 
-            _translators = new DynamicOperationTranslatorBase[]
-            {
-                dynamicMemberAccessTranslator,
-                new DynamicMemberWriteTranslator(dynamicMemberAccessTranslator, assignmentTranslator),
-                new DynamicMethodCallTranslator(methodCallTranslator)
-            };
+        public IEnumerable<ExpressionType> NodeTypes
+        {
+            get { yield return ExpressionType.Dynamic; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var dynamicExpression = (DynamicExpression)expression;
 
@@ -97,12 +92,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private class DynamicMemberAccessTranslator : DynamicOperationTranslatorBase
         {
-            private readonly MemberAccessExpressionTranslator _memberAccessTranslator;
-
-            public DynamicMemberAccessTranslator(MemberAccessExpressionTranslator memberAccessTranslator)
+            public DynamicMemberAccessTranslator()
                 : base(@"^GetMember (?<MemberName>[^\(]+)\(")
             {
-                _memberAccessTranslator = memberAccessTranslator;
             }
 
             protected override bool DoTranslate(
@@ -115,27 +107,20 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return true;
             }
 
-            internal string GetMemberAccess(Match match, IEnumerable<Expression> arguments, TranslationContext context)
+            internal static string GetMemberAccess(Match match, IEnumerable<Expression> arguments, TranslationContext context)
             {
                 var subject = context.Translate(arguments.First());
                 var memberName = match.Groups["MemberName"].Value;
 
-                return _memberAccessTranslator.GetMemberAccess(subject, memberName);
+                return MemberAccessExpressionTranslator.GetMemberAccess(subject, memberName);
             }
         }
 
         private class DynamicMemberWriteTranslator : DynamicOperationTranslatorBase
         {
-            private readonly DynamicMemberAccessTranslator _memberAccessTranslator;
-            private readonly AssignmentExpressionTranslator _assignmentTranslator;
-
-            public DynamicMemberWriteTranslator(
-                DynamicMemberAccessTranslator memberAccessTranslator,
-                AssignmentExpressionTranslator assignmentTranslator)
+            public DynamicMemberWriteTranslator()
                 : base(@"^SetMember (?<MemberName>[^\(]+)\(")
             {
-                _memberAccessTranslator = memberAccessTranslator;
-                _assignmentTranslator = assignmentTranslator;
             }
 
             protected override bool DoTranslate(
@@ -144,22 +129,19 @@ namespace AgileObjects.ReadableExpressions.Translators
                 TranslationContext context,
                 out string translated)
             {
-                var target = _memberAccessTranslator.GetMemberAccess(match, dynamicExpression.Arguments, context);
+                var target = DynamicMemberAccessTranslator.GetMemberAccess(match, dynamicExpression.Arguments, context);
                 var value = dynamicExpression.Arguments.Last();
 
-                translated = _assignmentTranslator.GetAssignment(target, ExpressionType.Assign, value, context);
+                translated = AssignmentExpressionTranslator.GetAssignment(target, ExpressionType.Assign, value, context);
                 return true;
             }
         }
 
         private class DynamicMethodCallTranslator : DynamicOperationTranslatorBase
         {
-            private readonly MethodCallExpressionTranslator _methodCallTranslator;
-
-            public DynamicMethodCallTranslator(MethodCallExpressionTranslator methodCallTranslator)
+            public DynamicMethodCallTranslator()
                 : base(@"^Call (?<MethodName>[^\(]+)\(")
             {
-                _methodCallTranslator = methodCallTranslator;
             }
 
             protected override bool DoTranslate(
@@ -180,7 +162,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     methodArguments,
                     dynamicExpression.Type);
 
-                translated = _methodCallTranslator.GetMethodCall(
+                translated = MethodCallExpressionTranslator.GetMethodCall(
                     subject,
                     methodInfo,
                     methodArguments,
@@ -220,7 +202,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 var methodParameters = method
                     .GetParameters()
-                    .Select((p, i) => new { Index = i, Parameter = p })
+                    .Project((p, i) => new { Index = i, Parameter = p })
                     .ToArray();
 
                 var genericArguments = new Type[genericParameterTypes.Length];

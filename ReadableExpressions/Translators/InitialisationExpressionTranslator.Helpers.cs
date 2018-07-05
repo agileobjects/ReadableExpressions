@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -10,7 +11,7 @@
 
 #endif
 
-    internal partial class InitialisationExpressionTranslator
+    internal partial struct InitialisationExpressionTranslator
     {
         private interface IInitExpressionHelper
         {
@@ -80,7 +81,7 @@
                 }
 
                 var initialisationBlock = memberInitialisations
-                    .Select(init => init.Indented())
+                    .Project(init => init.Indented())
                     .Join("," + Environment.NewLine);
 
                 var initialisation = $@"

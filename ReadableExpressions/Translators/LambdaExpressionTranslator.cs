@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -8,14 +9,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using LambdaExpression = Microsoft.Scripting.Ast.LambdaExpression;
 #endif
 
-    internal class LambdaExpressionTranslator : ExpressionTranslatorBase
+    internal struct LambdaExpressionTranslator : IExpressionTranslator
     {
-        internal LambdaExpressionTranslator()
-            : base(ExpressionType.Lambda)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Lambda; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var lambda = (LambdaExpression)expression;
 

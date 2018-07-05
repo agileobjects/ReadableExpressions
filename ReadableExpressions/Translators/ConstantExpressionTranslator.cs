@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
 #if !NET35
     using System.Linq.Expressions;
@@ -14,14 +15,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class ConstantExpressionTranslator : ExpressionTranslatorBase
+    internal struct ConstantExpressionTranslator : IExpressionTranslator
     {
-        internal ConstantExpressionTranslator()
-            : base(ExpressionType.Constant)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Constant; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var constant = (ConstantExpression)expression;
 

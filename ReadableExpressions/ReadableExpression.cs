@@ -5,8 +5,8 @@
 #else
     using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
     using Expression = Microsoft.Scripting.Ast.Expression;
-
 #endif
+    using Extensions;
 
     /// <summary>
     /// A factory class providing the Comment Expression

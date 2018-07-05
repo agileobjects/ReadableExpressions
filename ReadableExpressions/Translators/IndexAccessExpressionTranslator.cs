@@ -10,14 +10,18 @@ namespace AgileObjects.ReadableExpressions.Translators
     using IndexExpression = Microsoft.Scripting.Ast.IndexExpression;
 #endif
 
-    internal class IndexAccessExpressionTranslator : ExpressionTranslatorBase
+    internal struct IndexAccessExpressionTranslator : IExpressionTranslator
     {
-        public IndexAccessExpressionTranslator()
-            : base(ExpressionType.ArrayIndex, ExpressionType.Index)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get
+            {
+                yield return ExpressionType.ArrayIndex;
+                yield return ExpressionType.Index;
+            }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             if (expression.NodeType == ExpressionType.Index)
             {
@@ -29,14 +33,14 @@ namespace AgileObjects.ReadableExpressions.Translators
             return TranslateIndexAccess(arrayAccess.Left, new[] { arrayAccess.Right }, context);
         }
 
-        private string TranslateIndexedPropertyAccess(Expression expression, TranslationContext context)
+        private static string TranslateIndexedPropertyAccess(Expression expression, TranslationContext context)
         {
             var index = (IndexExpression)expression;
 
             return TranslateIndexAccess(index.Object, index.Arguments, context);
         }
 
-        internal string TranslateIndexAccess(
+        internal static string TranslateIndexAccess(
             Expression variable,
             IEnumerable<Expression> indexes,
             TranslationContext context)

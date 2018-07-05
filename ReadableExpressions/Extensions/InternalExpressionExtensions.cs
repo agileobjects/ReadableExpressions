@@ -102,7 +102,7 @@
         {
             return valuesByExpressionTypes
                .Keys
-               .Where(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
+               .Filter(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
                .ToArray();
         }
     }

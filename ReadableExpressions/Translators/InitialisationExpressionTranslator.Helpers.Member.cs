@@ -15,19 +15,17 @@
     using MemberInitExpression = Microsoft.Scripting.Ast.MemberInitExpression;
     using NewExpression = Microsoft.Scripting.Ast.NewExpression;
 #endif
+    using Extensions;
 
-    internal partial class InitialisationExpressionTranslator
+    internal partial struct InitialisationExpressionTranslator
     {
         private class MemberInitExpressionHelper : InitExpressionHelperBase<MemberInitExpression, NewExpression>
         {
-            private readonly MethodCallExpressionTranslator _methodCallTranslator;
             private readonly Dictionary<MemberBindingType, Func<MemberBinding, TranslationContext, string>> _bindingTranslatorsByType;
 
-            public MemberInitExpressionHelper(MethodCallExpressionTranslator methodCallTranslator)
+            public MemberInitExpressionHelper()
                 : base(exp => exp.NewExpression, exp => !exp.Arguments.Any())
             {
-                _methodCallTranslator = methodCallTranslator;
-
                 _bindingTranslatorsByType = new Dictionary<MemberBindingType, Func<MemberBinding, TranslationContext, string>>
                 {
                     { MemberBindingType.Assignment, TranslateAssignmentBinding },
@@ -37,14 +35,12 @@
             }
 
             protected override IEnumerable<string> GetMemberInitialisations(MemberInitExpression initialisation, TranslationContext context)
-            {
-                return GetInitialisations(initialisation.Bindings, context);
-            }
+                => GetInitialisations(initialisation.Bindings, context);
 
             private string[] GetInitialisations(IEnumerable<MemberBinding> memberBindings, TranslationContext context)
             {
                 return memberBindings
-                    .Select(b => _bindingTranslatorsByType[b.BindingType].Invoke(b, context))
+                    .Project(b => _bindingTranslatorsByType[b.BindingType].Invoke(b, context))
                     .ToArray();
             }
 
@@ -71,9 +67,9 @@
 
                 var listInitialisers = listBinding
                     .Initializers
-                    .Select(init => IsStandardAddMethod(init)
+                    .Project(init => IsStandardAddMethod(init)
                         ? context.TranslateAsCodeBlock(init.Arguments.First())
-                        : _methodCallTranslator.GetMethodCall(new BclMethodInfoWrapper(init.AddMethod), init.Arguments, context))
+                        : MethodCallExpressionTranslator.GetMethodCall(new BclMethodInfoWrapper(init.AddMethod), init.Arguments, context))
                     .ToArray();
 
                 return GetInitialisation(listBinding.Member.Name + " =", listInitialisers);

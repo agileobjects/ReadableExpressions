@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
+    using Extensions;
 
     internal abstract class FormattableExpressionBase
     {

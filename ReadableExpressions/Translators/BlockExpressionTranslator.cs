@@ -15,17 +15,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using Formatting;
 
-    internal class BlockExpressionTranslator : ExpressionTranslatorBase
+    internal struct BlockExpressionTranslator : IExpressionTranslator
     {
-        private readonly ParameterExpressionTranslator _variableNameTranslator;
-
-        public BlockExpressionTranslator(ParameterExpressionTranslator variableNameTranslator)
-            : base(ExpressionType.Block)
+        public IEnumerable<ExpressionType> NodeTypes
         {
-            _variableNameTranslator = variableNameTranslator;
+            get { yield return ExpressionType.Block; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var block = (BlockExpression)expression;
 
@@ -33,12 +30,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             var statements = GetBlockStatements(block, context).ToArray();
             var separator = GetStatementsSeparator(variables, statements);
 
-            var blockContents = variables.Concat(separator).Concat(statements);
+            var blockContents = variables.Combine(separator).Combine(statements);
 
             return blockContents.Join(Environment.NewLine);
         }
 
-        private IList<string> GetVariableDeclarations(
+        private static IList<string> GetVariableDeclarations(
             BlockExpression block,
             TranslationContext context)
         {
@@ -46,12 +43,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Variables
                 .Except(context.JoinedAssignmentVariables)
                 .GroupBy(v => v.Type)
-                .Select(vGrp => new
+                .Project(vGrp => new
                 {
                     TypeName = vGrp.Key.GetFriendlyName(),
-                    VariableNames = vGrp.Select(varName => _variableNameTranslator.Translate(varName))
+                    VariableNames = vGrp.Project(ParameterExpressionTranslator.Translate)
                 })
-                .Select(varData => $"{varData.TypeName} {varData.VariableNames.Join(", ")};")
+                .Project(varData => $"{varData.TypeName} {varData.VariableNames.Join(", ")};")
                 .ToArray();
         }
 
@@ -121,14 +118,14 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return block
                 .Expressions
-                .Where(exp => (exp == block.Result) || Include(exp))
-                .Select(exp => new
+                .Filter(exp => (exp == block.Result) || Include(exp))
+                .Project(exp => new
                 {
                     Expression = exp,
                     Translation = GetTerminatedStatementOrNull(exp, context)
                 })
-                .Where(d => d.Translation != null)
-                .Select(d => d.Translation)
+                .Filter(d => d.Translation != null)
+                .Project(d => d.Translation)
                 .ToArray();
         }
 

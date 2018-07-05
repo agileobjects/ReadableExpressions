@@ -11,48 +11,43 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class ParameterExpressionTranslator : ExpressionTranslatorBase
+    internal struct ParameterExpressionTranslator : IExpressionTranslator
     {
-        private readonly IEnumerable<string> _keywords;
+        private static readonly IEnumerable<string> _keywords = InternalTypeExtensions
+            .TypeNames
+            .Combine(new[]
+            {
+                "typeof",
+                "default",
+                "void",
+                "readonly",
+                "do",
+                "while",
+                "switch",
+                "if",
+                "else",
+                "try",
+                "catch",
+                "finally",
+                "throw",
+                "for",
+                "foreach",
+                "goto",
+                "return",
+                "implicit",
+                "explicit"
+            })
+            .ToArray();
 
-        internal ParameterExpressionTranslator()
-            : base(ExpressionType.Parameter)
+        public IEnumerable<ExpressionType> NodeTypes
         {
-            _keywords = InternalTypeExtensions
-                .TypeNames
-                .Concat(new[]
-                {
-                    "typeof",
-                    "default",
-                    "void",
-                    "readonly",
-                    "do",
-                    "while",
-                    "switch",
-                    "if",
-                    "else",
-                    "try",
-                    "catch",
-                    "finally",
-                    "throw",
-                    "for",
-                    "foreach",
-                    "goto",
-                    "return",
-                    "implicit",
-                    "explicit"
-                })
-                .ToArray();
+            get { yield return ExpressionType.Parameter; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
-        {
-            return Translate((ParameterExpression)expression);
-        }
+        public string Translate(Expression expression, TranslationContext context)
+            => Translate((ParameterExpression)expression);
 
-        public string Translate(ParameterExpression parameter)
-        {
-            return _keywords.Contains(parameter.Name) ? "@" + parameter.Name : parameter.Name;
-        }
+        public static string Translate(ParameterExpression parameter)
+            => _keywords.Contains(parameter.Name) ? "@" + parameter.Name : parameter.Name;
     }
 }

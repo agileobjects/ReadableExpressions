@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -9,7 +10,7 @@
     using NewExpression = Microsoft.Scripting.Ast.NewExpression;
 #endif
 
-    internal partial class InitialisationExpressionTranslator
+    internal partial struct InitialisationExpressionTranslator
     {
         private class ListInitExpressionHelper : InitExpressionHelperBase<ListInitExpression, NewExpression>
         {
@@ -23,7 +24,7 @@
                 TranslationContext context)
             {
                 return listInitialisation.Initializers
-                    .Select(initialisation =>
+                    .Project(initialisation =>
                     {
                         if (initialisation.Arguments.Count == 1)
                         {
@@ -32,7 +33,7 @@
 
                         var additionArguments = initialisation
                             .Arguments
-                            .Select(context.TranslateAsCodeBlock)
+                            .Project(context.TranslateAsCodeBlock)
                             .Join(", ");
 
                         return "{ " + additionArguments + " }";

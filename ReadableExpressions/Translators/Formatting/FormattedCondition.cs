@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translators.Formatting
 {
     using System;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else

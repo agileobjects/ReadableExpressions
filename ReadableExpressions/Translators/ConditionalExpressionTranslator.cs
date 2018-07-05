@@ -1,5 +1,8 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
+    using Extensions;
+    using Formatting;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -7,17 +10,15 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Expression = Microsoft.Scripting.Ast.Expression;
     using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
 #endif
-    using Extensions;
-    using Formatting;
 
-    internal class ConditionalExpressionTranslator : ExpressionTranslatorBase
+    internal struct ConditionalExpressionTranslator : IExpressionTranslator
     {
-        public ConditionalExpressionTranslator()
-            : base(ExpressionType.Conditional)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Conditional; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var conditional = (ConditionalExpression)expression;
 

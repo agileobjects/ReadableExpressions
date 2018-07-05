@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Extensions;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -12,26 +13,26 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Formatting;
 
-    internal class SwitchExpressionTranslator : ExpressionTranslatorBase
+    internal struct SwitchExpressionTranslator : IExpressionTranslator
     {
-        public SwitchExpressionTranslator()
-            : base(ExpressionType.Switch)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Switch; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var switchStatement = (SwitchExpression)expression;
 
             var switchValue = context.Translate(switchStatement.SwitchValue);
 
             var switchCases = switchStatement.Cases
-                .Select(@case => new
+                .Project(@case => new
                 {
-                    Tests = @case.TestValues.Select(value => $"case {context.Translate(value)}:"),
+                    Tests = @case.TestValues.Project(value => $"case {context.Translate(value)}:"),
                     BodyBlock = context.TranslateCodeBlock(@case.Body)
                 })
-                .Select(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
+                .Project(@case => GetCase(@case.BodyBlock, @case.Tests.ToArray()));
 
             switchCases = AppendDefaultCaseIfExists(switchCases, switchStatement.DefaultBody, context);
 

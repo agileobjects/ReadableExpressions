@@ -15,24 +15,27 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class MethodCallExpressionTranslator : ExpressionTranslatorBase
+    internal struct MethodCallExpressionTranslator : IExpressionTranslator
     {
-        private readonly SpecialCaseHandlerBase[] _specialCaseHandlers;
-
-        internal MethodCallExpressionTranslator(IndexAccessExpressionTranslator indexAccessTranslator)
-            : base(ExpressionType.Call, ExpressionType.Invoke)
+        private static readonly SpecialCaseHandlerBase[] _specialCaseHandlers =
         {
-            _specialCaseHandlers = new SpecialCaseHandlerBase[]
+            new InvocationExpressionHandler(GetMethodCall),
+            new StringConcatenationHandler(),
+            new IndexedPropertyHandler(),
+            new ImplicitOperatorHandler(),
+            new ExplicitOperatorHandler()
+        };
+
+        public IEnumerable<ExpressionType> NodeTypes
+        {
+            get
             {
-                new InvocationExpressionHandler(GetMethodCall),
-                new StringConcatenationHandler(),
-                new IndexedPropertyHandler(indexAccessTranslator),
-                new ImplicitOperatorHandler(),
-                new ExplicitOperatorHandler()
-            };
+                yield return ExpressionType.Call;
+                yield return ExpressionType.Invoke;
+            }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var specialCaseHandler = _specialCaseHandlers.FirstOrDefault(sch => sch.AppliesTo(expression));
 
@@ -92,7 +95,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return methodCall.Method.DeclaringType.GetFriendlyName();
         }
 
-        private string GetMethodCall(
+        private static string GetMethodCall(
             string subject,
             MethodInfo method,
             IEnumerable<Expression> arguments,
@@ -107,7 +110,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 context);
         }
 
-        internal string GetMethodCall(
+        internal static string GetMethodCall(
             string subject,
             IMethodInfo method,
             IEnumerable<Expression> arguments,
@@ -121,7 +124,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return subject + separator + GetMethodCall(method, arguments, context);
         }
 
-        internal string GetMethodCall(
+        internal static string GetMethodCall(
             IMethodInfo method,
             IEnumerable<Expression> arguments,
             TranslationContext context)
@@ -145,7 +148,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             if (context.Settings.UseImplicitGenericParameters)
             {
                 RemoveSuppliedGenericTypeParameters(
-                    methodGenericDefinition.GetParameters().Select(p => p.ParameterType),
+                    methodGenericDefinition.GetParameters().Project(p => p.ParameterType),
                     genericParameterTypes);
             }
 
@@ -156,8 +159,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var argumentNames = method
                 .GetGenericArguments()
-                .Select(a => a.GetFriendlyName())
-                .Where(name => name != null)
+                .Project(a => a.GetFriendlyName())
+                .Filter(name => name != null)
                 .ToArray();
 
             return argumentNames.Any() ? $"<{string.Join(", ", argumentNames)}>" : null;
@@ -167,7 +170,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             IEnumerable<Type> types,
             ICollection<Type> genericParameterTypes)
         {
-            foreach (var type in types.Select(t => t.IsByRef ? t.GetElementType() : t))
+            foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
             {
                 if (type.IsGenericParameter && genericParameterTypes.Contains(type))
                 {
@@ -264,12 +267,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private class IndexedPropertyHandler : SpecialCaseHandlerBase
         {
-            private readonly IndexAccessExpressionTranslator _indexAccessTranslator;
-
-            public IndexedPropertyHandler(IndexAccessExpressionTranslator indexAccessTranslator)
+            public IndexedPropertyHandler()
                 : base(IsIndexedPropertyAccess)
             {
-                _indexAccessTranslator = indexAccessTranslator;
             }
 
             private static bool IsIndexedPropertyAccess(Expression expression)
@@ -296,7 +296,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 var methodCall = (MethodCallExpression)expression;
 
-                return _indexAccessTranslator.TranslateIndexAccess(
+                return IndexAccessExpressionTranslator.TranslateIndexAccess(
                     methodCall.Object,
                     methodCall.Arguments,
                     context);

@@ -13,6 +13,7 @@
     using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
 #endif
     using System.Reflection;
+    using Extensions;
     using NetStandardPolyfills;
     using static System.Environment;
 
@@ -49,7 +50,7 @@
 
             return method
                 .GetParameters()
-                .Select(GetParameterModifier)
+                .Project(GetParameterModifier)
                 .ToArray();
         }
 
@@ -87,7 +88,7 @@
             var arrayValues = array
                 .Substring(arrayValuesStart, arrayValuesEnd - arrayValuesStart)
                 .SplitToLines(StringSplitOptions.RemoveEmptyEntries)
-                .Select(line => line.Trim(' '));
+                .Project(line => line.Trim(' '));
 
             var arrayValuesString = arrayValues.Join(NewLine);
 
@@ -101,7 +102,7 @@
         {
             if (method == null)
             {
-                return arguments.Select(argument => defaultArgumentTranslator).ToArray();
+                return arguments.Project(argument => defaultArgumentTranslator).ToArray();
             }
 
             var parameters = method.GetParameters();
@@ -112,7 +113,7 @@
             }
 
             return arguments
-                .Select((argument, i) =>
+                .Project((argument, i) =>
                 {
                     var parameter = parameters.ElementAtOrDefault(i);
 
@@ -332,9 +333,9 @@
             }
 
             return _arguments
-                .Select(TranslateArgument)
-                .Select(extraFormatter)
-                .Where(arg => arg != string.Empty)
+                .Project(TranslateArgument)
+                .Project(extraFormatter)
+                .Filter(arg => arg != string.Empty)
                 .Join(separator);
         }
 

@@ -1,22 +1,22 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
     using Expression = Microsoft.Scripting.Ast.Expression;
     using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
     using RuntimeVariablesExpression = Microsoft.Scripting.Ast.RuntimeVariablesExpression;
-
 #endif
 
-    internal class RuntimeVariablesExpressionTranslator : ExpressionTranslatorBase
+    internal struct RuntimeVariablesExpressionTranslator : IExpressionTranslator
     {
-        public RuntimeVariablesExpressionTranslator()
-            : base(ExpressionType.RuntimeVariables)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.RuntimeVariables; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var runtimeVariables = (RuntimeVariablesExpression)expression;
 

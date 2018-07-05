@@ -22,7 +22,7 @@
             params string[] blockLines)
         {
             _expression = expression;
-            _blockLines = blockLines.Where(line => line != null).ToArray();
+            _blockLines = blockLines.Filter(line => line != null).ToArray();
             IsASingleStatement = IsSingleStatement(_blockLines);
         }
 
@@ -75,7 +75,7 @@
 
             return new CodeBlock(
                 _expression,
-                _blockLines.Select(line => line.Indented()).ToArray(),
+                _blockLines.Project(line => line.Indented()).ToArray(),
                 IsASingleStatement);
         }
 
@@ -83,7 +83,7 @@
         {
             return new CodeBlock(
                 _expression,
-                lines.Concat(_blockLines).ToArray(),
+                lines.Combine(_blockLines).ToArray(),
                 isASingleStatement: false);
         }
 
@@ -93,7 +93,7 @@
 
             return new CodeBlock(
                 _expression,
-                _blockLines.Concat(lines).ToArray(),
+                _blockLines.Combine(lines).ToArray(),
                 isASingleStatement: false);
         }
 

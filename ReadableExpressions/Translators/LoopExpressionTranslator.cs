@@ -1,22 +1,22 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
     using Expression = Microsoft.Scripting.Ast.Expression;
     using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
     using LoopExpression = Microsoft.Scripting.Ast.LoopExpression;
-
 #endif
 
-    internal class LoopExpressionTranslator : ExpressionTranslatorBase
+    internal struct LoopExpressionTranslator : IExpressionTranslator
     {
-        public LoopExpressionTranslator()
-            : base(ExpressionType.Loop)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.Loop; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var loop = (LoopExpression)expression;
 

@@ -2,7 +2,6 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -11,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using UnaryExpression = Microsoft.Scripting.Ast.UnaryExpression;
 #endif
 
-    internal class UnaryExpressionTranslator : ExpressionTranslatorBase
+    internal struct UnaryExpressionTranslator : IExpressionTranslator
     {
         private static readonly Dictionary<ExpressionType, Func<string, string>> _operatorsByNodeType =
             new Dictionary<ExpressionType, Func<string, string>>
@@ -29,12 +28,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                 [ExpressionType.UnaryPlus] = o => "+" + o
             };
 
-        public UnaryExpressionTranslator()
-            : base(_operatorsByNodeType.Keys.ToArray())
-        {
-        }
+        public IEnumerable<ExpressionType> NodeTypes => _operatorsByNodeType.Keys;
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var unary = (UnaryExpression)expression;
 

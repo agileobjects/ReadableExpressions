@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
     using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
@@ -11,14 +12,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class NewExpressionTranslator : ExpressionTranslatorBase
+    internal struct NewExpressionTranslator : IExpressionTranslator
     {
-        internal NewExpressionTranslator()
-            : base(ExpressionType.New)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.New; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var newExpression = (NewExpression)expression;
 
@@ -38,7 +39,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var arguments = newExpression
                 .Arguments
-                .Select((arg, i) => constructorParameters[i].Name + " = " + context.Translate(arg));
+                .Project((arg, i) => constructorParameters[i].Name + " = " + context.Translate(arg));
 
             var argumentsString = arguments.Join(", ");
 

@@ -9,26 +9,25 @@ namespace AgileObjects.ReadableExpressions.Translators
     using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
     using GotoExpression = Microsoft.Scripting.Ast.GotoExpression;
     using GotoExpressionKind = Microsoft.Scripting.Ast.GotoExpressionKind;
-
 #endif
 
-    internal class GotoExpressionTranslator : ExpressionTranslatorBase
+    internal struct GotoExpressionTranslator : IExpressionTranslator
     {
-        private readonly Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>> _gotoKindHandlers;
-
-        public GotoExpressionTranslator()
-            : base(ExpressionType.Goto)
-        {
-            _gotoKindHandlers = new Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>>
+        private static readonly Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>> _gotoKindHandlers =
+            new Dictionary<GotoExpressionKind, Func<GotoExpression, TranslationContext, string>>
             {
                 [GotoExpressionKind.Break] = TranslateBreak,
                 [GotoExpressionKind.Continue] = TranslateContinue,
                 [GotoExpressionKind.Goto] = TranslateGoto,
                 [GotoExpressionKind.Return] = TranslateReturn,
             };
+
+        public IEnumerable<ExpressionType> NodeTypes
+        {
+            get { yield return ExpressionType.Goto; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var gotoExpression = (GotoExpression)expression;
 

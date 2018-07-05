@@ -1,4 +1,4 @@
-namespace AgileObjects.ReadableExpressions
+namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
     using System.Collections.Generic;
@@ -11,7 +11,6 @@ namespace AgileObjects.ReadableExpressions
     using InvocationExpression = Microsoft.Scripting.Ast.InvocationExpression;
     using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
 #endif
-    using Extensions;
     using static System.Environment;
 
     internal static class InternalStringExtensionstensionstensions
@@ -115,7 +114,7 @@ namespace AgileObjects.ReadableExpressions
 
             if (line.IsMultiLine())
             {
-                return line.SplitToLines().Select(l => l.Indented()).Join(NewLine);
+                return line.SplitToLines().Project(l => l.Indented()).Join(NewLine);
             }
 
             return IndentSpaces + line;
@@ -268,7 +267,7 @@ namespace AgileObjects.ReadableExpressions
         }
 
         public static string ToStringConcatenation(this IEnumerable<Expression> strings, TranslationContext context)
-            => strings.Select(str => GetStringValue(str, context)).Join(" + ");
+            => strings.Project(str => GetStringValue(str, context)).Join(" + ");
 
         private static string GetStringValue(Expression value, TranslationContext context)
         {

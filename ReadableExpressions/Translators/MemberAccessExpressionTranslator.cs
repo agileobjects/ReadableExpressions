@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
+    using System.Collections.Generic;
 #if !NET35
     using System.Linq.Expressions;
 #else
@@ -10,14 +11,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
     using Extensions;
 
-    internal class MemberAccessExpressionTranslator : ExpressionTranslatorBase
+    internal struct MemberAccessExpressionTranslator : IExpressionTranslator
     {
-        internal MemberAccessExpressionTranslator()
-            : base(ExpressionType.MemberAccess)
+        public IEnumerable<ExpressionType> NodeTypes
         {
+            get { yield return ExpressionType.MemberAccess; }
         }
 
-        public override string Translate(Expression expression, TranslationContext context)
+        public string Translate(Expression expression, TranslationContext context)
         {
             var memberExpression = (MemberExpression)expression;
             var subject = GetSubject(memberExpression, context);
@@ -51,7 +52,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return subjectType == memberExpression.Member.DeclaringType;
         }
 
-        internal string GetMemberAccess(string subject, string memberName)
+        internal static string GetMemberAccess(string subject, string memberName)
         {
             if (subject != null)
             {

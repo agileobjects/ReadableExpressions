@@ -291,8 +291,8 @@ namespace AgileObjects.ReadableExpressions
                 }
 
                 var joinedAssignmentData = _constructsByAssignment
-                    .Where(kvp => kvp.Key.Left == variable)
-                    .Select(kvp => new
+                    .Filter(kvp => kvp.Key.Left == variable)
+                    .Project(kvp => new
                     {
                         Assignment = kvp.Key,
                         Construct = kvp.Value
