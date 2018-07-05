@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <Description>An extension method for the Expression class and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0 and .NET 4.0.</Description>
+    <Description>An extension method for the Linq and DLR Expression classes and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
     <Copyright>2018 Steve Wilkes</Copyright>
     <AssemblyTitle>ReadableExpressions</AssemblyTitle>
     <Authors>Steve Wilkes</Authors>
@@ -24,10 +23,10 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.11.0.0</AssemblyVersion>
-    <FileVersion>1.11.0.0</FileVersion>
-    <VersionPrefix>1.11.0</VersionPrefix>
-    <Version>1.11.0</Version>
+    <AssemblyVersion>1.12.0.0</AssemblyVersion>
+    <FileVersion>1.12.0.0</FileVersion>
+    <VersionPrefix>1.12.0</VersionPrefix>
+    <Version>1.12.0</Version>
     <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
