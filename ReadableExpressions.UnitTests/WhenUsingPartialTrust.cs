@@ -1,18 +1,13 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿#if !NET35
+namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Linq.Expressions;
     using System.Security;
     using System.Security.Policy;
-#if !NET35
     using Microsoft.CSharp.RuntimeBinder;
-    using System.Linq.Expressions;
     using Xunit;
-#else
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using Fact = NUnit.Framework.TestAttribute;
 
-    [NUnit.Framework.TestFixture]
-#endif
     public class WhenUsingPartialTrust
     {
         [Fact]
@@ -24,7 +19,6 @@
             });
         }
 
-#if !NET35
         [Fact]
         public void ShouldTranslateADynamicExpression()
         {
@@ -33,7 +27,6 @@
                 helper.TestDynamicExpressionTranslation();
             });
         }
-#endif
 
         [Fact]
         public void ShouldTranslateAValueTypeTypeEqualExpression()
@@ -59,20 +52,12 @@
 
             try
             {
-#if NET35
-                var evidence = new Evidence(new object[] { new Zone(SecurityZone.Internet) }, new object[0]);
-#else
                 var evidence = new Evidence();
                 evidence.AddHostEvidence(new Zone(SecurityZone.Internet));
-#endif
+
                 var permissions = new NamedPermissionSet(
                     "PartialTrust",
-#if NET35
-                    new NamedPermissionSet("Internet")
-#else
-                    SecurityManager.GetStandardSandbox(evidence)
-#endif
-                    );
+                    SecurityManager.GetStandardSandbox(evidence));
 
                 partialTrustDomain = AppDomain.CreateDomain(
                     "PartialTrust",
@@ -109,7 +94,6 @@
             translated.ShouldBe("i = 0");
         }
 
-#if !NET35
         public void TestDynamicExpressionTranslation()
         {
             var lengthGetterSiteBinder = Binder.GetMember(
@@ -134,7 +118,6 @@
 
             translated.ShouldBe("obj => obj.Length");
         }
-#endif
 
         public void TestIntTypeEqualExpressionTranslation()
         {
@@ -155,3 +138,4 @@
         }
     }
 }
+#endif

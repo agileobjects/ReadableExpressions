@@ -577,7 +577,13 @@ if (WhenFormattingCode.JoinStrings(
             var stringsConverter = CreateLambda(
                 (IEnumerable<string> strings) => strings.Select((str, i) => string.Join(i + ": ", new[] { str })).ToArray());
 
+#if NET35
+            // string.Join()'s set of arguments is not a params array in .NET 3.5:
+            const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", new[] { str })).ToArray()";
+#else
             const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
+#endif
+
             var translated = ToReadableString(stringsConverter.Body);
 
             translated.ShouldBe(EXPECTED);

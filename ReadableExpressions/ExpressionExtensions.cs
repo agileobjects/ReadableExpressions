@@ -27,7 +27,9 @@
             this LinqExpression expression,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            return LinqExpressionToDlrExpressionConverter.Convert(expression).ToReadableString(configuration);
+            return LinqExpressionToDlrExpressionConverter
+                .Convert(expression)
+                .ToReadableString(configuration);
         }
 #endif
         /// <summary>

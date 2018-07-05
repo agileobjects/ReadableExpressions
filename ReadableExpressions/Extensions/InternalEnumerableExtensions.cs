@@ -9,7 +9,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
         public static bool Contains<TContained, TItem>(this ICollection<TContained> items, TItem item)
             where TContained : TItem
         {
-            return items.Any(i => ReferenceEquals(i, item));
+            return items.Any(i => i.Equals(item));
         }
     }
 }

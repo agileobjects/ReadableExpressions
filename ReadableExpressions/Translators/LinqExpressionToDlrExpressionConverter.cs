@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection;
     using Microsoft.Scripting.Ast;
     using Expression = Microsoft.Scripting.Ast.Expression;
     using LinqExp = System.Linq.Expressions;
@@ -13,6 +14,14 @@ namespace AgileObjects.ReadableExpressions.Translators
     /// </summary>
     public static class LinqExpressionToDlrExpressionConverter
     {
+        /// <summary>
+        /// Converts the given <paramref name="linqLambda"/> into a DynamicLanguageRuntime Lambda Expression.
+        /// </summary>
+        /// <param name="linqLambda">The Linq Lambda Expression to convert.</param>
+        /// <returns>The given <paramref name="linqLambda"/> converted into a DynamicLanguageRuntime Lambda Expression.</returns>
+        public static LambdaExpression Convert(LinqExp.LambdaExpression linqLambda)
+            => (LambdaExpression)new Converter().ConvertExp(linqLambda);
+
         /// <summary>
         /// Converts the given <paramref name="linqExpression"/> into a DynamicLanguageRuntime Expression.
         /// </summary>
@@ -46,19 +55,22 @@ namespace AgileObjects.ReadableExpressions.Translators
                         return Convert((LinqExp.BinaryExpression)linqExpression, Expression.AddChecked);
 
                     case LinqExp.ExpressionType.And:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.And);
+
                     case LinqExp.ExpressionType.AndAlso:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.AndAlso);
+
                     case LinqExp.ExpressionType.ArrayLength:
-                        break;
+                        return Convert((LinqExp.UnaryExpression)linqExpression, Expression.ArrayLength);
+
                     case LinqExp.ExpressionType.ArrayIndex:
-                        break;
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.ArrayIndex);
 
                     case LinqExp.ExpressionType.Call:
                         return Convert((LinqExp.MethodCallExpression)linqExpression);
 
                     case LinqExp.ExpressionType.Coalesce:
-                        break;
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.Coalesce);
 
                     case LinqExp.ExpressionType.Conditional:
                         return Convert((LinqExp.ConditionalExpression)linqExpression);
@@ -67,39 +79,40 @@ namespace AgileObjects.ReadableExpressions.Translators
                         return Convert((LinqExp.ConstantExpression)linqExpression);
 
                     case LinqExp.ExpressionType.Convert:
-                        return ConvertConversion((LinqExp.UnaryExpression)linqExpression);
+                        return ConvertCast((LinqExp.UnaryExpression)linqExpression, Expression.Convert);
 
                     case LinqExp.ExpressionType.ConvertChecked:
-                        break;
+                        return ConvertCast((LinqExp.UnaryExpression)linqExpression, Expression.ConvertChecked);
 
                     case LinqExp.ExpressionType.Divide:
                         return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Divide);
 
                     case LinqExp.ExpressionType.Equal:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Equal);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.Equal);
 
                     case LinqExp.ExpressionType.ExclusiveOr:
-                        break;
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.ExclusiveOr);
 
                     case LinqExp.ExpressionType.GreaterThan:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.GreaterThan);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.GreaterThan);
 
                     case LinqExp.ExpressionType.GreaterThanOrEqual:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.GreaterThanOrEqual);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.GreaterThanOrEqual);
 
                     case LinqExp.ExpressionType.Invoke:
-                        break;
+                        return Convert((LinqExp.InvocationExpression)linqExpression);
 
                     case LinqExp.ExpressionType.Lambda:
-                        return Convert((LinqExp.LambdaExpression)linqExpression);
+                        return ConvertLambda((LinqExp.LambdaExpression)linqExpression);
 
                     case LinqExp.ExpressionType.LeftShift:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.LeftShift);
+
                     case LinqExp.ExpressionType.LessThan:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.LessThan);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.LessThan);
 
                     case LinqExp.ExpressionType.LessThanOrEqual:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.LessThanOrEqual);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.LessThanOrEqual);
 
                     case LinqExp.ExpressionType.ListInit:
                         return Convert((LinqExp.ListInitExpression)linqExpression);
@@ -117,61 +130,75 @@ namespace AgileObjects.ReadableExpressions.Translators
                         return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Multiply);
 
                     case LinqExp.ExpressionType.MultiplyChecked:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.MultiplyChecked);
 
                     case LinqExp.ExpressionType.Negate:
                         return Convert((LinqExp.UnaryExpression)linqExpression, Expression.Negate);
 
                     case LinqExp.ExpressionType.UnaryPlus:
-                        break;
+                        return Convert((LinqExp.UnaryExpression)linqExpression, Expression.NegateChecked);
+
                     case LinqExp.ExpressionType.NegateChecked:
-                        break;
+                        return Convert((LinqExp.UnaryExpression)linqExpression, Expression.NegateChecked);
 
                     case LinqExp.ExpressionType.New:
                         return Convert((LinqExp.NewExpression)linqExpression);
 
-                    case LinqExp.ExpressionType.NewArrayInit:
-                        return Convert((LinqExp.NewArrayExpression)linqExpression);
-
                     case LinqExp.ExpressionType.NewArrayBounds:
-                        break;
+                        return Convert((LinqExp.NewArrayExpression)linqExpression, Expression.NewArrayBounds);
+
+                    case LinqExp.ExpressionType.NewArrayInit:
+                        return Convert((LinqExp.NewArrayExpression)linqExpression, Expression.NewArrayInit);
 
                     case LinqExp.ExpressionType.Not:
                         return Convert((LinqExp.UnaryExpression)linqExpression, Expression.Not);
 
                     case LinqExp.ExpressionType.NotEqual:
-                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.NotEqual);
+                        return ConvertImplicit((LinqExp.BinaryExpression)linqExpression, Expression.NotEqual);
 
                     case LinqExp.ExpressionType.Or:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Or);
+
                     case LinqExp.ExpressionType.OrElse:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.OrElse);
 
                     case LinqExp.ExpressionType.Parameter:
                         return Convert((LinqExp.ParameterExpression)linqExpression);
 
                     case LinqExp.ExpressionType.Power:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Power);
 
                     case LinqExp.ExpressionType.Quote:
                         return Convert((LinqExp.UnaryExpression)linqExpression, Expression.Quote);
 
                     case LinqExp.ExpressionType.RightShift:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.RightShift);
 
                     case LinqExp.ExpressionType.Subtract:
                         return Convert((LinqExp.BinaryExpression)linqExpression, Expression.Subtract);
 
                     case LinqExp.ExpressionType.SubtractChecked:
-                        break;
+                        return Convert((LinqExp.BinaryExpression)linqExpression, Expression.SubtractChecked);
+
                     case LinqExp.ExpressionType.TypeAs:
-                        break;
+                        return Convert((LinqExp.UnaryExpression)linqExpression, Expression.TypeAs);
+
                     case LinqExp.ExpressionType.TypeIs:
-                        break;
+                        return Convert((LinqExp.TypeBinaryExpression)linqExpression);
                 }
 
                 throw new NotSupportedException("Can't convert a " + linqExpression.NodeType);
             }
+
+            private Expression Convert(LinqExp.InvocationExpression linqInvoke)
+            {
+                return Expression.Invoke(
+                    ConvertExp(linqInvoke.Expression),
+                    linqInvoke.Arguments.Select(ConvertExp));
+            }
+
+            private Expression Convert(LinqExp.TypeBinaryExpression linqTypeBinary)
+                => Expression.TypeIs(ConvertExp(linqTypeBinary.Expression), linqTypeBinary.TypeOperand);
 
             private Expression Convert(LinqExp.ListInitExpression linqListInit)
             {
@@ -182,10 +209,14 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             private NewExpression Convert(LinqExp.NewExpression linqNew)
             {
-                return Expression.New(
-                    linqNew.Constructor,
-                    linqNew.Arguments.Select(ConvertExp),
-                    linqNew.Members);
+                return (linqNew.Members != null)
+                    ? Expression.New(
+                          linqNew.Constructor,
+                          linqNew.Arguments.Select(ConvertExp),
+                          linqNew.Members)
+                    : Expression.New(
+                          linqNew.Constructor,
+                          linqNew.Arguments.Select(ConvertExp));
             }
 
             private ElementInit Convert(LinqExp.ElementInit linqElementInit)
@@ -195,9 +226,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                     linqElementInit.Arguments.Select(ConvertExp));
             }
 
-            private Expression Convert(LinqExp.NewArrayExpression linqNewArray)
+            private Expression Convert(LinqExp.NewArrayExpression linqNewArray, Func<Type, IEnumerable<Expression>, Expression> factory)
             {
-                return Expression.NewArrayInit(
+                return factory.Invoke(
                     linqNewArray.Type.GetElementType(),
                     linqNewArray.Expressions.Select(ConvertExp));
             }
@@ -221,8 +252,13 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 switch (linqBinding.BindingType)
                 {
-                    //case LinqExp.MemberBindingType.Assignment:
-                        
+                    case LinqExp.MemberBindingType.Assignment:
+                        var linqMemberAssignment = (LinqExp.MemberAssignment)linqBinding;
+
+                        return Expression.Bind(
+                            linqMemberAssignment.Member,
+                            ConvertExp(linqMemberAssignment.Expression));
+
                     case LinqExp.MemberBindingType.MemberBinding:
                         var linqMemberBinding = (LinqExp.MemberMemberBinding)linqBinding;
 
@@ -230,16 +266,21 @@ namespace AgileObjects.ReadableExpressions.Translators
                             linqMemberBinding.Member,
                             linqMemberBinding.Bindings.Select(Convert));
 
-                    //case LinqExp.MemberBindingType.ListBinding:
-                    //    break;
+                    case LinqExp.MemberBindingType.ListBinding:
+                        var linqListBinding = (LinqExp.MemberListBinding)linqBinding;
+
+                        return Expression.ListBind(
+                            linqListBinding.Member,
+                            linqListBinding.Initializers.Select(Convert));
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
-            private Expression ConvertConversion(LinqExp.UnaryExpression linqConvert)
+            private Expression ConvertCast(LinqExp.UnaryExpression linqConvert, Func<Expression, Type, MethodInfo, Expression> factory)
             {
-                return Expression.Convert(
+                return factory.Invoke(
                     ConvertExp(linqConvert.Operand),
                     linqConvert.Type,
                     linqConvert.Method);
@@ -250,9 +291,24 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return factory.Invoke(ConvertExp(linqUnary.Operand));
             }
 
-            private Expression Convert(LinqExp.BinaryExpression linqBinary, Func<Expression, Expression, Expression> factory)
+            private Expression Convert(LinqExp.UnaryExpression linqUnary, Func<Expression, Type, Expression> factory)
+            {
+                return factory.Invoke(ConvertExp(linqUnary.Operand), linqUnary.Type);
+            }
+
+            private Expression ConvertImplicit(LinqExp.BinaryExpression linqBinary, Func<Expression, Expression, Expression> factory)
             {
                 return factory.Invoke(ConvertExp(linqBinary.Left), ConvertExp(linqBinary.Right));
+            }
+
+            private Expression Convert(
+                LinqExp.BinaryExpression linqBinary,
+                Func<Expression, Expression, MethodInfo, Expression> factory)
+            {
+                return factory.Invoke(
+                    ConvertExp(linqBinary.Left),
+                    ConvertExp(linqBinary.Right),
+                    linqBinary.Method);
             }
 
             private static Expression Convert(LinqExp.ConstantExpression linqConstant)
@@ -260,10 +316,15 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             private Expression Convert(LinqExp.MethodCallExpression linqCall)
             {
+                var arguments = linqCall.Arguments.Select(arg =>
+                    (arg.NodeType == LinqExp.ExpressionType.Quote)
+                        ? Expression.Constant(((LinqExp.UnaryExpression)arg).Operand, arg.Type)
+                        : ConvertExp(arg));
+
                 return Expression.Call(
                     ConvertExp(linqCall.Object),
                     linqCall.Method,
-                    linqCall.Arguments.Select(ConvertExp));
+                    arguments);
             }
 
             private Expression Convert(LinqExp.MemberExpression linqMemberAccess)
@@ -273,9 +334,10 @@ namespace AgileObjects.ReadableExpressions.Translators
                     linqMemberAccess.Member);
             }
 
-            private Expression Convert(LinqExp.LambdaExpression linqLambda)
+            private Expression ConvertLambda(LinqExp.LambdaExpression linqLambda)
             {
                 return Expression.Lambda(
+                    linqLambda.Type,
                     ConvertExp(linqLambda.Body),
                     linqLambda.Parameters.Select(Convert));
             }

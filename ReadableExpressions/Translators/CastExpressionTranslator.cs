@@ -55,8 +55,12 @@ namespace AgileObjects.ReadableExpressions.Translators
                 (operand.Type == typeof(Delegate)) &&
                 ((methodCall = ((MethodCallExpression)operand)).Method.Name == "CreateDelegate"))
             {
+#if NET35
+                var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Arguments.Last()).Value;
+#else
                 // ReSharper disable once PossibleNullReferenceException
                 var subjectMethod = (MethodInfo)((ConstantExpression)methodCall.Object).Value;
+#endif
 
                 var methodSubject = subjectMethod.IsStatic
                     ? subjectMethod.DeclaringType.GetFriendlyName()

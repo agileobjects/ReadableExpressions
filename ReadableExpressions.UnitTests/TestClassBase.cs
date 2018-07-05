@@ -34,7 +34,7 @@
             => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         internal static string ToReadableString(Expression expression, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => expression.ToReadableString();
+            => expression.ToReadableString(configuration);
 #else
         protected static LambdaExpression CreateLambda(Expression<Action> lambda) => lambda;
 

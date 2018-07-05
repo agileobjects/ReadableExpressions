@@ -626,45 +626,40 @@ result =
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
             var objectValue = Expression.Variable(typeof(object), "value");
-            var guidVariable = Expression.Variable(typeof(Guid), "guid");
-            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
-
-            var guidTryParseMethod = typeof(Guid)
-                .GetMethods()
-                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
+            var intVariable = Expression.Variable(typeof(int), "num");
+            var intValue = Expression.Variable(typeof(int), "numValue");
 
             var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultGuid = Expression.Default(typeof(Guid));
+            var defaultInt = Expression.Default(typeof(int));
 
-            var guidTryParse = Expression.Call(
-                null,
-                guidTryParseMethod,
+            var intTryParse = Expression.Call(
+                typeof(int).GetPublicStaticMethod("TryParse", parameterCount: 2),
                 Expression.Condition(
                     objectNotNull,
                     Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                     Expression.Default(typeof(string))),
-                guidValue);
+                intValue);
 
-            var objectAsGuidOrDefault = Expression.Condition(guidTryParse, guidValue, defaultGuid);
+            var objectAsIntOrDefault = Expression.Condition(intTryParse, intValue, defaultInt);
 
-            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+            var intParseInnerBlock = Expression.Block(new[] { intValue }, objectAsIntOrDefault);
 
-            var guidParseOuterBlock = Expression.Block(
+            var intParseOuterBlock = Expression.Block(
                 new[] { objectVariable },
                 Expression.Assign(objectVariable, objectValue),
-                guidParseInnerBlock);
+                intParseInnerBlock);
 
-            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+            var intAssignment = Expression.Assign(intVariable, intParseOuterBlock);
 
-            var translated = ToReadableString(guidAssignment);
+            var translated = ToReadableString(intAssignment);
 
             const string EXPECTED = @"
-guid =
+num =
 {
     var id = value;
 
-    Guid guidValue;
-    return Guid.TryParse((id != null) ? id.ToString() : null, out guidValue) ? guidValue : default(Guid);
+    int numValue;
+    return int.TryParse((id != null) ? id.ToString() : null, out numValue) ? numValue : default(int);
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -674,47 +669,43 @@ guid =
         {
             var objectVariable = Expression.Variable(typeof(object), "id");
             var objectValue = Expression.Variable(typeof(object), "value");
-            var guidVariable = Expression.Variable(typeof(Guid), "guid");
-            var guidValue = Expression.Variable(typeof(Guid), "guidValue");
+            var longVariable = Expression.Variable(typeof(long), "number");
+            var longValue = Expression.Variable(typeof(long), "numberValue");
 
-            var guidTryParseMethod = typeof(Guid)
-                .GetMethods()
-                .First(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
-
-            var guidTryParse = Expression.Call(
+            var longTryParse = Expression.Call(
                 null,
-                guidTryParseMethod,
+                typeof(long).GetPublicStaticMethod("TryParse", parameterCount: 2),
                 Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
-                guidValue);
+                longValue);
 
             var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultGuid = Expression.Default(typeof(Guid));
+            var defaultlong = Expression.Default(typeof(long));
 
-            var objectAsGuidOrDefault = Expression.Condition(
+            var objectAslongOrDefault = Expression.Condition(
                 objectNotNull,
-                Expression.Condition(guidTryParse, guidValue, defaultGuid),
-                defaultGuid);
+                Expression.Condition(longTryParse, longValue, defaultlong),
+                defaultlong);
 
-            var guidParseInnerBlock = Expression.Block(new[] { guidValue }, objectAsGuidOrDefault);
+            var longParseInnerBlock = Expression.Block(new[] { longValue }, objectAslongOrDefault);
 
-            var guidParseOuterBlock = Expression.Block(
+            var longParseOuterBlock = Expression.Block(
                 new[] { objectVariable },
                 Expression.Assign(objectVariable, objectValue),
-                guidParseInnerBlock);
+                longParseInnerBlock);
 
-            var guidAssignment = Expression.Assign(guidVariable, guidParseOuterBlock);
+            var longAssignment = Expression.Assign(longVariable, longParseOuterBlock);
 
-            var translated = ToReadableString(guidAssignment);
+            var translated = ToReadableString(longAssignment);
 
             const string EXPECTED = @"
-guid =
+number =
 {
     var id = value;
 
-    Guid guidValue;
+    long numberValue;
     return (id != null)
-        ? Guid.TryParse(id.ToString(), out guidValue) ? guidValue : default(Guid)
-        : default(Guid);
+        ? long.TryParse(id.ToString(), out numberValue) ? numberValue : default(long)
+        : default(long);
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
