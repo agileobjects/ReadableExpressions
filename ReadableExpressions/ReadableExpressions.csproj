@@ -23,10 +23,10 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>1.12.0.0</AssemblyVersion>
-    <FileVersion>1.12.0.0</FileVersion>
-    <VersionPrefix>1.12.0</VersionPrefix>
-    <Version>1.12.0</Version>
+    <AssemblyVersion>1.12.1.0</AssemblyVersion>
+    <FileVersion>1.12.1.0</FileVersion>
+    <VersionPrefix>1.12.1</VersionPrefix>
+    <Version>1.12.1</Version>
     <Company>AgileObjects Ltd</Company>
   </PropertyGroup>
 
