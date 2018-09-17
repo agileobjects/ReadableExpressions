@@ -483,6 +483,22 @@ if ((i = 123) != default(int))
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/22
+        [Fact]
+        public void ShouldTranslateEnumComparisonTests()
+        {
+            var flagParameter = Expression.Parameter(typeof(bool), "flag");
+            var one = Expression.Constant(Test.One);
+            var two = Expression.Constant(Test.Two);
+            var oneOrTwo = Expression.Condition(flagParameter, one, two);
+            var oneOrTwoEqualsTwo = Expression.Equal(oneOrTwo, two);
+            var testLambda = Expression.Lambda<Func<bool, bool>>(oneOrTwoEqualsTwo, flagParameter);
+
+            var translated = ToReadableString(testLambda);
+
+            translated.ShouldBe("flag => (flag ? Test.One : Test.Two) == Test.Two");
+        }
     }
 
     #region Helpers
@@ -494,6 +510,8 @@ if ((i = 123) != default(int))
             return true;
         }
     }
+
+    internal enum Test { One, Two };
 
     #endregion
 }

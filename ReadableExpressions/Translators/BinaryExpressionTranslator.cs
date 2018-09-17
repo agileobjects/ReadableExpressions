@@ -90,7 +90,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var translation = context.Translate(expression);
 
-            return expression.IsAssignment()
+            return (expression.NodeType == ExpressionType.Conditional) || expression.IsAssignment()
                 ? translation.WithSurroundingParentheses()
                 : translation;
         }
