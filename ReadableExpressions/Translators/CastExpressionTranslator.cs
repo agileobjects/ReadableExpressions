@@ -36,7 +36,13 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         private static string TranslateCast(Expression expression, TranslationContext context)
         {
-            var operand = ((UnaryExpression)expression).Operand;
+            var cast = (UnaryExpression)expression;
+            var operand = cast.Operand;
+
+            if ((cast.Method != null) && !cast.Method.IsExplicitOperator() && !cast.Method.IsImplicitOperator())
+            {
+                return TranslateMethodConversion(cast, context);
+            }
 
             if (expression.Type == typeof(object))
             {
@@ -65,6 +71,16 @@ namespace AgileObjects.ReadableExpressions.Translators
             }
 
             return TranslateCastCore(expression, context);
+        }
+
+        private static string TranslateMethodConversion(UnaryExpression cast, TranslationContext context)
+        {
+            return MethodCallExpressionTranslator.GetMethodCall(
+                cast.Method.DeclaringType.GetFriendlyName(),
+                new BclMethodInfoWrapper(cast.Method),
+                new[] { cast.Operand },
+                cast,
+                context);
         }
 
         private static string TranslateCastCore(Expression expression, TranslationContext context)

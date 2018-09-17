@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
@@ -85,6 +86,25 @@
             var translated = ToReadableString(unboxObjectToInt);
 
             translated.ShouldBe("((int)o)");
+        }
+
+        // https://github.com/agileobjects/ReadableExpressions/issues/20
+        [Fact]
+        public void ShouldTranslateConversionWithCustomStaticMethod()
+        {
+            var stringParameter = Expression.Parameter(typeof(string), "str");
+            var targetType = typeof(int);
+
+            var body = Expression.Convert(
+                stringParameter,
+                targetType,
+                targetType.GetPublicStaticMethod(nameof(int.Parse), stringParameter.Type));
+
+            var stringToIntParseLambda = Expression.Lambda<Func<string, int>>(body, stringParameter);
+
+            var translated = ToReadableString(stringToIntParseLambda.Body);
+
+            translated.ShouldBe("int.Parse(str)");
         }
     }
 }
