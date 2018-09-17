@@ -45,9 +45,20 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         public string Translate(Expression expression, TranslationContext context)
-            => Translate((ParameterExpression)expression);
+            => Translate((ParameterExpression)expression, context);
 
-        public static string Translate(ParameterExpression parameter)
-            => _keywords.Contains(parameter.Name) ? "@" + parameter.Name : parameter.Name;
+        public static string Translate(ParameterExpression parameter, TranslationContext context)
+        {
+            var parameterName = parameter.Name;
+
+            if (parameterName.IsNullOrWhiteSpace())
+            {
+                var variableNumber = context.GetUnnamedVariableNumber(parameter);
+
+                parameterName = parameter.Type.GetVariableNameInCamelCase() + variableNumber;
+            }
+
+            return _keywords.Contains(parameterName) ? "@" + parameterName : parameterName;
+        }
     }
 }

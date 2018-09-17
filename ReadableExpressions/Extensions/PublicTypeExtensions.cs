@@ -1,7 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using NetStandardPolyfills;
 
     /// <summary>
@@ -144,6 +146,172 @@
         }
 
         /// <summary>
+        /// Retrieves a camel-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the variable name.</param>
+        /// <returns>A camel-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInCamelCase(this Type type) => GetVariableName(type).ToCamelCase();
+
+        /// <summary>
+        /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the variable name.</param>
+        /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInPascalCase(this Type type) => GetVariableName(type).ToPascalCase();
+
+        private static string GetVariableName(Type type)
+        {
+            if (type.IsArray)
+            {
+                return GetVariableName(type.GetElementType()) + "Array";
+            }
+
+            var typeIsEnumerable = type.IsEnumerable();
+            var typeIsDictionary = typeIsEnumerable && type.IsDictionary();
+            var namingType = (typeIsEnumerable && !typeIsDictionary) ? type.GetEnumerableElementType() : type;
+            var variableName = GetBaseVariableName(namingType);
+
+            if (namingType.IsInterface())
+            {
+                variableName = variableName.Substring(1);
+            }
+
+            if (namingType.IsGenericType())
+            {
+                variableName = GetGenericTypeVariableName(variableName, namingType);
+            }
+
+            variableName = RemoveLeadingNonAlphaNumerics(variableName);
+
+            return (typeIsDictionary || !typeIsEnumerable) ? variableName : variableName.Pluralise();
+        }
+
+        private static string GetBaseVariableName(Type namingType)
+            => namingType.IsPrimitive() ? namingType.GetFriendlyName() : namingType.Name;
+
+        private static string GetGenericTypeVariableName(string variableName, Type namingType)
+        {
+            var nonNullableType = namingType.GetNonNullableType();
+            var genericTypeArguments = namingType.GetGenericTypeArguments();
+
+            if (nonNullableType != namingType)
+            {
+                return "nullable" + genericTypeArguments[0].GetVariableNameInPascalCase();
+            }
+
+            variableName = variableName.Substring(0, variableName.IndexOf('`'));
+
+            variableName += genericTypeArguments
+                .Project(arg => "_" + arg.GetVariableNameInPascalCase())
+                .Join(string.Empty);
+
+            return variableName;
+        }
+
+        private static string RemoveLeadingNonAlphaNumerics(string value)
+        {
+            // Anonymous types start with non-alphanumeric characters
+            while (!char.IsLetterOrDigit(value, 0))
+            {
+                value = value.Substring(1);
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// Determines if this <paramref name="type"/> is an enumerable Type.
+        /// </summary>
+        /// <param name="type">The Type for which to make the determination.</param>
+        /// <returns>True if this <paramref name="type"/> is an enumerable Type, otherwise false.</returns>
+        public static bool IsEnumerable(this Type type)
+        {
+            return type.IsArray ||
+                  (type != typeof(string) &&
+                   type.IsAssignableTo(typeof(IEnumerable)));
+        }
+
+        /// <summary>
+        /// Determines if this <paramref name="type"/> is a Dictionary Type.
+        /// </summary>
+        /// <param name="type">The Type for which to make the determination.</param>
+        /// <returns>True if this <paramref name="type"/> is a Dictionary Type, otherwise false.</returns>
+        public static bool IsDictionary(this Type type)
+            => !GetDictionaryTypes(type).Equals(default(KeyValuePair<Type, Type>));
+
+        /// <summary>
+        /// Gets a KeyValuePair containing the key and value Types of this Dictionary <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the key and value Types.</param>
+        /// <returns>A KeyValuePair containing the key and value Types of this Dictionary <paramref name="type"/>.</returns>
+        public static KeyValuePair<Type, Type> GetDictionaryTypes(this Type type)
+        {
+            var dictionaryType = GetDictionaryType(type);
+
+            return (dictionaryType != null)
+                ? GetDictionaryTypesFrom(dictionaryType)
+                : default(KeyValuePair<Type, Type>);
+        }
+
+        /// <summary>
+        /// Gets the Dictionary Type of this <paramref name="type"/> - either the Dictionary Type it is, or
+        /// the first IDictionary Type it implements. If this <paramref name="type"/> is not a Dictionary
+        /// Type, returns null.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the Dictionary Type.</param>
+        /// <returns>The Dictionary Type of this <paramref name="type"/>, or null if there is none.</returns>
+        public static Type GetDictionaryType(this Type type)
+        {
+            if (type.IsGenericType())
+            {
+                var typeDefinition = type.GetGenericTypeDefinition();
+
+                if ((typeDefinition == typeof(Dictionary<,>)) || (typeDefinition == typeof(IDictionary<,>)))
+                {
+                    return type;
+                }
+            }
+
+            var interfaceType = type
+                .GetAllInterfaces()
+                .FirstOrDefault(t => t.IsClosedTypeOf(typeof(IDictionary<,>)));
+
+            return interfaceType;
+        }
+
+        private static KeyValuePair<Type, Type> GetDictionaryTypesFrom(Type type)
+        {
+            var types = type.GetGenericTypeArguments();
+            return new KeyValuePair<Type, Type>(types[0], types[1]);
+        }
+
+        /// <summary>
+        /// Gets the element Type for this <paramref name="enumerableType"/>.
+        /// </summary>
+        /// <param name="enumerableType">The enumerable Type for which to retrieve the element Type.</param>
+        /// <returns>
+        /// The element Type for this <paramref name="enumerableType"/>, or null if this Type is not enumerable.
+        /// </returns>
+        public static Type GetEnumerableElementType(this Type enumerableType)
+        {
+            if (enumerableType.HasElementType)
+            {
+                return enumerableType.GetElementType();
+            }
+
+            if (enumerableType.IsGenericType())
+            {
+                return enumerableType.GetGenericTypeArguments().Last();
+            }
+
+            var enumerableInterfaceType = enumerableType
+                .GetAllInterfaces()
+                .FirstOrDefault(interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
+
+            return enumerableInterfaceType?.GetGenericTypeArguments().First() ?? typeof(object);
+        }
+
+        /// <summary>
         /// Returns a value indicating if the given <paramref name="type"/> can be null.
         /// </summary>
         /// <param name="type">The type for which to make the determination.</param>
@@ -162,5 +330,17 @@
         {
             return Nullable.GetUnderlyingType(type) != null;
         }
+
+        /// <summary>
+        /// Gets the underlying non-nullable Type of this <paramref name="type"/>, or returns this
+        /// <paramref name="type"/> if it is not nullable.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the underlying non-nullable Type.</param>
+        /// <returns>
+        /// The underlying non-nullable Type of this <paramref name="type"/>, or returns this
+        /// <paramref name="type"/> if it is not nullable.
+        /// </returns>
+        [DebuggerStepThrough]
+        public static Type GetNonNullableType(this Type type) => Nullable.GetUnderlyingType(type) ?? type;
     }
 }

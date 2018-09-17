@@ -46,7 +46,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .Project(vGrp => new
                 {
                     TypeName = vGrp.Key.GetFriendlyName(),
-                    VariableNames = vGrp.Project(ParameterExpressionTranslator.Translate)
+                    VariableNames = vGrp.Project(variable => ParameterExpressionTranslator.Translate(variable, context))
                 })
                 .Project(varData => $"{varData.TypeName} {varData.VariableNames.Join(", ")};")
                 .ToArray();

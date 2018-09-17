@@ -64,83 +64,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.UnitTests\Extensions\WhenGettingAParentExpressionNode.cs">
-      <Link>Extensions\WhenGettingAParentExpressionNode.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\Extensions\WhenGettingFriendlyNames.cs">
-      <Link>Extensions\WhenGettingFriendlyNames.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\Properties\AssemblyInfo.cs">
-      <Link>Properties\AssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\ShouldExtensions.cs">
-      <Link>ShouldExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\TestClassBase.cs">
-      <Link>TestClassBase.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenFormattingCode.cs">
-      <Link>WhenFormattingCode.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingAssignments.cs">
-      <Link>WhenTranslatingAssignments.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingBlocks.cs">
-      <Link>WhenTranslatingBlocks.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingComments.cs">
-      <Link>WhenTranslatingComments.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingComparisons.cs">
-      <Link>WhenTranslatingComparisons.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingConditionals.cs">
-      <Link>WhenTranslatingConditionals.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingConstants.cs">
-      <Link>WhenTranslatingConstants.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingConversions.cs">
-      <Link>WhenTranslatingConversions.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingDebugInfo.cs">
-      <Link>WhenTranslatingDebugInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingDynamicOperations.cs">
-      <Link>WhenTranslatingDynamicOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingGotos.cs">
-      <Link>WhenTranslatingGotos.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingLambdas.cs">
-      <Link>WhenTranslatingLambdas.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingLanguageKeywords.cs">
-      <Link>WhenTranslatingLanguageKeywords.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingLogicalOperations.cs">
-      <Link>WhenTranslatingLogicalOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingLoops.cs">
-      <Link>WhenTranslatingLoops.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingMathsOperations.cs">
-      <Link>WhenTranslatingMathsOperations.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingMemberAccesses.cs">
-      <Link>WhenTranslatingMemberAccesses.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingObjectCreations.cs">
-      <Link>WhenTranslatingObjectCreations.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingStringConcatenation.cs">
-      <Link>WhenTranslatingStringConcatenation.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenTranslatingTryCatchFinallys.cs">
-      <Link>WhenTranslatingTryCatchFinallys.cs</Link>
-    </Compile>
-    <Compile Include="..\ReadableExpressions.UnitTests\WhenUsingPartialTrust.cs">
-      <Link>WhenUsingPartialTrust.cs</Link>
+    <Compile Include="..\ReadableExpressions.UnitTests\**\*.cs" Exclude="..\ReadableExpressions.UnitTests\obj\**\*.cs;..\ReadableExpressions.UnitTests\WhenUsingPartialTrust.cs;">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

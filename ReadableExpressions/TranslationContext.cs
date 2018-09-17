@@ -195,8 +195,24 @@ namespace AgileObjects.ReadableExpressions
         /// otherwise false.
         /// </returns>
         public bool IsPartOfMethodCallChain(Expression methodCall)
+            => _analyzer.ChainedMethodCalls.Contains(methodCall);
+
+        /// <summary>
+        /// Gets the 1-based index of the given <paramref name="variable"/> in the set of unnamed,
+        /// accessed variables of its Type.
+        /// </summary>
+        /// <param name="variable">The variable for which to get the 1-based index.</param>
+        /// <returns>The 1-based index of the given <paramref name="variable"/>.</returns>
+        public int? GetUnnamedVariableNumber(ParameterExpression variable)
         {
-            return _analyzer.ChainedMethodCalls.Contains(methodCall);
+            var variablesOfType = _analyzer.UnnamedVariablesByType[variable.Type];
+
+            if (variablesOfType.Length == 1)
+            {
+                return null;
+            }
+
+            return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
         #region Helper Class
@@ -210,6 +226,7 @@ namespace AgileObjects.ReadableExpressions
             private readonly Stack<object> _constructs;
             private ICollection<LabelTarget> _namedLabelTargets;
             private ICollection<GotoExpression> _gotoReturnGotos;
+            private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
             private ExpressionAnalysisVisitor()
             {
@@ -277,6 +294,13 @@ namespace AgileObjects.ReadableExpressions
                 => _gotoReturnGotos ?? (_gotoReturnGotos = new List<GotoExpression>());
 
             public List<MethodCallExpression> ChainedMethodCalls { get; }
+
+            public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
+                => _unnamedVariablesByType ??
+                  (_unnamedVariablesByType = _accessedVariables
+                      .Where(variable => variable.Name.IsNullOrWhiteSpace())
+                      .GroupBy(variable => variable.Type)
+                      .ToDictionary(grp => grp.Key, grp => grp.ToArray()));
 
             protected override Expression VisitParameter(ParameterExpression variable)
             {

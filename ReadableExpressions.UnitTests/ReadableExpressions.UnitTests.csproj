@@ -112,10 +112,12 @@
     <Compile Include="..\VersionInfo.cs">
       <Link>VersionInfo.cs</Link>
     </Compile>
+    <Compile Include="Extensions\WhenGeneratingVariableNames.cs" />
     <Compile Include="Extensions\WhenGettingAParentExpressionNode.cs" />
     <Compile Include="Extensions\WhenGettingFriendlyNames.cs" />
     <Compile Include="ShouldExtensions.cs" />
     <Compile Include="TestClassBase.cs" />
+    <Compile Include="WhenTranslatingVariableNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />
     <Compile Include="WhenTranslatingStringConcatenation.cs" />
     <Compile Include="WhenTranslatingComments.cs" />
