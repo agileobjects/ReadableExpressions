@@ -7,7 +7,10 @@
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
-        internal TranslationSettings()
+        /// <summary>
+        /// Creates a Translation Settings instance.
+        /// </summary>
+        public TranslationSettings()
         {
             UseImplicitGenericParameters = true;
         }
