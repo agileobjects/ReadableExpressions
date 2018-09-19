@@ -15,8 +15,9 @@
         /// Returns a friendly, readable version of the name of the given <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The type for which to retrieve a friendly, readable name.</param>
+        /// <param name="translationSettings"></param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
-        public static string GetFriendlyName(this Type type)
+        public static string GetFriendlyName(this Type type, TranslationSettings translationSettings)
         {
             if (type.FullName == null)
             {
@@ -26,7 +27,7 @@
 
             if (type.IsArray)
             {
-                return type.GetElementType().GetFriendlyName() + "[]";
+                return type.GetElementType().GetFriendlyName(translationSettings) + "[]";
             }
 
             if (!type.IsGenericType())
@@ -35,7 +36,7 @@
 
                 if (type.IsNested)
                 {
-                    return type.DeclaringType.GetFriendlyName() + "." + qualifiedTypeName;
+                    return type.DeclaringType.GetFriendlyName(translationSettings) + "." + qualifiedTypeName;
                 }
 
                 return qualifiedTypeName;
@@ -45,16 +46,16 @@
 
             if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) != null)
             {
-                return underlyingNullableType.GetFriendlyName() + "?";
+                return underlyingNullableType.GetFriendlyName(translationSettings) + "?";
             }
 
-            return GetGenericTypeName(type);
+            return GetGenericTypeName(type, translationSettings);
         }
 
-        private static string GetGenericTypeName(Type genericType)
+        private static string GetGenericTypeName(Type genericType, TranslationSettings translationSettings)
         {
             var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
-            var genericTypeName = GetGenericTypeName(genericType.Name, typeGenericTypeArguments.Length, typeGenericTypeArguments);
+            var genericTypeName = GetGenericTypeName(genericType.Name, typeGenericTypeArguments.Length, typeGenericTypeArguments, translationSettings);
 
             if (!genericType.IsNested)
             {
@@ -102,7 +103,7 @@
                         typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
                     }
 
-                    parentTypeName = GetGenericTypeName(parentTypeName, numberOfParameters, typeArguments);
+                    parentTypeName = GetGenericTypeName(parentTypeName, numberOfParameters, typeArguments, translationSettings);
                 }
 
                 genericTypeName = parentTypeName + "." + genericTypeName;
@@ -111,28 +112,32 @@
             return genericTypeName;
         }
 
-        private static string GetGenericTypeName(
-            string typeName,
+        private static string GetGenericTypeName(string typeName,
             int numberOfParameters,
-            IEnumerable<Type> typeArguments)
+            IEnumerable<Type> typeArguments, TranslationSettings translationSettings)
         {
             var typeGenericTypeArgumentFriendlyNames =
-                typeArguments.Project(GetFriendlyName).Join(", ");
+                typeArguments.Project(type => GetFriendlyName(type, translationSettings)).Join(", ");
 
             typeName = typeName.Replace(
                 "`" + numberOfParameters,
                 "<" + typeGenericTypeArgumentFriendlyNames + ">");
 
-            return typeName.StartsWith('<') ? GetAnonymousTypeName(typeName) : typeName;
+            return typeName.StartsWith('<') ? GetAnonymousTypeName(typeName, translationSettings) : typeName;
         }
 
-        private static string GetAnonymousTypeName(string typeName)
+        private static string GetAnonymousTypeName(string typeName, TranslationSettings translationSettings)
         {
             var anonTypeIndex = typeName.IndexOf("AnonymousType", StringComparison.Ordinal);
 
             if (anonTypeIndex == -1)
             {
                 return typeName;
+            }
+
+            if (translationSettings.AnonymousTypesAsObject)
+            {
+                return "object";
             }
 
             typeName = typeName.Substring(anonTypeIndex);
@@ -149,27 +154,29 @@
         /// Retrieves a camel-case variable name for a variable of this <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The Type for which to retrieve the variable name.</param>
+        /// <param name="translationSettings"></param>
         /// <returns>A camel-case variable name for a variable of this <paramref name="type"/>.</returns>
-        public static string GetVariableNameInCamelCase(this Type type) => GetVariableName(type).ToCamelCase();
+        public static string GetVariableNameInCamelCase(this Type type, TranslationSettings translationSettings) => GetVariableName(type, translationSettings).ToCamelCase();
 
         /// <summary>
         /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.
         /// </summary>
         /// <param name="type">The Type for which to retrieve the variable name.</param>
+        /// <param name="translationSettings"></param>
         /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
-        public static string GetVariableNameInPascalCase(this Type type) => GetVariableName(type).ToPascalCase();
+        public static string GetVariableNameInPascalCase(this Type type, TranslationSettings translationSettings) => GetVariableName(type, translationSettings).ToPascalCase();
 
-        private static string GetVariableName(Type type)
+        private static string GetVariableName(Type type, TranslationSettings translationSettings)
         {
             if (type.IsArray)
             {
-                return GetVariableName(type.GetElementType()) + "Array";
+                return GetVariableName(type.GetElementType(), translationSettings) + "Array";
             }
 
             var typeIsEnumerable = type.IsEnumerable();
             var typeIsDictionary = typeIsEnumerable && type.IsDictionary();
             var namingType = (typeIsEnumerable && !typeIsDictionary) ? type.GetEnumerableElementType() : type;
-            var variableName = GetBaseVariableName(namingType);
+            var variableName = GetBaseVariableName(namingType, translationSettings);
 
             if (namingType.IsInterface())
             {
@@ -178,7 +185,7 @@
 
             if (namingType.IsGenericType())
             {
-                variableName = GetGenericTypeVariableName(variableName, namingType);
+                variableName = GetGenericTypeVariableName(variableName, namingType, translationSettings);
             }
 
             variableName = RemoveLeadingNonAlphaNumerics(variableName);
@@ -186,23 +193,24 @@
             return (typeIsDictionary || !typeIsEnumerable) ? variableName : variableName.Pluralise();
         }
 
-        private static string GetBaseVariableName(Type namingType)
-            => namingType.IsPrimitive() ? namingType.GetFriendlyName() : namingType.Name;
+        private static string GetBaseVariableName(Type namingType, TranslationSettings translationSettings)
+            => namingType.IsPrimitive() ? namingType.GetFriendlyName(translationSettings) : namingType.Name;
 
-        private static string GetGenericTypeVariableName(string variableName, Type namingType)
+        private static string GetGenericTypeVariableName(string variableName, Type namingType,
+            TranslationSettings translationSettings)
         {
             var nonNullableType = namingType.GetNonNullableType();
             var genericTypeArguments = namingType.GetGenericTypeArguments();
 
             if (nonNullableType != namingType)
             {
-                return "nullable" + genericTypeArguments[0].GetVariableNameInPascalCase();
+                return "nullable" + genericTypeArguments[0].GetVariableNameInPascalCase(translationSettings);
             }
 
             variableName = variableName.Substring(0, variableName.IndexOf('`'));
 
             variableName += genericTypeArguments
-                .Project(arg => "_" + arg.GetVariableNameInPascalCase())
+                .Project(arg => "_" + arg.GetVariableNameInPascalCase(translationSettings))
                 .Join(string.Empty);
 
             return variableName;

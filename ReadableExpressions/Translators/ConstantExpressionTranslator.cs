@@ -33,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (constant.Type.IsEnum())
             {
-                return constant.Type.GetFriendlyName() + "." + constant.Value;
+                return constant.Type.GetFriendlyName(context.Settings) + "." + constant.Value;
             }
 
             if (TryTranslateByTypeCode(constant, context, out var translation))
@@ -48,7 +48,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return constant.Value.ToString();
             }
 
-            return valueType.GetFriendlyName();
+            return valueType.GetFriendlyName(context.Settings);
         }
 
         private static bool TryTranslateByTypeCode(
@@ -92,7 +92,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                     return true;
 
                 case NetStandardTypeCode.Object:
-                    if (IsType(constant, out translation) ||
+                    if (IsType(constant, context.Settings, out translation) ||
                         IsLambda(constant, context, out translation) ||
                         IsFunc(constant, out translation) ||
                         IsRegex(constant, out translation) ||
@@ -243,11 +243,12 @@ namespace AgileObjects.ReadableExpressions.Translators
             return (value % 1).Equals(0) ? value.ToString("0") : value.ToString(CultureInfo.CurrentCulture);
         }
 
-        private static bool IsType(ConstantExpression constant, out string translation)
+        private static bool IsType(ConstantExpression constant,
+            TranslationSettings translationSettings, out string translation)
         {
             if (constant.Type.IsAssignableTo(typeof(Type)))
             {
-                translation = $"typeof({((Type)constant.Value).GetFriendlyName()})";
+                translation = $"typeof({((Type)constant.Value).GetFriendlyName(translationSettings)})";
                 return true;
             }
 

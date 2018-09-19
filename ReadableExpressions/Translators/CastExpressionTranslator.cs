@@ -64,7 +64,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 #endif
 
                 var methodSubject = subjectMethod.IsStatic
-                    ? subjectMethod.DeclaringType.GetFriendlyName()
+                    ? subjectMethod.DeclaringType.GetFriendlyName(context.Settings)
                     : context.Translate(methodCall.Arguments.ElementAtOrDefault(1));
 
                 return methodSubject + "." + subjectMethod.Name;
@@ -76,7 +76,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateMethodConversion(UnaryExpression cast, TranslationContext context)
         {
             return MethodCallExpressionTranslator.GetMethodCall(
-                cast.Method.DeclaringType.GetFriendlyName(),
+                cast.Method.DeclaringType.GetFriendlyName(context.Settings),
                 new BclMethodInfoWrapper(cast.Method),
                 new[] { cast.Operand },
                 cast,
@@ -96,7 +96,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             Type resultType,
             TranslationContext context)
         {
-            var typeName = resultType.GetFriendlyName();
+            var typeName = resultType.GetFriendlyName(context.Settings);
             var subject = context.Translate(castValue);
 
             if (castValue.NodeType == ExpressionType.Assign)
@@ -115,7 +115,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateTypeAs(Expression expression, TranslationContext context)
         {
             var typeAs = (UnaryExpression)expression;
-            var typeName = typeAs.Type.GetFriendlyName();
+            var typeName = typeAs.Type.GetFriendlyName(context.Settings);
             var subject = context.Translate(typeAs.Operand);
 
             return $"({subject} as {typeName})";
@@ -124,7 +124,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         private static string TranslateTypeIs(Expression expression, TranslationContext context)
         {
             var typeIs = (TypeBinaryExpression)expression;
-            var typeName = typeIs.TypeOperand.GetFriendlyName();
+            var typeName = typeIs.TypeOperand.GetFriendlyName(context.Settings);
             var subject = context.Translate(typeIs.Expression);
 
             return $"({subject} is {typeName})";

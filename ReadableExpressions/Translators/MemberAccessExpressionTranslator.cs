@@ -30,7 +30,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return (memberExpression.Expression != null)
                 ? GetInstanceMemberSubject(memberExpression, context)
-                : memberExpression.Member.DeclaringType.GetFriendlyName();
+                : memberExpression.Member.DeclaringType.GetFriendlyName(context.Settings);
         }
 
         private static string GetInstanceMemberSubject(MemberExpression memberExpression, TranslationContext context)

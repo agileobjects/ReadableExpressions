@@ -21,7 +21,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             var newArray = (NewArrayExpression)expression;
 
-            var arrayTypeName = expression.Type.GetElementType().GetFriendlyName();
+            var arrayTypeName = expression.Type.GetElementType().GetFriendlyName(context.Settings);
 
             var bounds = newArray.Expressions.Project(context.Translate).Join("[]");
 

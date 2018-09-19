@@ -42,5 +42,20 @@
         internal bool DoNotCommentQuotedLambdas => !CommentQuotedLambdas;
 
         internal bool CommentQuotedLambdas { get; set; }
+
+        /// <summary>
+        /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
+        /// been Quoted.
+        /// </summary>
+        public TranslationSettings SerializeAnonymousTypesAsObject
+        {
+            get
+            {
+                AnonymousTypesAsObject = true;
+                return this;
+            }
+        }
+
+        internal bool AnonymousTypesAsObject { get; private set; }
     }
 }

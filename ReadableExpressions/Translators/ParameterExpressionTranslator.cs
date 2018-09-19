@@ -55,7 +55,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 var variableNumber = context.GetUnnamedVariableNumber(parameter);
 
-                parameterName = parameter.Type.GetVariableNameInCamelCase() + variableNumber;
+                parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings) + variableNumber;
             }
 
             return _keywords.Contains(parameterName) ? "@" + parameterName : parameterName;

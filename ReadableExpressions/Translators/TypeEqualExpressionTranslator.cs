@@ -66,8 +66,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             var operand = context.Translate(typeBinary.Expression);
 
             return typeBinary.TypeOperand.IsClass()
-                ? $"({operand} is {typeBinary.TypeOperand.GetFriendlyName()})"
-                : $"({operand} TypeOf typeof({typeBinary.TypeOperand.GetFriendlyName()}))";
+                ? $"({operand} is {typeBinary.TypeOperand.GetFriendlyName(context.Settings)})"
+                : $"({operand} TypeOf typeof({typeBinary.TypeOperand.GetFriendlyName(context.Settings)}))";
         }
     }
 }

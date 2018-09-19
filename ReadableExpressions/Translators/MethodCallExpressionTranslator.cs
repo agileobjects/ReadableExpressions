@@ -92,7 +92,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             arguments = methodCall.Arguments;
 
             // ReSharper disable once PossibleNullReferenceException
-            return methodCall.Method.DeclaringType.GetFriendlyName();
+            return methodCall.Method.DeclaringType.GetFriendlyName(context.Settings);
         }
 
         private static string GetMethodCall(
@@ -159,7 +159,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             var argumentNames = method
                 .GetGenericArguments()
-                .Project(a => a.GetFriendlyName())
+                .Project(a => a.GetFriendlyName(context.Settings))
                 .Filter(name => name != null)
                 .ToArray();
 

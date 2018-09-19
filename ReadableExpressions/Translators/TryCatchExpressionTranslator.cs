@@ -58,7 +58,7 @@ try{tryBody.WithCurlyBraces()}
 
         private static string GetExceptionClause(CatchBlock catchBlock, TranslationContext context)
         {
-            var exceptionTypeName = catchBlock.Test.GetFriendlyName();
+            var exceptionTypeName = catchBlock.Test.GetFriendlyName(context.Settings);
 
             if (ExceptionUsageFinder.IsVariableUsed(catchBlock))
             {
