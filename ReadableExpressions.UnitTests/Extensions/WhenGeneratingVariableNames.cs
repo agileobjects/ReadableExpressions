@@ -14,61 +14,61 @@
         [Fact]
         public void ShouldNameAVariableForAnArrayType()
         {
-            typeof(Box[]).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("boxArray");
+            typeof(Box[]).GetVariableNameInCamelCase().ShouldBe("boxArray");
         }
 
         [Fact]
         public void ShouldNameAVariableForACollectionTypeEndingInX()
         {
-            typeof(ICollection<Box>).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("boxes");
+            typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxes");
         }
 
         [Fact]
         public void ShouldNameAVariableForAnEnumerableTypeEndingInZ()
         {
-            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase(new TranslationSettings()).ShouldBe("Fuzzes");
+            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("Fuzzes");
         }
 
         [Fact]
         public void ShouldNameAVariableForAnEnumerableTypeEndingInDoubleS()
         {
-            typeof(IEnumerable<Glass>).GetVariableNameInPascalCase(new TranslationSettings()).ShouldBe("Glasses");
+            typeof(IEnumerable<Glass>).GetVariableNameInPascalCase().ShouldBe("Glasses");
         }
 
         [Fact]
         public void ShouldNameAVariableForAListTypeEndingInCh()
         {
-            typeof(List<Church>).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("churches");
+            typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churches");
         }
 
         [Fact]
         public void ShouldNameAVariableForAListTypeEndingInSh()
         {
-            typeof(List<Hush>).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("hushes");
+            typeof(List<Hush>).GetVariableNameInCamelCase().ShouldBe("hushes");
         }
 
         [Fact]
         public void ShouldNameAVariableForAListTypeEndingInVowelY()
         {
-            typeof(List<Journey>).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("journeys");
+            typeof(List<Journey>).GetVariableNameInCamelCase().ShouldBe("journeys");
         }
 
         [Fact]
         public void ShouldNameAVariableForAnIListTypeEndingInConsonantY()
         {
-            typeof(IList<Body>).GetVariableNameInPascalCase(new TranslationSettings()).ShouldBe("Bodies");
+            typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("Bodies");
         }
 
         [Fact]
         public void ShouldNameANullableLongVariable()
         {
-            typeof(long?).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("nullableLong");
+            typeof(long?).GetVariableNameInCamelCase().ShouldBe("nullableLong");
         }
 
         [Fact]
         public void ShouldNameAnArrayOfArraysVariable()
         {
-            typeof(int?[][]).GetVariableNameInCamelCase(new TranslationSettings()).ShouldBe("nullableIntArrayArray");
+            typeof(int?[][]).GetVariableNameInCamelCase().ShouldBe("nullableIntArrayArray");
         }
 
         // ReSharper disable ClassNeverInstantiated.Local

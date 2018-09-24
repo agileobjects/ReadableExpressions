@@ -1,5 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
+
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
     /// </summary>
@@ -7,10 +9,7 @@
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
-        /// <summary>
-        /// Creates a Translation Settings instance.
-        /// </summary>
-        public TranslationSettings()
+        internal TranslationSettings()
         {
             UseImplicitGenericParameters = true;
         }
@@ -47,18 +46,16 @@
         internal bool CommentQuotedLambdas { get; set; }
 
         /// <summary>
-        /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
-        /// been Quoted.
+        /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
+        /// default method.
         /// </summary>
-        public TranslationSettings SerializeAnonymousTypesAsObject
+        /// <param name="nameFactory">The factory method to execute to retrieve the name for an anonymous type.</param>
+        public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
-            get
-            {
-                AnonymousTypesAsObject = true;
-                return this;
-            }
+            AnonymousTypeNameFactory = nameFactory;
+            return this;
         }
 
-        internal bool AnonymousTypesAsObject { get; private set; }
+        internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
     }
 }

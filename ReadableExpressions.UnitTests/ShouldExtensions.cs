@@ -396,8 +396,8 @@
             if (!(actual is TExpected))
             {
                 Asplode(
-                    "An object of type " + typeof(TExpected).GetFriendlyName(new TranslationSettings()),
-                    actual.GetType().GetFriendlyName(new TranslationSettings()));
+                    "An object of type " + typeof(TExpected).GetFriendlyName(),
+                    actual.GetType().GetFriendlyName());
             }
         }
 

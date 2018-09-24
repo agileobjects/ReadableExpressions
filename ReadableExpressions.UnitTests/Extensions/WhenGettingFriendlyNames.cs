@@ -41,17 +41,18 @@
         {
             var anon = new { One = 1, Two = "two" };
 
-            var friendlyName = anon.GetType().GetFriendlyName(new TranslationSettings());
+            var friendlyName = anon.GetType().GetFriendlyName();
 
             friendlyName.ShouldBe("AnonymousType<int, string>");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/pull/25
         [Fact]
-        public void ShouldUseObjectForAnonymousTypesIfConfigured()
+        public void ShouldUseAnonymousTypeNameFactoryIfConfigured()
         {
             var anon = new { One = 1, Two = "two" };
 
-            var friendlyName = anon.GetType().GetFriendlyName(new TranslationSettings().SerializeAnonymousTypesAsObject);
+            var friendlyName = anon.GetType().GetFriendlyName(c => c.NameAnonymousTypesUsing(t => "object"));
 
             friendlyName.ShouldBe("object");
         }
