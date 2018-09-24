@@ -70,7 +70,7 @@ namespace AgileObjects.ReadableExpressions
             return new TranslationContext(analyzer, globalTranslator, settings);
         }
 
-        private static TranslationSettings GetTranslationSettings(
+        internal static TranslationSettings GetTranslationSettings(
             Func<TranslationSettings, TranslationSettings> configuration)
         {
             return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;

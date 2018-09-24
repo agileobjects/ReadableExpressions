@@ -1,5 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
+
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
     /// </summary>
@@ -42,5 +44,18 @@
         internal bool DoNotCommentQuotedLambdas => !CommentQuotedLambdas;
 
         internal bool CommentQuotedLambdas { get; set; }
+
+        /// <summary>
+        /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
+        /// default method.
+        /// </summary>
+        /// <param name="nameFactory">The factory method to execute to retrieve the name for an anonymous type.</param>
+        public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
+        {
+            AnonymousTypeNameFactory = nameFactory;
+            return this;
+        }
+
+        internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
     }
 }

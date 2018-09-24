@@ -28,17 +28,17 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             return defaultExpression.Type.CanBeNull()
                 ? "null"
-                : Translate(defaultExpression);
+                : Translate(defaultExpression, context.Settings);
         }
 
-        internal static string Translate(DefaultExpression defaultExpression)
+        internal static string Translate(DefaultExpression defaultExpression, TranslationSettings translationSettings)
         {
             if (defaultExpression.Type == typeof(string))
             {
                 return "null";
             }
 
-            var typeName = defaultExpression.Type.GetFriendlyName();
+            var typeName = defaultExpression.Type.GetFriendlyName(translationSettings);
 
             return $"default({typeName})";
         }

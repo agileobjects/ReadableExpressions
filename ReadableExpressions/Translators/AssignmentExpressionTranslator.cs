@@ -56,7 +56,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             var symbol = _symbolsByNodeType[assignmentType];
 
             var valueString = (value.NodeType == ExpressionType.Default)
-                ? DefaultExpressionTranslator.Translate((DefaultExpression)value)
+                ? DefaultExpressionTranslator.Translate((DefaultExpression)value, context.Settings)
                 : GetValueTranslation(value, context);
 
             var assignment = target + " " + symbol;

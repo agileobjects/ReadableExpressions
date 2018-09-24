@@ -23,20 +23,22 @@
             {
                 if (initialisation.Expressions.Count == 0)
                 {
-                    return "new " + GetExplicitArrayType(initialisation) + "[0]";
+                    return "new " + GetExplicitArrayType(initialisation, context.Settings) + "[0]";
                 }
 
-                var explicitType = GetExplicitArrayTypeIfRequired(initialisation);
+                var explicitType = GetExplicitArrayTypeIfRequired(initialisation, context.Settings);
 
                 return "new" + explicitType + "[]";
             }
 
-            private static string GetExplicitArrayType(Expression initialisation)
+            private static string GetExplicitArrayType(Expression initialisation,
+                TranslationSettings translationSettings)
             {
-                return initialisation.Type.GetElementType().GetFriendlyName();
+                return initialisation.Type.GetElementType().GetFriendlyName(translationSettings);
             }
 
-            private static string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation)
+            private static string GetExplicitArrayTypeIfRequired(NewArrayExpression initialisation,
+                TranslationSettings translationSettings)
             {
                 var expressionTypes = initialisation
                     .Expressions
@@ -49,7 +51,7 @@
                     return null;
                 }
 
-                return " " + GetExplicitArrayType(initialisation);
+                return " " + GetExplicitArrayType(initialisation, translationSettings);
             }
 
             protected override IEnumerable<string> GetMemberInitialisations(

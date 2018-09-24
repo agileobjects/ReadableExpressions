@@ -45,7 +45,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 .GroupBy(v => v.Type)
                 .Project(vGrp => new
                 {
-                    TypeName = vGrp.Key.GetFriendlyName(),
+                    TypeName = vGrp.Key.GetFriendlyName(context.Settings),
                     VariableNames = vGrp.Project(variable => ParameterExpressionTranslator.Translate(variable, context))
                 })
                 .Project(varData => $"{varData.TypeName} {varData.VariableNames.Join(", ")};")
@@ -160,7 +160,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return translation;
             }
 
-            var typeName = GetVariableTypeName((BinaryExpression)expression);
+            var typeName = GetVariableTypeName((BinaryExpression)expression, context.Settings);
 
             return typeName + " " + translation;
         }
@@ -181,9 +181,9 @@ namespace AgileObjects.ReadableExpressions.Translators
             return translation.IsTerminated() || expression.IsComment();
         }
 
-        private static string GetVariableTypeName(BinaryExpression assignment)
+        private static string GetVariableTypeName(BinaryExpression assignment, TranslationSettings translationSettings)
         {
-            return UseFullTypeName(assignment) ? assignment.Left.Type.GetFriendlyName() : "var";
+            return UseFullTypeName(assignment) ? assignment.Left.Type.GetFriendlyName(translationSettings) : "var";
         }
 
         private static bool UseFullTypeName(BinaryExpression assignment)

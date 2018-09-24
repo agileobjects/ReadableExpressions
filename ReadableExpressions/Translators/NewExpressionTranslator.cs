@@ -28,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return GetAnonymousTypeCreation(newExpression, context);
             }
 
-            var typeName = (newExpression.Type == typeof(object)) ? "Object" : newExpression.Type.GetFriendlyName();
+            var typeName = (newExpression.Type == typeof(object)) ? "Object" : newExpression.Type.GetFriendlyName(context.Settings);
             var parameters = context.TranslateParameters(newExpression.Arguments).WithParentheses();
 
             return "new " + typeName + parameters;

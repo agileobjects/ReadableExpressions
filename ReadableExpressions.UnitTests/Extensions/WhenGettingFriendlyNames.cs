@@ -46,6 +46,17 @@
             friendlyName.ShouldBe("AnonymousType<int, string>");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/pull/25
+        [Fact]
+        public void ShouldUseAnonymousTypeNameFactoryIfConfigured()
+        {
+            var anon = new { One = 1, Two = "two" };
+
+            var friendlyName = anon.GetType().GetFriendlyName(c => c.NameAnonymousTypesUsing(t => "object"));
+
+            friendlyName.ShouldBe("object");
+        }
+
         // See https://github.com/agileobjects/ReadableExpressions/issues/6
         [Fact]
         public void ShouldUseFriendlyNamesForMultiplyNestedTypes()
