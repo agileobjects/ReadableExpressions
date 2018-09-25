@@ -73,12 +73,10 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                     var indexOfIde = vsInstallPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
                     var pathToCommon7 = vsInstallPath.Substring(0, indexOfIde);
                     var pathToVisualizers = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
-                    var visualizerAssemblyName = GetResourceFileName(targetVisualizer.ResourceName);
                     var pathToExtensions = GetPathToExtensions(vsInstallPath);
 
-                    targetVisualizer.InstallPath = Path.Combine(pathToVisualizers, visualizerAssemblyName);
-                    targetVisualizer.VsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
-
+                    targetVisualizer.SetInstallPath(pathToVisualizers);
+                    targetVisualizer.SetVsixManifestPath(pathToExtensions);
                     targetVisualizer.PopulateVsSetupData();
 
                     yield return targetVisualizer;
@@ -132,14 +130,6 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             {
                 targetVisualizers.Add(visualizer.With(dataItem.RegistryKey, dataItem.InstallPath));
             }
-        }
-
-        private static string GetResourceFileName(string resourceName)
-        {
-            var resourceAssemblyNameLength = (typeof(Visualizer).Namespace?.Length + 1).GetValueOrDefault();
-            var resourceFileName = resourceName.Substring(resourceAssemblyNameLength);
-
-            return resourceFileName;
         }
 
         private string GetPathToExtensions(string vsInstallPath)

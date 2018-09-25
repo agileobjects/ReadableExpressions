@@ -6,6 +6,7 @@
     using System.Linq;
     using System.Reflection;
     using System.Text;
+    using System.Text.RegularExpressions;
     using Microsoft.Win32;
 
     internal class Visualizer : IDisposable
@@ -15,60 +16,97 @@
         private readonly Action<string> _logger;
         private readonly Version _version;
         private readonly string _vsixManifest;
+        private RegistryKey _registryKey;
+        private string _vsExePath;
+        private string _vsSetupArgument;
+        private string _installPath;
+        private string _vsixManifestPath;
 
-        public Visualizer(Action<string> logger, FileVersionInfo version, string vsixManifest)
-            : this(logger, new Version(version.FileVersion), vsixManifest)
+        public Visualizer(
+            Action<string> logger,
+            FileVersionInfo version,
+            string vsixManifest,
+            string resourceName)
+            : this(logger, new Version(version.FileVersion), vsixManifest, resourceName, GetVsVersionNumber(resourceName))
         {
         }
 
-        private Visualizer(Action<string> logger, Version version, string vsixManifest)
+        #region Setup
+
+        private static readonly Regex _versionNumberMatcher =
+            new Regex(@"Vs(?<VersionNumber>[\d]+)\.dll$", RegexOptions.IgnoreCase);
+
+        private static int GetVsVersionNumber(string resourceName)
+        {
+            var matchValue = _versionNumberMatcher
+                .Match(resourceName)
+                .Groups["VersionNumber"]
+                .Value;
+
+            return int.Parse(matchValue);
+        }
+
+        #endregion
+
+        private Visualizer(
+            Action<string> logger,
+            Version version,
+            string vsixManifest,
+            string resourceName,
+            int vsVersionNumber)
         {
             _logger = logger;
             _version = version;
             _vsixManifest = vsixManifest;
+            ResourceName = resourceName;
+            VsVersionNumber = vsVersionNumber;
         }
 
-        public int VsVersionNumber { get; set; }
+        public int VsVersionNumber { get; }
 
         public string VsFullVersionNumber => VsVersionNumber + ".0";
 
-        public string ResourceName { get; set; }
+        public string ResourceName { get; }
 
-        public RegistryKey RegistryKey { get; set; }
+        public string GetResourceFileName()
+        {
+            var resourceAssemblyNameLength = (typeof(Visualizer).Namespace?.Length + 1).GetValueOrDefault();
+            var resourceFileName = ResourceName.Substring(resourceAssemblyNameLength);
 
-        public string VsInstallDirectory { get; set; }
+            return resourceFileName;
+        }
 
-        public string InstallPath { get; set; }
+        public string VsInstallDirectory { get; private set; }
 
-        public string VsixManifestPath { get; set; }
+        public void SetInstallPath(string pathToVisualizers) 
+            => _installPath = Path.Combine(pathToVisualizers, GetResourceFileName());
 
-        public string VsExePath { get; set; }
-
-        public string VsSetupArgument { get; set; }
+        public void SetVsixManifestPath(string pathToExtensions) 
+            => _vsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
 
         public void Install()
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            if (!Directory.Exists(Path.GetDirectoryName(InstallPath)))
+            if (!Directory.Exists(Path.GetDirectoryName(_installPath)))
             {
-                Log("Skipping as directory does not exist: " + InstallPath);
+                Log("Skipping as directory does not exist: " + _installPath);
                 return;
             }
 
             using (var resourceStream = _thisAssembly.GetManifestResourceStream(ResourceName))
-            using (var visualizerFileStream = File.OpenWrite(InstallPath))
+            using (var visualizerFileStream = File.OpenWrite(_installPath))
             {
-                Log("Writing visualizer to " + InstallPath);
+                Log("Writing visualizer to " + _installPath);
                 // ReSharper disable once PossibleNullReferenceException
                 resourceStream.CopyTo(visualizerFileStream);
             }
 
-            var manifestDirectory = Path.GetDirectoryName(VsixManifestPath);
+            var manifestDirectory = Path.GetDirectoryName(_vsixManifestPath);
 
-            Log("Writing manifest to " + VsixManifestPath);
+            Log("Writing manifest to " + _vsixManifestPath);
             // ReSharper disable once AssignNullToNotNullAttribute
             Directory.CreateDirectory(manifestDirectory);
-            File.WriteAllText(VsixManifestPath, _vsixManifest, Encoding.ASCII);
+            File.WriteAllText(_vsixManifestPath, _vsixManifest, Encoding.ASCII);
 
             ResetVsExtensions();
         }
@@ -76,7 +114,7 @@
         public DirectoryInfo GetVsixManifestDirectory()
         {
             // ReSharper disable once AssignNullToNotNullAttribute
-            return new DirectoryInfo(Path.GetDirectoryName(VsixManifestPath));
+            return new DirectoryInfo(Path.GetDirectoryName(_vsixManifestPath));
         }
 
         public void Uninstall()
@@ -84,7 +122,7 @@
             DeletePreviousManifests();
 
             // ReSharper disable PossibleNullReferenceException
-            if (File.Exists(VsixManifestPath))
+            if (File.Exists(_vsixManifestPath))
             {
                 var vsixManifestDirectory = GetVsixManifestDirectory();
                 var productDirectory = vsixManifestDirectory.Parent;
@@ -109,9 +147,9 @@
             }
             // ReSharper restore PossibleNullReferenceException
 
-            if (File.Exists(InstallPath))
+            if (File.Exists(_installPath))
             {
-                File.Delete(InstallPath);
+                File.Delete(_installPath);
             }
         }
 
@@ -140,13 +178,13 @@
 
         private void ResetVsExtensions()
         {
-            if (VsExePath == null)
+            if (_vsExePath == null)
             {
                 return;
             }
 
-            Log("Updating VS extension records using " + VsExePath);
-            using (Process.Start(VsExePath, VsSetupArgument)) { }
+            Log("Updating VS extension records using " + _vsExePath);
+            using (Process.Start(_vsExePath, _vsSetupArgument)) { }
         }
 
         public void PopulateVsSetupData()
@@ -158,23 +196,21 @@
                 return;
             }
 
-            VsExePath = pathToDevEnv;
-            VsSetupArgument = RegistryKey?.GetValue("SetupCommandLine") as string ?? "/setup";
+            _vsExePath = pathToDevEnv;
+            _vsSetupArgument = _registryKey?.GetValue("SetupCommandLine") as string ?? "/setup";
         }
 
         public Visualizer With(RegistryKey registryKey, string vsInstallPath)
         {
-            return new Visualizer(_logger, _version, _vsixManifest)
+            return new Visualizer(_logger, _version, _vsixManifest, ResourceName, VsVersionNumber)
             {
-                VsVersionNumber = VsVersionNumber,
-                ResourceName = ResourceName,
-                RegistryKey = registryKey,
+                _registryKey = registryKey,
                 VsInstallDirectory = vsInstallPath
             };
         }
 
         private void Log(string message) => _logger.Invoke(message);
 
-        public void Dispose() => RegistryKey?.Dispose();
+        public void Dispose() => _registryKey?.Dispose();
     }
 }

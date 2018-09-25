@@ -6,7 +6,6 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Text.RegularExpressions;
     using Microsoft.Deployment.WindowsInstaller;
 
     public class VisualizerInstallationActions
@@ -60,12 +59,14 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         public static ActionResult Install(Session session)
         {
 #if DEBUG
-            Debugger.Launch();
+            Debugger.Break();
 #endif
             _session = session;
 
             try
             {
+                var installed = new List<string> { "Installed visualizers for:" };
+
                 Log("Starting...");
 
                 foreach (var visualizer in GetRelevantVisualizers())
@@ -73,7 +74,11 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                     Log("Installing visualizer " + visualizer.ResourceName + "...");
                     visualizer.Uninstall();
                     visualizer.Install();
+
+                    installed.Add("Visual Studio " + visualizer.VsFullVersionNumber);
                 }
+
+                session["WIXUI_EXITDIALOGOPTIONALTEXT"] = string.Join(Environment.NewLine, installed);
 
                 Log("Complete");
 
@@ -120,27 +125,10 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return _thisAssembly
                     .GetManifestResourceNames()
                     .WithExtension("dll")
-                    .Select(visualizerResourceName => new Visualizer(Log, _thisAssemblyVersion, VsixManifest)
-                    {
-                        ResourceName = visualizerResourceName,
-                        VsVersionNumber = GetVsVersionNumber(visualizerResourceName)
-                    })
+                    .Select(visualizerResourceName => new Visualizer(Log, _thisAssemblyVersion, VsixManifest, visualizerResourceName))
                     .SelectMany(visualizer => registryData.GetInstallableVisualizersFor(visualizer))
                     .ToArray();
             }
-        }
-
-        private static readonly Regex _versionNumberMatcher =
-            new Regex(@"Vs(?<VersionNumber>[\d]+)\.dll$", RegexOptions.IgnoreCase);
-
-        private static int GetVsVersionNumber(string visualizerResourceName)
-        {
-            var matchValue = _versionNumberMatcher
-                .Match(visualizerResourceName)
-                .Groups["VersionNumber"]
-                .Value;
-
-            return int.Parse(matchValue);
         }
 
         private static void Log(string message) => _session?.Log(message);
