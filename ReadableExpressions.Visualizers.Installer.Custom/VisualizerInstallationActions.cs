@@ -19,6 +19,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         private static readonly Lazy<string> _vsixManifestLoader;
 
         private static Session _session;
+        private static string _resultMessage;
 
         static VisualizerInstallationActions()
         {
@@ -78,7 +79,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                     installed.Add("Visual Studio " + visualizer.VsFullVersionNumber);
                 }
 
-                session["WIXUI_EXITDIALOGOPTIONALTEXT"] = string.Join(Environment.NewLine, installed);
+                _resultMessage = string.Join(Environment.NewLine, installed);
 
                 Log("Complete");
 
@@ -110,6 +111,13 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return ActionResult.Failure;
             }
 
+            return ActionResult.Success;
+        }
+
+        [CustomAction]
+        public static ActionResult SetResultMessage(Session session)
+        {
+            session["WIXUI_EXITDIALOGOPTIONALTEXT"] = _resultMessage;
             return ActionResult.Success;
         }
 

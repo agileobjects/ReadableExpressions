@@ -22,6 +22,8 @@
       <Custom Action="VisualizersUninstall" Before="InstallFinalize">
         (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
       </Custom>
+      
+      <Custom Action="SetResultMessage" After="InstallFinalize" />
     </InstallExecuteSequence>
   </Product>
 
@@ -50,5 +52,8 @@
 
     <CustomAction Id="VisualizersUninstall" BinaryKey="VisualizersBinary"
                   DllEntry="Uninstall" Impersonate="no" Execute="deferred" Return="check"/>
+
+    <CustomAction Id="SetResultMessage" BinaryKey="VisualizersBinary"
+                  DllEntry="SetResultMessage" Impersonate="no" Execute="immediate" Return="ignore"/>
   </Fragment>
 </Wix>
