@@ -1,10 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static Issue22;
+    using static Issue22.InheritanceTests;
 #else
     using Expression = Microsoft.Scripting.Ast.Expression;
     using Fact = NUnit.Framework.TestAttribute;
@@ -499,6 +502,102 @@ if ((i = 123) != default(int))
 
             translated.ShouldBe("flag => (flag ? Test.One : Test.Two) == Test.Two");
         }
+
+#if !NET35
+        [Fact]
+        public void ShouldTranslateConditionalWithConditionalTest()
+        {
+            var dataContext = Expression.Parameter(typeof(IDataContext), "dctx");
+            var dataReader = Expression.Parameter(typeof(IDataReader), "rd");
+
+            var ldr = Expression.Variable(typeof(SqLiteDataReader), "ldr");
+
+            var onEntityCreatedMethod = typeof(TableContext)
+                .GetPublicStaticMethod(nameof(TableContext.OnEntityCreated));
+
+            var mapperBody = Expression.Block(
+                new[] { ldr },
+                Expression.Assign(ldr, Expression.Convert(dataReader, typeof(SqLiteDataReader))),
+                Expression.Condition(
+                    Expression.Equal(
+                        Expression.Condition(
+                            Expression.Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Expression.Constant(0)),
+                            Expression.Constant(TypeCodeEnum.Base),
+                            Expression.Convert(
+                                Expression.Call(ldr, nameof(SqLiteDataReader.GetInt32), null, Expression.Constant(0)),
+                                typeof(TypeCodeEnum))),
+                        Expression.Constant(TypeCodeEnum.A1)),
+                    Expression.Convert(
+                        Expression.Convert(
+                            Expression.Call(
+                                onEntityCreatedMethod,
+                                dataContext,
+                                Expression.MemberInit(
+                                    Expression.New(typeof(InheritanceA1)),
+                                    Expression.Bind(
+                                        typeof(InheritanceA1).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
+                                        Expression.Condition(
+                                            Expression.Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Expression.Constant(1)),
+                                            Expression.Constant(Guid.Empty),
+                                            Expression.Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Expression.Constant(1))))
+                                )
+                            ),
+                            typeof(InheritanceA1)),
+                        typeof(InheritanceA)),
+                    Expression.Convert(
+                        Expression.Convert(
+                            Expression.Call(
+                                onEntityCreatedMethod,
+                                dataContext,
+                                Expression.MemberInit(
+                                    Expression.New(typeof(InheritanceA2)),
+                                    Expression.Bind(
+                                        typeof(InheritanceA2).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
+                                        Expression.Condition(
+                                            Expression.Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Expression.Constant(1)),
+                                            Expression.Constant(Guid.Empty),
+                                            Expression.Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Expression.Constant(1))))
+                                )
+                            ),
+                            typeof(InheritanceA2)),
+                        typeof(InheritanceA))));
+
+            var mapper = Expression.Lambda<Func<IDataContext, IDataReader, InheritanceA>>(
+                mapperBody,
+                dataContext,
+                dataReader);
+
+            var body = Expression.Invoke(mapper, dataContext, dataReader);
+
+            var lambda = Expression.Lambda<Func<IDataContext, IDataReader, InheritanceA>>(body, dataContext, dataReader);
+
+            const string EXPECTED = @"
+(dctx, rd) => ((dctx, rd) =>
+{
+    var ldr = (Issue22.SqLiteDataReader)rd;
+
+    return ((ldr.IsDbNull(0)
+        ? Issue22.InheritanceTests.TypeCodeEnum.Base
+        : (Issue22.InheritanceTests.TypeCodeEnum)ldr.GetInt32(0)) == Issue22.InheritanceTests.TypeCodeEnum.A1)
+        ? (Issue22.InheritanceTests.InheritanceA)((Issue22.InheritanceTests.InheritanceA1)Issue22.TableContext.OnEntityCreated(
+            dctx,
+            new Issue22.InheritanceTests.InheritanceA1
+            {
+                GuidValue = ldr.IsDbNull(1) ? default(Guid) : ldr.GetGuid(1)
+            }))
+        : (Issue22.InheritanceTests.InheritanceA)((Issue22.InheritanceTests.InheritanceA2)Issue22.TableContext.OnEntityCreated(
+            dctx,
+            new Issue22.InheritanceTests.InheritanceA2
+            {
+                GuidValue = ldr.IsDbNull(1) ? default(Guid) : ldr.GetGuid(1)
+            }));
+}).Invoke(dctx, rd)";
+
+            var translated = ToReadableString(lambda);
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+#endif
     }
 
     #region Helpers
@@ -512,6 +611,72 @@ if ((i = 123) != default(int))
     }
 
     internal enum Test { One, Two };
+
+#if !NET35
+    internal static class Issue22
+    {
+        public interface IDataContext
+        {
+        }
+
+        public interface IDataReader
+        {
+        }
+
+        public class SqLiteDataReader : IDataReader
+        {
+            public bool IsDbNull(int idx) => default(bool);
+
+            public int GetInt32(int idx) => default(int);
+
+            public Guid GetGuid(int idx) => default(Guid);
+        }
+
+        public static class InheritanceTests
+        {
+            public enum TypeCodeEnum
+            {
+                Base,
+                A,
+                A1,
+                A2,
+            }
+
+            public abstract class InheritanceBase
+            {
+                public Guid GuidValue { get; set; }
+            }
+
+            public abstract class InheritanceA : InheritanceBase
+            {
+                public List<InheritanceB> Bs { get; set; }
+            }
+
+            public class InheritanceB : InheritanceBase
+            {
+            }
+
+            public class InheritanceA2 : InheritanceA
+            {
+            }
+
+            public class InheritanceA1 : InheritanceA
+            {
+            }
+        }
+
+        public class TableContext
+        {
+            public static object OnEntityCreated(IDataContext context, object entity) => entity;
+        }
+
+        public enum Test
+        {
+            One,
+            Two
+        }
+    }
+#endif
 
     #endregion
 }
