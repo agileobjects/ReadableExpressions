@@ -36,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             {
                 return null;
             }
-
+            
             var vsYearNumber = appName.TrimEnd().Split(' ').LastOrDefault();
 
             if (vsYearNumber == null)
@@ -44,7 +44,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return null;
             }
 
-            return _vsVersionsByYear.TryGetValue(vsYearNumber, out string vsVersionNumber)
+            return _vsVersionsByYear.TryGetValue(vsYearNumber, out var vsVersionNumber)
                 ? vsVersionNumber : null;
         }
 

@@ -6,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Windows.Forms;
     using Microsoft.Deployment.WindowsInstaller;
 
     public class VisualizerInstallationActions
@@ -19,7 +20,6 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         private static readonly Lazy<string> _vsixManifestLoader;
 
         private static Session _session;
-        private static string _resultMessage;
 
         static VisualizerInstallationActions()
         {
@@ -60,26 +60,39 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         public static ActionResult Install(Session session)
         {
 #if DEBUG
-            Debugger.Break();
+            Debugger.Launch();
 #endif
             _session = session;
 
             try
             {
-                var installed = new List<string> { "Installed visualizers for:" };
-
                 Log("Starting...");
 
-                foreach (var visualizer in GetRelevantVisualizers())
+                if (NoVisualizersToInstall(out var visualizers, out var errorMessage))
+                {
+                    MessageBox.Show(
+                        errorMessage,
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+
+                var installed = new List<string> { "Installed visualizers for:" };
+
+                foreach (var visualizer in visualizers)
                 {
                     Log("Installing visualizer " + visualizer.ResourceName + "...");
                     visualizer.Uninstall();
                     visualizer.Install();
 
-                    installed.Add("Visual Studio " + visualizer.VsFullVersionNumber);
+                    installed.Add(" - Visual Studio " + visualizer.VsFullVersionNumber);
                 }
 
-                _resultMessage = string.Join(Environment.NewLine, installed);
+                MessageBox.Show(
+                    string.Join(Environment.NewLine, installed),
+                    "Complete",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
 
                 Log("Complete");
 
@@ -99,11 +112,17 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         [CustomAction]
         public static ActionResult Uninstall(Session session)
         {
+#if DEBUG
+            Debugger.Launch();
+#endif
             try
             {
-                foreach (var visualizer in GetRelevantVisualizers())
+                if (TryGetVisualizers(out var visualizers))
                 {
-                    visualizer.Uninstall();
+                    foreach (var visualizer in visualizers)
+                    {
+                        visualizer.Uninstall();
+                    }
                 }
             }
             catch
@@ -114,28 +133,29 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             return ActionResult.Success;
         }
 
-        [CustomAction]
-        public static ActionResult SetResultMessage(Session session)
-        {
-            session["WIXUI_EXITDIALOGOPTIONALTEXT"] = _resultMessage;
-            return ActionResult.Success;
-        }
+        private static bool TryGetVisualizers(out IEnumerable<Visualizer> visualizers)
+            => NoVisualizersToInstall(out visualizers, out _) != true;
 
-        private static IEnumerable<Visualizer> GetRelevantVisualizers()
+        private static bool NoVisualizersToInstall(out IEnumerable<Visualizer> visualizers, out string errorMessage)
         {
             using (var registryData = new RegistryData(_thisAssemblyVersion))
             {
                 if (registryData.NoVisualStudio)
                 {
-                    return Enumerable.Empty<Visualizer>();
+                    visualizers = Enumerable.Empty<Visualizer>();
+                    errorMessage = registryData.ErrorMessage;
+                    return true;
                 }
 
-                return _thisAssembly
+                visualizers = _thisAssembly
                     .GetManifestResourceNames()
                     .WithExtension("dll")
                     .Select(visualizerResourceName => new Visualizer(Log, _thisAssemblyVersion, VsixManifest, visualizerResourceName))
                     .SelectMany(visualizer => registryData.GetInstallableVisualizersFor(visualizer))
                     .ToArray();
+
+                errorMessage = null;
+                return false;
             }
         }
 

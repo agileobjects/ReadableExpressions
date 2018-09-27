@@ -20,7 +20,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
             if (MsMachineKey == null)
             {
-                ErrorMessage = $"Unable to open '{REGISTRY_KEY}' registry key";
+                ErrorMessage = $"Unable to open the '{REGISTRY_KEY}' registry key";
                 NoVisualStudio = true;
                 return;
             }
@@ -32,7 +32,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
             if (vsKeyNames.Length == 0)
             {
-                ErrorMessage = $@"Unable to find any '{REGISTRY_KEY}\VisualStudio' registry keys";
+                ErrorMessage = $@"Unable to find any '{REGISTRY_KEY}\VisualStudio' registry keys from which to determine your Visual Studio install paths";
                 NoVisualStudio = true;
                 return;
             }
@@ -43,6 +43,8 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             VsPost2015Data = vsKeyNames
                 .Where(kn => kn.StartsWith("VisualStudio_"))
                 .Select(kn => new VsPost2017Data(MsMachineKey.OpenSubKey(kn)))
+                .GroupBy(d => d.InstallPath)
+                .Select(grp => grp.First())
                 .ToArray();
         }
 
@@ -93,7 +95,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             PopulatePre2017InstallPath(visualizer, targetVisualizers);
             PopulatePost2015InstallPaths(visualizer, targetVisualizers);
 
-            return targetVisualizers.Count == 0;
+            return targetVisualizers.Count > 0;
         }
 
         private void PopulatePre2017InstallPath(

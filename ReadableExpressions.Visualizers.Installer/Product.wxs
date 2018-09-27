@@ -5,45 +5,25 @@
 
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
-    <UIRef Id="WixUI_Minimal" />
-    <WixVariable Id="WixUILicenseRtf" Value=".\license.rtf" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALTEXT" Value="Install complete" />
-
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate />
 
-    <Feature Id="ProductFeature" Title="AgileObjects.ReadableExpressions.Visualizers" Level="1">
-      <ComponentGroupRef Id="ProductComponents" />
-    </Feature>
-
-    <InstallExecuteSequence>
-      <Custom Action="VisualizersInstall" After="InstallInitialize" />
-
-      <Custom Action="VisualizersUninstall" Before="InstallFinalize">
-        (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
-      </Custom>
-      
-      <Custom Action="SetResultMessage" After="InstallFinalize" />
-    </InstallExecuteSequence>
-  </Product>
-
-  <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
         <Directory Id="INSTALLFOLDER" Name="AgileObjects.ReadableExpressions.Visualizers" />
       </Directory>
     </Directory>
-  </Fragment>
 
-  <Fragment>
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="ProductComponent" Guid="3c7ec38f-cf7c-4cdc-845d-50f4f9f85fdf">
         <CreateFolder/>
       </Component>
     </ComponentGroup>
-  </Fragment>
 
-  <Fragment>
+    <Feature Id="ProductFeature" Title="AgileObjects.ReadableExpressions.Visualizers" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
     <Binary Id="VisualizersBinary"
             SourceFile="$(var.Installer.Custom.TargetDir)\ReadableExpressions.Visualizers.Installer.Custom.CA.dll"/>
 
@@ -53,7 +33,19 @@
     <CustomAction Id="VisualizersUninstall" BinaryKey="VisualizersBinary"
                   DllEntry="Uninstall" Impersonate="no" Execute="deferred" Return="check"/>
 
-    <CustomAction Id="SetResultMessage" BinaryKey="VisualizersBinary"
-                  DllEntry="SetResultMessage" Impersonate="no" Execute="immediate" Return="ignore"/>
-  </Fragment>
+    <UI>
+      <UIRef Id="WixUI_Minimal" />
+    </UI>
+    <WixVariable Id="WixUILicenseRtf" Value=".\license.rtf" />
+
+    <InstallExecuteSequence>
+      <Custom Action="VisualizersInstall" After="InstallInitialize">
+        (NOT REMOVE="ALL")
+      </Custom>
+
+      <Custom Action="VisualizersUninstall" Before="InstallFinalize">
+        (NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")
+      </Custom>
+    </InstallExecuteSequence>
+  </Product>
 </Wix>
