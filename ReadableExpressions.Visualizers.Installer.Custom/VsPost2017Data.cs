@@ -8,9 +8,9 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
     internal class VsPost2017Data : IDisposable
     {
-        private static readonly Dictionary<string, string> _vsVersionsByYear = new Dictionary<string, string>
+        private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>
         {
-            ["2017"] = "15.0"
+            [2017] = "15.0"
         };
 
         public VsPost2017Data(RegistryKey post2015Key)
@@ -36,15 +36,15 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             {
                 return null;
             }
-            
-            var vsYearNumber = appName.TrimEnd().Split(' ').LastOrDefault();
 
-            if (vsYearNumber == null)
-            {
-                return null;
-            }
+            var vsYearNumber = appName
+                .TrimEnd()
+                .Split(' ')
+                .Reverse()
+                .Select(segment => int.TryParse(segment, out var yearNumber) ? yearNumber : default(int?))
+                .FirstOrDefault(yearNumber => yearNumber != default(int?));
 
-            return _vsVersionsByYear.TryGetValue(vsYearNumber, out var vsVersionNumber)
+            return vsYearNumber.HasValue && _vsVersionsByYear.TryGetValue(vsYearNumber.Value, out var vsVersionNumber)
                 ? vsVersionNumber : null;
         }
 
