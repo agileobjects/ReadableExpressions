@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.Reflection;
     using NetStandardPolyfills;
@@ -27,10 +26,10 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         public MethodInfo GetGenericMethodDefinition() => _method.GetGenericMethodDefinition();
 
-        public IEnumerable<Type> GetGenericArguments() =>
+        public Type[] GetGenericArguments() =>
             (_genericArguments ?? (_genericArguments = _method.GetGenericArguments()));
 
-        public IEnumerable<ParameterInfo> GetParameters() => _method.GetParameters();
+        public ParameterInfo[] GetParameters() => _method.GetParameters();
 
         public Type GetGenericArgumentFor(Type parameterType)
         {

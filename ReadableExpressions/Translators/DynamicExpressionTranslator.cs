@@ -254,9 +254,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
                 public MethodInfo GetGenericMethodDefinition() => null;
 
-                public IEnumerable<Type> GetGenericArguments() => Enumerable.Empty<Type>();
+                public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
 
-                public IEnumerable<ParameterInfo> GetParameters() => Enumerable.Empty<ParameterInfo>();
+                public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
 
                 public Type GetGenericArgumentFor(Type parameterType) => null;
             }

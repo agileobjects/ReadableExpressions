@@ -21,10 +21,10 @@
     {
         private const int SplitArgumentsThreshold = 3;
 
-        private readonly IEnumerable<Func<string, string>> _parameterModifiers;
+        private readonly Func<string, string>[] _parameterModifiers;
         private readonly Expression[] _arguments;
         private readonly TranslationContext _context;
-        private readonly IEnumerable<Func<Expression, string>> _argumentTranslators;
+        private readonly Func<Expression, string>[] _argumentTranslators;
 
         public ParameterSet(
             IMethodInfo method,
@@ -41,11 +41,11 @@
                 TranslateArgumentAsCodeBlock);
         }
 
-        private static IEnumerable<Func<string, string>> GetParameterModifers(IMethodInfo method)
+        private static Func<string, string>[] GetParameterModifers(IMethodInfo method)
         {
             if (method == null)
             {
-                return Enumerable.Empty<Func<string, string>>();
+                return Enumerable<Func<string, string>>.EmptyArray;
             }
 
             return method
@@ -95,7 +95,7 @@
             return arrayValuesString;
         }
 
-        private IEnumerable<Func<Expression, string>> GetArgumentTranslators(
+        private Func<Expression, string>[] GetArgumentTranslators(
             IMethodInfo method,
             IEnumerable<Expression> arguments,
             Func<Expression, string> defaultArgumentTranslator)
@@ -109,13 +109,14 @@
 
             if (method.IsExtensionMethod)
             {
+                // TODO: array-specific Skip().ToArray()
                 parameters = parameters.Skip(1).ToArray();
             }
 
             return arguments
                 .Project((argument, i) =>
                 {
-                    var parameter = parameters.ElementAtOrDefault(i);
+                    var parameter = parameters.AtIndexOrDefault(i);
 
                     if (IsNotFuncType(parameter, method))
                     {
@@ -341,9 +342,9 @@
 
         private string TranslateArgument(Expression argument, int parameterIndex)
         {
-            var argumentTranslator = _argumentTranslators.ElementAt(parameterIndex);
+            var argumentTranslator = _argumentTranslators[parameterIndex];
             var argumentString = argumentTranslator.Invoke(argument).Unterminated();
-            var modifier = _parameterModifiers.ElementAtOrDefault(parameterIndex);
+            var modifier = _parameterModifiers.AtIndexOrDefault(parameterIndex);
 
             return (modifier != null) ? modifier.Invoke(argumentString) : argumentString;
         }
@@ -353,10 +354,7 @@
             return (_arguments.Length == 1) ? WithoutParentheses() : WithParentheses();
         }
 
-        public string WithoutParentheses()
-        {
-            return GetFormattedTranslation();
-        }
+        public string WithoutParentheses() => GetFormattedTranslation();
 
         public string WithParentheses()
         {

@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
-    using System.Collections.Generic;
     using System.Reflection;
 
     internal interface IMethodInfo
@@ -14,9 +13,9 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         MethodInfo GetGenericMethodDefinition();
 
-        IEnumerable<Type> GetGenericArguments();
+        Type[] GetGenericArguments();
 
-        IEnumerable<ParameterInfo> GetParameters();
+        ParameterInfo[] GetParameters();
 
         Type GetGenericArgumentFor(Type parameterType);
     }

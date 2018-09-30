@@ -10,6 +10,13 @@
     internal static class InternalEnumerableExtensions
     {
         [DebuggerStepThrough]
+        public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
+
+        [DebuggerStepThrough]
+        public static T AtIndexOrDefault<T>(this IList<T> items, int index)
+            => items.Count > index ? items[index] : default(T);
+
+        [DebuggerStepThrough]
         public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
         {
             foreach (var item in items)

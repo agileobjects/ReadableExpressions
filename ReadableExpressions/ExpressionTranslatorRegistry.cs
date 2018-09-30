@@ -87,31 +87,55 @@
         }
     }
 
+    internal class TranslationTree
+    {
+
+    }
+
     internal class Translation
     {
         private readonly char[] _content;
+        private readonly List<TranslationSegment> _segments;
         private int _length;
 
         public Translation()
         {
-            _content = new char[10_000];
+            _content = new char[100_000];
+            _segments = new List<TranslationSegment>();
         }
 
         private Translation(string value)
             : this()
         {
-            Insert(value);
+            Append(value);
         }
 
         public static implicit operator string(Translation translation) => translation?.ToString();
 
-        public static implicit operator Translation(string value) => new Translation(value);
+        public static implicit operator Translation(string value) => Of(value);
 
-        public Translation Insert(string value)
+        public static Translation Of(string value) => new Translation(value);
+
+        public TranslationSegment AllocateSegment()
+        {
+            var segment = new TranslationSegment(this);
+
+            _segments.Add(segment);
+            return segment;
+        }
+
+        public Translation WithSurroundingParentheses() => Insert('(').Append('(');
+
+        public Translation Append(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
                 return this;
+            }
+
+            if (value.Length == 1)
+            {
+                return Append(value[0]);
             }
 
             for (var i = _length; i < value.Length; ++i, ++_length)
@@ -122,7 +146,32 @@
             return this;
         }
 
+        public Translation Insert(char character)
+        {
+            for (var i = _length - 1; i > 0; --i)
+            {
+                _content[i + 1] = _content[i];
+            }
+
+            _content[0] = character;
+            return this;
+        }
+
+        public Translation Append(char character)
+        {
+            _content[_length++] = character;
+            return this;
+        }
+
         public override string ToString()
             => (_length != 0) ? new string(_content, 0, _length) : null;
+    }
+
+    internal class TranslationSegment
+    {
+        public TranslationSegment(Translation translation)
+        {
+
+        }
     }
 }
