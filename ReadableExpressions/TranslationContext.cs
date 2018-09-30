@@ -2,11 +2,11 @@ namespace AgileObjects.ReadableExpressions
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
 #else
+    using System.Collections.ObjectModel;
     using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
     using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
     using CatchBlock = Microsoft.Scripting.Ast.CatchBlock;
@@ -35,11 +35,11 @@ namespace AgileObjects.ReadableExpressions
     public class TranslationContext
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
-        private readonly Translator _globalTranslator;
+        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
 
         private TranslationContext(
             ExpressionAnalysisVisitor analyzer,
-            Translator globalTranslator,
+            Func<Expression, TranslationContext, string> globalTranslator,
             TranslationSettings settings)
         {
             _analyzer = analyzer;
@@ -54,14 +54,12 @@ namespace AgileObjects.ReadableExpressions
         /// <param name="expression">
         /// The <see cref="Expression"/> for which to create the <see cref="TranslationContext"/>.
         /// </param>
-        /// <param name="globalTranslator">
-        /// A global <see cref="Translator"/> delegate with which to perform translations.
-        /// </param>
+        /// <param name="globalTranslator">A global translation Func with which to perform translations.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
         public static TranslationContext For(
             Expression expression,
-            Translator globalTranslator,
+            Func<Expression, TranslationContext, string> globalTranslator,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
             var analyzer = ExpressionAnalysisVisitor.Analyse(expression);

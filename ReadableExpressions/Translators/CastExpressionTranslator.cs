@@ -19,8 +19,8 @@ namespace AgileObjects.ReadableExpressions.Translators
 
     internal struct CastExpressionTranslator : IExpressionTranslator
     {
-        private static readonly Dictionary<ExpressionType, Translator> _translatorsByType =
-            new Dictionary<ExpressionType, Translator>
+        private static readonly Dictionary<ExpressionType, Func<Expression, TranslationContext, string>> _translatorsByType =
+            new Dictionary<ExpressionType, Func<Expression, TranslationContext, string>>
             {
                 [ExpressionType.Convert] = TranslateCast,
                 [ExpressionType.ConvertChecked] = TranslateCast,

@@ -65,13 +65,16 @@
             Func<TranslationSettings, TranslationSettings> configuration)
         {
             var context = (expression != null)
-                ? TranslationContext.For(expression, Translate, configuration)
+                ? TranslationContext.For(expression, OldTranslate, configuration)
                 : null;
 
             return Translate(expression, context);
         }
 
-        private string Translate(Expression expression, TranslationContext context)
+        private string OldTranslate(Expression expression, TranslationContext context) 
+            => Translate(expression, context);
+
+        private Translation Translate(Expression expression, TranslationContext context)
         {
             if (expression == null)
             {
@@ -82,5 +85,38 @@
                 ? translator.Translate(expression, context)
                 : expression.ToString();
         }
+    }
+
+    internal class Translation
+    {
+        private readonly char[] _content;
+        private int _length;
+
+        public Translation()
+        {
+            _content = new char[int.MaxValue];
+        }
+
+        private Translation(string value)
+            : this()
+        {
+            Insert(value);
+        }
+
+        public static implicit operator string(Translation translation) => translation.ToString();
+
+        public static implicit operator Translation(string value) => new Translation(value);
+
+        public Translation Insert(string value)
+        {
+            for (var i = _length; i < value.Length; ++i, ++_length)
+            {
+                _content[i] = value[i];
+            }
+
+            return this;
+        }
+
+        public override string ToString() => new string(_content, 0, _length);
     }
 }
