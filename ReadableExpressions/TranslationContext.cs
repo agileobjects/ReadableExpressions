@@ -36,6 +36,7 @@ namespace AgileObjects.ReadableExpressions
     {
         private readonly ExpressionAnalysisVisitor _analyzer;
         private readonly Func<Expression, TranslationContext, string> _globalTranslator;
+        private readonly Translation _translation;
 
         private TranslationContext(
             ExpressionAnalysisVisitor analyzer,
@@ -45,6 +46,7 @@ namespace AgileObjects.ReadableExpressions
             _analyzer = analyzer;
             _globalTranslator = globalTranslator;
             Settings = settings;
+            _translation = new Translation();
         }
 
         /// <summary>
@@ -99,7 +101,9 @@ namespace AgileObjects.ReadableExpressions
 
         internal CodeBlock TranslateCodeBlock(Expression expression)
         {
-            return TranslateBlock(expression as BlockExpression) ?? TranslateSingle(expression);
+            return (expression.NodeType == ExpressionType.Block)
+                ? TranslateBlock((BlockExpression)expression)
+                : TranslateSingle(expression);
         }
 
         private CodeBlock TranslateBlock(BlockExpression block)
@@ -136,7 +140,6 @@ namespace AgileObjects.ReadableExpressions
             return new ParameterSet(method, parameters.Cast<Expression>().ToArray(), this);
         }
 #endif
-
         internal ParameterSet TranslateParameters(
             IEnumerable<Expression> parameters,
             IMethodInfo method = null)

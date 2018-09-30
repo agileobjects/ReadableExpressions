@@ -71,7 +71,7 @@
             return Translate(expression, context);
         }
 
-        private string OldTranslate(Expression expression, TranslationContext context) 
+        private string OldTranslate(Expression expression, TranslationContext context)
             => Translate(expression, context);
 
         private Translation Translate(Expression expression, TranslationContext context)
@@ -94,7 +94,7 @@
 
         public Translation()
         {
-            _content = new char[int.MaxValue];
+            _content = new char[10_000];
         }
 
         private Translation(string value)
@@ -103,12 +103,17 @@
             Insert(value);
         }
 
-        public static implicit operator string(Translation translation) => translation.ToString();
+        public static implicit operator string(Translation translation) => translation?.ToString();
 
         public static implicit operator Translation(string value) => new Translation(value);
 
         public Translation Insert(string value)
         {
+            if (string.IsNullOrEmpty(value))
+            {
+                return this;
+            }
+
             for (var i = _length; i < value.Length; ++i, ++_length)
             {
                 _content[i] = value[i];
@@ -117,6 +122,7 @@
             return this;
         }
 
-        public override string ToString() => new string(_content, 0, _length);
+        public override string ToString()
+            => (_length != 0) ? new string(_content, 0, _length) : null;
     }
 }
