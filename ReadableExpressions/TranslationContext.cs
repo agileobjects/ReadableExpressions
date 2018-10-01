@@ -1,33 +1,29 @@
-using AgileObjects.ReadableExpressions.Translations;
-
 namespace AgileObjects.ReadableExpressions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-#if !NET35
-    using Expr = System.Linq.Expressions;
-    using ExpressionType = System.Linq.Expressions.ExpressionType;
-#else
+#if NET35
     using System.Collections.ObjectModel;
-    using Expr = Microsoft.Scripting.Ast;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
 #endif
     using Extensions;
     using Translators;
     using Translators.Formatting;
 
     /// <summary>
-    /// Contains information about an <see cref="Expr.Expression"/> being translated.
+    /// Contains information about an <see cref="Expression"/> being translated.
     /// </summary>
     public class TranslationContext
     {
         private readonly TranslationAnalyzer _analyzer;
-        private readonly Func<Expr.Expression, TranslationContext, string> _globalTranslator;
+        private readonly Func<Expression, TranslationContext, string> _globalTranslator;
 
         private TranslationContext(
             TranslationAnalyzer analyzer,
-            Func<Expr.Expression, TranslationContext, string> globalTranslator,
+            Func<Expression, TranslationContext, string> globalTranslator,
             TranslationSettings settings)
         {
             _analyzer = analyzer;
@@ -40,14 +36,14 @@ namespace AgileObjects.ReadableExpressions
         /// <paramref name="expression"/>.
         /// </summary>
         /// <param name="expression">
-        /// The <see cref="Expr.Expression"/> for which to create the <see cref="TranslationContext"/>.
+        /// The <see cref="Expression"/> for which to create the <see cref="TranslationContext"/>.
         /// </param>
         /// <param name="globalTranslator">A global translation Func with which to perform translations.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>A <see cref="TranslationContext"/> for the given<paramref name="expression"/>.</returns>
         public static TranslationContext For(
-            Expr.Expression expression,
-            Func<Expr.Expression, TranslationContext, string> globalTranslator,
+            Expression expression,
+            Func<Expression, TranslationContext, string> globalTranslator,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
             var analyzer = TranslationAnalyzer.Analyse(expression);
@@ -63,10 +59,10 @@ namespace AgileObjects.ReadableExpressions
         }
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expr.Expression"/> which should be declared in the
+        /// Gets the variables in the translated <see cref="Expression"/> which should be declared in the
         /// same statement in which they are assigned.
         /// </summary>
-        public IEnumerable<Expr.ParameterExpression> JoinedAssignmentVariables => _analyzer.JoinedAssignedVariables;
+        public IEnumerable<ParameterExpression> JoinedAssignmentVariables => _analyzer.JoinedAssignedVariables;
 
         /// <summary>
         /// Configuration for translation in this context
@@ -76,23 +72,23 @@ namespace AgileObjects.ReadableExpressions
         /// <summary>
         /// Translates the given <paramref name="expression"/> to readable source code.
         /// </summary>
-        /// <param name="expression">The <see cref="Expr.Expression"/> to translate.</param>
+        /// <param name="expression">The <see cref="Expression"/> to translate.</param>
         /// <returns>A source code translation of the given <paramref name="expression"/>.</returns>
-        public string Translate(Expr.Expression expression) => _globalTranslator.Invoke(expression, this);
+        public string Translate(Expression expression) => _globalTranslator.Invoke(expression, this);
 
-        internal string TranslateAsCodeBlock(Expr.Expression expression)
+        internal string TranslateAsCodeBlock(Expression expression)
         {
             return TranslateCodeBlock(expression).WithCurlyBracesIfMultiStatement();
         }
 
-        internal CodeBlock TranslateCodeBlock(Expr.Expression expression)
+        internal CodeBlock TranslateCodeBlock(Expression expression)
         {
             return (expression.NodeType == ExpressionType.Block)
-                ? TranslateBlock((Expr.BlockExpression)expression)
+                ? TranslateBlock((BlockExpression)expression)
                 : TranslateSingle(expression);
         }
 
-        private CodeBlock TranslateBlock(Expr.BlockExpression block)
+        private CodeBlock TranslateBlock(BlockExpression block)
         {
             if (block == null)
             {
@@ -110,7 +106,7 @@ namespace AgileObjects.ReadableExpressions
             return new CodeBlock(block, blockLines);
         }
 
-        private CodeBlock TranslateSingle(Expr.Expression body)
+        private CodeBlock TranslateSingle(Expression body)
         {
             var bodyString = Translate(body).WithoutSurroundingParentheses(body);
 
@@ -121,13 +117,13 @@ namespace AgileObjects.ReadableExpressions
         internal ParameterSet TranslateParameters<TExpression>(
             ReadOnlyCollection<TExpression> parameters,
             IMethodInfo method = null)
-            where TExpression : Expr.Expression
+            where TExpression : Expression
         {
-            return new ParameterSet(method, parameters.Cast<Expr.Expression>().ToArray(), this);
+            return new ParameterSet(method, parameters.Cast<Expression>().ToArray(), this);
         }
 #endif
         internal ParameterSet TranslateParameters(
-            IEnumerable<Expr.Expression> parameters,
+            IEnumerable<Expression> parameters,
             IMethodInfo method = null)
         {
             return new ParameterSet(method, parameters, this);
@@ -137,12 +133,12 @@ namespace AgileObjects.ReadableExpressions
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an assignment 
         /// where the assigned variable is declared as part of the assignment statement.
         /// </summary>
-        /// <param name="expression">The <see cref="Expr.Expression"/> to evaluate.</param>
+        /// <param name="expression">The <see cref="Expression"/> to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="expression"/> represents an assignment where the assigned variable 
         /// is declared as part of the assignment statement, otherwise false.
         /// </returns>
-        public bool IsNotJoinedAssignment(Expr.Expression expression)
+        public bool IsNotJoinedAssignment(Expression expression)
         {
             return (expression.NodeType != ExpressionType.Assign) ||
                   !_analyzer.JoinedAssignments.Contains(expression);
@@ -150,14 +146,14 @@ namespace AgileObjects.ReadableExpressions
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
-        /// <see cref="Expr.GotoExpression"/>.
+        /// <see cref="GotoExpression"/>.
         /// </summary>
-        /// <param name="labelTarget">The <see cref="Expr.LabelTarget"/> to evaluate.</param>
+        /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
         /// <returns>
-        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="Expr.GotoExpression"/>,
+        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
         /// otherwise false.
         /// </returns>
-        public bool IsReferencedByGoto(Expr.LabelTarget labelTarget)
+        public bool IsReferencedByGoto(LabelTarget labelTarget)
             => _analyzer.NamedLabelTargets.Contains(labelTarget);
 
         /// <summary>
@@ -169,19 +165,19 @@ namespace AgileObjects.ReadableExpressions
         /// True if the given <paramref name="goto"/> goes to the final statement in a block,
         /// otherwise false.
         /// </returns>
-        public bool GoesToReturnLabel(Expr.GotoExpression @goto)
+        public bool GoesToReturnLabel(GotoExpression @goto)
             => _analyzer.GotoReturnGotos.Contains(@goto);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
         /// of multiple method calls.
         /// </summary>
-        /// <param name="methodCall">The <see cref="Expr.Expression"/> to evaluate.</param>
+        /// <param name="methodCall">The <see cref="Expression"/> to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
         /// otherwise false.
         /// </returns>
-        public bool IsPartOfMethodCallChain(Expr.Expression methodCall)
+        public bool IsPartOfMethodCallChain(Expression methodCall)
             => _analyzer.ChainedMethodCalls.Contains(methodCall);
 
         /// <summary>
@@ -190,7 +186,7 @@ namespace AgileObjects.ReadableExpressions
         /// </summary>
         /// <param name="variable">The variable for which to get the 1-based index.</param>
         /// <returns>The 1-based index of the given <paramref name="variable"/>.</returns>
-        public int? GetUnnamedVariableNumber(Expr.ParameterExpression variable)
+        public int? GetUnnamedVariableNumber(ParameterExpression variable)
         {
             var variablesOfType = _analyzer.UnnamedVariablesByType[variable.Type];
 
@@ -206,32 +202,30 @@ namespace AgileObjects.ReadableExpressions
 
         internal class TranslationAnalyzer
         {
-            private readonly TranslationTree _translationTree;
-            private readonly Dictionary<Expr.BinaryExpression, object> _constructsByAssignment;
-            private readonly List<Expr.ParameterExpression> _accessedVariables;
-            private readonly List<Expr.Expression> _assignedAssignments;
-            private readonly Stack<Expr.BlockExpression> _blocks;
+            private readonly Dictionary<BinaryExpression, object> _constructsByAssignment;
+            private readonly List<ParameterExpression> _accessedVariables;
+            private readonly List<Expression> _assignedAssignments;
+            private readonly Stack<BlockExpression> _blocks;
             private readonly Stack<object> _constructs;
-            private ICollection<Expr.LabelTarget> _namedLabelTargets;
-            private ICollection<Expr.GotoExpression> _gotoReturnGotos;
-            private Dictionary<Type, Expr.ParameterExpression[]> _unnamedVariablesByType;
+            private ICollection<LabelTarget> _namedLabelTargets;
+            private ICollection<GotoExpression> _gotoReturnGotos;
+            private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
             private TranslationAnalyzer()
             {
-                _translationTree = new TranslationTree();
-                _constructsByAssignment = new Dictionary<Expr.BinaryExpression, object>();
-                _accessedVariables = new List<Expr.ParameterExpression>();
-                JoinedAssignedVariables = new List<Expr.ParameterExpression>();
-                JoinedAssignments = new List<Expr.BinaryExpression>();
-                _assignedAssignments = new List<Expr.Expression>();
-                ChainedMethodCalls = new List<Expr.MethodCallExpression>();
-                _blocks = new Stack<Expr.BlockExpression>();
+                _constructsByAssignment = new Dictionary<BinaryExpression, object>();
+                _accessedVariables = new List<ParameterExpression>();
+                JoinedAssignedVariables = new List<ParameterExpression>();
+                JoinedAssignments = new List<BinaryExpression>();
+                _assignedAssignments = new List<Expression>();
+                ChainedMethodCalls = new List<MethodCallExpression>();
+                _blocks = new Stack<BlockExpression>();
                 _constructs = new Stack<object>();
             }
 
             #region Factory Method
 
-            public static TranslationAnalyzer Analyse(Expr.Expression expression)
+            public static TranslationAnalyzer Analyse(Expression expression)
             {
                 var analyzer = new TranslationAnalyzer();
 
@@ -242,26 +236,26 @@ namespace AgileObjects.ReadableExpressions
 
             #endregion
 
-            public ICollection<Expr.ParameterExpression> JoinedAssignedVariables { get; }
+            public ICollection<ParameterExpression> JoinedAssignedVariables { get; }
 
-            public ICollection<Expr.BinaryExpression> JoinedAssignments { get; }
+            public ICollection<BinaryExpression> JoinedAssignments { get; }
 
-            public ICollection<Expr.LabelTarget> NamedLabelTargets
-                => _namedLabelTargets ?? (_namedLabelTargets = new List<Expr.LabelTarget>());
+            public ICollection<LabelTarget> NamedLabelTargets
+                => _namedLabelTargets ?? (_namedLabelTargets = new List<LabelTarget>());
 
-            public ICollection<Expr.GotoExpression> GotoReturnGotos
-                => _gotoReturnGotos ?? (_gotoReturnGotos = new List<Expr.GotoExpression>());
+            public ICollection<GotoExpression> GotoReturnGotos
+                => _gotoReturnGotos ?? (_gotoReturnGotos = new List<GotoExpression>());
 
-            public List<Expr.MethodCallExpression> ChainedMethodCalls { get; }
+            public List<MethodCallExpression> ChainedMethodCalls { get; }
 
-            public Dictionary<Type, Expr.ParameterExpression[]> UnnamedVariablesByType
+            public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
                 => _unnamedVariablesByType ??
                    (_unnamedVariablesByType = _accessedVariables
                        .Where(variable => variable.Name.IsNullOrWhiteSpace())
                        .GroupBy(variable => variable.Type)
                        .ToDictionary(grp => grp.Key, grp => grp.ToArray()));
 
-            private void Visit(Expr.Expression expression)
+            private void Visit(Expression expression)
             {
                 while (true)
                 {
@@ -298,7 +292,7 @@ namespace AgileObjects.ReadableExpressions
                         case ExpressionType.TypeAs:
                         case ExpressionType.UnaryPlus:
                         case ExpressionType.Unbox:
-                            expression = ((Expr.UnaryExpression)expression).Operand;
+                            expression = ((UnaryExpression)expression).Operand;
                             continue;
 
                         case ExpressionType.Add:
@@ -340,89 +334,89 @@ namespace AgileObjects.ReadableExpressions
                         case ExpressionType.SubtractAssign:
                         case ExpressionType.SubtractAssignChecked:
                         case ExpressionType.SubtractChecked:
-                            Visit((Expr.BinaryExpression)expression);
+                            Visit((BinaryExpression)expression);
                             return;
 
                         case ExpressionType.Block:
-                            Visit((Expr.BlockExpression)expression);
+                            Visit((BlockExpression)expression);
                             return;
 
                         case ExpressionType.Call:
-                            Visit((Expr.MethodCallExpression)expression);
+                            Visit((MethodCallExpression)expression);
                             return;
 
                         case ExpressionType.Conditional:
-                            Visit((Expr.ConditionalExpression)expression);
+                            Visit((ConditionalExpression)expression);
                             return;
 
                         case ExpressionType.Dynamic:
-                            Visit(((Expr.DynamicExpression)expression).Arguments);
+                            Visit(((DynamicExpression)expression).Arguments);
                             return;
 
                         case ExpressionType.Goto:
-                            Visit((Expr.GotoExpression)expression);
+                            Visit((GotoExpression)expression);
                             return;
 
                         case ExpressionType.Index:
-                            Visit((Expr.IndexExpression)expression);
+                            Visit((IndexExpression)expression);
                             return;
 
                         case ExpressionType.Invoke:
-                            Visit((Expr.InvocationExpression)expression);
+                            Visit((InvocationExpression)expression);
                             return;
 
                         case ExpressionType.Label:
-                            expression = ((Expr.LabelExpression)expression).DefaultValue;
+                            expression = ((LabelExpression)expression).DefaultValue;
                             continue;
 
                         case ExpressionType.Lambda:
-                            expression = ((Expr.LambdaExpression)expression).Body;
+                            expression = ((LambdaExpression)expression).Body;
                             continue;
 
                         case ExpressionType.ListInit:
-                            Visit((Expr.ListInitExpression)expression);
+                            Visit((ListInitExpression)expression);
                             return;
 
                         case ExpressionType.Loop:
-                            expression = ((Expr.LoopExpression)expression).Body;
+                            expression = ((LoopExpression)expression).Body;
                             continue;
 
                         case ExpressionType.MemberAccess:
-                            expression = ((Expr.MemberExpression)expression).Expression;
+                            expression = ((MemberExpression)expression).Expression;
                             continue;
 
                         case ExpressionType.MemberInit:
-                            Visit((Expr.MemberInitExpression)expression);
+                            Visit((MemberInitExpression)expression);
                             return;
 
                         case ExpressionType.New:
-                            Visit((Expr.NewExpression)expression);
+                            Visit((NewExpression)expression);
                             return;
 
                         case ExpressionType.NewArrayInit:
                         case ExpressionType.NewArrayBounds:
-                            Visit((Expr.NewArrayExpression)expression);
+                            Visit((NewArrayExpression)expression);
                             return;
 
                         case ExpressionType.Parameter:
-                            Visit((Expr.ParameterExpression)expression);
+                            Visit((ParameterExpression)expression);
                             return;
 
                         case ExpressionType.RuntimeVariables:
-                            Visit(((Expr.RuntimeVariablesExpression)expression).Variables);
+                            Visit(((RuntimeVariablesExpression)expression).Variables);
                             return;
 
                         case ExpressionType.Switch:
-                            Visit((Expr.SwitchExpression)expression);
+                            Visit((SwitchExpression)expression);
                             return;
 
                         case ExpressionType.Try:
-                            Visit((Expr.TryExpression)expression);
+                            Visit((TryExpression)expression);
                             return;
 
                         case ExpressionType.TypeEqual:
                         case ExpressionType.TypeIs:
-                            expression = ((Expr.TypeBinaryExpression)expression).Expression;
+                            expression = ((TypeBinaryExpression)expression).Expression;
                             continue;
 
                         default:
@@ -431,14 +425,14 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            private void Visit(Expr.BinaryExpression binary)
+            private void Visit(BinaryExpression binary)
             {
                 if ((binary.NodeType == ExpressionType.Assign) &&
                     (binary.Left.NodeType == ExpressionType.Parameter) &&
                     !JoinedAssignedVariables.Contains(binary.Left) &&
                     !_assignedAssignments.Contains(binary))
                 {
-                    var variable = (Expr.ParameterExpression)binary.Left;
+                    var variable = (ParameterExpression)binary.Left;
 
                     if (VariableHasNotYetBeenAccessed(variable))
                     {
@@ -460,7 +454,7 @@ namespace AgileObjects.ReadableExpressions
                 Visit(binary.Right);
             }
 
-            private void Visit(Expr.BlockExpression block)
+            private void Visit(BlockExpression block)
             {
                 _blocks.Push(block);
 
@@ -470,10 +464,10 @@ namespace AgileObjects.ReadableExpressions
                 _blocks.Pop();
             }
 
-            private bool VariableHasNotYetBeenAccessed(Expr.Expression variable)
+            private bool VariableHasNotYetBeenAccessed(Expression variable)
                 => !_accessedVariables.Contains(variable);
 
-            private void Visit(Expr.MethodCallExpression methodCall)
+            private void Visit(MethodCallExpression methodCall)
             {
                 if (!ChainedMethodCalls.Contains(methodCall))
                 {
@@ -498,17 +492,17 @@ namespace AgileObjects.ReadableExpressions
                 Visit(methodCall.Arguments);
             }
 
-            private static IEnumerable<Expr.MethodCallExpression> GetChainedMethodCalls(Expr.MethodCallExpression methodCall)
+            private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
             {
                 while (methodCall != null)
                 {
                     yield return methodCall;
 
-                    methodCall = methodCall.GetSubject() as Expr.MethodCallExpression;
+                    methodCall = methodCall.GetSubject() as MethodCallExpression;
                 }
             }
 
-            private void Visit(Expr.ConditionalExpression conditional)
+            private void Visit(ConditionalExpression conditional)
             {
                 VisitConstruct(conditional, c =>
                 {
@@ -518,9 +512,9 @@ namespace AgileObjects.ReadableExpressions
                 });
             }
 
-            private void Visit(Expr.GotoExpression @goto)
+            private void Visit(GotoExpression @goto)
             {
-                if (@goto.Kind != Expr.GotoExpressionKind.Goto)
+                if (@goto.Kind != GotoExpressionKind.Goto)
                 {
                     goto VisitValue;
                 }
@@ -529,7 +523,7 @@ namespace AgileObjects.ReadableExpressions
 
                 if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
                 {
-                    var returnLabel = (Expr.LabelExpression)currentBlockFinalExpression;
+                    var returnLabel = (LabelExpression)currentBlockFinalExpression;
 
                     if (@goto.Target == returnLabel.Target)
                     {
@@ -544,33 +538,32 @@ namespace AgileObjects.ReadableExpressions
                 Visit(@goto.Value);
             }
 
-            private void Visit(Expr.IndexExpression index)
+            private void Visit(IndexExpression index)
             {
                 Visit(index.Object);
                 Visit(index.Arguments);
             }
 
-            private void Visit(Expr.InvocationExpression invocation)
+            private void Visit(InvocationExpression invocation)
             {
                 Visit(invocation.Arguments);
                 Visit(invocation.Expression);
             }
 
-            private void Visit(Expr.LambdaExpression lambda)
+            private void Visit(LambdaExpression lambda)
             {
-                _translationTree.Add(lambda);
                 Visit(lambda.Body);
             }
 
-            private void Visit(Expr.ListInitExpression init)
+            private void Visit(ListInitExpression init)
             {
                 Visit(init.NewExpression);
                 Visit(init.Initializers);
             }
 
-            private void Visit(Expr.NewExpression newing) => Visit(newing.Arguments);
+            private void Visit(NewExpression newing) => Visit(newing.Arguments);
 
-            private void Visit(IList<Expr.ElementInit> elementInits)
+            private void Visit(IList<ElementInit> elementInits)
             {
                 for (int i = 0, n = elementInits.Count; i < n; ++i)
                 {
@@ -578,13 +571,13 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            private void Visit(Expr.MemberInitExpression memberInit)
+            private void Visit(MemberInitExpression memberInit)
             {
                 Visit(memberInit.NewExpression);
                 Visit(memberInit.Bindings);
             }
 
-            private void Visit(IList<Expr.MemberBinding> original)
+            private void Visit(IList<MemberBinding> original)
             {
                 for (int i = 0, n = original.Count; i < n; ++i)
                 {
@@ -592,20 +585,20 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            private void Visit(Expr.MemberBinding binding)
+            private void Visit(MemberBinding binding)
             {
                 switch (binding.BindingType)
                 {
-                    case Expr.MemberBindingType.Assignment:
-                        Visit(((Expr.MemberAssignment)binding).Expression);
+                    case MemberBindingType.Assignment:
+                        Visit(((MemberAssignment)binding).Expression);
                         return;
 
-                    case Expr.MemberBindingType.MemberBinding:
-                        Visit(((Expr.MemberMemberBinding)binding).Bindings);
+                    case MemberBindingType.MemberBinding:
+                        Visit(((MemberMemberBinding)binding).Bindings);
                         return;
 
-                    case Expr.MemberBindingType.ListBinding:
-                        Visit(((Expr.MemberListBinding)binding).Initializers);
+                    case MemberBindingType.ListBinding:
+                        Visit(((MemberListBinding)binding).Initializers);
                         return;
 
                     default:
@@ -613,9 +606,9 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            private void Visit(Expr.NewArrayExpression na) => Visit(na.Expressions);
+            private void Visit(NewArrayExpression na) => Visit(na.Expressions);
 
-            private void Visit(Expr.ParameterExpression variable)
+            private void Visit(ParameterExpression variable)
             {
                 if (VariableHasNotYetBeenAccessed(variable))
                 {
@@ -648,7 +641,7 @@ namespace AgileObjects.ReadableExpressions
                 _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
             }
 
-            private void Visit(Expr.SwitchExpression @switch)
+            private void Visit(SwitchExpression @switch)
             {
                 Visit(@switch.SwitchValue);
 
@@ -660,7 +653,7 @@ namespace AgileObjects.ReadableExpressions
                 Visit(@switch.DefaultBody);
             }
 
-            private void Visit(Expr.SwitchCase @case)
+            private void Visit(SwitchCase @case)
             {
                 VisitConstruct(@case, c =>
                 {
@@ -669,7 +662,7 @@ namespace AgileObjects.ReadableExpressions
                 });
             }
 
-            private void Visit(Expr.TryExpression @try)
+            private void Visit(TryExpression @try)
             {
                 VisitConstruct(@try, t =>
                 {
@@ -685,7 +678,7 @@ namespace AgileObjects.ReadableExpressions
                 });
             }
 
-            private void Visit(Expr.CatchBlock @catch)
+            private void Visit(CatchBlock @catch)
             {
                 VisitConstruct(@catch, c =>
                 {
@@ -695,7 +688,7 @@ namespace AgileObjects.ReadableExpressions
                 });
             }
 
-            private void Visit(IList<Expr.ParameterExpression> parameters)
+            private void Visit(IList<ParameterExpression> parameters)
             {
                 for (int i = 0, n = parameters.Count; i < n; ++i)
                 {
@@ -703,7 +696,7 @@ namespace AgileObjects.ReadableExpressions
                 }
             }
 
-            private void Visit(IList<Expr.Expression> expressions)
+            private void Visit(IList<Expression> expressions)
             {
                 for (int i = 0, n = expressions.Count; i < n; ++i)
                 {
@@ -720,19 +713,19 @@ namespace AgileObjects.ReadableExpressions
                 _constructs.Pop();
             }
 
-            private void AddAssignmentIfAppropriate(Expr.Expression assignedValue)
+            private void AddAssignmentIfAppropriate(Expression assignedValue)
             {
                 while (true)
                 {
                     switch (assignedValue.NodeType)
                     {
                         case ExpressionType.Block:
-                            assignedValue = ((Expr.BlockExpression)assignedValue).Result;
+                            assignedValue = ((BlockExpression)assignedValue).Result;
                             continue;
 
                         case ExpressionType.Convert:
                         case ExpressionType.ConvertChecked:
-                            assignedValue = ((Expr.UnaryExpression)assignedValue).Operand;
+                            assignedValue = ((UnaryExpression)assignedValue).Operand;
                             continue;
 
                         case ExpressionType.Assign:

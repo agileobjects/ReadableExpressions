@@ -2,6 +2,8 @@
 {
     internal interface ITranslation
     {
+        int EstimatedSize { get; }
 
+        void Translate();
     }
 }
