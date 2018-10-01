@@ -87,11 +87,6 @@
         }
     }
 
-    internal class TranslationTree
-    {
-
-    }
-
     internal class Translation
     {
         private readonly char[] _content;

@@ -1,3 +1,5 @@
+using AgileObjects.ReadableExpressions.Translations;
+
 namespace AgileObjects.ReadableExpressions
 {
     using System;
@@ -552,6 +554,12 @@ namespace AgileObjects.ReadableExpressions
             {
                 Visit(invocation.Arguments);
                 Visit(invocation.Expression);
+            }
+
+            private void Visit(Expr.LambdaExpression lambda)
+            {
+                _translationTree.Add(lambda);
+                Visit(lambda.Body);
             }
 
             private void Visit(Expr.ListInitExpression init)
