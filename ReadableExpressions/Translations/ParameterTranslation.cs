@@ -47,14 +47,14 @@
             _parameter = parameter;
             _context = context;
             _isUnnamedParameter = parameter.Name.IsNullOrWhiteSpace();
-            EstimatedSize = GetParameterNameSizeEstimate();
+            context.Allocate(EstimatedSize = GetEstimatedSize());
         }
 
-        private int GetParameterNameSizeEstimate()
+        private int GetEstimatedSize()
         {
             if (_isUnnamedParameter)
             {
-                return _parameter.Type.Name.Length + 10;
+                return (int)(_parameter.Type.Name.Length * 1.2);
             }
 
             return _keywords.Contains(_parameter.Name)

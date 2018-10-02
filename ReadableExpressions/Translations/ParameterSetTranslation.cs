@@ -9,15 +9,33 @@
 #endif
     using Extensions;
 
-    internal class ParameterSetTranslation
+    internal class ParameterSetTranslation : ITranslation
     {
         private readonly IList<ParameterTranslation> _parameterTranslations;
 
-        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters)
+        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
         {
+            var estimatedSize = 0;
+
             _parameterTranslations = parameters
-                .Project(p => new ParameterTranslation(p))
+                .Project(p =>
+                {
+                    var translation = new ParameterTranslation(p, context);
+
+                    estimatedSize += translation.EstimatedSize;
+
+                    return translation;
+                })
                 .ToArray();
+
+            EstimatedSize = estimatedSize + (_parameterTranslations.Count * 2) + 4;
+        }
+
+        public int EstimatedSize { get; }
+
+        public void Translate()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

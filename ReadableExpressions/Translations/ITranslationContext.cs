@@ -12,6 +12,15 @@
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 
+        Allocation Allocate(int estimatedSize);
+
         ITranslation GetTranslationFor(Expression expression);
+    }
+
+    internal struct Allocation
+    {
+        public int StartIndex { get; set; }
+
+        public int EndIndex { get; set; }
     }
 }

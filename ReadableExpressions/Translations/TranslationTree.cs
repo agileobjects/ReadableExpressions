@@ -160,7 +160,7 @@
                 case ExpressionType.OrElse:
                     break;
                 case ExpressionType.Parameter:
-                    return new ParameterTranslation((ParameterExpression)expression);
+                    return new ParameterTranslation((ParameterExpression)expression, this);
 
                 case ExpressionType.PostDecrementAssign:
                     break;

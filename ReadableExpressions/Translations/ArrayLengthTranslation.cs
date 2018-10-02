@@ -8,12 +8,14 @@
 
     internal class ArrayLengthTranslation : ITranslation
     {
+        private const string _length = ".Length";
+
         private readonly ITranslation _operand;
 
         public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
         {
             _operand = context.GetTranslationFor(arrayLength.Operand);
-            EstimatedSize = _operand.EstimatedSize + ".Length".Length;
+            context.Allocate(EstimatedSize = _operand.EstimatedSize + _length.Length);
         }
 
         public int EstimatedSize { get; }
