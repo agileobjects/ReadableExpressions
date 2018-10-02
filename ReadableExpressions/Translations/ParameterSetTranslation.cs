@@ -14,15 +14,33 @@
         private const string _openAndCloseParentheses = "()";
 
         private readonly ITranslationContext _context;
-        private readonly IList<ParameterTranslation> _parameterTranslations;
+        private readonly IList<ITranslation> _parameterTranslations;
 
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
+#if NET35
+            : this(parameters.Cast<Expression>(), parameters.Count, context)
+#else
+            : this(parameters, parameters.Count, context)
+#endif
         {
+        }
+
+        public ParameterSetTranslation(ICollection<Expression> parameters, ITranslationContext context)
+            : this(parameters, parameters.Count, context)
+        {
+        }
+
+        private ParameterSetTranslation(
+            IEnumerable<Expression> parameters,
+            int parameterCount,
+            ITranslationContext context)
+        {
+            ParameterCount = parameterCount;
             _context = context;
 
-            if (parameters.Count == 0)
+            if (parameterCount == 0)
             {
-                _parameterTranslations = Enumerable<ParameterTranslation>.EmptyArray;
+                _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
                 EstimatedSize = _openAndCloseParentheses.Length;
                 return;
             }
@@ -32,7 +50,7 @@
             _parameterTranslations = parameters
                 .Project(p =>
                 {
-                    var translation = new ParameterTranslation(p, context);
+                    var translation = context.GetTranslationFor(p);
 
                     estimatedSize += translation.EstimatedSize;
 
@@ -40,7 +58,7 @@
                 })
                 .ToArray();
 
-            ParameterCount = _parameterTranslations.Count;
+
             EstimatedSize = estimatedSize + (ParameterCount * 2) + 4;
         }
 
@@ -55,7 +73,7 @@
                 case 0:
                     _context.WriteToTranslation(_openAndCloseParentheses);
                     return;
-                
+
                 case 1:
                     _parameterTranslations[0].WriteToTranslation();
                     return;

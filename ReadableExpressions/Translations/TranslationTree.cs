@@ -45,6 +45,11 @@
 
         private ITranslation GetTranslationFor(Expression expression)
         {
+            if (expression == null)
+            {
+                return null;
+            }
+
             switch (expression.NodeType)
             {
                 case ExpressionType.Add:
@@ -71,7 +76,8 @@
                 case ExpressionType.Block:
                     break;
                 case ExpressionType.Call:
-                    break;
+                    return new MethodCallTranslation((MethodCallExpression)expression, this);
+
                 case ExpressionType.Coalesce:
                     break;
                 case ExpressionType.Conditional:
