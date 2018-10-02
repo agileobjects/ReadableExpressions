@@ -8,17 +8,18 @@
 
     internal class LambdaTranslation : ITranslation
     {
-        private const string _fatArrow = "=> ";
+        private const string _fatArrow = " => ";
 
+        private readonly ITranslationContext _context;
         private readonly ParameterSetTranslation _parameters;
         private readonly ITranslation _body;
-        private readonly Allocation _allocation;
 
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
+            _context = context;
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
             _body = context.GetTranslationFor(lambda.Body);
-            _allocation = context.Allocate(EstimatedSize = GetEstimatedSize());
+            EstimatedSize = GetEstimatedSize();
         }
 
         private int GetEstimatedSize()
@@ -26,9 +27,11 @@
 
         public int EstimatedSize { get; }
 
-        public void Translate()
+        public void WriteToTranslation()
         {
-            throw new System.NotImplementedException();
+            _parameters.WriteToTranslation();
+            _context.WriteToTranslation(_fatArrow);
+            _body.WriteToTranslation();
         }
     }
 }

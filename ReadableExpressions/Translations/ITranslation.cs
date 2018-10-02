@@ -4,6 +4,6 @@
     {
         int EstimatedSize { get; }
 
-        void Translate();
+        void WriteToTranslation();
     }
 }

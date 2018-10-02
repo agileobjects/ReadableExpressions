@@ -11,10 +11,22 @@
 
     internal class ParameterSetTranslation : ITranslation
     {
+        private const string _openAndCloseParentheses = "()";
+
+        private readonly ITranslationContext _context;
         private readonly IList<ParameterTranslation> _parameterTranslations;
 
-        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
+        public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
         {
+            _context = context;
+
+            if (parameters.Count == 0)
+            {
+                _parameterTranslations = Enumerable<ParameterTranslation>.EmptyArray;
+                EstimatedSize = _openAndCloseParentheses.Length;
+                return;
+            }
+
             var estimatedSize = 0;
 
             _parameterTranslations = parameters
@@ -28,14 +40,40 @@
                 })
                 .ToArray();
 
-            EstimatedSize = estimatedSize + (_parameterTranslations.Count * 2) + 4;
+            ParameterCount = _parameterTranslations.Count;
+            EstimatedSize = estimatedSize + (ParameterCount * 2) + 4;
         }
 
         public int EstimatedSize { get; }
 
-        public void Translate()
+        private int ParameterCount { get; }
+
+        public void WriteToTranslation()
         {
-            throw new System.NotImplementedException();
+            switch (ParameterCount)
+            {
+                case 0:
+                    _context.WriteToTranslation(_openAndCloseParentheses);
+                    return;
+                
+                case 1:
+                    _parameterTranslations[0].WriteToTranslation();
+                    return;
+            }
+
+            _context.WriteToTranslation('(');
+
+            for (var i = 0; i < ParameterCount; ++i)
+            {
+                _parameterTranslations[i].WriteToTranslation();
+
+                if (i < ParameterCount - 1)
+                {
+                    _context.WriteToTranslation(", ");
+                }
+            }
+
+            _context.WriteToTranslation(')');
         }
     }
 }

@@ -10,19 +10,24 @@
     {
         private const string _length = ".Length";
 
+        private readonly ITranslationContext _context;
         private readonly ITranslation _operand;
 
         public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
         {
+            _context = context;
             _operand = context.GetTranslationFor(arrayLength.Operand);
-            context.Allocate(EstimatedSize = _operand.EstimatedSize + _length.Length);
+            EstimatedSize = _operand.EstimatedSize + LengthPropertyLength;
         }
 
         public int EstimatedSize { get; }
 
-        public void Translate()
+        private static int LengthPropertyLength => _length.Length;
+
+        public void WriteToTranslation()
         {
-            throw new System.NotImplementedException();
+            _operand.WriteToTranslation();
+            _context.WriteToTranslation(_length);
         }
     }
 }

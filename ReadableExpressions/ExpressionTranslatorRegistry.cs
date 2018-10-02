@@ -71,7 +71,9 @@
 
             var translation = new TranslationTree(expression, context);
 
-            return Translate(expression, context);
+            return translation.GetTranslation();
+
+            // return Translate(expression, context);
         }
 
         private string Translate(Expression expression, TranslationContext context)

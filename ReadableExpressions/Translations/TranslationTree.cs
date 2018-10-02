@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Text;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,13 +12,13 @@
     {
         private readonly TranslationContext _context;
         private readonly ITranslation _root;
-        private readonly char[] _content;
+        private readonly StringBuilder _content;
 
         public TranslationTree(Expression expression, TranslationContext context)
         {
             _context = context;
             _root = GetTranslationFor(expression);
-            _content = new char[_root.EstimatedSize];
+            _content = new StringBuilder(_root.EstimatedSize);
         }
 
         #region ITranslationContext Members
@@ -27,9 +28,22 @@
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
+        ITranslation ITranslationContext.GetTranslationFor(Expression expression)
+            => GetTranslationFor(expression);
+
+        void ITranslationContext.WriteToTranslation(char character)
+        {
+            _content.Append(character);
+        }
+
+        void ITranslationContext.WriteToTranslation(string stringValue)
+        {
+            _content.Append(stringValue);
+        }
+
         #endregion
 
-        public ITranslation GetTranslationFor(Expression expression)
+        private ITranslation GetTranslationFor(Expression expression)
         {
             switch (expression.NodeType)
             {
@@ -209,6 +223,13 @@
             }
 
             throw new ArgumentOutOfRangeException();
+        }
+
+        public string GetTranslation()
+        {
+            _root.WriteToTranslation();
+
+            return _content.ToString();
         }
     }
 }

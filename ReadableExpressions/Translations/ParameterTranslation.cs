@@ -47,7 +47,7 @@
             _parameter = parameter;
             _context = context;
             _isUnnamedParameter = parameter.Name.IsNullOrWhiteSpace();
-            context.Allocate(EstimatedSize = GetEstimatedSize());
+            EstimatedSize = GetEstimatedSize();
         }
 
         private int GetEstimatedSize()
@@ -64,18 +64,42 @@
 
         public int EstimatedSize { get; }
 
-        public void Translate()
+        public void WriteToTranslation()
         {
-            //var parameterName = _parameter.Name;
+            var parameterName = _parameter.Name;
 
-            //if (_isUnnamedParameter)
-            //{
-            //    var variableNumber = _context.GetUnnamedVariableNumber(_parameter);
+            int? variableNumber;
 
-            //    parameterName = _parameter.Type.GetVariableNameInCamelCase(_context.Settings) + variableNumber;
-            //}
+            if (_isUnnamedParameter)
+            {
+                variableNumber = _context.GetUnnamedVariableNumber(_parameter);
 
-            //_keywords.Contains(parameterName) ? "@" + parameterName : parameterName;
+                parameterName = _parameter.Type.GetVariableNameInCamelCase(_context.Settings);
+            }
+            else
+            {
+                variableNumber = default(int?);
+            }
+
+            if (_keywords.Contains(parameterName))
+            {
+                _context.WriteToTranslation('@');
+            }
+
+            _context.WriteToTranslation(parameterName);
+
+            if (variableNumber == null)
+            {
+                return;
+            }
+
+            if (variableNumber.Value < 10)
+            {
+                _context.WriteToTranslation(variableNumber.Value.ToString()[0]);
+                return;
+            }
+
+            _context.WriteToTranslation(variableNumber.Value.ToString());
         }
     }
 }
