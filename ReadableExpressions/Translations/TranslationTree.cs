@@ -28,6 +28,8 @@
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
+        public ITranslation GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
+
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
 
@@ -142,7 +144,8 @@
                 case ExpressionType.Loop:
                     break;
                 case ExpressionType.MemberAccess:
-                    break;
+                    return new MemberAccessTranslation((MemberExpression)expression, this);
+
                 case ExpressionType.MemberInit:
                     break;
                 case ExpressionType.Modulo:
@@ -228,7 +231,7 @@
                     break;
             }
 
-            throw new ArgumentOutOfRangeException();
+            throw new ArgumentOutOfRangeException(expression.NodeType.ToString());
         }
 
         public string GetTranslation()

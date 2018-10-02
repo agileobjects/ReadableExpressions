@@ -20,7 +20,7 @@
             _context = context;
 
             _subject = context.GetTranslationFor(expression.GetSubject());
-            _parameters = new ParameterSetTranslation(expression.Arguments, context);
+            _parameters = new ParameterSetTranslation(expression.Arguments, context).WithParentheses();
             EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
         }
 

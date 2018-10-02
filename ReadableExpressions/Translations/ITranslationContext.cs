@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,6 +12,8 @@
         TranslationSettings Settings { get; }
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
+
+        ITranslation GetTranslationFor(Type type);
 
         ITranslation GetTranslationFor(Expression expression);
 

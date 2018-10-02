@@ -15,6 +15,7 @@
 
         private readonly ITranslationContext _context;
         private readonly IList<ITranslation> _parameterTranslations;
+        private bool _forceParentheses;
 
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
 #if NET35
@@ -66,6 +67,12 @@
 
         private int ParameterCount { get; }
 
+        public ParameterSetTranslation WithParentheses()
+        {
+            _forceParentheses = true;
+            return this;
+        }
+
         public void WriteToTranslation()
         {
             switch (ParameterCount)
@@ -74,7 +81,7 @@
                     _context.WriteToTranslation(_openAndCloseParentheses);
                     return;
 
-                case 1:
+                case 1 when (_forceParentheses == false):
                     _parameterTranslations[0].WriteToTranslation();
                     return;
             }
