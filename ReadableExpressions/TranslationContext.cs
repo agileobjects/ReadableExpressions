@@ -552,7 +552,10 @@ namespace AgileObjects.ReadableExpressions
 
             private void Visit(LambdaExpression lambda)
             {
-                Visit(lambda.Body);
+                if (lambda != null)
+                {
+                    Visit(lambda.Body);
+                }
             }
 
             private void Visit(ListInitExpression init)
