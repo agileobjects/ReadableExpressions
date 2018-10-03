@@ -15,7 +15,6 @@ namespace AgileObjects.ReadableExpressions.Translations
     {
         private const string _openAndCloseParentheses = "()";
 
-        private readonly ITranslationContext _context;
         private readonly IList<ITranslation> _parameterTranslations;
         private bool _forceParentheses;
 
@@ -49,7 +48,6 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
 
             ParameterCount = parameterCount;
-            _context = context;
 
             if (parameterCount == 0)
             {
@@ -85,32 +83,32 @@ namespace AgileObjects.ReadableExpressions.Translations
             return this;
         }
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
             switch (ParameterCount)
             {
                 case 0:
-                    _context.WriteToTranslation(_openAndCloseParentheses);
+                    context.WriteToTranslation(_openAndCloseParentheses);
                     return;
 
                 case 1 when (_forceParentheses == false):
-                    _parameterTranslations[0].WriteToTranslation();
+                    _parameterTranslations[0].WriteTo(context);
                     return;
             }
 
-            _context.WriteToTranslation('(');
+            context.WriteToTranslation('(');
 
             for (var i = 0; i < ParameterCount; ++i)
             {
-                _parameterTranslations[i].WriteToTranslation();
+                _parameterTranslations[i].WriteTo(context);
 
                 if (i < ParameterCount - 1)
                 {
-                    _context.WriteToTranslation(", ");
+                    context.WriteToTranslation(", ");
                 }
             }
 
-            _context.WriteToTranslation(')');
+            context.WriteToTranslation(')');
         }
     }
 }

@@ -20,5 +20,9 @@
         void WriteToTranslation(char character);
 
         void WriteToTranslation(string stringValue);
+
+        void WriteToTranslation(int intValue);
+
+        void WriteToTranslation(object value);
     }
 }

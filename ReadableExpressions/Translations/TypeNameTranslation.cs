@@ -6,20 +6,18 @@
     internal class TypeNameTranslation : ITranslation
     {
         private readonly Type _type;
-        private readonly ITranslationContext _context;
 
-        public TypeNameTranslation(Type type, ITranslationContext context)
+        public TypeNameTranslation(Type type)
         {
             _type = type;
-            _context = context;
             EstimatedSize = (int)(_type.Name.Length * 1.1);
         }
 
         public int EstimatedSize { get; }
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
-            _context.WriteToTranslation(_type.GetFriendlyName(_context.Settings));
+            context.WriteToTranslation(_type.GetFriendlyName(context.Settings));
         }
     }
 }

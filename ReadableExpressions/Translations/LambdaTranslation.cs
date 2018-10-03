@@ -10,13 +10,11 @@
     {
         private const string _fatArrow = " => ";
 
-        private readonly ITranslationContext _context;
         private readonly ParameterSetTranslation _parameters;
         private readonly ITranslation _body;
 
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
-            _context = context;
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
             _body = context.GetTranslationFor(lambda.Body);
             EstimatedSize = GetEstimatedSize();
@@ -27,11 +25,11 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
-            _parameters.WriteToTranslation();
-            _context.WriteToTranslation(_fatArrow);
-            _body.WriteToTranslation();
+            _parameters.WriteTo(context);
+            context.WriteToTranslation(_fatArrow);
+            _body.WriteTo(context);
         }
     }
 }

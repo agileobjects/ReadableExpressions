@@ -10,12 +10,10 @@
     {
         private const string _length = ".Length";
 
-        private readonly ITranslationContext _context;
         private readonly ITranslation _operand;
 
         public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
         {
-            _context = context;
             _operand = context.GetTranslationFor(arrayLength.Operand);
             EstimatedSize = _operand.EstimatedSize + LengthPropertyLength;
         }
@@ -24,10 +22,10 @@
 
         private static int LengthPropertyLength => _length.Length;
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
-            _operand.WriteToTranslation();
-            _context.WriteToTranslation(_length);
+            _operand.WriteTo(context);
+            context.WriteToTranslation(_length);
         }
     }
 }

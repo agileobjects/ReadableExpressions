@@ -39,13 +39,11 @@
             .ToArray();
 
         private readonly ParameterExpression _parameter;
-        private readonly ITranslationContext _context;
         private readonly bool _isUnnamedParameter;
 
-        public ParameterTranslation(ParameterExpression parameter, ITranslationContext context)
+        public ParameterTranslation(ParameterExpression parameter)
         {
             _parameter = parameter;
-            _context = context;
             _isUnnamedParameter = parameter.Name.IsNullOrWhiteSpace();
             EstimatedSize = GetEstimatedSize();
         }
@@ -64,7 +62,7 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
             var parameterName = _parameter.Name;
 
@@ -72,9 +70,9 @@
 
             if (_isUnnamedParameter)
             {
-                variableNumber = _context.GetUnnamedVariableNumber(_parameter);
+                variableNumber = context.GetUnnamedVariableNumber(_parameter);
 
-                parameterName = _parameter.Type.GetVariableNameInCamelCase(_context.Settings);
+                parameterName = _parameter.Type.GetVariableNameInCamelCase(context.Settings);
             }
             else
             {
@@ -83,10 +81,10 @@
 
             if (_keywords.Contains(parameterName))
             {
-                _context.WriteToTranslation('@');
+                context.WriteToTranslation('@');
             }
 
-            _context.WriteToTranslation(parameterName);
+            context.WriteToTranslation(parameterName);
 
             if (variableNumber == null)
             {
@@ -95,11 +93,11 @@
 
             if (variableNumber.Value < 10)
             {
-                _context.WriteToTranslation(variableNumber.Value.ToString()[0]);
+                context.WriteToTranslation(variableNumber.Value.ToString()[0]);
                 return;
             }
 
-            _context.WriteToTranslation(variableNumber.Value.ToString());
+            context.WriteToTranslation(variableNumber.Value.ToString());
         }
     }
 }

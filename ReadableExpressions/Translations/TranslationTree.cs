@@ -28,7 +28,7 @@
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
-        public ITranslation GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
+        public ITranslation GetTranslationFor(Type type) => new TypeNameTranslation(type);
 
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
@@ -41,6 +41,16 @@
         void ITranslationContext.WriteToTranslation(string stringValue)
         {
             _content.Append(stringValue);
+        }
+
+        void ITranslationContext.WriteToTranslation(int intValue)
+        {
+            _content.Append(intValue);
+        }
+
+        void ITranslationContext.WriteToTranslation(object value)
+        {
+            _content.Append(value);
         }
 
         #endregion
@@ -183,7 +193,7 @@
                 case ExpressionType.OrElse:
                     break;
                 case ExpressionType.Parameter:
-                    return new ParameterTranslation((ParameterExpression)expression, this);
+                    return new ParameterTranslation((ParameterExpression)expression);
 
                 case ExpressionType.PostDecrementAssign:
                     break;
@@ -236,7 +246,7 @@
 
         public string GetTranslation()
         {
-            _root.WriteToTranslation();
+            _root.WriteTo(this);
 
             return _content.ToString();
         }

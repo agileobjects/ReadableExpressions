@@ -12,14 +12,12 @@ namespace AgileObjects.ReadableExpressions.Translations
     internal class MethodCallTranslation : ITranslation
     {
         private readonly MethodCallExpression _methodCall;
-        private readonly ITranslationContext _context;
         private readonly ITranslation _subject;
         private readonly ParameterSetTranslation _parameters;
 
         public MethodCallTranslation(MethodCallExpression methodCall, ITranslationContext context)
         {
             _methodCall = methodCall;
-            _context = context;
 
             _subject = context.GetTranslationFor(methodCall.GetSubject());
 
@@ -33,12 +31,12 @@ namespace AgileObjects.ReadableExpressions.Translations
 
         public int EstimatedSize { get; }
 
-        public void WriteToTranslation()
+        public void WriteTo(ITranslationContext context)
         {
-            _subject.WriteToTranslation();
-            _context.WriteToTranslation('.');
-            _context.WriteToTranslation(_methodCall.Method.Name);
-            _parameters.WriteToTranslation();
+            _subject.WriteTo(context);
+            context.WriteToTranslation('.');
+            context.WriteToTranslation(_methodCall.Method.Name);
+            _parameters.WriteTo(context);
         }
     }
 }
