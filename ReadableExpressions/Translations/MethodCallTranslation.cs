@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using AgileObjects.ReadableExpressions.Translators;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -9,18 +11,23 @@
 
     internal class MethodCallTranslation : ITranslation
     {
-        private readonly MethodCallExpression _expression;
+        private readonly MethodCallExpression _methodCall;
         private readonly ITranslationContext _context;
         private readonly ITranslation _subject;
         private readonly ParameterSetTranslation _parameters;
 
-        public MethodCallTranslation(MethodCallExpression expression, ITranslationContext context)
+        public MethodCallTranslation(MethodCallExpression methodCall, ITranslationContext context)
         {
-            _expression = expression;
+            _methodCall = methodCall;
             _context = context;
 
-            _subject = context.GetTranslationFor(expression.GetSubject());
-            _parameters = new ParameterSetTranslation(expression.Arguments, context).WithParentheses();
+            _subject = context.GetTranslationFor(methodCall.GetSubject());
+
+            _parameters = new ParameterSetTranslation(
+                new BclMethodInfoWrapper(methodCall.Method),
+                methodCall.Arguments,
+                context).WithParentheses();
+
             EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
         }
 
@@ -30,7 +37,7 @@
         {
             _subject.WriteToTranslation();
             _context.WriteToTranslation('.');
-            _context.WriteToTranslation(_expression.Method.Name);
+            _context.WriteToTranslation(_methodCall.Method.Name);
             _parameters.WriteToTranslation();
         }
     }

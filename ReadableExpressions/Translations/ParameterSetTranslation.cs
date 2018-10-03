@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using AgileObjects.ReadableExpressions.Translators;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -19,23 +21,33 @@
 
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
 #if NET35
-            : this(parameters.Cast<Expression>(), parameters.Count, context)
+            : this(null, parameters.Cast<Expression>(), parameters.Count, context)
 #else
-            : this(parameters, parameters.Count, context)
+            : this(null, parameters, parameters.Count, context)
 #endif
         {
         }
 
-        public ParameterSetTranslation(ICollection<Expression> parameters, ITranslationContext context)
-            : this(parameters, parameters.Count, context)
+        public ParameterSetTranslation(
+            IMethodInfo method,
+            ICollection<Expression> parameters,
+            ITranslationContext context)
+            : this(method, parameters, parameters.Count, context)
         {
         }
 
         private ParameterSetTranslation(
+            IMethodInfo method,
             IEnumerable<Expression> parameters,
             int parameterCount,
             ITranslationContext context)
         {
+            if (method?.IsExtensionMethod == true)
+            {
+                parameters = parameters.Skip(1);
+                --parameterCount;
+            }
+
             ParameterCount = parameterCount;
             _context = context;
 
