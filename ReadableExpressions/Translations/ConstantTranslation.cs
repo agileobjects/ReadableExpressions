@@ -1,8 +1,7 @@
-﻿using System.Text.RegularExpressions;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
     using Translators;
@@ -71,8 +70,18 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             if (TryWriteFromTypeCode(context))
             {
-
+                return;
             }
+
+            var valueType = _constant.Value.GetType();
+
+            if (valueType.IsPrimitive() || valueType.IsValueType())
+            {
+                context.WriteToTranslation(_constant.Value);
+                return;
+            }
+
+            context.WriteToTranslation(valueType.GetFriendlyName(context.Settings));
         }
 
         private bool TryWriteFromTypeCode(ITranslationContext context)
@@ -114,13 +123,17 @@ namespace AgileObjects.ReadableExpressions.Translations
                     context.WriteToTranslation('L');
                     return true;
 
+                case NetStandardTypeCode.Int32:
+                    context.WriteToTranslation((int)_constant.Value);
+                    return true;
+
                 case NetStandardTypeCode.Object:
                     if (TryWriteType(context) ||
                         TryWriteLambda(context) ||
                         TryWriteFunc(context) ||
-                        IsRegex(constant, out translation) ||
-                        TryWriteDefault<Guid>(constant, out translation) ||
-                        IsTimeSpan(constant, out translation))
+                        TryWriteRegex(context) ||
+                        TryWriteDefault<Guid>(context) ||
+                        TryWriteTimeSpan(context))
                     {
                         return true;
                     }
@@ -250,13 +263,14 @@ namespace AgileObjects.ReadableExpressions.Translations
         {
             var match = _funcMatcher.Match(_constant.Value.ToString());
 
-            if (match.Success)
+            if (match.Success == false)
             {
-                WriteFuncFrom(match.Value, context);
-                return true;
+                return false;
             }
 
-            return false;
+            WriteFuncFrom(match.Value, context);
+            return true;
+
         }
 
         #region IsFunc Helpers
@@ -321,7 +335,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                         {
                             ++parseIndex;
                         }
-                        
+
                         continue;
 
                     case '[':
@@ -336,7 +350,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                         {
                             ++parseIndex;
                         }
-                        
+
                         break;
                 }
             }
@@ -349,6 +363,123 @@ namespace AgileObjects.ReadableExpressions.Translations
         }
 
         #endregion
+
+        private bool TryWriteRegex(ITranslationContext context)
+        {
+            if (_constant.Type != typeof(Regex))
+            {
+                return false;
+            }
+
+            context.WriteToTranslation("Regex /* ");
+            context.WriteToTranslation(_constant.Value);
+            context.WriteToTranslation(" */");
+            return true;
+        }
+
+        private bool TryWriteTimeSpan(ITranslationContext context)
+        {
+            if (_constant.Type != typeof(TimeSpan))
+            {
+                return false;
+            }
+
+            if (TryWriteDefault<TimeSpan>(context))
+            {
+                return true;
+            }
+
+            var timeSpan = (TimeSpan)_constant.Value;
+
+            if (TryWriteFactoryMethodCall(timeSpan.Days, timeSpan.TotalDays, "Days", context))
+            {
+                return true;
+            }
+
+            if (TryWriteFactoryMethodCall(timeSpan.Hours, timeSpan.TotalHours, "Hours", context))
+            {
+                return true;
+            }
+
+            if (TryWriteFactoryMethodCall(timeSpan.Minutes, timeSpan.TotalMinutes, "Minutes", context))
+            {
+                return true;
+            }
+
+            if (TryWriteFactoryMethodCall(timeSpan.Seconds, timeSpan.TotalSeconds, "Seconds", context))
+            {
+                return true;
+            }
+
+            if (TryWriteFactoryMethodCall(timeSpan.Milliseconds, timeSpan.TotalMilliseconds, "Milliseconds", context))
+            {
+                return true;
+            }
+
+
+            if ((timeSpan.Days == 0) && (timeSpan.Hours == 0) && (timeSpan.Minutes == 0) && (timeSpan.Seconds == 0))
+            {
+                context.WriteToTranslation("TimeSpan.FromTicks(");
+                context.WriteToTranslation(Math.Floor(timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
+                goto EndTranslation;
+            }
+
+            context.WriteToTranslation("new TimeSpan(");
+
+            if (timeSpan.Days == 0)
+            {
+                WriteTimeSpanHoursMinutesSeconds(context, timeSpan);
+                goto EndTranslation;
+            }
+
+            context.WriteToTranslation(timeSpan.Days);
+            context.WriteToTranslation(", ");
+            WriteTimeSpanHoursMinutesSeconds(context, timeSpan);
+
+            if (timeSpan.Milliseconds != 0)
+            {
+                context.WriteToTranslation(", ");
+                context.WriteToTranslation(timeSpan.Milliseconds);
+            }
+
+            EndTranslation:
+            context.WriteToTranslation(')');
+            return true;
+        }
+
+        private static void WriteTimeSpanHoursMinutesSeconds(ITranslationContext context, TimeSpan timeSpan)
+        {
+            context.WriteToTranslation(timeSpan.Hours);
+            context.WriteToTranslation(", ");
+            context.WriteToTranslation(timeSpan.Minutes);
+            context.WriteToTranslation(", ");
+            context.WriteToTranslation(timeSpan.Seconds);
+        }
+
+        private static bool TryWriteFactoryMethodCall(
+            long value,
+            double totalValue,
+            string valueName,
+            ITranslationContext context)
+        {
+            if (value == 0)
+            {
+                return false;
+            }
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (value != totalValue)
+            {
+                return false;
+            }
+
+            context.WriteToTranslation("TimeSpan.From");
+            context.WriteToTranslation(valueName);
+            context.WriteToTranslation('(');
+            context.WriteToTranslation(value);
+            context.WriteToTranslation(')');
+            return true;
+        }
 
         private bool TryWriteDefault<T>(ITranslationContext context)
         {

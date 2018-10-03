@@ -95,7 +95,8 @@
                 case ExpressionType.Conditional:
                     break;
                 case ExpressionType.Constant:
-                    break;
+                    return new ConstantTranslation((ConstantExpression)expression, this);
+
                 case ExpressionType.Convert:
                     break;
                 case ExpressionType.ConvertChecked:
