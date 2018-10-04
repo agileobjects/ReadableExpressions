@@ -117,10 +117,13 @@ namespace AgileObjects.ReadableExpressions.Translations
                 {
                     var paramsArray = (NewArrayExpression)parameter;
 
-                    foreach (var paramsArrayValue in paramsArray.Expressions)
+                    if (paramsArray.Expressions.Count > 0)
                     {
-                        yield return paramsArrayValue;
-                        ++ParameterCount;
+                        foreach (var paramsArrayValue in paramsArray.Expressions)
+                        {
+                            yield return paramsArrayValue;
+                            ++ParameterCount;
+                        }
                     }
 
                     --ParameterCount;
