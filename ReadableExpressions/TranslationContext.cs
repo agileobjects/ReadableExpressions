@@ -450,7 +450,12 @@ namespace AgileObjects.ReadableExpressions
                 }
 
                 Visit(binary.Left);
-                Visit(binary.Conversion);
+
+                if (binary.Conversion != null)
+                {
+                    Visit(binary.Conversion.Body);
+                }
+
                 Visit(binary.Right);
             }
 
@@ -548,14 +553,6 @@ namespace AgileObjects.ReadableExpressions
             {
                 Visit(invocation.Arguments);
                 Visit(invocation.Expression);
-            }
-
-            private void Visit(LambdaExpression lambda)
-            {
-                if (lambda != null)
-                {
-                    Visit(lambda.Body);
-                }
             }
 
             private void Visit(ListInitExpression init)
