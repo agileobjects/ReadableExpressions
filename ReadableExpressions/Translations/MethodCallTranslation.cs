@@ -19,7 +19,9 @@ namespace AgileObjects.ReadableExpressions.Translations
         {
             _methodCall = methodCall;
 
-            _subject = context.GetTranslationFor(methodCall.GetSubject());
+            _subject = 
+                context.GetTranslationFor(methodCall.GetSubject()) ?? 
+                context.GetTranslationFor(methodCall.Method.DeclaringType);
 
             _parameters = new ParameterSetTranslation(
                 new BclMethodInfoWrapper(methodCall.Method),

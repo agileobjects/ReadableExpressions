@@ -96,7 +96,6 @@ namespace AgileObjects.ReadableExpressions.Translators
             Type resultType,
             TranslationContext context)
         {
-            var typeName = resultType.GetFriendlyName(context.Settings);
             var subject = context.Translate(castValue);
 
             if (castValue.NodeType == ExpressionType.Assign)
@@ -108,6 +107,8 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 return subject;
             }
+            
+            var typeName = resultType.GetFriendlyName(context.Settings);
 
             return $"(({typeName}){subject})";
         }

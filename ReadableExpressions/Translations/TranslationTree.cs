@@ -115,9 +115,9 @@
                     return new ConstantTranslation((ConstantExpression)expression, this);
 
                 case ExpressionType.Convert:
-                    break;
                 case ConvertChecked:
-                    break;
+                    return new CastTranslation((UnaryExpression)expression, this);
+
                 case DebugInfo:
                     break;
                 case Decrement:
