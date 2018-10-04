@@ -22,7 +22,7 @@
         private static ITranslation GetSubject(MemberExpression memberAccess, ITranslationContext context)
         {
             return (memberAccess.Expression != null)
-                ? context.GetTranslationFor(memberAccess)
+                ? context.GetTranslationFor(memberAccess.Expression)
                 : context.GetTranslationFor(memberAccess.Member.DeclaringType);
         }
 

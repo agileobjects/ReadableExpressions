@@ -4,8 +4,10 @@
     using System.Text;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
 
     internal class TranslationTree : ITranslationContext
@@ -64,181 +66,162 @@
 
             switch (expression.NodeType)
             {
-                case ExpressionType.Add:
+                case Add:
+                case AddChecked:
+                case And:
+                case AndAlso:
+                case Coalesce:
+                case Divide:
+                case Equal:
+                case ExclusiveOr:
+                case GreaterThan:
+                case GreaterThanOrEqual:
+                case LeftShift:
+                case LessThan:
+                case LessThanOrEqual:
+                case Modulo:
+                case Multiply:
+                case MultiplyChecked:
+                case NotEqual:
+                case Or:
+                case OrElse:
+                case Power:
+                case RightShift:
+                case Subtract:
+                case SubtractChecked:
+                    return new BinaryTranslation((BinaryExpression)expression, this);
+
+                case AddAssign:
                     break;
-                case ExpressionType.AddAssign:
+                case AddAssignChecked:
                     break;
-                case ExpressionType.AddAssignChecked:
+                case AndAssign:
                     break;
-                case ExpressionType.AddChecked:
+                case ArrayIndex:
                     break;
-                case ExpressionType.And:
-                    break;
-                case ExpressionType.AndAlso:
-                    break;
-                case ExpressionType.AndAssign:
-                    break;
-                case ExpressionType.ArrayIndex:
-                    break;
-                case ExpressionType.ArrayLength:
+                case ArrayLength:
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 
-                case ExpressionType.Assign:
+                case Assign:
                     break;
-                case ExpressionType.Block:
+                case Block:
                     break;
-                case ExpressionType.Call:
+                case Call:
                     return new MethodCallTranslation((MethodCallExpression)expression, this);
 
-                case ExpressionType.Coalesce:
+                case Conditional:
                     break;
-                case ExpressionType.Conditional:
-                    break;
-                case ExpressionType.Constant:
+                case Constant:
                     return new ConstantTranslation((ConstantExpression)expression, this);
 
                 case ExpressionType.Convert:
                     break;
-                case ExpressionType.ConvertChecked:
+                case ConvertChecked:
                     break;
-                case ExpressionType.DebugInfo:
+                case DebugInfo:
                     break;
-                case ExpressionType.Decrement:
+                case Decrement:
                     break;
-                case ExpressionType.Default:
+                case Default:
                     break;
-                case ExpressionType.Divide:
-                    break;
-                case ExpressionType.DivideAssign:
-                    break;
-                case ExpressionType.Dynamic:
-                    break;
-                case ExpressionType.Equal:
-                    break;
-                case ExpressionType.ExclusiveOr:
-                    break;
-                case ExpressionType.ExclusiveOrAssign:
-                    break;
-                case ExpressionType.Extension:
-                    break;
-                case ExpressionType.Goto:
-                    break;
-                case ExpressionType.GreaterThan:
-                    break;
-                case ExpressionType.GreaterThanOrEqual:
-                    break;
-                case ExpressionType.Increment:
-                    break;
-                case ExpressionType.Index:
-                    break;
-                case ExpressionType.Invoke:
-                    break;
-                case ExpressionType.IsFalse:
-                    break;
-                case ExpressionType.IsTrue:
-                    break;
-                case ExpressionType.Label:
-                    break;
-                case ExpressionType.Lambda:
-                    return new LambdaTranslation((LambdaExpression)expression, this);
 
-                case ExpressionType.LeftShift:
+                case DivideAssign:
                     break;
-                case ExpressionType.LeftShiftAssign:
+                case Dynamic:
                     break;
-                case ExpressionType.LessThan:
+
+                case ExclusiveOrAssign:
                     break;
-                case ExpressionType.LessThanOrEqual:
+                case Extension:
                     break;
-                case ExpressionType.ListInit:
+                case Goto:
                     break;
-                case ExpressionType.Loop:
+                case Increment:
                     break;
-                case ExpressionType.MemberAccess:
+                case Index:
+                    break;
+                case Invoke:
+                    break;
+                case IsFalse:
+                    break;
+                case IsTrue:
+                    break;
+                case Label:
+                    break;
+                case Lambda:
+                    return new LambdaTranslation((LambdaExpression)expression, this);
+                
+                case LeftShiftAssign:
+                    break;
+                case ListInit:
+                    break;
+                case Loop:
+                    break;
+                case MemberAccess:
                     return new MemberAccessTranslation((MemberExpression)expression, this);
 
-                case ExpressionType.MemberInit:
+                case MemberInit:
                     break;
-                case ExpressionType.Modulo:
+                case ModuloAssign:
                     break;
-                case ExpressionType.ModuloAssign:
+                case MultiplyAssign:
                     break;
-                case ExpressionType.Multiply:
+                case MultiplyAssignChecked:
                     break;
-                case ExpressionType.MultiplyAssign:
+                case Negate:
                     break;
-                case ExpressionType.MultiplyAssignChecked:
+                case NegateChecked:
                     break;
-                case ExpressionType.MultiplyChecked:
+                case New:
                     break;
-                case ExpressionType.Negate:
+                case NewArrayBounds:
                     break;
-                case ExpressionType.NegateChecked:
+                case NewArrayInit:
                     break;
-                case ExpressionType.New:
+                case Not:
                     break;
-                case ExpressionType.NewArrayBounds:
+                case OnesComplement:
                     break;
-                case ExpressionType.NewArrayInit:
+                case OrAssign:
                     break;
-                case ExpressionType.Not:
-                    break;
-                case ExpressionType.NotEqual:
-                    break;
-                case ExpressionType.OnesComplement:
-                    break;
-                case ExpressionType.Or:
-                    break;
-                case ExpressionType.OrAssign:
-                    break;
-                case ExpressionType.OrElse:
-                    break;
-                case ExpressionType.Parameter:
+                case Parameter:
                     return new ParameterTranslation((ParameterExpression)expression);
 
-                case ExpressionType.PostDecrementAssign:
+                case PostDecrementAssign:
                     break;
-                case ExpressionType.PostIncrementAssign:
+                case PostIncrementAssign:
                     break;
-                case ExpressionType.Power:
+                case PowerAssign:
                     break;
-                case ExpressionType.PowerAssign:
+                case PreDecrementAssign:
                     break;
-                case ExpressionType.PreDecrementAssign:
+                case PreIncrementAssign:
                     break;
-                case ExpressionType.PreIncrementAssign:
+                case Quote:
                     break;
-                case ExpressionType.Quote:
+                case RightShiftAssign:
                     break;
-                case ExpressionType.RightShift:
+                case RuntimeVariables:
                     break;
-                case ExpressionType.RightShiftAssign:
+                case SubtractAssign:
                     break;
-                case ExpressionType.RuntimeVariables:
+                case SubtractAssignChecked:
                     break;
-                case ExpressionType.Subtract:
+                case Switch:
                     break;
-                case ExpressionType.SubtractAssign:
+                case Throw:
                     break;
-                case ExpressionType.SubtractAssignChecked:
+                case Try:
                     break;
-                case ExpressionType.SubtractChecked:
+                case TypeAs:
                     break;
-                case ExpressionType.Switch:
+                case TypeEqual:
                     break;
-                case ExpressionType.Throw:
+                case TypeIs:
                     break;
-                case ExpressionType.Try:
+                case UnaryPlus:
                     break;
-                case ExpressionType.TypeAs:
-                    break;
-                case ExpressionType.TypeEqual:
-                    break;
-                case ExpressionType.TypeIs:
-                    break;
-                case ExpressionType.UnaryPlus:
-                    break;
-                case ExpressionType.Unbox:
+                case Unbox:
                     break;
             }
 
