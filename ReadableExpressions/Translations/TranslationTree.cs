@@ -33,7 +33,7 @@
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
-        public ITranslation GetTranslationFor(Type type) => new TypeNameTranslation(type);
+        ITranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type);
 
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
@@ -133,19 +133,28 @@
                     return new BinaryTranslation((BinaryExpression)expression, this);
 
                 case AddAssign:
-                    break;
                 case AddAssignChecked:
-                    break;
                 case AndAssign:
-                    break;
+                case Assign:
+                case DivideAssign:
+                case ExclusiveOrAssign:
+                case LeftShiftAssign:
+                case ModuloAssign:
+                case MultiplyAssign:
+                case MultiplyAssignChecked:
+                case OrAssign:
+                case PowerAssign:
+                case RightShiftAssign:
+                case SubtractAssign:
+                case SubtractAssignChecked:
+                    return new AssignmentTranslation((BinaryExpression)expression, this);
+
                 case ArrayIndex:
                     return new IndexAccessTranslation((BinaryExpression)expression, this);
 
                 case ArrayLength:
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 
-                case Assign:
-                    break;
                 case Block:
                     break;
                 case Call:
@@ -166,13 +175,7 @@
                     break;
                 case Default:
                     break;
-
-                case DivideAssign:
-                    break;
                 case Dynamic:
-                    break;
-
-                case ExclusiveOrAssign:
                     break;
                 case Extension:
                     break;
@@ -194,8 +197,6 @@
                 case Lambda:
                     return new LambdaTranslation((LambdaExpression)expression, this);
 
-                case LeftShiftAssign:
-                    break;
                 case ListInit:
                     return new InitialisationTranslation((ListInitExpression)expression, this);
 
@@ -205,12 +206,6 @@
                     return new MemberAccessTranslation((MemberExpression)expression, this);
 
                 case MemberInit:
-                    break;
-                case ModuloAssign:
-                    break;
-                case MultiplyAssign:
-                    break;
-                case MultiplyAssignChecked:
                     break;
 
                 case Negate:
@@ -228,8 +223,6 @@
 
                 case OnesComplement:
                     break;
-                case OrAssign:
-                    break;
                 case Parameter:
                     return new ParameterTranslation((ParameterExpression)expression);
 
@@ -237,21 +230,13 @@
                     break;
                 case PostIncrementAssign:
                     break;
-                case PowerAssign:
-                    break;
                 case PreDecrementAssign:
                     break;
                 case PreIncrementAssign:
                     break;
                 case Quote:
                     break;
-                case RightShiftAssign:
-                    break;
                 case RuntimeVariables:
-                    break;
-                case SubtractAssign:
-                    break;
-                case SubtractAssignChecked:
                     break;
                 case Switch:
                     break;

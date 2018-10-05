@@ -15,29 +15,29 @@
         private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
             new Dictionary<ExpressionType, string>(23)
             {
-                [Add] = "+",
-                [AddChecked] = "+",
-                [And] = "&",
-                [AndAlso] = "&&",
-                [Coalesce] = "??",
-                [Divide] = "/",
-                [Equal] = "==",
-                [ExclusiveOr] = "^",
-                [GreaterThan] = ">",
-                [GreaterThanOrEqual] = ">=",
-                [LeftShift] = "<<",
-                [LessThan] = "<",
-                [LessThanOrEqual] = "<=",
-                [Modulo] = "%",
-                [Multiply] = "*",
-                [MultiplyChecked] = "*",
-                [NotEqual] = "!=",
-                [Or] = "|",
-                [OrElse] = "||",
-                [Power] = "**",
-                [RightShift] = ">>",
-                [Subtract] = "-",
-                [SubtractChecked] = "-"
+                [Add] = " + ",
+                [AddChecked] = " + ",
+                [And] = " & ",
+                [AndAlso] = " && ",
+                [Coalesce] = " ?? ",
+                [Divide] = " / ",
+                [Equal] = " == ",
+                [ExclusiveOr] = " ^ ",
+                [GreaterThan] = " > ",
+                [GreaterThanOrEqual] = " >= ",
+                [LeftShift] = " << ",
+                [LessThan] = " < ",
+                [LessThanOrEqual] = " <= ",
+                [Modulo] = " % ",
+                [Multiply] = " * ",
+                [MultiplyChecked] = " * ",
+                [NotEqual] = " != ",
+                [Or] = " | ",
+                [OrElse] = " || ",
+                [Power] = " ** ",
+                [RightShift] = " >> ",
+                [Subtract] = " - ",
+                [SubtractChecked] = " - "
             };
 
         private readonly ITranslation _leftOperandTranslation;
@@ -80,7 +80,7 @@
         private int GetEstimatedSize()
         {
             return _leftOperandTranslation.EstimatedSize +
-                   _operator.Length + 2 +
+                   _operator.Length +
                    _rightOperandTranslation.EstimatedSize;
         }
 
@@ -100,9 +100,7 @@
         private void WriteBinary(ITranslationContext context)
         {
             _leftOperandTranslation.WriteTo(context);
-            context.WriteToTranslation(' ');
             context.WriteToTranslation(_operator);
-            context.WriteToTranslation(' ');
             _rightOperandTranslation.WriteTo(context);
         }
 

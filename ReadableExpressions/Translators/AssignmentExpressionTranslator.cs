@@ -2,13 +2,10 @@ namespace AgileObjects.ReadableExpressions.Translators
 {
     using System;
     using System.Collections.Generic;
-#if !NET35
-    using System.Linq.Expressions;
+#if NET35
+    using Microsoft.Scripting.Ast;
 #else
-    using BinaryExpression = Microsoft.Scripting.Ast.BinaryExpression;
-    using DefaultExpression = Microsoft.Scripting.Ast.DefaultExpression;
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using System.Linq.Expressions;
 #endif
     using Extensions;
 

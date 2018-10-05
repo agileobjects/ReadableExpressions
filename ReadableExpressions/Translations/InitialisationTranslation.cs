@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
+    using System.Linq;
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -10,17 +12,48 @@
     internal class InitialisationTranslation : ITranslation
     {
         private readonly NewingTranslation _newingTranslation;
-        private readonly IList<ElementInit> _initializers;
+        private readonly IList<ITranslation[]> _initializerTranslations;
 
         public InitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
         {
             _newingTranslation = new NewingTranslation(listInit.NewExpression, context);
-            _initializers = listInit.Initializers;
 
-            if (_initializers.Count != 0)
+            if (listInit.Initializers.Count == 0)
             {
-                _newingTranslation = _newingTranslation.WithoutParenthesesIfParameterless();
+                EstimatedSize = _newingTranslation.EstimatedSize;
+                return;
             }
+
+            _newingTranslation = _newingTranslation.WithoutParenthesesIfParameterless();
+
+            var estimatedSize = _newingTranslation.EstimatedSize;
+
+            _initializerTranslations = listInit.Initializers
+                .Project(init =>
+                {
+                    if (init.Arguments.Count == 1)
+                    {
+                        var singleArgumentTranslation = context.GetTranslationFor(init.Arguments[0]);
+                        estimatedSize += singleArgumentTranslation.EstimatedSize;
+
+                        return new[] { singleArgumentTranslation };
+                    }
+
+                    return init
+                        .Arguments
+                        .Project(arg =>
+                        {
+                            var argumentTranslation = context.GetTranslationFor(arg);
+
+                            estimatedSize += argumentTranslation.EstimatedSize;
+
+                            return argumentTranslation;
+                        })
+                        .ToArray();
+                })
+                .ToArray();
+
+            EstimatedSize = estimatedSize;
         }
 
         public int EstimatedSize { get; }
@@ -29,7 +62,7 @@
         {
             _newingTranslation.WriteTo(context);
 
-            if (_initializers.Count == 0)
+            if (_initializerTranslations.Count == 0)
             {
                 return;
             }
@@ -39,9 +72,9 @@
             context.WriteNewLineToTranslation();
             context.Indent();
 
-            foreach (var initializer in _initializers)
+            foreach (var initializerTranslationSet in _initializerTranslations)
             {
-                var numberOfArguments = initializer.Arguments.Count;
+                var numberOfArguments = initializerTranslationSet.Length;
                 var hasMultipleArguments = numberOfArguments != 0;
 
                 if (hasMultipleArguments)
@@ -51,7 +84,7 @@
 
                 for (var i = 0; ; ++i)
                 {
-                    context.GetTranslationFor(initializer.Arguments[i]).WriteTo(context);
+                    initializerTranslationSet[i].WriteTo(context);
 
                     if (i == (numberOfArguments - 1))
                     {
@@ -65,10 +98,10 @@
                 {
                     context.WriteToTranslation(" }");
                 }
-            
+
                 context.WriteNewLineToTranslation();
             }
-            
+
             context.Unindent();
             context.WriteToTranslation('}');
         }
