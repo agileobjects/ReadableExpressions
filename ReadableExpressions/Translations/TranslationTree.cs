@@ -139,7 +139,8 @@
                 case Increment:
                     break;
                 case Index:
-                    break;
+                    return new IndexAccessTranslation((IndexExpression)expression, this);
+
                 case Invoke:
                     break;
                 case IsFalse:

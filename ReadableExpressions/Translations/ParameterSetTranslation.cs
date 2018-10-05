@@ -29,6 +29,11 @@ namespace AgileObjects.ReadableExpressions.Translations
         {
         }
 
+        public ParameterSetTranslation(ICollection<Expression> parameters, ITranslationContext context)
+            : this(null, parameters, parameters.Count, context)
+        {
+        }
+
         public ParameterSetTranslation(
             IMethodInfo method,
             ICollection<Expression> parameters,
