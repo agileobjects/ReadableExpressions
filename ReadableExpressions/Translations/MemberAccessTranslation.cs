@@ -14,24 +14,54 @@
         public MemberAccessTranslation(MemberExpression memberAccess, ITranslationContext context)
         {
             _memberAccess = memberAccess;
-            _subject = GetSubject(memberAccess, context);
-
-            EstimatedSize = _subject.EstimatedSize + ".".Length + _memberAccess.Member.Name.Length;
+            _subject = GetSubjectOrNull(context);
+            EstimatedSize = GetEstimatedSize();
         }
 
-        private static ITranslation GetSubject(MemberExpression memberAccess, ITranslationContext context)
+        private ITranslation GetSubjectOrNull(ITranslationContext context)
         {
-            return (memberAccess.Expression != null)
-                ? context.GetTranslationFor(memberAccess.Expression)
-                : context.GetTranslationFor(memberAccess.Member.DeclaringType);
+            if (_memberAccess.Expression == null)
+            {
+                return context.GetTranslationFor(_memberAccess.Member.DeclaringType);
+            }
+
+            if (SubjectIsCapturedInstance())
+            {
+                return null;
+            }
+
+            return context.GetTranslationFor(_memberAccess.Expression);
+        }
+
+        private bool SubjectIsCapturedInstance()
+        {
+            if (_memberAccess.Expression.NodeType != ExpressionType.Constant)
+            {
+                return false;
+            }
+
+            var subjectType = ((ConstantExpression)_memberAccess.Expression).Type;
+
+            return subjectType == _memberAccess.Member.DeclaringType;
+        }
+
+        private int GetEstimatedSize()
+        {
+            return (_subject != null)
+                ? _subject.EstimatedSize + ".".Length + _memberAccess.Member.Name.Length
+                : _memberAccess.Member.Name.Length;
         }
 
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)
         {
-            _subject.WriteTo(context);
-            context.WriteToTranslation('.');
+            if (_subject != null)
+            {
+                _subject.WriteTo(context);
+                context.WriteToTranslation('.');
+            }
+
             context.WriteToTranslation(_memberAccess.Member.Name);
         }
     }

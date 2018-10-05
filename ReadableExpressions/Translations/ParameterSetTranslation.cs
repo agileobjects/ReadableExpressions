@@ -149,6 +149,11 @@
         {
             var translation = context.GetTranslationFor(parameter);
 
+            if (info.IsOut)
+            {
+                return new OutParameterTranslation(translation);
+            }
+
             return translation;
         }
 
@@ -211,6 +216,26 @@
             Auto,
             With,
             Without
+        }
+
+        private class OutParameterTranslation : ITranslation
+        {
+            private const string _out = "out ";
+            private readonly ITranslation _parameterTranslation;
+
+            public OutParameterTranslation(ITranslation parameterTranslation)
+            {
+                _parameterTranslation = parameterTranslation;
+                EstimatedSize = _out.Length + parameterTranslation.EstimatedSize;
+            }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation(_out);
+                _parameterTranslation.WriteTo(context);
+            }
         }
     }
 }
