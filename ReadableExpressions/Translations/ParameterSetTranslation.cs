@@ -151,7 +151,12 @@
 
             if (info.IsOut)
             {
-                return new OutParameterTranslation(translation);
+                return new PrefixedParameterTranslation("out ", translation);
+            }
+
+            if (info.ParameterType.IsByRef)
+            {
+                return new PrefixedParameterTranslation("ref ", translation);
             }
 
             return translation;
@@ -218,22 +223,23 @@
             Without
         }
 
-        private class OutParameterTranslation : ITranslation
+        private class PrefixedParameterTranslation : ITranslation
         {
-            private const string _out = "out ";
             private readonly ITranslation _parameterTranslation;
+            private readonly string _prefix;
 
-            public OutParameterTranslation(ITranslation parameterTranslation)
+            public PrefixedParameterTranslation(string prefix, ITranslation parameterTranslation)
             {
+                _prefix = prefix;
                 _parameterTranslation = parameterTranslation;
-                EstimatedSize = _out.Length + parameterTranslation.EstimatedSize;
+                EstimatedSize = prefix.Length + parameterTranslation.EstimatedSize;
             }
 
             public int EstimatedSize { get; }
 
             public void WriteTo(ITranslationContext context)
             {
-                context.WriteToTranslation(_out);
+                context.WriteToTranslation(_prefix);
                 _parameterTranslation.WriteTo(context);
             }
         }

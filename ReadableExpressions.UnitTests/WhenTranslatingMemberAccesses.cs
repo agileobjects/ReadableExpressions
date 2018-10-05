@@ -322,7 +322,7 @@
             var helper = new CapturedInstanceHelper(5);
             var translated = helper.GetComparisonTranslation(3);
 
-            translated.ShouldBe("(_i == comparator)");
+            translated.ShouldBe("_i == comparator");
         }
 
         [Fact]
