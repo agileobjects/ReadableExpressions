@@ -13,7 +13,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 #endif
     using static System.Environment;
 
-    internal static class InternalStringExtensionstensionstensions
+    internal static class InternalStringExtensions
     {
         private static readonly char[] _terminatingCharacters = { ';', ':', ',' };
 

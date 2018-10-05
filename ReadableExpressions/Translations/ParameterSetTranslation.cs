@@ -166,6 +166,8 @@
 
         private int ParameterCount { get; set; }
 
+        public bool None => ParameterCount == 0;
+
         public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];
 
         public ParameterSetTranslation WithParentheses()

@@ -16,6 +16,12 @@
         ITranslation GetTranslationFor(Type type);
 
         ITranslation GetTranslationFor(Expression expression);
+        
+        void Indent();
+        
+        void Unindent();
+        
+        void WriteNewLineToTranslation();
 
         void WriteToTranslation(char character);
 
@@ -24,15 +30,5 @@
         void WriteToTranslation(int intValue);
 
         void WriteToTranslation(object value);
-    }
-
-    internal static class TranslationExtensions
-    {
-        public static void WriteInParentheses(this ITranslation translation, ITranslationContext context)
-        {
-            context.WriteToTranslation('(');
-            translation.WriteTo(context);
-            context.WriteToTranslation(')');
-        }
     }
 }

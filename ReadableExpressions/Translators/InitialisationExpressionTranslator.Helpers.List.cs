@@ -1,13 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translators
 {
     using System.Collections.Generic;
-    using System.Linq;
     using Extensions;
-#if !NET35
-    using System.Linq.Expressions;
+#if NET35
+    using Microsoft.Scripting.Ast;
 #else
-    using ListInitExpression = Microsoft.Scripting.Ast.ListInitExpression;
-    using NewExpression = Microsoft.Scripting.Ast.NewExpression;
+    using System.Linq.Expressions;
 #endif
 
     internal partial struct InitialisationExpressionTranslator

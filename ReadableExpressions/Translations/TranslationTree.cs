@@ -9,12 +9,15 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Constants;
 
     internal class TranslationTree : ITranslationContext
     {
         private readonly TranslationContext _context;
         private readonly ITranslation _root;
         private readonly StringBuilder _content;
+        private int _currentIndent;
+        private bool _writeIndent;
 
         public TranslationTree(Expression expression, TranslationContext context)
         {
@@ -35,24 +38,62 @@
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
 
+        void ITranslationContext.Indent()
+        {
+            _currentIndent += Indent.Length;
+
+            if (_writeIndent == false)
+            {
+                _writeIndent = true;
+            }
+        }
+
+        void ITranslationContext.Unindent()
+        {
+            _currentIndent -= Indent.Length;
+        }
+
+        void ITranslationContext.WriteNewLineToTranslation()
+        {
+            _content.Append(Environment.NewLine);
+
+            if (_currentIndent != 0)
+            {
+                _writeIndent = true;
+            }
+        }
+
         void ITranslationContext.WriteToTranslation(char character)
         {
+            WriteIndentIfRequired();
             _content.Append(character);
         }
 
         void ITranslationContext.WriteToTranslation(string stringValue)
         {
+            WriteIndentIfRequired();
             _content.Append(stringValue);
         }
 
         void ITranslationContext.WriteToTranslation(int intValue)
         {
+            WriteIndentIfRequired();
             _content.Append(intValue);
         }
 
         void ITranslationContext.WriteToTranslation(object value)
         {
+            WriteIndentIfRequired();
             _content.Append(value);
+        }
+
+        private void WriteIndentIfRequired()
+        {
+            if (_writeIndent)
+            {
+                _content.Append(' ', _currentIndent);
+                _writeIndent = false;
+            }
         }
 
         #endregion
@@ -156,7 +197,8 @@
                 case LeftShiftAssign:
                     break;
                 case ListInit:
-                    break;
+                    return new InitialisationTranslation((ListInitExpression)expression, this);
+
                 case Loop:
                     break;
                 case MemberAccess:

@@ -15,6 +15,7 @@
         private readonly ParameterSetTranslation _parameters;
         private readonly ParameterInfo[] _ctorParameters;
         private readonly ITranslation _typeNameTranslation;
+        private bool _omitParenthesesIfParameterless;
 
         public NewingTranslation(NewExpression newing, ITranslationContext context)
         {
@@ -49,6 +50,12 @@
 
         public int EstimatedSize { get; }
 
+        public NewingTranslation WithoutParenthesesIfParameterless()
+        {
+            _omitParenthesesIfParameterless = true;
+            return this;
+        }
+
         public void WriteTo(ITranslationContext context)
         {
             if (_isAnonymousType)
@@ -59,6 +66,12 @@
 
             context.WriteToTranslation("new ");
             _typeNameTranslation.WriteTo(context);
+
+            if (_omitParenthesesIfParameterless && _parameters.None)
+            {
+                return;
+            }
+
             _parameters.WithParentheses().WriteTo(context);
         }
 
