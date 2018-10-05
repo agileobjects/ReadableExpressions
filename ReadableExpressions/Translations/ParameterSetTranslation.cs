@@ -113,7 +113,9 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             foreach (var parameter in parameters)
             {
-                if (methodParameters[i].IsParamsArray())
+                // params arrays are always the last parameter:
+                if ((i == (methodParameters.Count - 1)) &&
+                     methodParameters[i].IsParamsArray())
                 {
                     var paramsArray = (NewArrayExpression)parameter;
 
