@@ -1,6 +1,4 @@
-﻿using AgileObjects.ReadableExpressions.Translators;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -12,6 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translations
 #endif
     using Extensions;
     using NetStandardPolyfills;
+    using Translators;
 
     internal class ParameterSetTranslation : ITranslation
     {
@@ -48,6 +47,8 @@ namespace AgileObjects.ReadableExpressions.Translations
             int parameterCount,
             ITranslationContext context)
         {
+            _parenthesesMode = ParenthesesMode.Auto;
+
             if (parameterCount == 0)
             {
                 _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
@@ -154,6 +155,8 @@ namespace AgileObjects.ReadableExpressions.Translations
         public int EstimatedSize { get; }
 
         private int ParameterCount { get; set; }
+
+        public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];
 
         public ParameterSetTranslation WithParentheses()
         {

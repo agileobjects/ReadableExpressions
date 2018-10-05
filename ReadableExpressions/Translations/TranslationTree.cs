@@ -152,7 +152,7 @@
                     break;
                 case Lambda:
                     return new LambdaTranslation((LambdaExpression)expression, this);
-                
+
                 case LeftShiftAssign:
                     break;
                 case ListInit:
@@ -175,7 +175,8 @@
                 case NegateChecked:
                     break;
                 case New:
-                    break;
+                    return new NewingTranslation((NewExpression)expression, this);
+
                 case NewArrayBounds:
                     break;
                 case NewArrayInit:
