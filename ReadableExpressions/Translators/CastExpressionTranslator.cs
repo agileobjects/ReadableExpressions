@@ -77,7 +77,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return MethodCallExpressionTranslator.GetMethodCall(
                 cast.Method.DeclaringType.GetFriendlyName(context.Settings),
-                new BclMethodInfoWrapper(cast.Method),
+                new BclMethodWrapper(cast.Method),
                 new[] { cast.Operand },
                 cast,
                 context);

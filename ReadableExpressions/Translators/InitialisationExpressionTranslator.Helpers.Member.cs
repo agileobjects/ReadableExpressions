@@ -69,7 +69,7 @@
                     .Initializers
                     .Project(init => IsStandardAddMethod(init)
                         ? context.TranslateAsCodeBlock(init.Arguments.First())
-                        : MethodCallExpressionTranslator.GetMethodCall(new BclMethodInfoWrapper(init.AddMethod), init.Arguments, context))
+                        : MethodCallExpressionTranslator.GetMethodCall(new BclMethodWrapper(init.AddMethod), init.Arguments, context))
                     .ToArray();
 
                 return GetInitialisation(listBinding.Member.Name + " =", listInitialisers);

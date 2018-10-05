@@ -27,7 +27,7 @@
         private readonly Func<Expression, string>[] _argumentTranslators;
 
         public ParameterSet(
-            IMethodInfo method,
+            IMethod method,
             IEnumerable<Expression> arguments,
             TranslationContext context)
         {
@@ -41,7 +41,7 @@
                 TranslateArgumentAsCodeBlock);
         }
 
-        private static Func<string, string>[] GetParameterModifers(IMethodInfo method)
+        private static Func<string, string>[] GetParameterModifers(IMethod method)
         {
             if (method == null)
             {
@@ -96,7 +96,7 @@
         }
 
         private Func<Expression, string>[] GetArgumentTranslators(
-            IMethodInfo method,
+            IMethod method,
             IEnumerable<Expression> arguments,
             Func<Expression, string> defaultArgumentTranslator)
         {
@@ -130,7 +130,7 @@
                 .ToArray();
         }
 
-        private static bool IsNotFuncType(ParameterInfo parameter, IMethodInfo method)
+        private static bool IsNotFuncType(ParameterInfo parameter, IMethod method)
         {
             if (parameter == null)
             {

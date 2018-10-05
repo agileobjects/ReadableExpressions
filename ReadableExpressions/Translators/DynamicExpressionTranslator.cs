@@ -172,7 +172,7 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return true;
             }
 
-            private static IMethodInfo GetMethodInfo(
+            private static IMethod GetMethodInfo(
                 string methodName,
                 MethodInfo method,
                 Expression[] methodArguments,
@@ -180,10 +180,10 @@ namespace AgileObjects.ReadableExpressions.Translators
             {
                 if (method == null)
                 {
-                    return new MissingMethodInfo(methodName);
+                    return new MissingMethod(methodName);
                 }
 
-                return new BclMethodInfoWrapper(
+                return new BclMethodWrapper(
                     method,
                     GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
             }
@@ -239,9 +239,9 @@ namespace AgileObjects.ReadableExpressions.Translators
                 return genericArguments;
             }
 
-            private class MissingMethodInfo : IMethodInfo
+            private class MissingMethod : IMethod
             {
-                public MissingMethodInfo(string name)
+                public MissingMethod(string name)
                 {
                     Name = name;
                 }

@@ -5,13 +5,13 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System.Reflection;
     using NetStandardPolyfills;
 
-    internal class BclMethodInfoWrapper : IMethodInfo
+    internal class BclMethodWrapper : IMethod
     {
         private readonly MethodInfo _method;
         private Type[] _genericArguments;
 
         [DebuggerStepThrough]
-        public BclMethodInfoWrapper(MethodInfo method, Type[] genericArguments = null)
+        public BclMethodWrapper(MethodInfo method, Type[] genericArguments = null)
         {
             _method = method;
             _genericArguments = genericArguments;

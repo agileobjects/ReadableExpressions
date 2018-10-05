@@ -3,7 +3,7 @@ namespace AgileObjects.ReadableExpressions.Translators
     using System;
     using System.Reflection;
 
-    internal interface IMethodInfo
+    internal interface IMethod
     {
         string Name { get; }
 

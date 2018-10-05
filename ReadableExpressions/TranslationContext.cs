@@ -116,7 +116,7 @@ namespace AgileObjects.ReadableExpressions
 #if NET35
         internal ParameterSet TranslateParameters<TExpression>(
             ReadOnlyCollection<TExpression> parameters,
-            IMethodInfo method = null)
+            IMethod method = null)
             where TExpression : Expression
         {
             return new ParameterSet(method, parameters.Cast<Expression>().ToArray(), this);
@@ -124,7 +124,7 @@ namespace AgileObjects.ReadableExpressions
 #endif
         internal ParameterSet TranslateParameters(
             IEnumerable<Expression> parameters,
-            IMethodInfo method = null)
+            IMethod method = null)
         {
             return new ParameterSet(method, parameters, this);
         }

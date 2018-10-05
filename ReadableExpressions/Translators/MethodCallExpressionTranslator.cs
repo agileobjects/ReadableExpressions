@@ -104,7 +104,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         {
             return GetMethodCall(
                 subject,
-                new BclMethodInfoWrapper(method),
+                new BclMethodWrapper(method),
                 arguments,
                 originalMethodCall,
                 context);
@@ -112,7 +112,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
         internal static string GetMethodCall(
             string subject,
-            IMethodInfo method,
+            IMethod method,
             IEnumerable<Expression> arguments,
             Expression originalMethodCall,
             TranslationContext context)
@@ -125,7 +125,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         }
 
         internal static string GetMethodCall(
-            IMethodInfo method,
+            IMethod method,
             IEnumerable<Expression> arguments,
             TranslationContext context)
         {
@@ -135,7 +135,7 @@ namespace AgileObjects.ReadableExpressions.Translators
             return method.Name + genericArguments + parametersString;
         }
 
-        private static string GetGenericArgumentsIfNecessary(IMethodInfo method, TranslationContext context)
+        private static string GetGenericArgumentsIfNecessary(IMethod method, TranslationContext context)
         {
             if (!method.IsGenericMethod)
             {

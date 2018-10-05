@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         }
 
         public ParameterSetTranslation(
-            IMethodInfo method,
+            IMethod method,
             ICollection<Expression> parameters,
             ITranslationContext context)
             : this(method, parameters, parameters.Count, context)
@@ -43,7 +43,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         }
 
         private ParameterSetTranslation(
-            IMethodInfo method,
+            IMethod method,
             IEnumerable<Expression> parameters,
             int parameterCount,
             ITranslationContext context)
