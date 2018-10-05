@@ -142,7 +142,7 @@
             }
         }
 
-        private ITranslation GetParameterTranslation(
+        private static ITranslation GetParameterTranslation(
             Expression parameter,
             ParameterInfo info,
             ITranslationContext context)

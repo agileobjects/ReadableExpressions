@@ -170,10 +170,12 @@
                     break;
                 case MultiplyAssignChecked:
                     break;
+
                 case Negate:
-                    break;
                 case NegateChecked:
-                    break;
+                case Not:
+                    return new NegationTranslation((UnaryExpression)expression, this);
+
                 case New:
                     return new NewingTranslation((NewExpression)expression, this);
 
@@ -181,8 +183,7 @@
                     break;
                 case NewArrayInit:
                     break;
-                case Not:
-                    break;
+
                 case OnesComplement:
                     break;
                 case OrAssign:
