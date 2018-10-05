@@ -98,7 +98,8 @@
                 case AndAssign:
                     break;
                 case ArrayIndex:
-                    break;
+                    return new IndexAccessTranslation((BinaryExpression)expression, this);
+
                 case ArrayLength:
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 

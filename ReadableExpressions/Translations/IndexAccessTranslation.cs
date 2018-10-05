@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,17 +12,30 @@
         private readonly ITranslation _subject;
         private readonly ParameterSetTranslation _parameters;
 
-        public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
-        {
-            _subject = context.GetTranslationFor(indexAccess.Object);
-            _parameters = new ParameterSetTranslation(indexAccess.Arguments, context);
-            EstimatedSize = GetEstimatedSize();
-        }
-
         public IndexAccessTranslation(ITranslation subject, ParameterSetTranslation parameters)
         {
             _subject = subject;
             _parameters = parameters;
+            EstimatedSize = GetEstimatedSize();
+        }
+
+        public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
+            : this(indexAccess.Object, indexAccess.Arguments, context)
+        {
+        }
+
+        public IndexAccessTranslation(BinaryExpression arrayIndexAccess, ITranslationContext context)
+            : this(arrayIndexAccess.Left, new[] { arrayIndexAccess.Right }, context)
+        {
+        }
+
+        private IndexAccessTranslation(
+            Expression subject,
+            ICollection<Expression> arguments,
+            ITranslationContext context)
+        {
+            _subject = context.GetTranslationFor(subject);
+            _parameters = new ParameterSetTranslation(arguments, context);
             EstimatedSize = GetEstimatedSize();
         }
 
