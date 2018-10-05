@@ -18,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         private const string _openAndCloseParentheses = "()";
 
         private readonly IList<ITranslation> _parameterTranslations;
-        private bool _forceParentheses;
+        private ParenthesesMode _parenthesesMode;
 
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
 #if NET35
@@ -43,6 +43,13 @@ namespace AgileObjects.ReadableExpressions.Translations
             int parameterCount,
             ITranslationContext context)
         {
+            if (parameterCount == 0)
+            {
+                _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
+                EstimatedSize = _openAndCloseParentheses.Length;
+                return;
+            }
+
             var methodProvided = method != null;
 
             if (methodProvided && method.IsExtensionMethod)
@@ -52,13 +59,6 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
 
             ParameterCount = parameterCount;
-
-            if (parameterCount == 0)
-            {
-                _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
-                EstimatedSize = _openAndCloseParentheses.Length;
-                return;
-            }
 
             ParameterInfo[] methodParameters;
 
@@ -100,7 +100,6 @@ namespace AgileObjects.ReadableExpressions.Translations
                     return translation;
                 })
                 .ToArray();
-
 
             EstimatedSize = estimatedSize + (ParameterCount * 2) + 4;
         }
@@ -153,7 +152,13 @@ namespace AgileObjects.ReadableExpressions.Translations
 
         public ParameterSetTranslation WithParentheses()
         {
-            _forceParentheses = true;
+            _parenthesesMode = ParenthesesMode.With;
+            return this;
+        }
+
+        public ParameterSetTranslation WithoutParentheses()
+        {
+            _parenthesesMode = ParenthesesMode.Without;
             return this;
         }
 
@@ -165,12 +170,15 @@ namespace AgileObjects.ReadableExpressions.Translations
                     context.WriteToTranslation(_openAndCloseParentheses);
                     return;
 
-                case 1 when (_forceParentheses == false):
+                case 1 when (_parenthesesMode != ParenthesesMode.With):
                     _parameterTranslations[0].WriteTo(context);
                     return;
             }
 
-            context.WriteToTranslation('(');
+            if (_parenthesesMode != ParenthesesMode.Without)
+            {
+                context.WriteToTranslation('(');
+            }
 
             for (var i = 0; ; ++i)
             {
@@ -184,7 +192,17 @@ namespace AgileObjects.ReadableExpressions.Translations
                 context.WriteToTranslation(", ");
             }
 
-            context.WriteToTranslation(')');
+            if (_parenthesesMode != ParenthesesMode.Without)
+            {
+                context.WriteToTranslation(')');
+            }
+        }
+
+        private enum ParenthesesMode
+        {
+            Auto,
+            With,
+            Without
         }
     }
 }
