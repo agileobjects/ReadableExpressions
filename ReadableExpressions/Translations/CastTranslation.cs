@@ -13,9 +13,10 @@
     internal class CastTranslation : ITranslation
     {
         private readonly UnaryExpression _cast;
-        private readonly bool _isImplicitOperator;
-        private readonly bool _isAssignmentResultCast;
         private readonly bool _isBoxing;
+        private readonly bool _isImplicitOperator;
+        private readonly bool _isOperator;
+        private readonly bool _isAssignmentResultCast;
         private readonly ITranslation _castTypeNameTranslation;
         private readonly ITranslation _castValueTranslation;
         private readonly Action<ITranslationContext> _translationWriter;
@@ -24,7 +25,6 @@
         {
             _cast = cast;
             _castValueTranslation = context.GetTranslationFor(cast.Operand);
-            _isImplicitOperator = cast.Method?.IsImplicitOperator() == true;
             _isAssignmentResultCast = cast.Operand.NodeType == Assign;
             var estimatedSizeFactory = default(Func<int>);
 
@@ -33,6 +33,13 @@
                 case ExpressionType.Convert:
                 case ConvertChecked:
                     _isBoxing = cast.Type == typeof(object);
+
+                    if (cast.Method != null)
+                    {
+                        _isImplicitOperator = cast.Method.IsImplicitOperator();
+                        _isOperator = _isImplicitOperator || cast.Method.IsExplicitOperator();
+                    }
+
                     estimatedSizeFactory = EstimateCastSize;
                     _translationWriter = WriteCast;
                     break;
@@ -89,16 +96,14 @@
 
         private void WriteCastCore(ITranslationContext context)
         {
-            if (_isImplicitOperator)
+            if (_isOperator == false)
             {
-                goto WriteCastValue;
+                context.WriteToTranslation('(');
             }
-
-            context.WriteToTranslation('(');
-
-            _castTypeNameTranslation.WriteInParentheses(context);
-
-            WriteCastValue:
+            else if (_isImplicitOperator == false)
+            {
+                _castTypeNameTranslation.WriteInParentheses(context);
+            }
 
             if (_cast.NodeType == Assign)
             {
@@ -109,7 +114,7 @@
                 _castValueTranslation.WriteTo(context);
             }
 
-            if (_isImplicitOperator == false)
+            if (_isOperator == false)
             {
                 context.WriteToTranslation(')');
             }
