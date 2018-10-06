@@ -40,6 +40,13 @@
             }
 
             _parameters = _parameters.WithParentheses();
+
+            if (methodCall.Method.IsImplicitOperator())
+            {
+                _translationWriter = WriteImplicitOperatorCall;
+                return;
+            }
+            
             _translationWriter = WriteMethodCall;
         }
 
@@ -59,6 +66,11 @@
         private void WriteIndexAccess(ITranslationContext context)
         {
             new IndexAccessTranslation(_subject, _parameters).WriteTo(context);
+        }
+
+        private void WriteImplicitOperatorCall(ITranslationContext context)
+        {
+            _parameters[0].WriteTo(context);
         }
 
         private void WriteMethodCall(ITranslationContext context)
