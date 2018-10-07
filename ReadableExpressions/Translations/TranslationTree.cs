@@ -173,8 +173,11 @@
                     break;
                 case Decrement:
                     break;
+
                 case Default:
-                    break;
+                    return new DefaultValueTranslation(expression, this);
+
+
                 case Dynamic:
                     break;
                 case Extension:
