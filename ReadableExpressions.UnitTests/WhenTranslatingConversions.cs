@@ -74,7 +74,7 @@
 
             var translated = ToReadableString(streamAsDisposable.Body);
 
-            translated.ShouldBe("(stream as IDisposable)");
+            translated.ShouldBe("stream as IDisposable");
         }
 
         [Fact]

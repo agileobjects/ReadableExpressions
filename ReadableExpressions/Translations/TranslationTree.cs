@@ -167,6 +167,7 @@
 
                 case ExpressionType.Convert:
                 case ConvertChecked:
+                case TypeAs:
                 case Unbox:
                     return new CastTranslation((UnaryExpression)expression, this);
 
@@ -246,8 +247,6 @@
                 case Throw:
                     break;
                 case Try:
-                    break;
-                case TypeAs:
                     break;
                 case TypeEqual:
                     break;

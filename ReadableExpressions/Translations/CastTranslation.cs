@@ -45,6 +45,10 @@
 
                 case TypeAs:
                 case TypeIs:
+                    _translationWriter = WriteTypeAsCast;
+                    estimatedSizeFactory = EstimateTypeCastSize;
+                    break;
+
                 case Unbox:
                     _translationWriter = WriteCastCore;
                     estimatedSizeFactory = EstimateCastSize;
@@ -83,19 +87,9 @@
 
         private int EstimateCastSize()
         {
-            var estimatedSize = _castValueTranslation.EstimatedSize;
+            var estimatedSize = GetBaseEstimatedSize();
 
-            if (_isBoxing)
-            {
-                return estimatedSize;
-            }
-
-            if (_isAssignmentResultCast)
-            {
-                estimatedSize += 2;
-            }
-
-            if (_isImplicitOperator)
+            if (_isBoxing || _isImplicitOperator)
             {
                 return estimatedSize;
             }
@@ -107,6 +101,31 @@
             {
                 // TODO: Explicit operator
                 return estimatedSize;
+            }
+
+            return estimatedSize;
+        }
+
+        private int EstimateTypeCastSize()
+        {
+            var estimatedSize = GetBaseEstimatedSize();
+
+            if (_isBoxing)
+            {
+                return estimatedSize;
+            }
+
+            // +4 for ' as ' or ' is ':
+            return estimatedSize + 4;
+        }
+
+        private int GetBaseEstimatedSize()
+        {
+            var estimatedSize = _castValueTranslation.EstimatedSize;
+
+            if (_isAssignmentResultCast && (_isBoxing == false))
+            {
+                estimatedSize += 2;
             }
 
             return estimatedSize;
@@ -130,16 +149,16 @@
 
         private void WriteCastCore(ITranslationContext context)
         {
-            if (_isOperator == false)
-            {
-                context.WriteToTranslation('(');
-            }
-            
             if (_isImplicitOperator == false)
             {
                 _castTypeNameTranslation.WriteInParentheses(context);
             }
 
+            WriteCastValueTranslation(context);
+        }
+
+        private void WriteCastValueTranslation(ITranslationContext context)
+        {
             if (_isAssignmentResultCast)
             {
                 _castValueTranslation.WriteInParentheses(context);
@@ -148,11 +167,13 @@
             {
                 _castValueTranslation.WriteTo(context);
             }
+        }
 
-            if (_isOperator == false)
-            {
-                context.WriteToTranslation(')');
-            }
+        private void WriteTypeAsCast(ITranslationContext context)
+        {
+            WriteCastValueTranslation(context);
+            context.WriteToTranslation(" as ");
+            _castTypeNameTranslation.WriteTo(context);
         }
 
         public void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);
