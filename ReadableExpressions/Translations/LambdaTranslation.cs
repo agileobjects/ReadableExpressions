@@ -23,6 +23,8 @@
         private int GetEstimatedSize()
             => _parameters.EstimatedSize + _fatArrow.Length + _body.EstimatedSize;
 
+        public ExpressionType NodeType => ExpressionType.Lambda;
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)

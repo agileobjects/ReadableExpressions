@@ -48,7 +48,9 @@
 
         public BinaryTranslation(BinaryExpression binary, ITranslationContext context)
         {
-            switch (binary.NodeType)
+            NodeType = binary.NodeType;
+
+            switch (NodeType)
             {
                 case Add:
                     break;
@@ -83,6 +85,8 @@
                    _operator.Length +
                    _rightOperandTranslation.EstimatedSize;
         }
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 

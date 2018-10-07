@@ -12,7 +12,6 @@
 
     internal class CastTranslation : ITranslation
     {
-        private readonly UnaryExpression _cast;
         private readonly bool _isBoxing;
         private readonly bool _isImplicitOperator;
         private readonly bool _isOperator;
@@ -23,7 +22,7 @@
 
         public CastTranslation(UnaryExpression cast, ITranslationContext context)
         {
-            _cast = cast;
+            NodeType = cast.NodeType;
             _castValueTranslation = context.GetTranslationFor(cast.Operand);
             _isAssignmentResultCast = cast.Operand.NodeType == Assign;
             var estimatedSizeFactory = default(Func<int>);
@@ -60,27 +59,57 @@
             EstimatedSize = estimatedSizeFactory.Invoke();
         }
 
-        public int EstimatedSize { get; }
+        private CastTranslation(
+            ITranslation castValueTranslation,
+            ITranslationContext context)
+        {
+            _castValueTranslation = castValueTranslation;
+            _isOperator = true;
+            _translationWriter = WriteCastCore;
+            EstimatedSize = EstimateCastSize();
+        }
+
+        public static ITranslation ForExplicitOperator(
+            ITranslation castValueTranslation)
+        {
+            return new CastTranslation(castValueTranslation, null);
+        }
 
         private int EstimateCastSize()
         {
+            var estimatedSize = _castValueTranslation.EstimatedSize;
+
             if (_isBoxing)
             {
-                return _castValueTranslation.EstimatedSize;
+                return estimatedSize;
             }
 
-            var castValueSupplement = _isAssignmentResultCast ? 2 : 0;
+            if (_isAssignmentResultCast)
+            {
+                estimatedSize += 2;
+            }
 
             if (_isImplicitOperator)
             {
-                return _castValueTranslation.EstimatedSize + castValueSupplement;
+                return estimatedSize;
             }
 
-            return _castValueTranslation.EstimatedSize +
-                   _castTypeNameTranslation.EstimatedSize +
-                   2 + // <- For cast type name parentheses
-                   castValueSupplement;
+            estimatedSize +=
+                _castTypeNameTranslation.EstimatedSize +
+                2; // <- For cast type name parentheses
+
+            if (_isOperator)
+            {
+                // TODO: Explicit operator
+                return estimatedSize;
+            }
+
+            return estimatedSize;
         }
+
+        public ExpressionType NodeType { get; }
+
+        public int EstimatedSize { get; }
 
         private void WriteCast(ITranslationContext context)
         {
@@ -105,7 +134,7 @@
                 _castTypeNameTranslation.WriteInParentheses(context);
             }
 
-            if (_cast.NodeType == Assign)
+            if (_isAssignmentResultCast)
             {
                 _castValueTranslation.WriteInParentheses(context);
             }

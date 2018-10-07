@@ -25,29 +25,40 @@
             _methodCall = methodCall;
             _method = new BclMethodWrapper(methodCall.Method);
 
+            _parameters = new ParameterSetTranslation(_method, methodCall.Arguments, context);
+
+            if (methodCall.Method.IsImplicitOperator())
+            {
+                _subject = _parameters[0];
+                _translationWriter = WriteSubjectToTranslation;
+                EstimatedSize = _subject.EstimatedSize;
+                return;
+            }
+
             _subject =
                 context.GetTranslationFor(methodCall.GetSubject()) ??
                 context.GetTranslationFor(methodCall.Method.DeclaringType);
 
-            _parameters = new ParameterSetTranslation(_method, methodCall.Arguments, context);
-
-            EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
-
             if (IsIndexedPropertyAccess())
             {
-                _translationWriter = WriteIndexAccess;
+                _subject = new IndexAccessTranslation(_subject, _parameters);
+                _translationWriter = WriteSubjectToTranslation;
+                EstimatedSize = _subject.EstimatedSize;
                 return;
             }
 
             _parameters = _parameters.WithParentheses();
 
-            if (methodCall.Method.IsImplicitOperator())
+            if (methodCall.Method.IsExplicitOperator())
             {
-                _translationWriter = WriteImplicitOperatorCall;
+                _subject = CastTranslation.ForExplicitOperator(_parameters[0]);
+                _translationWriter = WriteSubjectToTranslation;
+                EstimatedSize = _subject.EstimatedSize;
                 return;
             }
-            
+
             _translationWriter = WriteMethodCall;
+            EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
         }
 
         private bool IsIndexedPropertyAccess()
@@ -61,17 +72,12 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
+        public ExpressionType NodeType => ExpressionType.Call;
+
         public int EstimatedSize { get; }
 
-        private void WriteIndexAccess(ITranslationContext context)
-        {
-            new IndexAccessTranslation(_subject, _parameters).WriteTo(context);
-        }
-
-        private void WriteImplicitOperatorCall(ITranslationContext context)
-        {
-            _parameters[0].WriteTo(context);
-        }
+        private void WriteSubjectToTranslation(ITranslationContext context)
+            => _subject.WriteTo(context);
 
         private void WriteMethodCall(ITranslationContext context)
         {
