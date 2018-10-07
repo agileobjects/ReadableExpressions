@@ -62,6 +62,25 @@
             EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
         }
 
+        private MethodCallTranslation(
+            ITranslation typeNameTranslation,
+            IMethod staticMethod,
+            ITranslation castValue)
+        {
+            _subject = typeNameTranslation;
+            _method = staticMethod;
+            _parameters = new ParameterSetTranslation(castValue).WithParentheses();
+            _translationWriter = WriteMethodCall;
+        }
+
+        public static ITranslation ForCustomMethodCast(
+            ITranslation typeNameTranslation,
+            IMethod castMethod,
+            ITranslation castValue)
+        {
+            return new MethodCallTranslation(typeNameTranslation, castMethod, castValue);
+        }
+
         private bool IsIndexedPropertyAccess()
         {
             var property = _methodCall
@@ -84,7 +103,7 @@
         {
             _subject.WriteTo(context);
             context.WriteToTranslation('.');
-            context.WriteToTranslation(_methodCall.Method.Name);
+            context.WriteToTranslation(_method.Name);
             WriteGenericArgumentsIfNecessary(context);
             _parameters.WriteTo(context);
         }

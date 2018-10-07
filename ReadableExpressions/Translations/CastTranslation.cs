@@ -2,6 +2,7 @@
 {
     using System;
     using NetStandardPolyfills;
+    using Translators;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -12,12 +13,12 @@
 
     internal class CastTranslation : ITranslation
     {
+        private readonly ITranslation _castValueTranslation;
+        private readonly ITranslation _castTypeNameTranslation;
         private readonly bool _isBoxing;
         private readonly bool _isImplicitOperator;
         private readonly bool _isOperator;
         private readonly bool _isAssignmentResultCast;
-        private readonly ITranslation _castTypeNameTranslation;
-        private readonly ITranslation _castValueTranslation;
         private readonly Action<ITranslationContext> _translationWriter;
 
         public CastTranslation(UnaryExpression cast, ITranslationContext context)
@@ -26,6 +27,7 @@
             NodeType = cast.NodeType;
             _castValueTranslation = context.GetTranslationFor(cast.Operand);
             var estimatedSizeFactory = default(Func<int>);
+            var isCustomMethodCast = false;
 
             switch (NodeType)
             {
@@ -37,6 +39,13 @@
                     {
                         _isImplicitOperator = cast.Method.IsImplicitOperator();
                         _isOperator = _isImplicitOperator || cast.Method.IsExplicitOperator();
+
+                        if (_isOperator == false)
+                        {
+                            isCustomMethodCast = true;
+                            _translationWriter = WriteCustomMethodCast;
+                            break;
+                        }
                     }
 
                     estimatedSizeFactory = EstimateCastSize;
@@ -60,7 +69,19 @@
                 _castTypeNameTranslation = context.GetTranslationFor(cast.Type);
             }
 
-            EstimatedSize = estimatedSizeFactory.Invoke();
+            if (isCustomMethodCast == false)
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                EstimatedSize = estimatedSizeFactory.Invoke();
+                return;
+            }
+
+            _castValueTranslation = MethodCallTranslation.ForCustomMethodCast(
+                _castTypeNameTranslation,
+                new BclMethodWrapper(cast.Method),
+                _castValueTranslation);
+
+            EstimatedSize = _castValueTranslation.EstimatedSize;
         }
 
         private CastTranslation(ITranslation castValueTranslation, ITranslation castTypeNameTranslation)
@@ -83,6 +104,21 @@
             ITranslation castTypeNameTranslation)
         {
             return new CastTranslation(castValueTranslation, castTypeNameTranslation);
+        }
+
+        public static bool IsCast(ExpressionType nodeType)
+        {
+            switch (nodeType)
+            {
+                case ExpressionType.Convert:
+                case ConvertChecked:
+                case TypeAs:
+                case TypeIs:
+                case Unbox:
+                    return true;
+            }
+
+            return false;
         }
 
         private int EstimateCastSize()
@@ -157,6 +193,16 @@
             WriteCastValueTranslation(context);
         }
 
+        private void WriteCustomMethodCast(ITranslationContext context)
+            => _castValueTranslation.WriteTo(context);
+
+        private void WriteTypeAsCast(ITranslationContext context)
+        {
+            WriteCastValueTranslation(context);
+            context.WriteToTranslation(" as ");
+            _castTypeNameTranslation.WriteTo(context);
+        }
+
         private void WriteCastValueTranslation(ITranslationContext context)
         {
             if (_isAssignmentResultCast)
@@ -167,13 +213,6 @@
             {
                 _castValueTranslation.WriteTo(context);
             }
-        }
-
-        private void WriteTypeAsCast(ITranslationContext context)
-        {
-            WriteCastValueTranslation(context);
-            context.WriteToTranslation(" as ");
-            _castTypeNameTranslation.WriteTo(context);
         }
 
         public void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);

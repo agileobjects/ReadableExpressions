@@ -85,7 +85,7 @@
 
             var translated = ToReadableString(unboxObjectToInt);
 
-            translated.ShouldBe("((int)o)");
+            translated.ShouldBe("(int)o");
         }
 
         // https://github.com/agileobjects/ReadableExpressions/issues/20

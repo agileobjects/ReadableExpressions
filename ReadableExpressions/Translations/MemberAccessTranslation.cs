@@ -60,7 +60,15 @@
         {
             if (_subject != null)
             {
-                _subject.WriteTo(context);
+                if (CastTranslation.IsCast(_subject.NodeType))
+                {
+                    _subject.WriteInParentheses(context);
+                }
+                else
+                {
+                    _subject.WriteTo(context);
+                }
+
                 context.WriteToTranslation('.');
             }
 

@@ -19,6 +19,13 @@
         private readonly IList<ITranslation> _parameterTranslations;
         private ParenthesesMode _parenthesesMode;
 
+        public ParameterSetTranslation(ITranslation parameter)
+        {
+            _parameterTranslations = new[] { parameter };
+            EstimatedSize = parameter.EstimatedSize + _openAndCloseParentheses.Length;
+            ParameterCount = 1;
+        }
+
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
 #if NET35
             : this(null, parameters.Cast<Expression>(), parameters.Count, context)
