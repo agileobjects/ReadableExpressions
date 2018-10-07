@@ -167,6 +167,7 @@
 
                 case ExpressionType.Convert:
                 case ConvertChecked:
+                case Unbox:
                     return new CastTranslation((UnaryExpression)expression, this);
 
                 case DebugInfo:
@@ -176,7 +177,6 @@
 
                 case Default:
                     return new DefaultValueTranslation(expression, this);
-
 
                 case Dynamic:
                     break;
@@ -254,8 +254,6 @@
                 case TypeIs:
                     break;
                 case UnaryPlus:
-                    break;
-                case Unbox:
                     break;
             }
 

@@ -27,7 +27,7 @@
             _castValueTranslation = context.GetTranslationFor(cast.Operand);
             var estimatedSizeFactory = default(Func<int>);
 
-            switch (cast.NodeType)
+            switch (NodeType)
             {
                 case ExpressionType.Convert:
                 case ConvertChecked:
@@ -47,7 +47,7 @@
                 case TypeIs:
                 case Unbox:
                     _translationWriter = WriteCastCore;
-                    estimatedSizeFactory = null;
+                    estimatedSizeFactory = EstimateCastSize;
                     break;
             }
 
@@ -100,9 +100,8 @@
                 return estimatedSize;
             }
 
-            estimatedSize +=
-                _castTypeNameTranslation.EstimatedSize +
-                2; // <- For cast type name parentheses
+            // +2 for cast type name parentheses:
+            estimatedSize += _castTypeNameTranslation.EstimatedSize + 2;
 
             if (_isOperator)
             {
@@ -135,7 +134,8 @@
             {
                 context.WriteToTranslation('(');
             }
-            else if (_isImplicitOperator == false)
+            
+            if (_isImplicitOperator == false)
             {
                 _castTypeNameTranslation.WriteInParentheses(context);
             }
