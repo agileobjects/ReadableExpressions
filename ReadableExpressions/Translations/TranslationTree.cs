@@ -263,7 +263,7 @@
         {
             _root.WriteTo(this);
 
-            return _content.ToString();
+            return (_content.Length > 0) ? _content.ToString() : null;
         }
     }
 }
