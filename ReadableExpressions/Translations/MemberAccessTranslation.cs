@@ -52,6 +52,8 @@
                 : _memberAccess.Member.Name.Length;
         }
 
+        public ExpressionType NodeType => ExpressionType.MemberAccess;
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)

@@ -6,12 +6,8 @@
     using System.Linq.Expressions;
 #endif
 
-    internal interface ITranslation
+    internal interface ITranslation : ITranslatable
     {
         ExpressionType NodeType { get; }
-
-        int EstimatedSize { get; }
-
-        void WriteTo(ITranslationContext context);
     }
 }

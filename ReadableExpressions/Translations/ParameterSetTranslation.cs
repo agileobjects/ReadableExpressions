@@ -12,7 +12,7 @@
     using NetStandardPolyfills;
     using Translators;
 
-    internal class ParameterSetTranslation : ITranslation
+    internal class ParameterSetTranslation : ITranslatable
     {
         private const string _openAndCloseParentheses = "()";
 
@@ -236,6 +236,8 @@
                 _parameterTranslation = parameterTranslation;
                 EstimatedSize = prefix.Length + parameterTranslation.EstimatedSize;
             }
+
+            public ExpressionType NodeType => _parameterTranslation.NodeType;
 
             public int EstimatedSize { get; }
 

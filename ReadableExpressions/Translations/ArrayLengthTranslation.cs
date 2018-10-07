@@ -18,6 +18,8 @@
             EstimatedSize = _operand.EstimatedSize + LengthPropertyLength;
         }
 
+        public ExpressionType NodeType => ExpressionType.ArrayLength;
+        
         public int EstimatedSize { get; }
 
         private static int LengthPropertyLength => _length.Length;

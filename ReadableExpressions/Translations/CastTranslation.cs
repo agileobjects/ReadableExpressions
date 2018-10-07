@@ -21,10 +21,10 @@
         private readonly Action<ITranslationContext> _translationWriter;
 
         public CastTranslation(UnaryExpression cast, ITranslationContext context)
+            : this(cast.Operand.NodeType)
         {
             NodeType = cast.NodeType;
             _castValueTranslation = context.GetTranslationFor(cast.Operand);
-            _isAssignmentResultCast = cast.Operand.NodeType == Assign;
             var estimatedSizeFactory = default(Func<int>);
 
             switch (cast.NodeType)
@@ -59,20 +59,26 @@
             EstimatedSize = estimatedSizeFactory.Invoke();
         }
 
-        private CastTranslation(
-            ITranslation castValueTranslation,
-            ITranslationContext context)
+        private CastTranslation(ITranslation castValueTranslation, ITranslation castTypeNameTranslation)
+            : this(castValueTranslation.NodeType)
         {
             _castValueTranslation = castValueTranslation;
+            _castTypeNameTranslation = castTypeNameTranslation;
             _isOperator = true;
             _translationWriter = WriteCastCore;
             EstimatedSize = EstimateCastSize();
         }
 
-        public static ITranslation ForExplicitOperator(
-            ITranslation castValueTranslation)
+        private CastTranslation(ExpressionType castValueNodeType)
         {
-            return new CastTranslation(castValueTranslation, null);
+            _isAssignmentResultCast = castValueNodeType == Assign;
+        }
+
+        public static ITranslation ForExplicitOperator(
+            ITranslation castValueTranslation,
+            ITranslation castTypeNameTranslation)
+        {
+            return new CastTranslation(castValueTranslation, castTypeNameTranslation);
         }
 
         private int EstimateCastSize()

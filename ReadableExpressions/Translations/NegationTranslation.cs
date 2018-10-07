@@ -13,10 +13,13 @@
 
         public NegationTranslation(UnaryExpression negation, ITranslationContext context)
         {
-            _operator = negation.NodeType == ExpressionType.Not ? '!' : '-';
+            NodeType = negation.NodeType;
+            _operator = NodeType == ExpressionType.Not ? '!' : '-';
             _negatedValue = context.GetTranslationFor(negation.Operand);
             EstimatedSize = _negatedValue.EstimatedSize + 1;
         }
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 

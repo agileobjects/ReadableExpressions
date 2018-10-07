@@ -1,6 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
     using Extensions;
 
     internal class TypeNameTranslation : ITranslation
@@ -23,6 +28,8 @@
             _type = type;
             EstimatedSize = (int)(_type.Name.Length * 1.1);
         }
+
+        public ExpressionType NodeType => ExpressionType.Constant;
 
         public int EstimatedSize { get; }
 

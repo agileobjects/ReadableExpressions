@@ -51,7 +51,8 @@
 
             if (methodCall.Method.IsExplicitOperator())
             {
-                _subject = CastTranslation.ForExplicitOperator(_parameters[0]);
+                var castTypeNameTranslation = context.GetTranslationFor(methodCall.Method.ReturnType);
+                _subject = CastTranslation.ForExplicitOperator(_parameters[0], castTypeNameTranslation);
                 _translationWriter = WriteSubjectToTranslation;
                 EstimatedSize = _subject.EstimatedSize;
                 return;

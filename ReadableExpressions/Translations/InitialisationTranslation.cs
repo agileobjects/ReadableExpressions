@@ -2,12 +2,12 @@
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     internal class InitialisationTranslation : ITranslation
     {
@@ -53,8 +53,11 @@
                 })
                 .ToArray();
 
+            NodeType = ExpressionType.ListInit;
             EstimatedSize = estimatedSize;
         }
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 

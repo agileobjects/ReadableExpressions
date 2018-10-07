@@ -48,6 +48,8 @@
                    "new ()".Length;
         }
 
+        public ExpressionType NodeType => ExpressionType.New;
+
         public int EstimatedSize { get; }
 
         public NewingTranslation WithoutParenthesesIfParameterless()

@@ -60,6 +60,8 @@
                 : _parameter.Name.Length;
         }
 
+        public ExpressionType NodeType => ExpressionType.Parameter;
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)

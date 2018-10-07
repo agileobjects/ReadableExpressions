@@ -50,6 +50,8 @@
             return valueString.Length;
         }
 
+        public ExpressionType NodeType => ExpressionType.Constant;
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)

@@ -37,8 +37,9 @@
 
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
         {
+            NodeType = assignment.NodeType;
             _targetTranslation = context.GetTranslationFor(assignment.Left);
-            _operator = _symbolsByNodeType[assignment.NodeType];
+            _operator = _symbolsByNodeType[NodeType];
             _valueTranslation = context.GetTranslationFor(assignment.Right);
 
             EstimatedSize = GetEstimatedSize();
@@ -50,6 +51,8 @@
                    _operator.Length +
                    _valueTranslation.EstimatedSize;
         }
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 

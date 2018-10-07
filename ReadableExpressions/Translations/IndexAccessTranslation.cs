@@ -14,6 +14,7 @@
 
         public IndexAccessTranslation(ITranslation subject, ParameterSetTranslation parameters)
         {
+            NodeType = ExpressionType.Call;
             _subject = subject;
             _parameters = parameters;
             EstimatedSize = GetEstimatedSize();
@@ -22,11 +23,13 @@
         public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
             : this(indexAccess.Object, indexAccess.Arguments, context)
         {
+            NodeType = ExpressionType.Index;
         }
 
         public IndexAccessTranslation(BinaryExpression arrayIndexAccess, ITranslationContext context)
             : this(arrayIndexAccess.Left, new[] { arrayIndexAccess.Right }, context)
         {
+            NodeType = ExpressionType.ArrayIndex;
         }
 
         private IndexAccessTranslation(
@@ -40,6 +43,8 @@
         }
 
         private int GetEstimatedSize() => _subject.EstimatedSize + _parameters.EstimatedSize + 2;
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 
