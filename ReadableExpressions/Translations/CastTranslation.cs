@@ -52,7 +52,6 @@
                     break;
 
                 case TypeAs:
-                case TypeIs:
                     _translationWriter = WriteTypeAsCast;
                     estimatedSizeFactory = EstimateTypeCastSize;
                     break;
@@ -81,6 +80,15 @@
                 _castValueTranslation);
 
             EstimatedSize = _castValueTranslation.EstimatedSize;
+        }
+
+        public CastTranslation(TypeBinaryExpression cast, ITranslationContext context)
+        {
+            NodeType = cast.NodeType;
+            _castValueTranslation = context.GetTranslationFor(cast.Expression);
+            _castTypeNameTranslation = context.GetTranslationFor(cast.TypeOperand);
+            _translationWriter = WriteTypeIsCast;
+            EstimatedSize = EstimateTypeCastSize();
         }
 
         private CastTranslation(ITranslation castValueTranslation, ITranslation castTypeNameTranslation)
@@ -173,10 +181,14 @@
         private void WriteCustomMethodCast(ITranslationContext context)
             => _castValueTranslation.WriteTo(context);
 
-        private void WriteTypeAsCast(ITranslationContext context)
+        private void WriteTypeAsCast(ITranslationContext context) => WriteTypeTestedCast(" as ", context);
+
+        private void WriteTypeIsCast(ITranslationContext context) => WriteTypeTestedCast(" is ", context);
+
+        private void WriteTypeTestedCast(string typeTest, ITranslationContext context)
         {
             WriteCastValueTranslation(context);
-            context.WriteToTranslation(" as ");
+            context.WriteToTranslation(typeTest);
             _castTypeNameTranslation.WriteTo(context);
         }
 

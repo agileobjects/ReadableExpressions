@@ -259,7 +259,8 @@
                 case TypeEqual:
                     break;
                 case TypeIs:
-                    break;
+                    return new CastTranslation((TypeBinaryExpression)expression, this);
+
                 case UnaryPlus:
                     break;
             }
