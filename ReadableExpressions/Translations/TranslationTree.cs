@@ -161,7 +161,8 @@ namespace AgileObjects.ReadableExpressions.Translations
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 
                 case Block:
-                    break;
+                    return new BlockTranslation((BlockExpression)expression, this);
+
                 case Call:
                     return new MethodCallTranslation((MethodCallExpression)expression, this);
 
