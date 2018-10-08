@@ -216,11 +216,11 @@
                 context.WriteToTranslation('(');
             }
 
-            for (var i = 0; ; ++i)
+            for (int i = 0, l = ParameterCount - 1; ; ++i)
             {
                 _parameterTranslations[i].WriteTo(context);
 
-                if (i == (ParameterCount - 1))
+                if (i == l)
                 {
                     break;
                 }

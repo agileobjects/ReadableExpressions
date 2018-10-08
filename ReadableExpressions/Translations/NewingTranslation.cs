@@ -81,13 +81,13 @@
         {
             context.WriteToTranslation("new { ");
 
-            for (var i = 0; ; ++i)
+            for (int i = 0, l = _ctorParameters.Length - 1; ; ++i)
             {
                 context.WriteToTranslation(_ctorParameters[i].Name);
                 context.WriteToTranslation(" = ");
                 _parameters[i].WriteTo(context);
 
-                if (i == (_ctorParameters.Length - 1))
+                if (i == l)
                 {
                     break;
                 }

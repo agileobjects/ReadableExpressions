@@ -143,11 +143,11 @@
 
             context.WriteToTranslation('<');
 
-            for (var i = 0; ; ++i)
+            for (int i = 0, l = argumentNames.Length - 1; ; ++i)
             {
                 context.WriteToTranslation(argumentNames[i]);
 
-                if (i == (argumentNames.Length - 1))
+                if (i == l)
                 {
                     break;
                 }

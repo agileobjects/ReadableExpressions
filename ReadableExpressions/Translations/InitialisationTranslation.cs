@@ -85,11 +85,11 @@
                     context.WriteToTranslation("{ ");
                 }
 
-                for (var i = 0; ; ++i)
+                for (int i = 0, l = numberOfArguments - 1; ; ++i)
                 {
                     initializerTranslationSet[i].WriteTo(context);
 
-                    if (i == (numberOfArguments - 1))
+                    if (i == l)
                     {
                         break;
                     }
