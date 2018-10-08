@@ -46,7 +46,7 @@
 
         private static ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
         {
-            return assignedValue.NodeType == Default
+            return (assignedValue.NodeType == Default)
                 ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: false)
                 : context.GetTranslationFor(assignedValue);
         }

@@ -49,7 +49,6 @@
                     }
 
                     estimatedSizeFactory = EstimateCastSize;
-                    _translationWriter = WriteCast;
                     break;
 
                 case TypeAs:
@@ -171,8 +170,24 @@
 
         public int EstimatedSize { get; }
 
-        private void WriteCast(ITranslationContext context)
+        private void WriteCustomMethodCast(ITranslationContext context)
+            => _castValueTranslation.WriteTo(context);
+
+        private void WriteTypeAsCast(ITranslationContext context)
         {
+            WriteCastValueTranslation(context);
+            context.WriteToTranslation(" as ");
+            _castTypeNameTranslation.WriteTo(context);
+        }
+
+        public void WriteTo(ITranslationContext context)
+        {
+            if (_translationWriter != null)
+            {
+                _translationWriter.Invoke(context);
+                return;
+            }
+
             if (_isBoxing)
             {
                 // Don't bother showing a boxing operation:
@@ -193,16 +208,6 @@
             WriteCastValueTranslation(context);
         }
 
-        private void WriteCustomMethodCast(ITranslationContext context)
-            => _castValueTranslation.WriteTo(context);
-
-        private void WriteTypeAsCast(ITranslationContext context)
-        {
-            WriteCastValueTranslation(context);
-            context.WriteToTranslation(" as ");
-            _castTypeNameTranslation.WriteTo(context);
-        }
-
         private void WriteCastValueTranslation(ITranslationContext context)
         {
             if (_isAssignmentResultCast)
@@ -214,7 +219,5 @@
                 _castValueTranslation.WriteTo(context);
             }
         }
-
-        public void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);
     }
 }

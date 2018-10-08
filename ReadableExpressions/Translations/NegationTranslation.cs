@@ -8,16 +8,31 @@
 
     internal class NegationTranslation : ITranslation
     {
+        private const char _bang = '!';
         private readonly char _operator;
         private readonly ITranslation _negatedValue;
 
         public NegationTranslation(UnaryExpression negation, ITranslationContext context)
+            : this(
+                negation.NodeType,
+               (negation.NodeType == ExpressionType.Not) ? _bang : '-',
+                context.GetTranslationFor(negation.Operand))
         {
-            NodeType = negation.NodeType;
-            _operator = NodeType == ExpressionType.Not ? '!' : '-';
-            _negatedValue = context.GetTranslationFor(negation.Operand);
-            EstimatedSize = _negatedValue.EstimatedSize + 1;
         }
+
+        private NegationTranslation(
+            ExpressionType negationType,
+            char @operator,
+            ITranslation negatedValue)
+        {
+            NodeType = negationType;
+            _operator = @operator;
+            _negatedValue = negatedValue;
+            EstimatedSize = negatedValue.EstimatedSize + 1;
+        }
+
+        public static ITranslation ForNot(ITranslation negatedValue)
+            => new NegationTranslation(ExpressionType.Not, _bang, negatedValue);
 
         public ExpressionType NodeType { get; }
 

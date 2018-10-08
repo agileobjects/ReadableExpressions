@@ -58,7 +58,6 @@
                 return;
             }
 
-            _translationWriter = WriteMethodCall;
             EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
         }
 
@@ -70,7 +69,6 @@
             _subject = typeNameTranslation;
             _method = staticMethod;
             _parameters = new ParameterSetTranslation(castValue).WithParentheses();
-            _translationWriter = WriteMethodCall;
         }
 
         public static ITranslation ForCustomMethodCast(
@@ -99,8 +97,14 @@
         private void WriteSubjectToTranslation(ITranslationContext context)
             => _subject.WriteTo(context);
 
-        private void WriteMethodCall(ITranslationContext context)
+        public void WriteTo(ITranslationContext context)
         {
+            if (_translationWriter != null)
+            {
+                _translationWriter.Invoke(context);
+                return;
+            }
+
             _subject.WriteTo(context);
             context.WriteToTranslation('.');
             context.WriteToTranslation(_method.Name);
@@ -175,7 +179,5 @@
                 }
             }
         }
-
-        public void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);
     }
 }

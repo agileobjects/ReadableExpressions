@@ -71,7 +71,6 @@
                     _leftOperandTranslation = context.GetTranslationFor(binary.Left);
                     _operator = GetOperator(binary);
                     _rightOperandTranslation = context.GetTranslationFor(binary.Right);
-                    _translationWriter = WriteBinary;
                     EstimatedSize = GetEstimatedSize();
                     break;
             }
@@ -98,18 +97,21 @@
                 return;
             }
 
-            // Negation translation
+            NegationTranslation.ForNot(_leftOperandTranslation).WriteTo(context);
         }
 
-        private void WriteBinary(ITranslationContext context)
+        public void WriteTo(ITranslationContext context)
         {
+            if (_translationWriter != null)
+            {
+                _translationWriter.Invoke(context);
+                return;
+            }
+
             _leftOperandTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
             _rightOperandTranslation.WriteTo(context);
         }
-
-        public void WriteTo(ITranslationContext context)
-            => _translationWriter.Invoke(context);
 
         private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)
         {
@@ -132,7 +134,7 @@
         private static bool IsBooleanConstant(Expression expression)
         {
             return ((expression.NodeType == Constant) || (expression.NodeType == Default)) &&
-                   (expression.Type == typeof(bool));
+                    (expression.Type == typeof(bool));
         }
 
         private class StandaloneBoolean
