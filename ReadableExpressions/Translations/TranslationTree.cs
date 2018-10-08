@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Collections.Generic;
     using System.Text;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -34,6 +33,9 @@ namespace AgileObjects.ReadableExpressions.Translations
 
         IEnumerable<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _context.JoinedAssignmentVariables;
+
+        bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
+            => _context.IsNotJoinedAssignment(expression);
 
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);

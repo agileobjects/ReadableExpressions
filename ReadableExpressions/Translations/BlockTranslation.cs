@@ -17,7 +17,7 @@
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
             _variables = GetVariableDeclarations(block, context);
-            _statements = context.GetTranslationsFor(block.Expressions);
+            _statements = GetBlockStatements(block.Expressions, context);
             EstimatedSize = GetEstimatedSize();
         }
 
@@ -39,6 +39,22 @@
             return variablesByType.ToDictionary(
                 grp => context.GetTranslationFor(grp.Key),
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
+        }
+
+        private IList<ITranslation> GetBlockStatements(IList<Expression> expressions, ITranslationContext context)
+        {
+            var translations = new ITranslation[expressions.Count];
+
+            for (int i = 0, l = expressions.Count; i < l; i++)
+            {
+                var expression = expressions[i];
+
+                translations[i] = context.IsNotJoinedAssignment(expression)
+                    ? new BlockStatementTranslation(expression, context)
+                    : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+            }
+
+            return translations;
         }
 
         private int GetEstimatedSize()
@@ -73,18 +89,17 @@
                 foreach (var parametersByType in _variables)
                 {
                     parametersByType.Key.WriteTo(context);
-                    context.WriteToTranslation(' ');
+                    context.WriteSpaceToTranslation();
                     parametersByType.Value.WriteTo(context);
                     context.WriteToTranslation(';');
                 }
-            }
 
-            context.WriteNewLineToTranslation();
+                context.WriteNewLineToTranslation();
+            }
 
             for (int i = 0, l = _statements.Count - 1; ; ++i)
             {
                 _statements[i].WriteTo(context);
-                context.WriteToTranslation(';');
 
                 if (i == l)
                 {
@@ -92,6 +107,103 @@
                 }
 
                 context.WriteNewLineToTranslation();
+            }
+        }
+
+        private class BlockStatementTranslation : ITranslation
+        {
+            private readonly ITranslation _statementTranslation;
+            private readonly bool _statementIsUnterminated;
+
+            public BlockStatementTranslation(Expression expression, ITranslationContext context)
+            {
+                NodeType = expression.NodeType;
+                _statementTranslation = context.GetTranslationFor(expression);
+                _statementIsUnterminated = StatementIsUnterminated(expression);
+                EstimatedSize = _statementTranslation.EstimatedSize + 1;
+            }
+
+            private static bool StatementIsUnterminated(Expression expression)
+            {
+                switch (expression.NodeType)
+                {
+                    case ExpressionType.Block:
+                    case ExpressionType.Lambda:
+                        return false;
+
+                    case ExpressionType.Assign:
+                    case ExpressionType.MemberInit:
+                        return true;
+                }
+
+                return /*translation.IsTerminated() || */!expression.IsComment();
+            }
+
+            public ExpressionType NodeType { get; }
+
+            public int EstimatedSize { get; protected set; }
+
+            public virtual void WriteTo(ITranslationContext context)
+            {
+                _statementTranslation.WriteTo(context);
+
+                if (_statementIsUnterminated)
+                {
+                    context.WriteToTranslation(';');
+                }
+            }
+        }
+
+        private class BlockAssignmentStatementTranslation : BlockStatementTranslation
+        {
+            private const string _var = "var";
+            private readonly ITranslatable _typeNameTranslation;
+
+            public BlockAssignmentStatementTranslation(BinaryExpression assignment, ITranslationContext context)
+                : base(assignment, context)
+            {
+                if (UseFullTypeName(assignment))
+                {
+                    _typeNameTranslation = context.GetTranslationFor(assignment.Left.Type);
+                    EstimatedSize += _typeNameTranslation.EstimatedSize + 2;
+                    return;
+                }
+
+                EstimatedSize += _var.Length;
+            }
+
+            private static bool UseFullTypeName(BinaryExpression assignment)
+            {
+                if ((assignment.Left.Type != assignment.Right.Type) ||
+                    (assignment.Right.NodeType == ExpressionType.Lambda))
+                {
+                    return true;
+                }
+
+                if (assignment.Right.NodeType != ExpressionType.Conditional)
+                {
+                    return false;
+                }
+
+                var conditional = (ConditionalExpression)assignment.Right;
+
+                return conditional.IfTrue.Type != conditional.IfFalse.Type;
+            }
+
+            public override void WriteTo(ITranslationContext context)
+            {
+                if (_typeNameTranslation != null)
+                {
+                    _typeNameTranslation.WriteTo(context);
+                }
+                else
+                {
+                    context.WriteToTranslation(_var);
+                }
+
+                context.WriteSpaceToTranslation();
+
+                base.WriteTo(context);
             }
         }
     }

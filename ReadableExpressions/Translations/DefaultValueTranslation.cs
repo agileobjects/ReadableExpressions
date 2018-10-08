@@ -11,23 +11,28 @@
     {
         private const string _default = "default";
         private const string _null = "null";
-
         private readonly bool _typeCanBeNull;
         private readonly ITranslation _typeNameTranslation;
 
-        public DefaultValueTranslation(Expression defaultExpression, ITranslationContext context)
+        public DefaultValueTranslation(
+            Expression defaultExpression,
+            ITranslationContext context,
+            bool allowNullKeyword = true)
         {
             if (defaultExpression.Type == typeof(void))
             {
                 return;
             }
 
-            _typeCanBeNull = defaultExpression.Type.CanBeNull();
-
-            if (_typeCanBeNull)
+            if (allowNullKeyword)
             {
-                EstimatedSize = _null.Length;
-                return;
+                _typeCanBeNull = defaultExpression.Type.CanBeNull();
+
+                if (_typeCanBeNull)
+                {
+                    EstimatedSize = _null.Length;
+                    return;
+                }
             }
 
             _typeNameTranslation = context.GetTranslationFor(defaultExpression.Type);
@@ -47,6 +52,7 @@
 
             if (_typeNameTranslation == null)
             {
+                // Translation of default(void):
                 return;
             }
 

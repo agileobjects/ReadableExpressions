@@ -13,6 +13,8 @@
         TranslationSettings Settings { get; }
 
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
+        
+        bool IsNotJoinedAssignment(Expression expression);
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 

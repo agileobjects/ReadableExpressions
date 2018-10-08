@@ -40,9 +40,15 @@
             NodeType = assignment.NodeType;
             _targetTranslation = context.GetTranslationFor(assignment.Left);
             _operator = _symbolsByNodeType[NodeType];
-            _valueTranslation = context.GetTranslationFor(assignment.Right);
-
+            _valueTranslation = GetValueTranslation(assignment.Right, context);
             EstimatedSize = GetEstimatedSize();
+        }
+
+        private static ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
+        {
+            return assignedValue.NodeType == Default
+                ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: false)
+                : context.GetTranslationFor(assignedValue);
         }
 
         private int GetEstimatedSize()
@@ -60,7 +66,7 @@
         {
             _targetTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
-            context.WriteToTranslation(' ');
+            context.WriteSpaceToTranslation();
             _valueTranslation.WriteTo(context);
         }
     }
