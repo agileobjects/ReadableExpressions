@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System.Collections.Generic;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
     using System.Text;
@@ -29,6 +31,9 @@
         #region ITranslationContext Members
 
         TranslationSettings ITranslationContext.Settings => _context.Settings;
+
+        IEnumerable<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
+            => _context.JoinedAssignmentVariables;
 
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);

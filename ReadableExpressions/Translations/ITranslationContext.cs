@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,16 +12,18 @@
     {
         TranslationSettings Settings { get; }
 
+        IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
+
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 
         ITranslation GetTranslationFor(Type type);
 
         ITranslation GetTranslationFor(Expression expression);
-        
+
         void Indent();
-        
+
         void Unindent();
-        
+
         void WriteNewLineToTranslation();
 
         void WriteToTranslation(char character);

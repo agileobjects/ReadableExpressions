@@ -26,6 +26,15 @@
             ParameterCount = 1;
         }
 
+        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
+#if NET35
+            : this(null, parameters.Cast<Expression>().ToArray(), context)
+#else
+            : this(null, parameters.ToArray(), context)
+#endif
+        {
+        }
+
         public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
 #if NET35
             : this(null, parameters.Cast<Expression>(), parameters.Count, context)
