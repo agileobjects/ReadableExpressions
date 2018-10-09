@@ -43,8 +43,9 @@
         private readonly ITranslation _leftOperandTranslation;
         private readonly string _operator;
         private readonly ITranslation _rightOperandTranslation;
+        private readonly StandaloneBoolean _standaloneBoolean;
+        private readonly bool _isCheckedOperation;
         private readonly Action<ITranslationContext> _translationWriter;
-        private readonly StandaloneBoolean _standalone;
 
         public BinaryTranslation(BinaryExpression binary, ITranslationContext context)
         {
@@ -64,9 +65,9 @@
 
                 case Equal:
                 case NotEqual:
-                    if (TryGetStandaloneBoolean(binary, out _standalone))
+                    if (TryGetStandaloneBoolean(binary, out _standaloneBoolean))
                     {
-                        _leftOperandTranslation = context.GetTranslationFor(_standalone.Expression);
+                        _leftOperandTranslation = context.GetTranslationFor(_standaloneBoolean.Expression);
                         EstimatedSize = _leftOperandTranslation.EstimatedSize + 1;
                         _translationWriter = WriteStandaloneEqualityComparison;
                         break;
@@ -78,6 +79,7 @@
                     _leftOperandTranslation = context.GetTranslationFor(binary.Left);
                     _operator = GetOperator(binary);
                     _rightOperandTranslation = context.GetTranslationFor(binary.Right);
+                    _isCheckedOperation = IsCheckedOperation();
                     EstimatedSize = GetEstimatedSize();
                     break;
             }
@@ -86,6 +88,19 @@
         public static string GetOperator(Expression expression) => _operatorsByNodeType[expression.NodeType];
 
         public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
+
+        private bool IsCheckedOperation()
+        {
+            switch (NodeType)
+            {
+                case AddChecked:
+                case MultiplyChecked:
+                case SubtractChecked:
+                    return true;
+            }
+
+            return false;
+        }
 
         private int GetEstimatedSize()
         {
@@ -100,7 +115,7 @@
 
         private void WriteStandaloneEqualityComparison(ITranslationContext context)
         {
-            if (_standalone.IsComparisonToTrue)
+            if (_standaloneBoolean.IsComparisonToTrue)
             {
                 _leftOperandTranslation.WriteTo(context);
                 return;
@@ -117,9 +132,19 @@
                 return;
             }
 
+            if (_isCheckedOperation)
+            {
+                context.WriteToTranslation("checked(");
+            }
+
             _leftOperandTranslation.WriteInParenthesesIfRequired(context);
             context.WriteToTranslation(_operator);
             _rightOperandTranslation.WriteInParenthesesIfRequired(context);
+
+            if (_isCheckedOperation)
+            {
+                context.WriteToTranslation(')');
+            }
         }
 
         private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)
