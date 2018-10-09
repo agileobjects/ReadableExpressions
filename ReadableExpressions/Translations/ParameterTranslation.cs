@@ -73,7 +73,6 @@
             if (_isUnnamedParameter)
             {
                 variableNumber = context.GetUnnamedVariableNumber(_parameter);
-
                 parameterName = _parameter.Type.GetVariableNameInCamelCase(context.Settings);
             }
             else
@@ -81,7 +80,7 @@
                 variableNumber = default(int?);
             }
 
-            if (_keywords.Contains(parameterName))
+            if (!variableNumber.HasValue && _keywords.Contains(parameterName))
             {
                 context.WriteToTranslation('@');
             }
