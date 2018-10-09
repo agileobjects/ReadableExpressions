@@ -12,12 +12,12 @@
     internal class BlockTranslation : ITranslation
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
-        private readonly IList<ITranslation> _statements;
+        private readonly IList<BlockStatementTranslation> _statements;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
             _variables = GetVariableDeclarations(block, context);
-            _statements = GetBlockStatements(block.Expressions, context);
+            _statements = GetBlockStatements(block, context);
             EstimatedSize = GetEstimatedSize();
         }
 
@@ -41,20 +41,59 @@
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
         }
 
-        private IList<ITranslation> GetBlockStatements(IList<Expression> expressions, ITranslationContext context)
+        private static IList<BlockStatementTranslation> GetBlockStatements(BlockExpression block, ITranslationContext context)
         {
-            var translations = new ITranslation[expressions.Count];
+            var expressions = block.Expressions;
+            var expressionCount = expressions.Count;
+            var translations = new BlockStatementTranslation[expressionCount];
+            var statementIndex = 0;
 
-            for (int i = 0, l = expressions.Count; i < l; i++)
+            for (int i = 0, lastExpressionIndex = expressionCount - 1; ; ++i)
             {
                 var expression = expressions[i];
 
-                translations[i] = context.IsNotJoinedAssignment(expression)
-                    ? new BlockStatementTranslation(expression, context)
-                    : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+                if (Include(expression, block))
+                {
+                    translations[statementIndex++] = context.IsNotJoinedAssignment(expression)
+                        ? new BlockStatementTranslation(expression, context)
+                        : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+                }
+
+                if (i == lastExpressionIndex)
+                {
+                    break;
+                }
             }
 
-            return translations;
+            if (statementIndex == expressionCount)
+            {
+                return translations;
+            }
+
+            // Statements were skipped; resize the translations array
+            var includedTranslations = new BlockStatementTranslation[statementIndex];
+
+            for (var i = 0; i < statementIndex; ++i)
+            {
+                includedTranslations[i] = translations[i];
+            }
+
+            return includedTranslations;
+        }
+
+        private static bool Include(Expression expression, BlockExpression block)
+        {
+            if (expression == block.Result)
+            {
+                return true;
+            }
+
+            if (expression.NodeType == ExpressionType.Parameter)
+            {
+                return false;
+            }
+
+            return (expression.NodeType != ExpressionType.Constant) || expression.IsComment();
         }
 
         private int GetEstimatedSize()
@@ -81,6 +120,12 @@
         public ExpressionType NodeType => ExpressionType.Block;
 
         public int EstimatedSize { get; }
+
+        public BlockTranslation WithoutTermination()
+        {
+            _statements[_statements.Count - 1].DoNotTerminate = true;
+            return this;
+        }
 
         public void WriteTo(ITranslationContext context)
         {
@@ -143,11 +188,13 @@
 
             public int EstimatedSize { get; protected set; }
 
+            public bool DoNotTerminate { private get; set; }
+
             public virtual void WriteTo(ITranslationContext context)
             {
                 _statementTranslation.WriteTo(context);
 
-                if (_statementIsUnterminated)
+                if (_statementIsUnterminated && (DoNotTerminate == false))
                 {
                     context.WriteToTranslation(';');
                 }

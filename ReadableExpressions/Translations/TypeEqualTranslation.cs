@@ -26,8 +26,16 @@
             {
                 try
                 {
+                    // TypeEqual '123 TypeEqual int' is reduced to a Block with the Expressions '123' and 'true',
+                    // 'o TypeEqual string' is reduced to (o != null) && (o is string):
                     var reducedTypeBinary = (Expression)_reduceTypeEqualMethod.Invoke(typeBinary, null);
                     _operandTranslation = context.GetTranslationFor(reducedTypeBinary);
+
+                    if (_operandTranslation.NodeType == ExpressionType.Block)
+                    {
+                        _operandTranslation = ((BlockTranslation)_operandTranslation).WithoutTermination();
+                    }
+
                     EstimatedSize = _operandTranslation.EstimatedSize;
                     _translationWriter = WriteReducedTypeBinary;
                     return;
