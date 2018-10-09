@@ -121,7 +121,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(whatSize.Body);
 
-            translated.ShouldBe("i < 8) ? \"Too small\" : \"Too big\"");
+            translated.ShouldBe("(i < 8) ? \"Too small\" : \"Too big\"");
         }
 
         [Fact]

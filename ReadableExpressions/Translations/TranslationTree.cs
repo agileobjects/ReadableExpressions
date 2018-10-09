@@ -175,7 +175,8 @@
                     return new MethodCallTranslation((MethodCallExpression)expression, this);
 
                 case Conditional:
-                    break;
+                    return new ConditionalTranslation((ConditionalExpression)expression, this);
+
                 case Constant:
                     return new ConstantTranslation((ConstantExpression)expression, this);
 

@@ -78,6 +78,8 @@
 
         public static string GetOperator(Expression expression) => _operatorsByNodeType[expression.NodeType];
 
+        public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
+
         private int GetEstimatedSize()
         {
             return _leftOperandTranslation.EstimatedSize +

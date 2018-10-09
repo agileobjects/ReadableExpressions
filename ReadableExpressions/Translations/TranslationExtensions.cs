@@ -1,11 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-#if NET35
-    using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-    using static System.Linq.Expressions.ExpressionType;
-#endif
-
     internal static class TranslationExtensions
     {
         public static void WriteInParentheses(this ITranslation translation, ITranslationContext context)
@@ -17,23 +11,7 @@
 
         public static void WriteInParenthesesIfRequired(this ITranslation translation, ITranslationContext context)
         {
-            bool writeParentheses;
-
-            switch (translation.NodeType)
-            {
-                case Assign:
-                case Equal:
-                case NotEqual:
-                case TypeEqual:
-                    writeParentheses = true;
-                    break;
-
-                default:
-                    writeParentheses = false;
-                    break;
-            }
-
-            if (writeParentheses)
+            if (BinaryTranslation.IsBinary(translation.NodeType))
             {
                 translation.WriteInParentheses(context);
                 return;
