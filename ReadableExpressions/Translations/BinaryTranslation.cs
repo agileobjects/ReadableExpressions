@@ -108,9 +108,9 @@
                 return;
             }
 
-            _leftOperandTranslation.WriteTo(context);
+            _leftOperandTranslation.WriteInParenthesesIfRequired(context);
             context.WriteToTranslation(_operator);
-            _rightOperandTranslation.WriteTo(context);
+            _rightOperandTranslation.WriteInParenthesesIfRequired(context);
         }
 
         private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)

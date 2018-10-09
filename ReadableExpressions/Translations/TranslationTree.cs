@@ -257,8 +257,10 @@
                     break;
                 case Try:
                     break;
+
                 case TypeEqual:
-                    break;
+                    return new TypeEqualTranslation((TypeBinaryExpression)expression, this);
+
                 case TypeIs:
                     return new CastTranslation((TypeBinaryExpression)expression, this);
             }
