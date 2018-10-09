@@ -114,6 +114,12 @@
 
             switch (expression.NodeType)
             {
+                case IsFalse:
+                case IsTrue:
+                case OnesComplement:
+                case UnaryPlus:
+                    return new UnaryTranslation((UnaryExpression)expression, this);
+
                 case Add:
                 case AddChecked:
                 case And:
@@ -200,10 +206,7 @@
 
                 case Invoke:
                     break;
-                case IsFalse:
-                    break;
-                case IsTrue:
-                    break;
+
                 case Label:
                     break;
                 case Lambda:
@@ -233,8 +236,6 @@
                 case NewArrayInit:
                     break;
 
-                case OnesComplement:
-                    break;
                 case Parameter:
                     return new ParameterTranslation((ParameterExpression)expression);
 
@@ -260,9 +261,6 @@
                     break;
                 case TypeIs:
                     return new CastTranslation((TypeBinaryExpression)expression, this);
-
-                case UnaryPlus:
-                    break;
             }
 
             throw new ArgumentOutOfRangeException(expression.NodeType.ToString());

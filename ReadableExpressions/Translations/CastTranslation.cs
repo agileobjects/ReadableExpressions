@@ -1,8 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using NetStandardPolyfills;
-    using Translators;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -10,6 +8,8 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using NetStandardPolyfills;
+    using Translators;
 
     internal class CastTranslation : ITranslation
     {
