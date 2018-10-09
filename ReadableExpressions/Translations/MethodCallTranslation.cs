@@ -30,7 +30,7 @@
             if (methodCall.Method.IsImplicitOperator())
             {
                 _subject = _parameters[0];
-                _translationWriter = WriteSubjectToTranslation;
+                _translationWriter = _subject.WriteTo;
                 EstimatedSize = _subject.EstimatedSize;
                 return;
             }
@@ -42,7 +42,7 @@
             if (IsIndexedPropertyAccess())
             {
                 _subject = new IndexAccessTranslation(_subject, _parameters);
-                _translationWriter = WriteSubjectToTranslation;
+                _translationWriter = _subject.WriteTo;
                 EstimatedSize = _subject.EstimatedSize;
                 return;
             }
@@ -53,7 +53,7 @@
             {
                 var castTypeNameTranslation = context.GetTranslationFor(methodCall.Method.ReturnType);
                 _subject = CastTranslation.ForExplicitOperator(_parameters[0], castTypeNameTranslation);
-                _translationWriter = WriteSubjectToTranslation;
+                _translationWriter = _subject.WriteTo;
                 EstimatedSize = _subject.EstimatedSize;
                 return;
             }
@@ -93,9 +93,6 @@
         public ExpressionType NodeType => ExpressionType.Call;
 
         public int EstimatedSize { get; }
-
-        private void WriteSubjectToTranslation(ITranslationContext context)
-            => _subject.WriteTo(context);
 
         public void WriteTo(ITranslationContext context)
         {

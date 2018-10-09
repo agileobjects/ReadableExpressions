@@ -53,6 +53,13 @@
             switch (NodeType)
             {
                 case Add:
+                    if (binary.Type != typeof(string))
+                    {
+                        goto default;
+                    }
+
+                    var operands = new[] { binary.Left, binary.Right };
+                    _translationWriter = new StringConcatenationTranslation(operands, context).WriteTo;
                     break;
 
                 case Equal:

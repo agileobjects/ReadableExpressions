@@ -145,7 +145,7 @@ checked
 
             var translated = ToReadableString(varOneToThePowerOfVarTwo);
 
-            translated.ShouldBe("(d1 ** d2)");
+            translated.ShouldBe("d1 ** d2");
         }
 
         [Fact]
@@ -251,7 +251,7 @@ checked
 
             var translated = ToReadableString(mather.Body);
 
-            translated.ShouldBe("((i + j) * k)");
+            translated.ShouldBe("(i + j) * k");
         }
     }
 }
