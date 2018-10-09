@@ -165,7 +165,7 @@ checked
 
             var translated = ToReadableString(findModulo.Body);
 
-            translated.ShouldBe("(i1 % i2)");
+            translated.ShouldBe("i1 % i2");
         }
 
         [Fact]

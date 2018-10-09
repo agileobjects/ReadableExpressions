@@ -114,9 +114,15 @@
 
             switch (expression.NodeType)
             {
+                case Decrement:
+                case Increment:
                 case IsFalse:
                 case IsTrue:
                 case OnesComplement:
+                case PostDecrementAssign:
+                case PostIncrementAssign:
+                case PreDecrementAssign:
+                case PreIncrementAssign:
                 case UnaryPlus:
                     return new UnaryTranslation((UnaryExpression)expression, this);
 
@@ -188,8 +194,6 @@
 
                 case DebugInfo:
                     break;
-                case Decrement:
-                    break;
 
                 case Default:
                     return new DefaultValueTranslation(expression, this);
@@ -199,8 +203,6 @@
                 case Extension:
                     break;
                 case Goto:
-                    break;
-                case Increment:
                     break;
                 case Index:
                     return new IndexAccessTranslation((IndexExpression)expression, this);
@@ -240,14 +242,6 @@
                 case Parameter:
                     return new ParameterTranslation((ParameterExpression)expression);
 
-                case PostDecrementAssign:
-                    break;
-                case PostIncrementAssign:
-                    break;
-                case PreDecrementAssign:
-                    break;
-                case PreIncrementAssign:
-                    break;
                 case Quote:
                     break;
                 case RuntimeVariables:
