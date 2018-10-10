@@ -30,7 +30,7 @@
             if (methodCall.Method.IsImplicitOperator())
             {
                 _subject = _parameters[0];
-                _translationWriter = _subject.WriteTo;
+                _translationWriter = c => c.WriteCodeBlockToTranslation(_subject);
                 EstimatedSize = _subject.EstimatedSize;
                 return;
             }

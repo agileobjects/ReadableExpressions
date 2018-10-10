@@ -40,6 +40,8 @@
                 return _null.Length;
             }
 
+            // TODO: Update to use lambda translation.
+
             var valueString = _constant.Value.ToString();
 
             if (_isEnumValue)
@@ -243,19 +245,18 @@
 
         private bool TryWriteLambda(ITranslationContext context)
         {
-            if (_constant.Value is LambdaExpression lambda)
-            {
-                context.GetTranslationFor(lambda).WriteTo(context);
-                return true;
-            }
 #if NET35
             if (_constant.Value is System.Linq.Expressions.LambdaExpression linqLambda)
             {
-                lambda = LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
-                context.GetTranslationFor(lambda).WriteTo(context);
+                var lambda = LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+#else
+            if (_constant.Value is LambdaExpression lambda)
+            {
+#endif
+                context.WriteCodeBlockToTranslation(context.GetTranslationFor(lambda));
                 return true;
             }
-#endif
+
             return false;
         }
 

@@ -11,17 +11,17 @@
         private const string _fatArrow = " => ";
 
         private readonly ParameterSetTranslation _parameters;
-        private readonly ITranslation _body;
+        private readonly ITranslation _bodyTranslation;
 
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
-            _body = context.GetTranslationFor(lambda.Body);
+            _bodyTranslation = context.GetTranslationFor(lambda.Body);
             EstimatedSize = GetEstimatedSize();
         }
 
         private int GetEstimatedSize()
-            => _parameters.EstimatedSize + _fatArrow.Length + _body.EstimatedSize;
+            => _parameters.EstimatedSize + _fatArrow.Length + _bodyTranslation.EstimatedSize;
 
         public ExpressionType NodeType => ExpressionType.Lambda;
 
@@ -31,7 +31,7 @@
         {
             _parameters.WriteTo(context);
             context.WriteToTranslation(_fatArrow);
-            _body.WriteTo(context);
+            context.WriteCodeBlockToTranslation(_bodyTranslation);
         }
     }
 }

@@ -87,7 +87,7 @@
 
                 for (int i = 0, l = numberOfArguments - 1; ; ++i)
                 {
-                    initializerTranslationSet[i].WriteTo(context);
+                    context.WriteCodeBlockToTranslation(initializerTranslationSet[i]);
 
                     if (i == l)
                     {

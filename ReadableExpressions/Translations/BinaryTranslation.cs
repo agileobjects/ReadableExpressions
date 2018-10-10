@@ -76,9 +76,9 @@
                     goto default;
 
                 default:
-                    _leftOperandTranslation = context.GetCodeBlockFor(binary.Left);
+                    _leftOperandTranslation = context.GetTranslationFor(binary.Left);
                     _operator = GetOperator(binary);
-                    _rightOperandTranslation = context.GetCodeBlockFor(binary.Right);
+                    _rightOperandTranslation = context.GetTranslationFor(binary.Right);
                     _isCheckedOperation = IsCheckedOperation();
                     EstimatedSize = GetEstimatedSize();
                     break;
@@ -142,7 +142,8 @@
 
             if (_isCheckedOperation)
             {
-                context.WriteToTranslation("checked(");
+                context.WriteToTranslation("checked");
+                context.WriteToTranslation('(');
             }
 
             _leftOperandTranslation.WriteInParenthesesIfRequired(context);

@@ -23,7 +23,7 @@
 
         public void WriteTo(ITranslationContext context)
         {
-            _conditionTranslation.WriteTo(context);
+            context.WriteCodeBlockToTranslation(_conditionTranslation);
         }
     }
 }

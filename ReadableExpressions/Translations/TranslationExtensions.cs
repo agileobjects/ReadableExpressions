@@ -1,18 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
-
     internal static class TranslationExtensions
     {
-        public static CodeBlockTranslation GetCodeBlockFor(this ITranslationContext context, Expression expression)
-        {
-            return new CodeBlockTranslation(context.GetTranslationFor(expression));
-        }
-
         public static void WriteInParentheses(this ITranslation translation, ITranslationContext context)
         {
             context.WriteToTranslation('(');

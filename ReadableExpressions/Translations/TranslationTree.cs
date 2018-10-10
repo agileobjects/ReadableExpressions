@@ -60,6 +60,12 @@
             _currentIndent -= Indent.Length;
         }
 
+        public void WriteCodeBlockToTranslation(ITranslatable translatable)
+        {
+            // Check if IsMultiStatement - write braces and indent
+            translatable.WriteTo(this);
+        }
+
         void ITranslationContext.WriteNewLineToTranslation()
         {
             _content.Append(Environment.NewLine);

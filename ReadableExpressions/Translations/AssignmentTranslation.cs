@@ -67,7 +67,7 @@
             _targetTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
             context.WriteSpaceToTranslation();
-            _valueTranslation.WriteTo(context);
+            context.WriteCodeBlockToTranslation(_valueTranslation);
         }
     }
 }

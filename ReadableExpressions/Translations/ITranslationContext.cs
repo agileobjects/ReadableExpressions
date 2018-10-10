@@ -13,7 +13,7 @@
         TranslationSettings Settings { get; }
 
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
-        
+
         bool IsNotJoinedAssignment(Expression expression);
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
@@ -25,6 +25,8 @@
         void Indent();
 
         void Unindent();
+
+        void WriteCodeBlockToTranslation(ITranslatable translatable);
 
         void WriteNewLineToTranslation();
 

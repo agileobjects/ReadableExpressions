@@ -207,7 +207,7 @@
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.With):
-                    _parameterTranslations[0].WriteTo(context);
+                    context.WriteCodeBlockToTranslation(_parameterTranslations[0]);
                     return;
             }
 
@@ -218,7 +218,7 @@
 
             for (int i = 0, l = ParameterCount - 1; ; ++i)
             {
-                _parameterTranslations[i].WriteTo(context);
+                context.WriteCodeBlockToTranslation(_parameterTranslations[i]);
 
                 if (i == l)
                 {
