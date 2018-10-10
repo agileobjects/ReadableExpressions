@@ -76,9 +76,9 @@
                     goto default;
 
                 default:
-                    _leftOperandTranslation = context.GetTranslationFor(binary.Left);
+                    _leftOperandTranslation = context.GetCodeBlockFor(binary.Left);
                     _operator = GetOperator(binary);
-                    _rightOperandTranslation = context.GetTranslationFor(binary.Right);
+                    _rightOperandTranslation = context.GetCodeBlockFor(binary.Right);
                     _isCheckedOperation = IsCheckedOperation();
                     EstimatedSize = GetEstimatedSize();
                     break;
@@ -104,9 +104,17 @@
 
         private int GetEstimatedSize()
         {
-            return _leftOperandTranslation.EstimatedSize +
-                   _operator.Length +
-                   _rightOperandTranslation.EstimatedSize;
+            var estimatedSize =
+                _leftOperandTranslation.EstimatedSize +
+               _operator.Length +
+               _rightOperandTranslation.EstimatedSize;
+
+            if (_isCheckedOperation)
+            {
+                estimatedSize += 10;
+            }
+
+            return estimatedSize;
         }
 
         public ExpressionType NodeType { get; }
