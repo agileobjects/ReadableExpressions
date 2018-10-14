@@ -2,6 +2,27 @@
 {
     internal static class TranslationExtensions
     {
+        public static bool IsMultiStatement(this ITranslatable translation)
+        {
+            return (translation is IPotentialMultiStatementTranslatable multiStatementTranslatable) &&
+                    multiStatementTranslatable.IsMultiStatement;
+        }
+
+        public static void WriteOpeningBraceToTranslation(this ITranslationContext context)
+        {
+            context.WriteNewLineToTranslation();
+            context.WriteToTranslation('{');
+            context.WriteNewLineToTranslation();
+            context.Indent();
+        }
+
+        public static void WriteClosingBraceToTranslation(this ITranslationContext context)
+        {
+            context.WriteNewLineToTranslation();
+            context.Unindent();
+            context.WriteToTranslation('}');
+        }
+
         public static void WriteInParentheses(this ITranslation translation, ITranslationContext context)
         {
             context.WriteToTranslation('(');
@@ -17,7 +38,7 @@
                 return;
             }
 
-            translation.WriteTo(context);
+            context.WriteCodeBlockToTranslation(translation);
         }
 
         public static void WriteSpaceToTranslation(this ITranslationContext context)

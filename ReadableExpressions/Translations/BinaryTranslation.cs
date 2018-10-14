@@ -140,17 +140,38 @@
                 return;
             }
 
+            var writeMultiStatementChecked =
+                 _isCheckedOperation &&
+                (_leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement());
+
             if (_isCheckedOperation)
             {
                 context.WriteToTranslation("checked");
-                context.WriteToTranslation('(');
+
+                if (writeMultiStatementChecked)
+                {
+                    context.WriteOpeningBraceToTranslation();
+                }
+                else
+                {
+                    context.WriteToTranslation('(');
+                }
             }
 
             _leftOperandTranslation.WriteInParenthesesIfRequired(context);
             context.WriteToTranslation(_operator);
             _rightOperandTranslation.WriteInParenthesesIfRequired(context);
 
-            if (_isCheckedOperation)
+            if (_isCheckedOperation == false)
+            {
+                return;
+            }
+
+            if (writeMultiStatementChecked)
+            {
+                context.WriteClosingBraceToTranslation();
+            }
+            else
             {
                 context.WriteToTranslation(')');
             }

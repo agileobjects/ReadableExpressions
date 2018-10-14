@@ -10,7 +10,6 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class TranslationTree : ITranslationContext
     {
@@ -47,7 +46,7 @@
 
         void ITranslationContext.Indent()
         {
-            _currentIndent += Indent.Length;
+            _currentIndent += Constants.Indent.Length;
 
             if (_writeIndent == false)
             {
@@ -57,16 +56,23 @@
 
         void ITranslationContext.Unindent()
         {
-            _currentIndent -= Indent.Length;
+            _currentIndent -= Constants.Indent.Length;
         }
 
         public void WriteCodeBlockToTranslation(ITranslatable translatable)
         {
-            // Check if IsMultiStatement - write braces and indent
+            if (translatable.IsMultiStatement())
+            {
+                this.WriteOpeningBraceToTranslation();
+                translatable.WriteTo(this);
+                this.WriteClosingBraceToTranslation();
+                return;
+            }
+
             translatable.WriteTo(this);
         }
 
-        void ITranslationContext.WriteNewLineToTranslation()
+        public void WriteNewLineToTranslation()
         {
             _content.Append(Environment.NewLine);
 
@@ -76,7 +82,7 @@
             }
         }
 
-        void ITranslationContext.WriteToTranslation(char character)
+        public void WriteToTranslation(char character)
         {
             WriteIndentIfRequired();
             _content.Append(character);

@@ -9,7 +9,7 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class BlockTranslation : ITranslation
+    internal class BlockTranslation : ITranslation, IPotentialMultiStatementTranslatable
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
@@ -19,6 +19,7 @@
             _variables = GetVariableDeclarations(block, context);
             _statements = GetBlockStatements(block, context);
             EstimatedSize = GetEstimatedSize();
+            IsMultiStatement = _statements.Count > 1;
         }
 
         private static IDictionary<ITranslation, ParameterSetTranslation> GetVariableDeclarations(
@@ -120,6 +121,8 @@
         public ExpressionType NodeType => ExpressionType.Block;
 
         public int EstimatedSize { get; }
+
+        public bool IsMultiStatement { get; }
 
         public BlockTranslation WithoutTermination()
         {
