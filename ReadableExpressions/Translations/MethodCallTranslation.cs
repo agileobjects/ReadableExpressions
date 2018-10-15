@@ -29,8 +29,8 @@
 
             if (methodCall.Method.IsImplicitOperator())
             {
-                _subject = _parameters[0];
-                _translationWriter = c => c.WriteCodeBlockToTranslation(_subject);
+                _subject = new CodeBlockTranslation(_parameters[0]);
+                _translationWriter = _subject.WriteTo;
                 EstimatedSize = _subject.EstimatedSize;
                 return;
             }

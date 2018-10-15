@@ -158,7 +158,8 @@
             context.WriteToTranslation("checked");
 
             isMultiStatementChecked =
-                _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
+                _leftOperandTranslation.IsMultiStatement() ||
+                _rightOperandTranslation.IsMultiStatement();
 
             if (isMultiStatementChecked)
             {

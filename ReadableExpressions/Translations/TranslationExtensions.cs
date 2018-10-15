@@ -42,7 +42,7 @@
                 return;
             }
 
-            context.WriteCodeBlockToTranslation(translation);
+            new CodeBlockTranslation(translation).WriteTo(context);
         }
 
         public static void WriteSpaceToTranslation(this ITranslationContext context)

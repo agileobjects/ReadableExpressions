@@ -16,7 +16,7 @@
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
-            _bodyTranslation = context.GetTranslationFor(lambda.Body);
+            _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
             EstimatedSize = GetEstimatedSize();
         }
 
@@ -31,7 +31,7 @@
         {
             _parameters.WriteTo(context);
             context.WriteToTranslation(_fatArrow);
-            context.WriteCodeBlockToTranslation(_bodyTranslation);
+            _bodyTranslation.WriteTo(context);
         }
     }
 }

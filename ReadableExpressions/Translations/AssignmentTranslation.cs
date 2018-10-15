@@ -48,7 +48,24 @@
         {
             return (assignedValue.NodeType == Default)
                 ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: false)
-                : context.GetTranslationFor(assignedValue);
+                : GetNonDefaultValueTranslation(assignedValue, context);
+        }
+
+        private static ITranslation GetNonDefaultValueTranslation(Expression assignedValue, ITranslationContext context)
+        {
+            var valueBlock = context.GetCodeBlockTranslationFor(assignedValue);
+
+            if (!valueBlock.IsMultiStatement())
+            {
+                return valueBlock.WithoutBraces().Unterminated();
+            }
+
+            if ((valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda))
+            {
+                return valueBlock.WithoutBraces();
+            }
+
+            return valueBlock.WithBraces();
         }
 
         private int GetEstimatedSize()
@@ -67,7 +84,7 @@
             _targetTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
             context.WriteSpaceToTranslation();
-            context.WriteCodeBlockToTranslation(_valueTranslation);
+            _valueTranslation.WriteTo(context);
         }
     }
 }

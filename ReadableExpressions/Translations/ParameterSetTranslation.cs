@@ -16,12 +16,12 @@
     {
         private const string _openAndCloseParentheses = "()";
 
-        private readonly IList<ITranslation> _parameterTranslations;
+        private readonly IList<CodeBlockTranslation> _parameterTranslations;
         private ParenthesesMode _parenthesesMode;
 
         public ParameterSetTranslation(ITranslation parameter)
         {
-            _parameterTranslations = new[] { parameter };
+            _parameterTranslations = new[] { new CodeBlockTranslation(parameter) };
             EstimatedSize = parameter.EstimatedSize + _openAndCloseParentheses.Length;
             ParameterCount = 1;
         }
@@ -67,7 +67,7 @@
 
             if (parameterCount == 0)
             {
-                _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
+                _parameterTranslations = Enumerable<CodeBlockTranslation>.EmptyArray;
                 EstimatedSize = _openAndCloseParentheses.Length;
                 return;
             }
@@ -119,7 +119,7 @@
 
                     estimatedSize += translation.EstimatedSize;
 
-                    return translation;
+                    return new CodeBlockTranslation(translation);
                 })
                 .ToArray();
 
@@ -207,7 +207,7 @@
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.With):
-                    context.WriteCodeBlockToTranslation(_parameterTranslations[0]);
+                    _parameterTranslations[0].WriteTo(context);
                     return;
             }
 
@@ -218,7 +218,7 @@
 
             for (int i = 0, l = ParameterCount - 1; ; ++i)
             {
-                context.WriteCodeBlockToTranslation(_parameterTranslations[i]);
+                _parameterTranslations[i].WriteTo(context);
 
                 if (i == l)
                 {

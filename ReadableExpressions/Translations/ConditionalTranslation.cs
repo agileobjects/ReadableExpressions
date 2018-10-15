@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -32,6 +33,11 @@
             if (IsTernary(conditional))
             {
                 _translationWriter = WriteTernary;
+            }
+            else if (conditional.IfTrue.IsReturnable())
+            {
+                _ifTrueTranslation = new CodeBlockTranslation(_ifTrueTranslation).WithBraces();
+                _translationWriter = WriteShortCircuitingIf;
             }
 
             EstimateSize:
@@ -83,6 +89,16 @@
             context.WriteToTranslation(" ? ");
             _ifTrueTranslation.WriteTo(context);
             context.WriteToTranslation(" : ");
+            _ifFalseTranslation.WriteTo(context);
+        }
+
+        private void WriteShortCircuitingIf(ITranslationContext context)
+        {
+            context.WriteToTranslation("if ");
+            _testTranslation.WriteInParentheses(context);
+            _ifTrueTranslation.WriteTo(context);
+            context.WriteNewLineToTranslation();
+            context.WriteNewLineToTranslation();
             _ifFalseTranslation.WriteTo(context);
         }
 

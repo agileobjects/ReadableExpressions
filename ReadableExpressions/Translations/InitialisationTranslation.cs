@@ -33,7 +33,7 @@
                 {
                     if (init.Arguments.Count == 1)
                     {
-                        var singleArgumentTranslation = context.GetTranslationFor(init.Arguments[0]);
+                        ITranslation singleArgumentTranslation = context.GetCodeBlockTranslationFor(init.Arguments[0]);
                         estimatedSize += singleArgumentTranslation.EstimatedSize;
 
                         return new[] { singleArgumentTranslation };
@@ -43,7 +43,7 @@
                         .Arguments
                         .Project(arg =>
                         {
-                            var argumentTranslation = context.GetTranslationFor(arg);
+                            ITranslation argumentTranslation = context.GetCodeBlockTranslationFor(arg);
 
                             estimatedSize += argumentTranslation.EstimatedSize;
 
@@ -87,7 +87,7 @@
 
                 for (int i = 0, l = numberOfArguments - 1; ; ++i)
                 {
-                    context.WriteCodeBlockToTranslation(initializerTranslationSet[i]);
+                    initializerTranslationSet[i].WriteTo(context);
 
                     if (i == l)
                     {

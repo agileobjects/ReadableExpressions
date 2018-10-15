@@ -44,6 +44,9 @@
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
 
+        CodeBlockTranslation ITranslationContext.GetCodeBlockTranslationFor(Expression expression)
+            => new CodeBlockTranslation(GetTranslationFor(expression));
+
         bool ITranslationContext.TranslationQuery(Func<ITranslationQuery, bool> predicate)
             => predicate.Invoke(this);
 
@@ -60,19 +63,6 @@
         void ITranslationContext.Unindent()
         {
             _currentIndent -= Constants.Indent.Length;
-        }
-
-        void ITranslationContext.WriteCodeBlockToTranslation(ITranslatable translatable)
-        {
-            if (translatable.IsMultiStatement())
-            {
-                this.WriteOpeningBraceToTranslation();
-                translatable.WriteTo(this);
-                this.WriteClosingBraceToTranslation();
-                return;
-            }
-
-            translatable.WriteTo(this);
         }
 
         void ITranslationContext.WriteNewLineToTranslation()

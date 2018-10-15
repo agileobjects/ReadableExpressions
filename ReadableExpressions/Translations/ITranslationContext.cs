@@ -27,13 +27,13 @@
 
         ITranslation GetTranslationFor(Expression expression);
 
+        CodeBlockTranslation GetCodeBlockTranslationFor(Expression expression);
+
         bool TranslationQuery(Func<ITranslationQuery, bool> predicate);
 
         void Indent();
 
         void Unindent();
-
-        void WriteCodeBlockToTranslation(ITranslatable translatable);
 
         void WriteNewLineToTranslation();
 

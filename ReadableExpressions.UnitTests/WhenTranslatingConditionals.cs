@@ -436,7 +436,7 @@ if (true)
 Console.WriteLine(""One!"");
 Console.WriteLine(""One!"");
 
-return ((long?)1);";
+return (long?)1;";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

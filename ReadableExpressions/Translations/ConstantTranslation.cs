@@ -253,7 +253,7 @@
             if (_constant.Value is LambdaExpression lambda)
             {
 #endif
-                context.WriteCodeBlockToTranslation(context.GetTranslationFor(lambda));
+                context.GetCodeBlockTranslationFor(lambda).WriteTo(context);
                 return true;
             }
 

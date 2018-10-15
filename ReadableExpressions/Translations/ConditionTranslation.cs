@@ -13,7 +13,7 @@
         public ConditionTranslation(Expression condition, ITranslationContext context)
         {
             NodeType = condition.NodeType;
-            _conditionTranslation = context.GetTranslationFor(condition);
+            _conditionTranslation = context.GetCodeBlockTranslationFor(condition);
             EstimatedSize = _conditionTranslation.EstimatedSize;
         }
 
@@ -23,7 +23,7 @@
 
         public void WriteTo(ITranslationContext context)
         {
-            context.WriteCodeBlockToTranslation(_conditionTranslation);
+            _conditionTranslation.WriteTo(context);
         }
     }
 }
