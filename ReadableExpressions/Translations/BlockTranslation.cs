@@ -14,6 +14,7 @@
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
         private readonly bool _requiresReturnKeyword;
+        private readonly bool _addBlankLineBeforeReturn;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
@@ -22,6 +23,7 @@
             EstimatedSize = GetEstimatedSize();
             IsMultiStatement = _statements.Count > 1;
             _requiresReturnKeyword = IsMultiStatement && block.IsReturnable();
+            _addBlankLineBeforeReturn = _requiresReturnKeyword && AddBlankLineBeforeReturn(block);
         }
 
         private static IDictionary<ITranslation, ParameterSetTranslation> GetVariableDeclarations(
@@ -120,6 +122,9 @@
             return estimatedSize;
         }
 
+        private static bool AddBlankLineBeforeReturn(BlockExpression block)
+            => !block.Expressions[block.Expressions.Count - 2].IsComment();
+
         public ExpressionType NodeType => ExpressionType.Block;
 
         public int EstimatedSize { get; }
@@ -153,6 +158,11 @@
 
                 if (isFinalLine && _requiresReturnKeyword)
                 {
+                    if (_addBlankLineBeforeReturn)
+                    {
+                        context.WriteNewLineToTranslation();
+                    }
+
                     context.WriteToTranslation("return ");
                 }
 
