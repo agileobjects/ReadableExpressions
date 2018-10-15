@@ -10,7 +10,11 @@
 
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context)
         {
-            context.WriteNewLineToTranslation();
+            if (context.TranslationQuery(q => !q.TranslationEndsWith('{')))
+            {
+                context.WriteNewLineToTranslation();
+            }
+
             context.WriteToTranslation('{');
             context.WriteNewLineToTranslation();
             context.Indent();

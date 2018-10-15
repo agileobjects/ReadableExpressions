@@ -140,41 +140,49 @@
                 return;
             }
 
-            var writeMultiStatementChecked =
-                 _isCheckedOperation &&
-                (_leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement());
-
-            if (_isCheckedOperation)
-            {
-                context.WriteToTranslation("checked");
-
-                if (writeMultiStatementChecked)
-                {
-                    context.WriteOpeningBraceToTranslation();
-                }
-                else
-                {
-                    context.WriteToTranslation('(');
-                }
-            }
-
+            WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
             _leftOperandTranslation.WriteInParenthesesIfRequired(context);
             context.WriteToTranslation(_operator);
             _rightOperandTranslation.WriteInParenthesesIfRequired(context);
+            WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
+        }
 
+        private void WriteOpeningCheckedIfNecessary(ITranslationContext context, out bool isMultiStatementChecked)
+        {
+            if (_isCheckedOperation == false)
+            {
+                isMultiStatementChecked = false;
+                return;
+            }
+
+            context.WriteToTranslation("checked");
+
+            isMultiStatementChecked =
+                _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
+
+            if (isMultiStatementChecked)
+            {
+                context.WriteOpeningBraceToTranslation();
+                return;
+            }
+
+            context.WriteToTranslation('(');
+        }
+
+        private void WriteClosingCheckedIfNecessary(ITranslationContext context, bool isMultiStatementChecked)
+        {
             if (_isCheckedOperation == false)
             {
                 return;
             }
 
-            if (writeMultiStatementChecked)
+            if (isMultiStatementChecked)
             {
                 context.WriteClosingBraceToTranslation();
+                return;
             }
-            else
-            {
-                context.WriteToTranslation(')');
-            }
+
+            context.WriteToTranslation(')');
         }
 
         private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)

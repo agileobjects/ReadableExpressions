@@ -8,6 +8,11 @@
     using System.Linq.Expressions;
 #endif
 
+    internal interface ITranslationQuery
+    {
+        bool TranslationEndsWith(char character);
+    }
+
     internal interface ITranslationContext
     {
         TranslationSettings Settings { get; }
@@ -21,6 +26,8 @@
         ITranslation GetTranslationFor(Type type);
 
         ITranslation GetTranslationFor(Expression expression);
+
+        bool TranslationQuery(Func<ITranslationQuery, bool> predicate);
 
         void Indent();
 

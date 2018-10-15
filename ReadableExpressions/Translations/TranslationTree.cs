@@ -11,7 +11,7 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class TranslationTree : ITranslationContext
+    internal class TranslationTree : ITranslationContext, ITranslationQuery
     {
         private readonly TranslationContext _context;
         private readonly ITranslation _root;
@@ -44,6 +44,9 @@
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);
 
+        bool ITranslationContext.TranslationQuery(Func<ITranslationQuery, bool> predicate)
+            => predicate.Invoke(this);
+
         void ITranslationContext.Indent()
         {
             _currentIndent += Constants.Indent.Length;
@@ -59,7 +62,7 @@
             _currentIndent -= Constants.Indent.Length;
         }
 
-        public void WriteCodeBlockToTranslation(ITranslatable translatable)
+        void ITranslationContext.WriteCodeBlockToTranslation(ITranslatable translatable)
         {
             if (translatable.IsMultiStatement())
             {
@@ -72,7 +75,7 @@
             translatable.WriteTo(this);
         }
 
-        public void WriteNewLineToTranslation()
+        void ITranslationContext.WriteNewLineToTranslation()
         {
             _content.Append(Environment.NewLine);
 
@@ -113,6 +116,27 @@
                 _content.Append(' ', _currentIndent);
                 _writeIndent = false;
             }
+        }
+
+        #endregion
+
+        #region ITranslationQuery
+
+        bool ITranslationQuery.TranslationEndsWith(char character)
+        {
+            for (var i = _content.Length - 1; i > -1; --i)
+            {
+                var contentCharacter = _content[i];
+
+                if (char.IsWhiteSpace(contentCharacter))
+                {
+                    continue;
+                }
+
+                return contentCharacter == character;
+            }
+
+            return false;
         }
 
         #endregion
