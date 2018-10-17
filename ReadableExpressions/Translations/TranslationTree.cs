@@ -273,7 +273,8 @@
                 case RuntimeVariables:
                     break;
                 case Switch:
-                    break;
+                    return new SwitchTranslation((SwitchExpression)expression, this);
+
                 case Throw:
                     break;
                 case Try:
