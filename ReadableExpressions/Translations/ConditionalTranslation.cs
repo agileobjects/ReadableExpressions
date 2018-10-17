@@ -24,11 +24,7 @@
 
             if (_hasNoElseCondition)
             {
-                if (conditional.IfTrue.IsReturnable())
-                {
-                    _ifTrueTranslation = GetReturningTranslation();
-                }
-
+                _ifTrueTranslation = GetIfTrueCodeBlockTranslation(conditional);
                 _translationWriter = WriteIfStatement;
                 goto EstimateSize;
             }
@@ -43,7 +39,7 @@
 
             if (conditional.IfTrue.IsReturnable())
             {
-                _ifTrueTranslation = GetReturningCodeBlockTranslation();
+                _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: true);
                 _translationWriter = WriteShortCircuitingIf;
             }
 
@@ -57,12 +53,24 @@
                    (conditional.Type == typeof(void));
         }
 
+        private ITranslation GetIfTrueCodeBlockTranslation(ConditionalExpression conditional)
+            => GetIfTrueCodeBlockTranslation(conditional.IfTrue.IsReturnable());
+
+        private ITranslation GetIfTrueCodeBlockTranslation(bool withReturnKeyword)
+        {
+            var codeBlockTranslation = new CodeBlockTranslation(_ifTrueTranslation)
+                .Terminated()
+                .WithBraces();
+
+            if (withReturnKeyword)
+            {
+                codeBlockTranslation = codeBlockTranslation.WithReturnKeyword();
+            }
+
+            return codeBlockTranslation;
+        }
+
         private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
-
-        private ITranslation GetReturningCodeBlockTranslation() => GetReturningTranslation().WithBraces();
-
-        private CodeBlockTranslation GetReturningTranslation()
-            => new CodeBlockTranslation(_ifTrueTranslation).WithReturnKeyword().Terminated();
 
         private int GetEstimatedSize()
         {
@@ -85,9 +93,7 @@
         {
             context.WriteToTranslation("if ");
             _testTranslation.WriteInParentheses(context);
-            context.WriteOpeningBraceToTranslation();
             _ifTrueTranslation.WriteTo(context);
-            context.WriteClosingBraceToTranslation();
         }
 
         private void WriteTernary(ITranslationContext context)
