@@ -15,6 +15,7 @@
         private readonly ITranslation _ifTrueTranslation;
         private readonly ITranslation _ifFalseTranslation;
         private readonly Action<ITranslationContext> _translationWriter;
+        private readonly bool _isElseIf;
 
         public ConditionalTranslation(ConditionalExpression conditional, ITranslationContext context)
         {
@@ -41,6 +42,15 @@
             {
                 _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: true);
                 _translationWriter = WriteShortCircuitingIf;
+                goto EstimateSize;
+            }
+
+            _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: false);
+            _isElseIf = IsElseIf(conditional);
+
+            if (_isElseIf == false)
+            {
+                _ifFalseTranslation = GetCodeBlockTranslation(_ifFalseTranslation, conditional.IfFalse.IsReturnable());
             }
 
             EstimateSize:
@@ -57,8 +67,11 @@
             => GetIfTrueCodeBlockTranslation(conditional.IfTrue.IsReturnable());
 
         private ITranslation GetIfTrueCodeBlockTranslation(bool withReturnKeyword)
+            => GetCodeBlockTranslation(_ifTrueTranslation, withReturnKeyword);
+
+        private static ITranslation GetCodeBlockTranslation(ITranslation translation, bool withReturnKeyword)
         {
-            var codeBlockTranslation = new CodeBlockTranslation(_ifTrueTranslation)
+            var codeBlockTranslation = new CodeBlockTranslation(translation)
                 .Terminated()
                 .WithBraces();
 
@@ -71,6 +84,9 @@
         }
 
         private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
+
+        private static bool IsElseIf(ConditionalExpression conditional)
+            => conditional.IfFalse.NodeType == ExpressionType.Conditional;
 
         private int GetEstimatedSize()
         {
@@ -107,9 +123,7 @@
 
         private void WriteShortCircuitingIf(ITranslationContext context)
         {
-            context.WriteToTranslation("if ");
-            _testTranslation.WriteInParentheses(context);
-            _ifTrueTranslation.WriteTo(context);
+            WriteIfStatement(context);
             context.WriteNewLineToTranslation();
             context.WriteNewLineToTranslation();
             _ifFalseTranslation.WriteTo(context);
@@ -122,6 +136,17 @@
                 _translationWriter.Invoke(context);
                 return;
             }
+
+            WriteIfStatement(context);
+            context.WriteNewLineToTranslation();
+            context.WriteToTranslation("else");
+
+            if (_isElseIf)
+            {
+                context.WriteSpaceToTranslation();
+            }
+
+            _ifFalseTranslation.WriteTo(context);
         }
     }
 }
