@@ -9,6 +9,8 @@
     internal class CodeBlockTranslation : ITranslation
     {
         private readonly ITranslation _translation;
+        private bool _ensureTerminated;
+        private bool _ensureReturnKeyword;
         private bool _writeBraces;
 
         public CodeBlockTranslation(ITranslation translation)
@@ -23,6 +25,11 @@
         {
             EstimatedSize = _translation.EstimatedSize;
 
+            if (_ensureReturnKeyword)
+            {
+                EstimatedSize += 10;
+            }
+
             if (_writeBraces)
             {
                 EstimatedSize += 10;
@@ -33,8 +40,21 @@
 
         public int EstimatedSize { get; private set; }
 
+        public CodeBlockTranslation Terminated()
+        {
+            _ensureTerminated = true;
+            return this;
+        }
+
         public CodeBlockTranslation Unterminated()
         {
+            return this;
+        }
+
+        public CodeBlockTranslation WithReturnKeyword()
+        {
+            _ensureReturnKeyword = true;
+            CalculateEstimatedSize();
             return this;
         }
 
@@ -69,12 +89,38 @@
                 context.WriteOpeningBraceToTranslation();
             }
 
+            if (_ensureReturnKeyword && !_translation.IsMultiStatement())
+            {
+                context.WriteToTranslation("return ");
+            }
+
             _translation.WriteTo(context);
+
+            if (EnsureTerminated())
+            {
+                context.WriteToTranslation(';');
+            }
 
             if (_writeBraces)
             {
                 context.WriteClosingBraceToTranslation();
             }
+        }
+
+        private bool EnsureTerminated()
+        {
+            if (_ensureTerminated == false)
+            {
+                return false;
+            }
+
+            if ((_translation is IPotentialSelfTerminatingTranslatable selfTerminatingTranslatable) &&
+                selfTerminatingTranslatable.IsTerminated)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -9,7 +9,7 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class BlockTranslation : ITranslation, IPotentialMultiStatementTranslatable
+    internal class BlockTranslation : ITranslation, IPotentialMultiStatementTranslatable, IPotentialSelfTerminatingTranslatable
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
@@ -22,6 +22,7 @@
             _statements = GetBlockStatements(block, context);
             EstimatedSize = GetEstimatedSize();
             IsMultiStatement = _statements.Count > 1;
+            IsTerminated = true;
             _requiresReturnKeyword = IsMultiStatement && block.IsReturnable();
             _addBlankLineBeforeReturn = _requiresReturnKeyword && AddBlankLineBeforeReturn(block);
         }
@@ -131,9 +132,12 @@
 
         public bool IsMultiStatement { get; }
 
+        public bool IsTerminated { get; private set; }
+
         public BlockTranslation WithoutTermination()
         {
             _statements[_statements.Count - 1].DoNotTerminate = true;
+            IsTerminated = false;
             return this;
         }
 
@@ -195,6 +199,7 @@
                 switch (expression.NodeType)
                 {
                     case ExpressionType.Block:
+                    case ExpressionType.Conditional:
                     case ExpressionType.Lambda:
                         return false;
 
@@ -203,7 +208,7 @@
                         return true;
                 }
 
-                return /*translation.IsTerminated() || */!expression.IsComment();
+                return !expression.IsComment();
             }
 
             public ExpressionType NodeType { get; }

@@ -24,6 +24,11 @@
 
             if (_hasNoElseCondition)
             {
+                if (conditional.IfTrue.IsReturnable())
+                {
+                    _ifTrueTranslation = GetReturningTranslation();
+                }
+
                 _translationWriter = WriteIfStatement;
                 goto EstimateSize;
             }
@@ -33,10 +38,12 @@
             if (IsTernary(conditional))
             {
                 _translationWriter = WriteTernary;
+                goto EstimateSize;
             }
-            else if (conditional.IfTrue.IsReturnable())
+
+            if (conditional.IfTrue.IsReturnable())
             {
-                _ifTrueTranslation = new CodeBlockTranslation(_ifTrueTranslation).WithBraces();
+                _ifTrueTranslation = GetReturningCodeBlockTranslation();
                 _translationWriter = WriteShortCircuitingIf;
             }
 
@@ -51,6 +58,11 @@
         }
 
         private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
+
+        private ITranslation GetReturningCodeBlockTranslation() => GetReturningTranslation().WithBraces();
+
+        private CodeBlockTranslation GetReturningTranslation()
+            => new CodeBlockTranslation(_ifTrueTranslation).WithReturnKeyword().Terminated();
 
         private int GetEstimatedSize()
         {
@@ -73,14 +85,9 @@
         {
             context.WriteToTranslation("if ");
             _testTranslation.WriteInParentheses(context);
-            context.WriteNewLineToTranslation();
-            context.WriteToTranslation('{');
-            context.WriteNewLineToTranslation();
-            context.Indent();
+            context.WriteOpeningBraceToTranslation();
             _ifTrueTranslation.WriteTo(context);
-            context.WriteNewLineToTranslation();
-            context.Unindent();
-            context.WriteToTranslation('}');
+            context.WriteClosingBraceToTranslation();
         }
 
         private void WriteTernary(ITranslationContext context)
