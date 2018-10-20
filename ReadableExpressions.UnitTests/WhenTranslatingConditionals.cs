@@ -337,6 +337,82 @@ switch (i)
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        //[Fact]
+        public void ShouldTranslateASwitchStatementWithAGoto()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            
+            //var writeTwoLabel = Expression.Label()
+            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+            var writeTwoCase = Expression.SwitchCase(writeTwo.Body, Expression.Constant(2));
+
+            var writeOne = CreateLambda(() => Console.WriteLine("One"));
+
+            
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                Expression.SwitchCase(writeOne.Body, Expression.Constant(1)),
+                writeTwoCase);
+
+            var translated = ToReadableString(switchStatement);
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 1:
+        Console.WriteLine(""One"");
+        break;
+
+    case 2:
+        Console.WriteLine(""Two"");
+        break;
+
+    case 3:
+        Console.WriteLine(""Three"");
+        break;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        //[Fact]
+        public void ShouldTranslateASwitchStatementWithMultipleCaseTestValues()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+            
+            //var writeTwoLabel = Expression.Label()
+            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+            var writeTwoCase = Expression.SwitchCase(writeTwo.Body, Expression.Constant(2));
+
+            var writeOne = CreateLambda(() => Console.WriteLine("One"));
+
+            
+
+            var switchStatement = Expression.Switch(
+                intVariable,
+                Expression.SwitchCase(writeOne.Body, Expression.Constant(1)),
+                writeTwoCase);
+
+            var translated = ToReadableString(switchStatement);
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 1:
+        Console.WriteLine(""One"");
+        break;
+
+    case 2:
+        Console.WriteLine(""Two"");
+        break;
+
+    case 3:
+        Console.WriteLine(""Three"");
+        break;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         [Fact]
         public void ShouldTranslateASwitchStatementWithADefault()
         {
