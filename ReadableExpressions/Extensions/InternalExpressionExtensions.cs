@@ -62,16 +62,10 @@
         }
 
         public static bool IsComment(this Expression expression)
-        {
-            if (expression.NodeType != ExpressionType.Constant)
-            {
-                return false;
-            }
+            => (expression.NodeType == ExpressionType.Constant) && ((ConstantExpression)expression).IsComment();
 
-            var value = ((ConstantExpression)expression).Value as string;
-
-            return (value != null) && value.IsComment();
-        }
+        public static bool IsComment(this ConstantExpression constant)
+            => (constant.Value is string value) && value.IsComment();
 
         public static bool IsAssignment(this Expression expression)
         {

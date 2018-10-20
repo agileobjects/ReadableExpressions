@@ -12,7 +12,7 @@
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
 
-    internal class ConstantTranslation : ITranslation
+    internal class ConstantTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private const string _null = "null";
 
@@ -55,6 +55,9 @@
         public ExpressionType NodeType => ExpressionType.Constant;
 
         public int EstimatedSize { get; }
+
+        public bool IsTerminated
+            => (_constant.NodeType == ExpressionType.Lambda) || _constant.IsComment();
 
         public void WriteTo(ITranslationContext context)
         {

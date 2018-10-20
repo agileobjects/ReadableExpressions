@@ -317,7 +317,29 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
         public static bool IsComment(this string codeLine)
         {
-            return codeLine.TrimStart().StartsWith(CommentString, StringComparison.Ordinal);
+            if (codeLine == null)
+            {
+                return false;
+            }
+
+            for (int i = 0, l = codeLine.Length; i < l; ++i)
+            {
+                var character = codeLine[i];
+
+                if (char.IsWhiteSpace(character))
+                {
+                    continue;
+                }
+
+                if ((l - i) < 3)
+                {
+                    return false;
+                }
+
+                return character == '/' && codeLine[i + 1] == '/' && codeLine[i + 2] == ' ';
+            }
+
+            return false;
         }
 
         public static string ToStringConcatenation(this IEnumerable<Expression> strings, TranslationContext context)

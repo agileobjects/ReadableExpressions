@@ -1,10 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
-#if !NET35
-    using System.Linq.Expressions;
+#if NET35
+    using Microsoft.Scripting.Ast;
 #else
-    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using System.Linq.Expressions;
 #endif
     using Extensions;
 
