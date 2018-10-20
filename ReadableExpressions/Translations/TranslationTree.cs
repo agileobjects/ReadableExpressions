@@ -229,7 +229,8 @@
                 case Extension:
                     break;
                 case Goto:
-                    break;
+                    return new GotoTranslation((GotoExpression)expression, this);
+
                 case Index:
                     return new IndexAccessTranslation((IndexExpression)expression, this);
 
