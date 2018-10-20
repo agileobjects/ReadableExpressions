@@ -34,11 +34,14 @@
                 }
 
                 _caseTestValueTranslations[i] = caseTestValueTranslations;
-                _caseTranslations[i] = context.GetCodeBlockTranslationFor(@case.Body).Terminated();
+                _caseTranslations[i] = GetCaseBodyTranslation(@case.Body, context);
             }
 
-            _defaultCaseTranslation = context.GetTranslationFor(switchStatement.DefaultBody);
+            _defaultCaseTranslation = GetCaseBodyTranslation(switchStatement.DefaultBody, context);
         }
+
+        private static CodeBlockTranslation GetCaseBodyTranslation(Expression caseBody, ITranslationContext context)
+            => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).Terminated().WithoutBraces() : null;
 
         public ExpressionType NodeType => ExpressionType.Switch;
 
