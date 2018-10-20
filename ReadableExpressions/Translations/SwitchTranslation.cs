@@ -68,14 +68,23 @@
                 }
 
                 context.Indent();
-                _caseTranslations[i].WriteTo(context);
+
+                var caseTranslation = _caseTranslations[i];
+                caseTranslation.WriteTo(context);
+
+                if (WriteBreak(caseTranslation))
+                {
+                    context.WriteNewLineToTranslation();
+                    context.WriteToTranslation("break;");
+                }
+
                 context.Unindent();
 
                 if (i == l)
                 {
                     break;
                 }
-                
+
                 context.WriteNewLineToTranslation();
                 context.WriteNewLineToTranslation();
             }
@@ -83,5 +92,9 @@
             context.WriteClosingBraceToTranslation();
         }
 
+        private static bool WriteBreak(ITranslation caseTranslation)
+        {
+            return caseTranslation.NodeType != ExpressionType.Block;
+        }
     }
 }
