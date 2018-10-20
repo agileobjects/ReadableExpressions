@@ -9,7 +9,11 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class BlockTranslation : ITranslation, IPotentialMultiStatementTranslatable, IPotentialSelfTerminatingTranslatable
+    internal class BlockTranslation : 
+        ITranslation, 
+        IPotentialMultiStatementTranslatable, 
+        IPotentialSelfTerminatingTranslatable,
+        IPotentialGotoTranslatable
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
@@ -133,6 +137,8 @@
         public bool IsMultiStatement { get; }
 
         public bool IsTerminated { get; private set; }
+
+        public bool HasGoto { get; }
 
         public BlockTranslation WithoutTermination()
         {

@@ -67,18 +67,7 @@
                     }
                 }
 
-                context.Indent();
-
-                var caseTranslation = _caseTranslations[i];
-                caseTranslation.WriteTo(context);
-
-                if (WriteBreak(caseTranslation))
-                {
-                    context.WriteNewLineToTranslation();
-                    context.WriteToTranslation("break;");
-                }
-
-                context.Unindent();
+                WriteCaseBody(_caseTranslations[i], context);
 
                 if (i == l)
                 {
@@ -89,12 +78,42 @@
                 context.WriteNewLineToTranslation();
             }
 
+            WriteDefaultIfPresent(context);
+
             context.WriteClosingBraceToTranslation();
         }
 
-        private static bool WriteBreak(ITranslation caseTranslation)
+        private static void WriteCaseBody(ITranslation bodyTranslation, ITranslationContext context)
         {
-            return caseTranslation.NodeType != ExpressionType.Block;
+            context.Indent();
+
+            bodyTranslation.WriteTo(context);
+
+            if (WriteBreak(bodyTranslation))
+            {
+                context.WriteNewLineToTranslation();
+                context.WriteToTranslation("break;");
+            }
+
+            context.Unindent();
         }
+
+        private void WriteDefaultIfPresent(ITranslationContext context)
+        {
+            if (_defaultCaseTranslation == null)
+            {
+                return;
+            }
+
+            context.WriteNewLineToTranslation();
+            context.WriteNewLineToTranslation();
+            context.WriteToTranslation("default:");
+            context.WriteNewLineToTranslation();
+
+            WriteCaseBody(_defaultCaseTranslation, context);
+        }
+
+        private static bool WriteBreak(ITranslation caseTranslation)
+            => !((caseTranslation is IPotentialGotoTranslatable gotoTranslatable) && gotoTranslatable.HasGoto);
     }
 }
