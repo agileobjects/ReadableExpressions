@@ -15,8 +15,10 @@
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
 
         bool IsNotJoinedAssignment(Expression expression);
-        
+
         bool IsReferencedByGoto(LabelTarget labelTarget);
+
+        bool GoesToReturnLabel(GotoExpression @goto);
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 

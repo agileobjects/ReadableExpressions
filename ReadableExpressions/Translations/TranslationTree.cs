@@ -39,6 +39,9 @@
         bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
             => _context.IsReferencedByGoto(labelTarget);
 
+        bool ITranslationContext.GoesToReturnLabel(GotoExpression @goto)
+            => _context.GoesToReturnLabel(@goto);
+
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
