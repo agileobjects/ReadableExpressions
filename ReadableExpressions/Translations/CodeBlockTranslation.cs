@@ -124,20 +124,6 @@
             return false;
         }
 
-        private bool EnsureTerminated()
-        {
-            if (_ensureTerminated == false)
-            {
-                return false;
-            }
-
-            if ((_translation is IPotentialSelfTerminatingTranslatable selfTerminatingTranslatable) &&
-                selfTerminatingTranslatable.IsTerminated)
-            {
-                return false;
-            }
-
-            return true;
-        }
+        private bool EnsureTerminated() => _ensureTerminated && (_translation.IsTerminated() == false);
     }
 }

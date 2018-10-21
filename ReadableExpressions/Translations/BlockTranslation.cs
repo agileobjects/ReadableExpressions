@@ -5,13 +5,15 @@
     using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class BlockTranslation : 
-        ITranslation, 
-        IPotentialMultiStatementTranslatable, 
+    internal class BlockTranslation :
+        ITranslation,
+        IPotentialMultiStatementTranslatable,
         IPotentialSelfTerminatingTranslatable,
         IPotentialGotoTranslatable
     {
@@ -98,12 +100,12 @@
                 return true;
             }
 
-            if (expression.NodeType == ExpressionType.Parameter)
+            if (expression.NodeType == Parameter)
             {
                 return false;
             }
 
-            return (expression.NodeType != ExpressionType.Constant) || expression.IsComment();
+            return (expression.NodeType != Constant) || expression.IsComment();
         }
 
         private int GetEstimatedSize()
@@ -130,7 +132,7 @@
         private static bool AddBlankLineBeforeReturn(BlockExpression block)
             => !block.Expressions[block.Expressions.Count - 2].IsComment();
 
-        public ExpressionType NodeType => ExpressionType.Block;
+        public ExpressionType NodeType => Block;
 
         public int EstimatedSize { get; }
 
@@ -165,6 +167,7 @@
             for (int i = 0, l = _statements.Count - 1; ; ++i)
             {
                 var isFinalLine = i == l;
+                var statement = _statements[i];
 
                 if (isFinalLine && _requiresReturnKeyword)
                 {
@@ -176,7 +179,7 @@
                     context.WriteToTranslation("return ");
                 }
 
-                _statements[i].WriteTo(context);
+                statement.WriteTo(context);
 
                 if (isFinalLine)
                 {
@@ -184,6 +187,11 @@
                 }
 
                 context.WriteNewLineToTranslation();
+
+                if ((_addBlankLineBeforeReturn == false) && statement.LeaveBlankLineAfter())
+                {
+                    context.WriteNewLineToTranslation();
+                }
             }
         }
 
@@ -200,21 +208,21 @@
                 EstimatedSize = _statementTranslation.EstimatedSize + 1;
             }
 
-            private static bool StatementIsUnterminated(Expression expression)
+            private bool StatementIsUnterminated(Expression expression)
             {
-                switch (expression.NodeType)
+                switch (NodeType)
                 {
-                    case ExpressionType.Block:
-                    case ExpressionType.Conditional:
-                    case ExpressionType.Lambda:
+                    case Block:
+                    case Conditional:
+                    case Lambda:
                         return false;
 
-                    case ExpressionType.Assign:
-                    case ExpressionType.MemberInit:
+                    case Assign:
+                    case MemberInit:
                         return true;
                 }
 
-                return !expression.IsComment();
+                return !(expression.IsComment() || _statementTranslation.IsTerminated());
             }
 
             public ExpressionType NodeType { get; }
@@ -222,6 +230,18 @@
             public int EstimatedSize { get; protected set; }
 
             public bool DoNotTerminate { private get; set; }
+
+            public bool LeaveBlankLineAfter()
+            {
+                switch (NodeType)
+                {
+                    case Conditional:
+                    case Lambda:
+                        return true;
+                }
+
+                return false;
+            }
 
             public virtual void WriteTo(ITranslationContext context)
             {
@@ -255,12 +275,12 @@
             private static bool UseFullTypeName(BinaryExpression assignment)
             {
                 if ((assignment.Left.Type != assignment.Right.Type) ||
-                    (assignment.Right.NodeType == ExpressionType.Lambda))
+                    (assignment.Right.NodeType == Lambda))
                 {
                     return true;
                 }
 
-                if (assignment.Right.NodeType != ExpressionType.Conditional)
+                if (assignment.Right.NodeType != Conditional)
                 {
                     return false;
                 }

@@ -8,21 +8,39 @@
 #endif
     using Extensions;
 
-    internal class LabelTranslation : ITranslation, IPotentialEmptyTranslatable
+    internal class LabelTranslation : ITranslation, IPotentialSelfTerminatingTranslatable, IPotentialEmptyTranslatable
     {
         private readonly string _labelName;
+        private readonly bool _labelIsNamed;
+        private readonly bool _labelHasNoValue;
+        private readonly CodeBlockTranslation _labelValueTranslation;
 
         public LabelTranslation(LabelExpression label, ITranslationContext context)
         {
             _labelName = GetLabelNamePart(label, context);
+            _labelIsNamed = _labelName != null;
+            _labelHasNoValue = label.DefaultValue == null;
 
-            if (_labelName == null)
+            if (_labelIsNamed)
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                EstimatedSize = _labelName.Length + 1 + Environment.NewLine.Length;
+            }
+            else if (_labelHasNoValue)
             {
                 IsEmpty = true;
                 return;
             }
 
-            EstimatedSize = _labelName.Length + 1 + Environment.NewLine.Length;
+            IsTerminated = true;
+
+            if (_labelHasNoValue)
+            {
+                return;
+            }
+
+            _labelValueTranslation = context.GetCodeBlockTranslationFor(label.DefaultValue);
+            EstimatedSize += _labelValueTranslation.EstimatedSize;
         }
 
         private static string GetLabelNamePart(LabelExpression label, ITranslationContext context)
@@ -39,18 +57,27 @@
 
         public int EstimatedSize { get; }
 
+        public bool IsTerminated { get; }
+
         public bool IsEmpty { get; }
 
         public void WriteTo(ITranslationContext context)
         {
-            if (_labelName == null)
+            if (_labelIsNamed)
+            {
+                context.WriteToTranslation(_labelName);
+                context.WriteToTranslation(':');
+                context.WriteNewLineToTranslation();
+            }
+
+            if (_labelHasNoValue)
             {
                 return;
             }
 
-            context.WriteToTranslation(_labelName);
-            context.WriteToTranslation(':');
-            context.WriteNewLineToTranslation();
+            context.WriteToTranslation("return ");
+            _labelValueTranslation.WriteTo(context);
+            context.WriteToTranslation(';');
         }
     }
 }

@@ -8,6 +8,12 @@
                     multiStatementTranslatable.IsMultiStatement;
         }
 
+        public static bool IsTerminated(this ITranslatable translation)
+        {
+            return (translation is IPotentialSelfTerminatingTranslatable selfTerminatedTranslatable) &&
+                   selfTerminatedTranslatable.IsTerminated;
+        }
+
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context)
         {
             if (context.TranslationQuery(q => !q.TranslationEndsWith('{')))
