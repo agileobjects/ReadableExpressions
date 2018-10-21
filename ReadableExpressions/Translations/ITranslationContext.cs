@@ -8,11 +8,6 @@
     using System.Linq.Expressions;
 #endif
 
-    internal interface ITranslationQuery
-    {
-        bool TranslationEndsWith(char character);
-    }
-
     internal interface ITranslationContext
     {
         TranslationSettings Settings { get; }
@@ -20,6 +15,8 @@
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
 
         bool IsNotJoinedAssignment(Expression expression);
+        
+        bool IsReferencedByGoto(LabelTarget labelTarget);
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 

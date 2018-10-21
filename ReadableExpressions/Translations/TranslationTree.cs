@@ -36,6 +36,9 @@
         bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
             => _context.IsNotJoinedAssignment(expression);
 
+        bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
+            => _context.IsReferencedByGoto(labelTarget);
+
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
@@ -238,7 +241,8 @@
                     break;
 
                 case Label:
-                    break;
+                    return new LabelTranslation((LabelExpression)expression, this);
+
                 case Lambda:
                     return new LambdaTranslation((LambdaExpression)expression, this);
 
