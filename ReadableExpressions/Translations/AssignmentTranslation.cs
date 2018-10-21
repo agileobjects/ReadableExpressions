@@ -75,6 +75,8 @@
                    _valueTranslation.EstimatedSize;
         }
 
+        public static bool IsAssignment(ExpressionType nodeType) => _symbolsByNodeType.ContainsKey(nodeType);
+
         public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }

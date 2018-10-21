@@ -42,6 +42,12 @@
                 return;
             }
 
+            if (AssignmentTranslation.IsAssignment(translation.NodeType))
+            {
+                translation.WriteInParentheses(context);
+                return;
+            }
+
             new CodeBlockTranslation(translation).WriteTo(context);
         }
 

@@ -7,7 +7,7 @@
 #endif
     using Extensions;
 
-    internal class DefaultValueTranslation : ITranslation
+    internal class DefaultValueTranslation : ITranslation, IPotentialEmptyTranslatable
     {
         private const string _default = "default";
         private const string _null = "null";
@@ -21,6 +21,7 @@
         {
             if (defaultExpression.Type == typeof(void))
             {
+                IsEmpty = true;
                 return;
             }
 
@@ -42,6 +43,8 @@
         public ExpressionType NodeType => ExpressionType.Default;
 
         public int EstimatedSize { get; }
+
+        public bool IsEmpty { get; }
 
         public void WriteTo(ITranslationContext context)
         {

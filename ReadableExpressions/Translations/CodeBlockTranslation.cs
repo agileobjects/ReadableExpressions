@@ -87,6 +87,11 @@
             if (_writeBraces)
             {
                 context.WriteOpeningBraceToTranslation();
+
+                if (WriteEmptyCodeBlock(context))
+                {
+                    return;
+                }
             }
 
             if (_ensureReturnKeyword && !_translation.IsMultiStatement())
@@ -105,6 +110,18 @@
             {
                 context.WriteClosingBraceToTranslation();
             }
+        }
+
+        private bool WriteEmptyCodeBlock(ITranslationContext context)
+        {
+            if ((_translation is IPotentialEmptyTranslatable emptyTranslatable) && emptyTranslatable.IsEmpty)
+            {
+                context.Unindent();
+                context.WriteToTranslation('}');
+                return true;
+            }
+
+            return false;
         }
 
         private bool EnsureTerminated()

@@ -8,7 +8,7 @@
 #endif
     using Extensions;
 
-    internal class LabelTranslation : ITranslation
+    internal class LabelTranslation : ITranslation, IPotentialEmptyTranslatable
     {
         private readonly string _labelName;
 
@@ -18,6 +18,7 @@
 
             if (_labelName == null)
             {
+                IsEmpty = true;
                 return;
             }
 
@@ -37,6 +38,8 @@
         public ExpressionType NodeType => ExpressionType.Label;
 
         public int EstimatedSize { get; }
+
+        public bool IsEmpty { get; }
 
         public void WriteTo(ITranslationContext context)
         {
