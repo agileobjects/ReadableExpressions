@@ -85,7 +85,7 @@
             }
         }
 
-        public static string GetOperator(Expression expression) => _operatorsByNodeType[expression.NodeType];
+        public static string GetOperator(BinaryExpression expression) => _operatorsByNodeType[expression.NodeType];
 
         public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
 
