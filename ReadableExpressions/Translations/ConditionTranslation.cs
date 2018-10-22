@@ -9,7 +9,6 @@
 
     internal class ConditionTranslation : ITranslation
     {
-        private readonly CodeBlockTranslation _conditionTranslation;
         private readonly ITranslation _binaryConditionLeftTranslation;
         private readonly string _binaryConditionOperator;
         private readonly ITranslation _binaryConditionRightTranslation;
@@ -27,8 +26,8 @@
                 _binaryConditionLeftTranslation = new ConditionTranslation(binaryCondition.Left, context);
                 _binaryConditionOperator = BinaryTranslation.GetOperator(binaryCondition);
                 _binaryConditionRightTranslation = new ConditionTranslation(binaryCondition.Right, context);
-                _translationWriter = WriteMultiLineBinaryTranslation;
 
+                _translationWriter = WriteMultiLineBinaryTranslation;
                 EstimatedSize = conditionTranslation.EstimatedSize;
                 return;
             }
@@ -40,10 +39,8 @@
                 conditionCodeBlockTranslation.WithSingleLamdaParameterFormatting();
             }
 
-            _conditionTranslation = conditionCodeBlockTranslation;
-            _translationWriter = _conditionTranslation.WriteTo;
-
-            EstimatedSize = _conditionTranslation.EstimatedSize;
+            _translationWriter = conditionCodeBlockTranslation.WriteTo;
+            EstimatedSize = conditionCodeBlockTranslation.EstimatedSize;
         }
 
         private bool SplitBinaryConditionToMultipleLines(ITranslatable conditionTranslation)
