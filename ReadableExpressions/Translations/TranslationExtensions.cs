@@ -1,5 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
+
     internal static class TranslationExtensions
     {
         public static bool IsMultiStatement(this ITranslatable translation)
@@ -42,13 +48,9 @@
 
         public static void WriteInParenthesesIfRequired(this ITranslation translation, ITranslationContext context)
         {
-            if (BinaryTranslation.IsBinary(translation.NodeType))
-            {
-                translation.WriteInParentheses(context);
-                return;
-            }
-
-            if (AssignmentTranslation.IsAssignment(translation.NodeType))
+            if ((translation.NodeType == ExpressionType.Conditional) ||
+                 BinaryTranslation.IsBinary(translation.NodeType) ||
+                 AssignmentTranslation.IsAssignment(translation.NodeType))
             {
                 translation.WriteInParentheses(context);
                 return;
