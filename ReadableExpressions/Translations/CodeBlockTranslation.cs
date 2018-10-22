@@ -11,6 +11,7 @@
         private readonly ITranslation _translation;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
+        private bool _formatAsSingleLambdaParameter;
         private bool _writeBraces;
 
         public CodeBlockTranslation(ITranslation translation)
@@ -40,14 +41,20 @@
 
         public int EstimatedSize { get; private set; }
 
-        public CodeBlockTranslation Terminated()
+        public CodeBlockTranslation WithTermination()
         {
             _ensureTerminated = true;
             return this;
         }
 
-        public CodeBlockTranslation Unterminated()
+        public CodeBlockTranslation WithoutTermination()
         {
+            return this;
+        }
+
+        public CodeBlockTranslation WithSingleLamdaParameterFormatting()
+        {
+            _formatAsSingleLambdaParameter = true;
             return this;
         }
 
@@ -86,12 +93,17 @@
         {
             if (_writeBraces)
             {
-                context.WriteOpeningBraceToTranslation();
+                context.WriteOpeningBraceToTranslation(startOnNewLine: _formatAsSingleLambdaParameter == false);
 
                 if (WriteEmptyCodeBlock(context))
                 {
                     return;
                 }
+            }
+
+            if (_formatAsSingleLambdaParameter)
+            {
+                context.Indent();
             }
 
             if (_ensureReturnKeyword && !_translation.IsMultiStatement())
@@ -110,14 +122,18 @@
             {
                 context.WriteClosingBraceToTranslation();
             }
+
+            if (_formatAsSingleLambdaParameter)
+            {
+                context.Unindent();
+            }
         }
 
         private bool WriteEmptyCodeBlock(ITranslationContext context)
         {
             if ((_translation is IPotentialEmptyTranslatable emptyTranslatable) && emptyTranslatable.IsEmpty)
             {
-                context.Unindent();
-                context.WriteToTranslation('}');
+                context.WriteClosingBraceToTranslation(startOnNewLine: false);
                 return true;
             }
 

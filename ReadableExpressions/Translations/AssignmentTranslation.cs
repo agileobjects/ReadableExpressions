@@ -57,7 +57,7 @@
 
             if (!valueBlock.IsMultiStatement())
             {
-                return valueBlock.WithoutBraces().Unterminated();
+                return valueBlock.WithoutBraces().WithoutTermination();
             }
 
             if ((valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda))

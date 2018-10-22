@@ -72,7 +72,7 @@
         private static ITranslation GetCodeBlockTranslation(ITranslation translation, bool withReturnKeyword)
         {
             var codeBlockTranslation = new CodeBlockTranslation(translation)
-                .Terminated()
+                .WithTermination()
                 .WithBraces();
 
             if (withReturnKeyword)

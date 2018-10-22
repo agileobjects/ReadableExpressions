@@ -70,13 +70,11 @@
                 return;
             }
 
-            context.WriteNewLineToTranslation();
-            context.WriteToTranslation('{');
-            context.WriteNewLineToTranslation();
-            context.Indent();
+            context.WriteOpeningBraceToTranslation();
 
-            foreach (var initializerTranslationSet in _initializerTranslations)
+            for (int i = 0, l = _initializerTranslations.Count - 1; ; ++i)
             {
+                var initializerTranslationSet = _initializerTranslations[i];
                 var numberOfArguments = initializerTranslationSet.Length;
                 var hasMultipleArguments = numberOfArguments != 0;
 
@@ -85,11 +83,11 @@
                     context.WriteToTranslation("{ ");
                 }
 
-                for (int i = 0, l = numberOfArguments - 1; ; ++i)
+                for (int j = 0, m = numberOfArguments - 1; ; ++j)
                 {
-                    initializerTranslationSet[i].WriteTo(context);
+                    initializerTranslationSet[j].WriteTo(context);
 
-                    if (i == l)
+                    if (j == m)
                     {
                         break;
                     }
@@ -102,11 +100,15 @@
                     context.WriteToTranslation(" }");
                 }
 
+                if (i == l)
+                {
+                    break;
+                }
+
                 context.WriteNewLineToTranslation();
             }
 
-            context.Unindent();
-            context.WriteToTranslation('}');
+            context.WriteClosingBraceToTranslation();
         }
     }
 }

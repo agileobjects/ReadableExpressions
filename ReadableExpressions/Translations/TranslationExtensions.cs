@@ -20,9 +20,9 @@
                    selfTerminatedTranslatable.IsTerminated;
         }
 
-        public static void WriteOpeningBraceToTranslation(this ITranslationContext context)
+        public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
-            if (context.TranslationQuery(q => !q.TranslationEndsWith('{')))
+            if (startOnNewLine && context.TranslationQuery(q => !q.TranslationEndsWith('{')))
             {
                 context.WriteNewLineToTranslation();
             }
@@ -32,9 +32,13 @@
             context.Indent();
         }
 
-        public static void WriteClosingBraceToTranslation(this ITranslationContext context)
+        public static void WriteClosingBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
-            context.WriteNewLineToTranslation();
+            if (startOnNewLine)
+            {
+                context.WriteNewLineToTranslation();
+            }
+
             context.Unindent();
             context.WriteToTranslation('}');
         }

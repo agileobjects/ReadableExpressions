@@ -41,7 +41,7 @@
         }
 
         private static CodeBlockTranslation GetCaseBodyTranslation(Expression caseBody, ITranslationContext context)
-            => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).Terminated().WithoutBraces() : null;
+            => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).WithTermination().WithoutBraces() : null;
 
         public ExpressionType NodeType => ExpressionType.Switch;
 

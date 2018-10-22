@@ -8,12 +8,21 @@
 
     internal class ConditionTranslation : ITranslation
     {
-        private readonly ITranslation _conditionTranslation;
+        private readonly CodeBlockTranslation _conditionTranslation;
 
         public ConditionTranslation(Expression condition, ITranslationContext context)
         {
             NodeType = condition.NodeType;
-            _conditionTranslation = context.GetCodeBlockTranslationFor(condition);
+            
+            var conditionTranslation = context.GetTranslationFor(condition);
+            var conditionCodeBlockTranslation = new CodeBlockTranslation(conditionTranslation);
+
+            if (conditionTranslation.IsMultiStatement())
+            {
+                conditionCodeBlockTranslation.WithSingleLamdaParameterFormatting();
+            }
+
+            _conditionTranslation = conditionCodeBlockTranslation;
             EstimatedSize = _conditionTranslation.EstimatedSize;
         }
 
