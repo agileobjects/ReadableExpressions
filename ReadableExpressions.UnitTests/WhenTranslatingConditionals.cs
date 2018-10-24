@@ -9,7 +9,7 @@
     using static Issue22;
     using static Issue22.InheritanceTests;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]

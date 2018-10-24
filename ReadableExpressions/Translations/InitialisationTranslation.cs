@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -9,16 +11,22 @@
 #endif
     using Extensions;
 
-    internal class InitialisationTranslation : ITranslation
+    internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
         private readonly NewingTranslation _newingTranslation;
         private readonly IList<ITranslation[]> _initializerTranslations;
 
-        public InitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
+        protected InitialisationTranslationBase(
+            ExpressionType initType,
+            NewExpression newing,
+            ICollection<TInitializer> initializers,
+            Func<TInitializer, ITranslationContext, ITranslation[]> initializerTranslationFactory,
+            ITranslationContext context)
         {
-            _newingTranslation = new NewingTranslation(listInit.NewExpression, context);
+            NodeType = initType;
+            _newingTranslation = new NewingTranslation(newing, context);
 
-            if (listInit.Initializers.Count == 0)
+            if (initializers.Count == 0)
             {
                 EstimatedSize = _newingTranslation.EstimatedSize;
                 return;
@@ -28,32 +36,25 @@
 
             var estimatedSize = _newingTranslation.EstimatedSize;
 
-            _initializerTranslations = listInit.Initializers
-                .Project(init =>
-                {
-                    if (init.Arguments.Count == 1)
-                    {
-                        ITranslation singleArgumentTranslation = context.GetCodeBlockTranslationFor(init.Arguments[0]);
-                        estimatedSize += singleArgumentTranslation.EstimatedSize;
-
-                        return new[] { singleArgumentTranslation };
-                    }
-
-                    return init
-                        .Arguments
-                        .Project(arg =>
-                        {
-                            ITranslation argumentTranslation = context.GetCodeBlockTranslationFor(arg);
-
-                            estimatedSize += argumentTranslation.EstimatedSize;
-
-                            return argumentTranslation;
-                        })
-                        .ToArray();
-                })
+            _initializerTranslations = initializers
+                .Project(init => initializerTranslationFactory.Invoke(init, context))
                 .ToArray();
 
-            NodeType = ExpressionType.ListInit;
+            for (int i = 0, l = _initializerTranslations.Count - 1; ; ++i)
+            {
+                var initializerTranslationSet = _initializerTranslations[i];
+
+                foreach (var initializerTranslation in initializerTranslationSet)
+                {
+                    estimatedSize += initializerTranslation.EstimatedSize;
+                }
+
+                if (i == l)
+                {
+                    break;
+                }
+            }
+
             EstimatedSize = estimatedSize;
         }
 
@@ -74,31 +75,7 @@
 
             for (int i = 0, l = _initializerTranslations.Count - 1; ; ++i)
             {
-                var initializerTranslationSet = _initializerTranslations[i];
-                var numberOfArguments = initializerTranslationSet.Length;
-                var hasMultipleArguments = numberOfArguments != 0;
-
-                if (hasMultipleArguments)
-                {
-                    context.WriteToTranslation("{ ");
-                }
-
-                for (int j = 0, m = numberOfArguments - 1; ; ++j)
-                {
-                    initializerTranslationSet[j].WriteTo(context);
-
-                    if (j == m)
-                    {
-                        break;
-                    }
-
-                    context.WriteToTranslation(", ");
-                }
-
-                if (hasMultipleArguments)
-                {
-                    context.WriteToTranslation(" }");
-                }
+                WriteInitializerTranslationSet(_initializerTranslations[i], context);
 
                 if (i == l)
                 {
@@ -109,6 +86,94 @@
             }
 
             context.WriteClosingBraceToTranslation();
+        }
+
+        protected abstract void WriteInitializerTranslationSet(
+            ITranslation[] initializerTranslationSet,
+            ITranslationContext context);
+    }
+
+    internal class ListInitialisationTranslation : InitialisationTranslationBase<ElementInit>
+    {
+        public ListInitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
+            : base(
+                ExpressionType.ListInit,
+                listInit.NewExpression,
+                listInit.Initializers,
+                GetElementInitializerTranslation,
+                context)
+        {
+        }
+
+        private static ITranslation[] GetElementInitializerTranslation(ElementInit init, ITranslationContext context)
+        {
+            if (init.Arguments.Count == 1)
+            {
+                ITranslation singleArgumentTranslation = context.GetCodeBlockTranslationFor(init.Arguments[0]);
+
+                return new[] { singleArgumentTranslation };
+            }
+
+            return init
+                .Arguments
+                .Project(arg => (ITranslation)context.GetCodeBlockTranslationFor(arg))
+                .ToArray();
+        }
+
+        protected override void WriteInitializerTranslationSet(
+            ITranslation[] initializerTranslationSet,
+            ITranslationContext context)
+        {
+            var numberOfArguments = initializerTranslationSet.Length;
+            var hasMultipleArguments = numberOfArguments != 0;
+
+            if (hasMultipleArguments)
+            {
+                context.WriteToTranslation("{ ");
+            }
+
+            for (int j = 0, m = numberOfArguments - 1; ; ++j)
+            {
+                initializerTranslationSet[j].WriteTo(context);
+
+                if (j == m)
+                {
+                    break;
+                }
+
+                context.WriteToTranslation(", ");
+            }
+
+            if (hasMultipleArguments)
+            {
+                context.WriteToTranslation(" }");
+            }
+        }
+    }
+
+    internal class MemberInitialisationTranslation : InitialisationTranslationBase<MemberBinding>
+    {
+        public MemberInitialisationTranslation(MemberInitExpression memberInit, ITranslationContext context)
+            : base(
+                ExpressionType.MemberInit,
+                memberInit.NewExpression,
+                memberInit.Bindings,
+                GetMemberBindingTranslation,
+                context)
+        {
+
+        }
+
+        private static ITranslation[] GetMemberBindingTranslation(MemberBinding binding, ITranslationContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void WriteInitializerTranslationSet(
+            ITranslation[] initializerTranslationSet,
+            ITranslationContext context)
+        {
+            throw new NotImplementedException();
         }
     }
 }

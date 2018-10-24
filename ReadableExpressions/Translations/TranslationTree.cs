@@ -241,7 +241,7 @@
                     return new IndexAccessTranslation((IndexExpression)expression, this);
 
                 case Invoke:
-                    break;
+                    return new MethodCallTranslation((InvocationExpression)expression, this);
 
                 case Label:
                     return new LabelTranslation((LabelExpression)expression, this);
@@ -250,7 +250,7 @@
                     return new LambdaTranslation((LambdaExpression)expression, this);
 
                 case ListInit:
-                    return new InitialisationTranslation((ListInitExpression)expression, this);
+                    return new ListInitialisationTranslation((ListInitExpression)expression, this);
 
                 case Loop:
                     break;
@@ -258,7 +258,7 @@
                     return new MemberAccessTranslation((MemberExpression)expression, this);
 
                 case MemberInit:
-                    break;
+                    return new MemberInitialisationTranslation((MemberInitExpression)expression, this);
 
                 case Negate:
                 case NegateChecked:

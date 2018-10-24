@@ -14,17 +14,25 @@
 
     internal class MethodCallTranslation : ITranslation
     {
-        private readonly MethodCallExpression _methodCall;
         private readonly IMethod _method;
         private readonly ITranslation _subject;
         private readonly ParameterSetTranslation _parameters;
         private readonly Action<ITranslationContext> _translationWriter;
 
+        public MethodCallTranslation(InvocationExpression invocation, ITranslationContext context)
+        {
+            var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
+
+            _method = new BclMethodWrapper(invocationMethod);
+            _parameters = new ParameterSetTranslation(_method, invocation.Arguments, context).WithParentheses();
+            _subject = context.GetTranslationFor(invocation.Expression);
+            
+            EstimatedSize = GetEstimatedSize();
+        }
+
         public MethodCallTranslation(MethodCallExpression methodCall, ITranslationContext context)
         {
-            _methodCall = methodCall;
             _method = new BclMethodWrapper(methodCall.Method);
-
             _parameters = new ParameterSetTranslation(_method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
@@ -39,7 +47,7 @@
                 context.GetTranslationFor(methodCall.GetSubject()) ??
                 context.GetTranslationFor(methodCall.Method.DeclaringType);
 
-            if (IsIndexedPropertyAccess())
+            if (IsIndexedPropertyAccess(methodCall))
             {
                 _subject = new IndexAccessTranslation(_subject, _parameters);
                 _translationWriter = _subject.WriteTo;
@@ -58,8 +66,11 @@
                 return;
             }
 
-            EstimatedSize = _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
+            EstimatedSize = GetEstimatedSize();
         }
+
+        private int GetEstimatedSize()
+            => _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
 
         private MethodCallTranslation(
             ITranslation typeNameTranslation,
@@ -79,13 +90,13 @@
             return new MethodCallTranslation(typeNameTranslation, castMethod, castValue);
         }
 
-        private bool IsIndexedPropertyAccess()
+        private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
         {
-            var property = _methodCall
+            var property = methodCall
                 .Object?
                 .Type
                 .GetPublicInstanceProperties()
-                .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(_methodCall.Method));
+                .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
 
             return property?.GetIndexParameters().Any() == true;
         }
