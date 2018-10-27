@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
-    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,69 +10,60 @@
 
     internal class ListInitialisationTranslation : InitialisationTranslationBase<ElementInit>
     {
-        private readonly IList<ITranslation[]> _initializerTranslations;
-
         public ListInitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
             : base(
                 ExpressionType.ListInit,
                 listInit.NewExpression,
                 listInit.Initializers,
+                GetListInitializerTranslation,
                 context)
         {
-            if (HasNoInitializers)
-            {
-                return;
-            }
-
-            var estimatedSize = NewingTranslation.EstimatedSize;
-
-            _initializerTranslations = listInit.Initializers
-                .Project(init =>
-                {
-                    if (init.Arguments.Count == 1)
-                    {
-                        ITranslation singleArgumentTranslation = context.GetCodeBlockTranslationFor(init.Arguments[0]);
-
-                        estimatedSize += singleArgumentTranslation.EstimatedSize;
-
-                        return new[] { singleArgumentTranslation };
-                    }
-
-                    return init
-                        .Arguments
-                        .Project(arg =>
-                        {
-                            var codeBlockTranslation = context.GetCodeBlockTranslationFor(arg);
-
-                            estimatedSize += codeBlockTranslation.EstimatedSize;
-
-                            return (ITranslation)codeBlockTranslation;
-                        })
-                        .ToArray();
-                })
-                .ToArray();
-
-            EstimatedSize = estimatedSize;
         }
 
-        protected override void WriteInitializers(ITranslationContext context)
+        private static ITranslatable GetListInitializerTranslation(ElementInit init, ITranslationContext context)
         {
-            for (int i = 0, l = _initializerTranslations.Count - 1; ; ++i)
+            if (init.Arguments.Count == 1)
             {
-                var initializerTranslationSet = _initializerTranslations[i];
-                var numberOfArguments = initializerTranslationSet.Length;
-                var hasMultipleArguments = numberOfArguments != 0;
+                return context.GetCodeBlockTranslationFor(init.Arguments[0]);
+            }
 
-                if (hasMultipleArguments)
+            return new MultiArgumentInitializerTranslation(init, context);
+        }
+
+        private class MultiArgumentInitializerTranslation : ITranslatable
+        {
+            private readonly IList<CodeBlockTranslation> _translations;
+
+            public MultiArgumentInitializerTranslation(ElementInit init, ITranslationContext context)
+            {
+                var estimatedSize = 0;
+
+                _translations = init
+                    .Arguments
+                    .ProjectToArray(arg =>
+                    {
+                        var translation = context.GetCodeBlockTranslationFor(arg);
+                        estimatedSize += translation.EstimatedSize;
+
+                        return translation;
+                    });
+
+                EstimatedSize = estimatedSize;
+            }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation("{ ");
+
+                var argumentCount = _translations.Count;
+
+                for (var i = 0; ;)
                 {
-                    context.WriteToTranslation("{ ");
-                }
+                    _translations[i].WriteTo(context);
 
-                for (int j = 0, m = numberOfArguments - 1; ; ++j)
-                {
-                    initializerTranslationSet[j].WriteTo(context);
-
-                    if (j == m)
+                    if (++i == argumentCount)
                     {
                         break;
                     }
@@ -81,17 +71,7 @@
                     context.WriteToTranslation(", ");
                 }
 
-                if (hasMultipleArguments)
-                {
-                    context.WriteToTranslation(" }");
-                }
-
-                if (i == l)
-                {
-                    break;
-                }
-
-                context.WriteNewLineToTranslation();
+                context.WriteToTranslation(" }");
             }
         }
     }

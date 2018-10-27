@@ -16,6 +16,22 @@
         public static T AtIndexOrDefault<T>(this IList<T> items, int index)
             => items.Count > index ? items[index] : default(T);
 
+        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, TResult> projector)
+        {
+            var itemCount = items.Count;
+            var result = new TResult[itemCount];
+
+            for (var i = 0; ;)
+            {
+                result[i] = projector.Invoke(items[i]);
+
+                if (++i == itemCount)
+                {
+                    return result;
+                }
+            }
+        }
+
         [DebuggerStepThrough]
         public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
         {

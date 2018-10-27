@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,69 +8,33 @@
 
     internal class MemberInitialisationTranslation : InitialisationTranslationBase<MemberBinding>
     {
-        private readonly IList<ITranslation> _initializerTranslations;
-
         public MemberInitialisationTranslation(MemberInitExpression memberInit, ITranslationContext context)
             : base(
                 ExpressionType.MemberInit,
                 memberInit.NewExpression,
                 memberInit.Bindings,
+                GetMemberBindingTranslation,
                 context)
         {
-            if (HasNoInitializers)
+        }
+
+        private static ITranslatable GetMemberBindingTranslation(MemberBinding binding, ITranslationContext context)
+        {
+            switch (binding.BindingType)
             {
-                return;
-            }
+                case MemberBindingType.MemberBinding:
 
-            _initializerTranslations = new ITranslation[memberInit.Bindings.Count];
-
-            for (int i = 0, l = _initializerTranslations.Count; ; ++i)
-            {
-                var binding = memberInit.Bindings[i];
-
-                switch (binding.BindingType)
-                {
-                    case MemberBindingType.MemberBinding:
-                        _initializerTranslations[i] = null;
-                        break;
-
-                    case MemberBindingType.ListBinding:
-                        _initializerTranslations[i] = null;
-                        break;
-
-                    default:
-                        _initializerTranslations[i] = null;
-                        break;
-                }
-
-                if (i == l)
-                {
                     break;
-                }
-            }
-        }
 
-        protected override void WriteInitializers(ITranslationContext context)
-        {
-            for (int i = 0, l = _initializerTranslations.Count - 1; ; ++i)
-            {
-                _initializerTranslations[i].WriteTo(context);
+                case MemberBindingType.ListBinding:
 
-                if (i == l)
-                {
                     break;
-                }
+
+                default:
+                    return new AssignmentBindingTranslatable((MemberAssignment)binding, context);
             }
-        }
 
-        private void WriteMemberBinding(ITranslationContext context)
-        {
-
-        }
-
-        private void WriteListBinding(ITranslationContext context)
-        {
-
+            return null;
         }
 
         private void WriteAssignmentBinding(ITranslationContext context)
@@ -82,6 +45,28 @@
                 return assignment.Member.Name + " = " + value;
              *
              */
+        }
+
+        private class AssignmentBindingTranslatable : ITranslatable
+        {
+            private readonly string _memberName;
+            private readonly ITranslation _valueTranslation;
+
+            public AssignmentBindingTranslatable(MemberAssignment assignment, ITranslationContext context)
+            {
+                _memberName = assignment.Member.Name;
+                _valueTranslation = context.GetCodeBlockTranslationFor(assignment.Expression);
+                EstimatedSize = _memberName.Length + 4 + _valueTranslation.EstimatedSize;
+            }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation(_memberName);
+                context.WriteToTranslation(" = ");
+                _valueTranslation.WriteTo(context);
+            }
         }
     }
 }
