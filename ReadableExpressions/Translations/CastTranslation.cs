@@ -18,7 +18,7 @@
         private readonly bool _isBoxing;
         private readonly bool _isImplicitOperator;
         private readonly bool _isOperator;
-        private readonly bool _isAssignmentResultCast;
+        private readonly bool _writeCastValueInParentheses;
         private readonly Action<ITranslationContext> _translationWriter;
 
         public CastTranslation(UnaryExpression cast, ITranslationContext context)
@@ -103,7 +103,10 @@
 
         private CastTranslation(ExpressionType castValueNodeType)
         {
-            _isAssignmentResultCast = castValueNodeType == Assign;
+            if (castValueNodeType == Assign || IsCast(castValueNodeType))
+            {
+                _writeCastValueInParentheses = true;
+            }
         }
 
         public static ITranslation ForExplicitOperator(
@@ -166,7 +169,7 @@
         {
             var estimatedSize = _castValueTranslation.EstimatedSize;
 
-            if (_isAssignmentResultCast && (_isBoxing == false))
+            if (_writeCastValueInParentheses && (_isBoxing == false))
             {
                 estimatedSize += 2;
             }
@@ -222,14 +225,13 @@
 
         private void WriteCastValueTranslation(ITranslationContext context)
         {
-            if (_isAssignmentResultCast)
+            if (_writeCastValueInParentheses)
             {
                 _castValueTranslation.WriteInParentheses(context);
+                return;
             }
-            else
-            {
-                _castValueTranslation.WriteTo(context);
-            }
+
+            _castValueTranslation.WriteTo(context);
         }
     }
 }

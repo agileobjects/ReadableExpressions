@@ -213,7 +213,6 @@
                 switch (NodeType)
                 {
                     case Block:
-                    case Conditional:
                     case Lambda:
                         return false;
 

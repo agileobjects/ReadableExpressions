@@ -188,13 +188,13 @@
 
         public ParameterSetTranslation WithParentheses()
         {
-            _parenthesesMode = ParenthesesMode.With;
+            _parenthesesMode = ParenthesesMode.Always;
             return this;
         }
 
         public ParameterSetTranslation WithoutParentheses()
         {
-            _parenthesesMode = ParenthesesMode.Without;
+            _parenthesesMode = ParenthesesMode.Never;
             return this;
         }
 
@@ -206,14 +206,22 @@
                     context.WriteToTranslation(_openAndCloseParentheses);
                     return;
 
-                case 1 when (_parenthesesMode != ParenthesesMode.With):
+                case 1 when (_parenthesesMode != ParenthesesMode.Always):
                     _parameterTranslations[0].WriteTo(context);
                     return;
             }
 
-            if (_parenthesesMode != ParenthesesMode.Without)
+            if (_parenthesesMode != ParenthesesMode.Never)
             {
                 context.WriteToTranslation('(');
+            }
+
+            var writeParametersOnNewLines = this.ExceedsLengthThreshold();
+
+            if (writeParametersOnNewLines)
+            {
+                context.WriteNewLineToTranslation();
+                context.Indent();
             }
 
             for (int i = 0, l = ParameterCount - 1; ; ++i)
@@ -225,20 +233,32 @@
                     break;
                 }
 
+                if (writeParametersOnNewLines)
+                {
+                    context.WriteToTranslation(',');
+                    context.WriteNewLineToTranslation();
+                    continue;
+                }
+
                 context.WriteToTranslation(", ");
             }
 
-            if (_parenthesesMode != ParenthesesMode.Without)
+            if (_parenthesesMode != ParenthesesMode.Never)
             {
                 context.WriteToTranslation(')');
+            }
+
+            if (writeParametersOnNewLines)
+            {
+                context.Unindent();
             }
         }
 
         private enum ParenthesesMode
         {
             Auto,
-            With,
-            Without
+            Always,
+            Never
         }
 
         private class PrefixedParameterTranslation : ITranslation

@@ -8,7 +8,7 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class ConditionalTranslation : ITranslation
+    internal class ConditionalTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly bool _hasNoElseCondition;
         private readonly ITranslation _testTranslation;
@@ -27,6 +27,7 @@
             {
                 _ifTrueTranslation = GetIfTrueCodeBlockTranslation(conditional);
                 _translationWriter = WriteIfStatement;
+                IsTerminated = true;
                 goto EstimateSize;
             }
 
@@ -105,6 +106,8 @@
 
         public int EstimatedSize { get; }
 
+        public bool IsTerminated { get; }
+
         private void WriteIfStatement(ITranslationContext context)
         {
             context.WriteToTranslation("if ");
@@ -114,11 +117,31 @@
 
         private void WriteTernary(ITranslationContext context)
         {
+            var writeToMultipleLines = this.ExceedsLengthThreshold();
+
             _testTranslation.WriteInParenthesesIfRequired(context);
+
+            if (writeToMultipleLines)
+            {
+                context.WriteNewLineToTranslation();
+                context.Indent();
+            }
+
             context.WriteToTranslation(" ? ");
             _ifTrueTranslation.WriteTo(context);
+
+            if (writeToMultipleLines)
+            {
+                context.WriteNewLineToTranslation();
+            }
+
             context.WriteToTranslation(" : ");
             _ifFalseTranslation.WriteTo(context);
+
+            if (writeToMultipleLines)
+            {
+                context.Unindent();
+            }
         }
 
         private void WriteShortCircuitingIf(ITranslationContext context)

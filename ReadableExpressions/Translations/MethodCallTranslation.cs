@@ -5,8 +5,10 @@
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
     using Translators;
     using Extensions;
@@ -21,17 +23,25 @@
 
         public MethodCallTranslation(InvocationExpression invocation, ITranslationContext context)
         {
+            NodeType = Invoke;
+
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
             _method = new BclMethodWrapper(invocationMethod);
             _parameters = new ParameterSetTranslation(_method, invocation.Arguments, context).WithParentheses();
             _subject = context.GetTranslationFor(invocation.Expression);
-            
+
+            if (_subject.NodeType == Lambda)
+            {
+                _subject = new ParenthesisedTranslation(_subject);
+            }
+
             EstimatedSize = GetEstimatedSize();
         }
 
         public MethodCallTranslation(MethodCallExpression methodCall, ITranslationContext context)
         {
+            NodeType = Call;
             _method = new BclMethodWrapper(methodCall.Method);
             _parameters = new ParameterSetTranslation(_method, methodCall.Arguments, context);
 
@@ -77,6 +87,7 @@
             IMethod staticMethod,
             ITranslation castValue)
         {
+            NodeType = Call;
             _subject = typeNameTranslation;
             _method = staticMethod;
             _parameters = new ParameterSetTranslation(castValue).WithParentheses();
@@ -101,7 +112,7 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
-        public ExpressionType NodeType => ExpressionType.Call;
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
 

@@ -37,16 +37,6 @@
             return null;
         }
 
-        private void WriteAssignmentBinding(ITranslationContext context)
-        {
-            /*
-                var value = context.TranslateAsCodeBlock(assignment.Expression);
-
-                return assignment.Member.Name + " = " + value;
-             *
-             */
-        }
-
         private class AssignmentBindingTranslatable : ITranslatable
         {
             private readonly string _memberName;

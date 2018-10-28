@@ -12,10 +12,10 @@
     {
         private const string _object = "object";
 
-        private readonly Type _type;
         private readonly bool _isObject;
+        private readonly string _typeName;
 
-        public TypeNameTranslation(Type type)
+        public TypeNameTranslation(Type type, ITranslationContext context)
         {
             _isObject = type == typeof(object);
 
@@ -25,8 +25,8 @@
                 return;
             }
 
-            _type = type;
-            EstimatedSize = (int)(_type.Name.Length * 1.1);
+            _typeName = type.GetFriendlyName(context.Settings);
+            EstimatedSize = (int)(_typeName.Length * 1.1);
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
@@ -41,7 +41,7 @@
                 return;
             }
 
-            context.WriteToTranslation(_type.GetFriendlyName(context.Settings));
+            context.WriteToTranslation(_typeName);
         }
     }
 }

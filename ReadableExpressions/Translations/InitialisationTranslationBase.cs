@@ -69,9 +69,15 @@
 
             context.WriteOpeningBraceToTranslation();
 
-            for (var i = 0; i < InitializerCount; ++i)
+            for (var i = 0; ;)
             {
                 _initializerTranslations[i].WriteTo(context);
+
+                if (++i == InitializerCount)
+                {
+                    break;
+                }
+
                 context.WriteNewLineToTranslation();
             }
 
