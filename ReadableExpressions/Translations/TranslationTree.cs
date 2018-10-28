@@ -89,6 +89,12 @@
 
         void ITranslationContext.WriteToTranslation(string stringValue)
         {
+            if (stringValue.Length == 1)
+            {
+                WriteToTranslation(stringValue[0]);
+                return;
+            }
+
             WriteIndentIfRequired();
             _content.Append(stringValue);
         }

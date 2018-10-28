@@ -167,12 +167,12 @@
 
             if (info.IsOut)
             {
-                return new PrefixedParameterTranslation("out ", translation);
+                return new TranslationWrapper(translation).WithPrefix("out ");
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return new PrefixedParameterTranslation("ref ", translation);
+                return new TranslationWrapper(translation).WithPrefix("ref ");
             }
 
             return translation;
@@ -259,29 +259,6 @@
             Auto,
             Always,
             Never
-        }
-
-        private class PrefixedParameterTranslation : ITranslation
-        {
-            private readonly ITranslation _parameterTranslation;
-            private readonly string _prefix;
-
-            public PrefixedParameterTranslation(string prefix, ITranslation parameterTranslation)
-            {
-                _prefix = prefix;
-                _parameterTranslation = parameterTranslation;
-                EstimatedSize = prefix.Length + parameterTranslation.EstimatedSize;
-            }
-
-            public ExpressionType NodeType => _parameterTranslation.NodeType;
-
-            public int EstimatedSize { get; }
-
-            public void WriteTo(ITranslationContext context)
-            {
-                context.WriteToTranslation(_prefix);
-                _parameterTranslation.WriteTo(context);
-            }
         }
     }
 }

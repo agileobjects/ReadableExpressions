@@ -33,7 +33,7 @@
 
             if (_subject.NodeType == Lambda)
             {
-                _subject = new ParenthesisedTranslation(_subject);
+                _subject = new TranslationWrapper(_subject).WithPrefix("(").WithSuffix(")");
             }
 
             EstimatedSize = GetEstimatedSize();

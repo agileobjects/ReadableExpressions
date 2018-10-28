@@ -6,7 +6,7 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class CodeBlockTranslation : ITranslation
+    internal class CodeBlockTranslation : ITranslation, IPotentialMultiStatementTranslatable
     {
         private readonly ITranslation _translation;
         private bool _ensureTerminated;
@@ -40,6 +40,10 @@
         public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; private set; }
+
+        public bool IsMultiStatement => _translation.IsMultiStatement();
+
+        public bool HasBraces => _writeBraces;
 
         public CodeBlockTranslation WithTermination()
         {

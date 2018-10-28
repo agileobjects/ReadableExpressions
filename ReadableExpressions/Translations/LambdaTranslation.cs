@@ -11,7 +11,7 @@
         private const string _fatArrow = " => ";
 
         private readonly ParameterSetTranslation _parameters;
-        private readonly ITranslation _bodyTranslation;
+        private readonly CodeBlockTranslation _bodyTranslation;
 
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
@@ -30,7 +30,9 @@
         public void WriteTo(ITranslationContext context)
         {
             _parameters.WriteTo(context);
-            context.WriteToTranslation(_fatArrow);
+
+            context.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
+
             _bodyTranslation.WriteTo(context);
         }
     }

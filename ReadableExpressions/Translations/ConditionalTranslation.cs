@@ -125,17 +125,25 @@
             {
                 context.WriteNewLineToTranslation();
                 context.Indent();
+                context.WriteToTranslation("? ");
+            }
+            else
+            {
+                context.WriteToTranslation(" ? ");
             }
 
-            context.WriteToTranslation(" ? ");
             _ifTrueTranslation.WriteTo(context);
 
             if (writeToMultipleLines)
             {
                 context.WriteNewLineToTranslation();
+                context.WriteToTranslation(": ");
+            }
+            else
+            {
+                context.WriteToTranslation(" : ");
             }
 
-            context.WriteToTranslation(" : ");
             _ifFalseTranslation.WriteTo(context);
 
             if (writeToMultipleLines)
