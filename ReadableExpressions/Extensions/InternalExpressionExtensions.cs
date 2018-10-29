@@ -5,11 +5,10 @@
     using System.Linq;
 #if !NET35
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #else
-    using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
-    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #endif
 
     internal static class InternalExpressionExtensions
@@ -23,33 +22,34 @@
 
             switch (expression.NodeType)
             {
-                case ExpressionType.Block:
+                case Block:
                     return ((BlockExpression)expression).IsReturnable();
 
-                case ExpressionType.Constant:
+                case Constant:
                     return !expression.IsComment();
 
-                case ExpressionType.Add:
-                case ExpressionType.AddChecked:
-                case ExpressionType.Call:
-                case ExpressionType.Coalesce:
-                case ExpressionType.Conditional:
+                case Add:
+                case AddChecked:
+                case Call:
+                case Coalesce:
+                case Conditional:
                 case ExpressionType.Convert:
-                case ExpressionType.ConvertChecked:
-                case ExpressionType.Default:
-                case ExpressionType.Divide:
-                case ExpressionType.Invoke:
-                case ExpressionType.ListInit:
-                case ExpressionType.MemberAccess:
-                case ExpressionType.MemberInit:
-                case ExpressionType.Multiply:
-                case ExpressionType.MultiplyChecked:
-                case ExpressionType.New:
-                case ExpressionType.NewArrayBounds:
-                case ExpressionType.NewArrayInit:
-                case ExpressionType.Parameter:
-                case ExpressionType.Subtract:
-                case ExpressionType.SubtractChecked:
+                case ConvertChecked:
+                case Default:
+                case Divide:
+                case Invoke:
+                case Label:
+                case ListInit:
+                case MemberAccess:
+                case MemberInit:
+                case Multiply:
+                case MultiplyChecked:
+                case New:
+                case NewArrayBounds:
+                case NewArrayInit:
+                case Parameter:
+                case Subtract:
+                case SubtractChecked:
                     return true;
             }
 
@@ -57,12 +57,10 @@
         }
 
         public static bool IsReturnable(this BlockExpression block)
-        {
-            return (block.Type != typeof(void)) && block.Result.IsReturnable();
-        }
+            => (block.Type != typeof(void)) && block.Result.IsReturnable();
 
         public static bool IsComment(this Expression expression)
-            => (expression.NodeType == ExpressionType.Constant) && ((ConstantExpression)expression).IsComment();
+            => (expression.NodeType == Constant) && ((ConstantExpression)expression).IsComment();
 
         public static bool IsComment(this ConstantExpression constant)
             => (constant.Value is string value) && value.IsComment();
@@ -71,21 +69,21 @@
         {
             switch (expression.NodeType)
             {
-                case ExpressionType.AddAssign:
-                case ExpressionType.AddAssignChecked:
-                case ExpressionType.AndAssign:
-                case ExpressionType.Assign:
-                case ExpressionType.DivideAssign:
-                case ExpressionType.ExclusiveOrAssign:
-                case ExpressionType.LeftShiftAssign:
-                case ExpressionType.ModuloAssign:
-                case ExpressionType.MultiplyAssign:
-                case ExpressionType.MultiplyAssignChecked:
-                case ExpressionType.OrAssign:
-                case ExpressionType.PowerAssign:
-                case ExpressionType.SubtractAssign:
-                case ExpressionType.SubtractAssignChecked:
-                case ExpressionType.RightShiftAssign:
+                case AddAssign:
+                case AddAssignChecked:
+                case AndAssign:
+                case Assign:
+                case DivideAssign:
+                case ExclusiveOrAssign:
+                case LeftShiftAssign:
+                case ModuloAssign:
+                case MultiplyAssign:
+                case MultiplyAssignChecked:
+                case OrAssign:
+                case PowerAssign:
+                case SubtractAssign:
+                case SubtractAssignChecked:
+                case RightShiftAssign:
                     return true;
             }
 

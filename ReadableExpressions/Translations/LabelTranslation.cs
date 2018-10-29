@@ -8,7 +8,11 @@
 #endif
     using Extensions;
 
-    internal class LabelTranslation : ITranslation, IPotentialSelfTerminatingTranslatable, IPotentialEmptyTranslatable
+    internal class LabelTranslation :
+        ITranslation,
+        IPotentialSelfTerminatingTranslatable,
+        IPotentialEmptyTranslatable,
+        IPotentialGotoTranslatable
     {
         private readonly string _labelName;
         private readonly bool _labelIsNamed;
@@ -60,6 +64,8 @@
         public bool IsTerminated { get; }
 
         public bool IsEmpty { get; }
+
+        public bool HasGoto => !_labelHasNoValue;
 
         public void WriteTo(ITranslationContext context)
         {

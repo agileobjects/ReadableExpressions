@@ -20,6 +20,12 @@
                    selfTerminatedTranslatable.IsTerminated;
         }
 
+        public static bool HasGoto(this ITranslatable translation)
+        {
+            return (translation is IPotentialGotoTranslatable gotoTranslatable) &&
+                   gotoTranslatable.HasGoto;
+        }
+
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
             => translatable.EstimatedSize > 100;
 

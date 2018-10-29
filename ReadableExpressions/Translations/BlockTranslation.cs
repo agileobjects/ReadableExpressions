@@ -19,8 +19,8 @@
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
-        private readonly bool _requiresReturnKeyword;
-        private readonly bool _addBlankLineBeforeReturn;
+        private readonly bool _writeReturnKeyword;
+        private readonly bool _addBlankLineBeforeFinalStatement;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
@@ -29,8 +29,20 @@
             EstimatedSize = GetEstimatedSize();
             IsMultiStatement = _statements.Count > 1;
             IsTerminated = true;
-            _requiresReturnKeyword = IsMultiStatement && block.IsReturnable();
-            _addBlankLineBeforeReturn = _requiresReturnKeyword && AddBlankLineBeforeReturn(block);
+
+            if (IsMultiStatement && block.IsReturnable())
+            {
+                if (_statements.Last().HasGoto)
+                {
+                    HasGoto = true;
+                }
+                else
+                {
+                    _writeReturnKeyword = true;
+                }
+
+                _addBlankLineBeforeFinalStatement = AddBlankLineBeforeFinalStatement(block);
+            }
         }
 
         private static IDictionary<ITranslation, ParameterSetTranslation> GetVariableDeclarations(
@@ -129,7 +141,7 @@
             return estimatedSize;
         }
 
-        private static bool AddBlankLineBeforeReturn(BlockExpression block)
+        private static bool AddBlankLineBeforeFinalStatement(BlockExpression block)
             => !block.Expressions[block.Expressions.Count - 2].IsComment();
 
         public ExpressionType NodeType => Block;
@@ -169,14 +181,17 @@
                 var isFinalLine = i == l;
                 var statement = _statements[i];
 
-                if (isFinalLine && _requiresReturnKeyword)
+                if (isFinalLine)
                 {
-                    if (_addBlankLineBeforeReturn)
+                    if (_addBlankLineBeforeFinalStatement)
                     {
                         context.WriteNewLineToTranslation();
                     }
 
-                    context.WriteToTranslation("return ");
+                    if (_writeReturnKeyword)
+                    {
+                        context.WriteToTranslation("return ");
+                    }
                 }
 
                 statement.WriteTo(context);
@@ -188,7 +203,7 @@
 
                 context.WriteNewLineToTranslation();
 
-                if ((_addBlankLineBeforeReturn == false) && statement.LeaveBlankLineAfter())
+                if ((_addBlankLineBeforeFinalStatement == false) && statement.LeaveBlankLineAfter())
                 {
                     context.WriteNewLineToTranslation();
                 }
@@ -242,6 +257,8 @@
                 return false;
             }
 
+            public virtual bool HasGoto => _statementTranslation.HasGoto();
+
             public virtual void WriteTo(ITranslationContext context)
             {
                 _statementTranslation.WriteTo(context);
@@ -288,6 +305,8 @@
 
                 return conditional.IfTrue.Type != conditional.IfFalse.Type;
             }
+
+            public override bool HasGoto => false;
 
             public override void WriteTo(ITranslationContext context)
             {
