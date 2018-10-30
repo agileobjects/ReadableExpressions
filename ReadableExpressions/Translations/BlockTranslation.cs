@@ -250,6 +250,7 @@
                 switch (NodeType)
                 {
                     case Conditional:
+                    case Goto:
                     case Lambda:
                         return true;
                 }

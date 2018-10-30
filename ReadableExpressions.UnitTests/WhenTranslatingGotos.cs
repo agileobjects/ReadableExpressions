@@ -69,7 +69,7 @@ Console.Write(""Two"");
         }
 
         [Fact]
-        public void ShouldUnindentGotoTargetLabels()
+        public void ShouldFormatGotoTargetLabels()
         {
             var labelTargetOne = Expression.Label(typeof(void), "One");
             var labelOne = Expression.Label(labelTargetOne);
@@ -88,10 +88,10 @@ Console.Write(""Two"");
             const string EXPECTED = @"
 if (true)
 {
-One:
+    One:
     goto Two;
 
-Two:
+    Two:
     goto One;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());

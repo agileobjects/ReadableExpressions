@@ -73,7 +73,6 @@
             {
                 context.WriteToTranslation(_labelName);
                 context.WriteToTranslation(':');
-                context.WriteNewLineToTranslation();
             }
 
             if (_labelHasNoValue)
