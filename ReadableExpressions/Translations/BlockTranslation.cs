@@ -264,7 +264,8 @@
             {
                 _statementTranslation.WriteTo(context);
 
-                if (_statementIsUnterminated && (DoNotTerminate == false))
+                if (_statementIsUnterminated && 
+                   (DoNotTerminate == false))
                 {
                     context.WriteToTranslation(';');
                 }

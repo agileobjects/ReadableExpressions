@@ -46,6 +46,7 @@
                 goto EstimateSize;
             }
 
+            IsTerminated = true;
             _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: false);
             _isElseIf = IsElseIf(conditional);
 
