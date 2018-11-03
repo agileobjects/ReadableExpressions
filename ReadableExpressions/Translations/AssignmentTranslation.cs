@@ -9,7 +9,7 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class AssignmentTranslation : ITranslation
+    internal class AssignmentTranslation : CheckedOperationTranslationBase, ITranslation
     {
         private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
             new Dictionary<ExpressionType, string>
@@ -36,12 +36,26 @@
         private readonly ITranslation _valueTranslation;
 
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
+            : base(IsCheckedAssignment(assignment.NodeType), " { ", " }")
         {
             NodeType = assignment.NodeType;
             _targetTranslation = context.GetTranslationFor(assignment.Left);
             _operator = _symbolsByNodeType[NodeType];
             _valueTranslation = GetValueTranslation(assignment.Right, context);
             EstimatedSize = GetEstimatedSize();
+        }
+
+        private static bool IsCheckedAssignment(ExpressionType assignmentType)
+        {
+            switch (assignmentType)
+            {
+                case AddAssignChecked:
+                case MultiplyAssignChecked:
+                case SubtractAssignChecked:
+                    return true;
+            }
+
+            return false;
         }
 
         private static ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
@@ -70,9 +84,17 @@
 
         private int GetEstimatedSize()
         {
-            return _targetTranslation.EstimatedSize +
-                   _operator.Length +
-                   _valueTranslation.EstimatedSize;
+            var estimatedSize =
+                _targetTranslation.EstimatedSize +
+                _operator.Length +
+                _valueTranslation.EstimatedSize;
+
+            if (IsCheckedOperation)
+            {
+                estimatedSize += 10;
+            }
+
+            return estimatedSize;
         }
 
         public static bool IsAssignment(ExpressionType nodeType) => _symbolsByNodeType.ContainsKey(nodeType);
@@ -81,12 +103,17 @@
 
         public int EstimatedSize { get; }
 
+        protected override bool IsMultiStatement()
+            => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
+
         public void WriteTo(ITranslationContext context)
         {
+            WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
             _targetTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
             context.WriteSpaceToTranslation();
             _valueTranslation.WriteTo(context);
+            WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
         }
     }
 }
