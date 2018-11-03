@@ -33,7 +33,7 @@
 
             if (_subject.NodeType == Lambda)
             {
-                _subject = new TranslationWrapper(_subject).WithPrefix("(").WithSuffix(")");
+                _subject = _subject.WithParentheses();
             }
 
             EstimatedSize = GetEstimatedSize();
@@ -74,6 +74,11 @@
                 _translationWriter = _subject.WriteTo;
                 EstimatedSize = _subject.EstimatedSize;
                 return;
+            }
+
+            if (BinaryTranslation.IsBinary(_subject.NodeType))
+            {
+                _subject = _subject.WithParentheses();
             }
 
             EstimatedSize = GetEstimatedSize();

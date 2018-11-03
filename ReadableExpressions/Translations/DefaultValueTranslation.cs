@@ -25,9 +25,9 @@
                 return;
             }
 
-            if (allowNullKeyword || (defaultExpression.Type == typeof(string)))
+            if (allowNullKeyword)
             {
-                _typeCanBeNull = (allowNullKeyword == false) || defaultExpression.Type.CanBeNull();
+                _typeCanBeNull = defaultExpression.Type.CanBeNull();
 
                 if (_typeCanBeNull)
                 {

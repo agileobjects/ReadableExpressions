@@ -29,6 +29,9 @@
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
             => translatable.EstimatedSize > 100;
 
+        public static ITranslation WithParentheses(this ITranslation translation)
+            => new TranslationWrapper(translation).WithPrefix("(").WithSuffix(")");
+
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
             if (startOnNewLine && context.TranslationQuery(q => !q.TranslationEndsWith('{')))
