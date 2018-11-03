@@ -29,6 +29,12 @@
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
             => translatable.EstimatedSize > 100;
 
+        public static bool IsAssignment(this ITranslation translation)
+            => AssignmentTranslation.IsAssignment(translation.NodeType);
+
+        public static bool IsBinary(this ITranslation translation)
+            => BinaryTranslation.IsBinary(translation.NodeType);
+
         public static ITranslation WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WithPrefix("(").WithSuffix(")");
 
@@ -65,8 +71,7 @@
         public static void WriteInParenthesesIfRequired(this ITranslation translation, ITranslationContext context)
         {
             if ((translation.NodeType == ExpressionType.Conditional) ||
-                 BinaryTranslation.IsBinary(translation.NodeType) ||
-                 AssignmentTranslation.IsAssignment(translation.NodeType))
+                 translation.IsBinary() || translation.IsAssignment())
             {
                 translation.WriteInParentheses(context);
                 return;

@@ -76,7 +76,7 @@
                 return;
             }
 
-            if (BinaryTranslation.IsBinary(_subject.NodeType))
+            if (_subject.IsBinary())
             {
                 _subject = _subject.WithParentheses();
             }
