@@ -46,7 +46,7 @@
 
             var translated = ToReadableString(addTenAndAssign);
 
-            translated.ShouldBe("checked { i += 10 }");
+            translated.ShouldBe("checked { i += 10; }");
         }
 
         [Fact]
@@ -119,7 +119,7 @@ checked
 
             var translated = ToReadableString(doubleAndAssign);
 
-            translated.ShouldBe("checked { i *= 2 }");
+            translated.ShouldBe("checked { i *= 2; }");
         }
 
         [Fact]

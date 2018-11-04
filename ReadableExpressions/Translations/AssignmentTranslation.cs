@@ -39,7 +39,7 @@
             : base(IsCheckedAssignment(assignment.NodeType), " { ", " }")
         {
             NodeType = assignment.NodeType;
-            _targetTranslation = context.GetTranslationFor(assignment.Left);
+            _targetTranslation = context.GetCodeBlockTranslationFor(assignment.Left);
             _operator = _symbolsByNodeType[NodeType];
             _valueTranslation = GetValueTranslation(assignment.Right, context);
             EstimatedSize = GetEstimatedSize();
@@ -58,20 +58,22 @@
             return false;
         }
 
-        private static ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
+        private ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
         {
             return (assignedValue.NodeType == Default)
                 ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: assignedValue.Type == typeof(string))
                 : GetNonDefaultValueTranslation(assignedValue, context);
         }
 
-        private static ITranslation GetNonDefaultValueTranslation(Expression assignedValue, ITranslationContext context)
+        private ITranslation GetNonDefaultValueTranslation(Expression assignedValue, ITranslationContext context)
         {
             var valueBlock = context.GetCodeBlockTranslationFor(assignedValue);
 
             if (!valueBlock.IsMultiStatement())
             {
-                return valueBlock.WithoutBraces().WithoutTermination();
+                return IsCheckedOperation
+                    ? valueBlock.WithoutBraces().WithTermination()
+                    : valueBlock.WithoutBraces().WithoutTermination();
             }
 
             if ((valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda))
