@@ -525,7 +525,7 @@ result =
     var one = Console.Read();
     var two = Console.Read();
 
-    return (one - two);
+    return one - two;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
