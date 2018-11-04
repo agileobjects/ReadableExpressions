@@ -135,8 +135,8 @@
             public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
                     conditional,
-                    context.GetCodeBlockTranslationFor(conditional.IfTrue),
-                    context.GetCodeBlockTranslationFor(conditional.IfFalse),
+                    context.GetCodeBlockTranslationFor(conditional.IfTrue).WithoutStartingNewLine(),
+                    context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutStartingNewLine(),
                     context)
             {
                 if (this.ExceedsLengthThreshold())

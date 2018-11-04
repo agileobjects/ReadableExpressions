@@ -14,6 +14,7 @@
         private readonly ITranslation _translation;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
+        private bool _startOnSameLine;
         private bool _formatAsSingleLambdaParameter;
         private bool _writeBraces;
 
@@ -99,11 +100,18 @@
             return this;
         }
 
+        public CodeBlockTranslation WithoutStartingNewLine()
+        {
+            _startOnSameLine = true;
+            return this;
+        }
+
         public void WriteTo(ITranslationContext context)
         {
             if (_writeBraces)
             {
-                context.WriteOpeningBraceToTranslation(startOnNewLine: _formatAsSingleLambdaParameter == false);
+                context.WriteOpeningBraceToTranslation(
+                    startOnNewLine: _startOnSameLine == false && _formatAsSingleLambdaParameter == false);
 
                 if (WriteEmptyCodeBlock(context))
                 {
