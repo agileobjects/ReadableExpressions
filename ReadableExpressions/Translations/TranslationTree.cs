@@ -219,7 +219,7 @@
                     return new MethodCallTranslation((MethodCallExpression)expression, this);
 
                 case Conditional:
-                    return new ConditionalTranslation((ConditionalExpression)expression, this);
+                    return ConditionalTranslation.For((ConditionalExpression)expression, this);
 
                 case Constant:
                     return new ConstantTranslation((ConstantExpression)expression, this);
