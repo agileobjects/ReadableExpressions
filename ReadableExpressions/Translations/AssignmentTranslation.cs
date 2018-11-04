@@ -118,8 +118,14 @@
             WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
             _targetTranslation.WriteTo(context);
             context.WriteToTranslation(_operator);
-            context.WriteSpaceToTranslation();
+
+            if (_valueTranslation.IsMultiStatement() == false)
+            {
+                context.WriteSpaceToTranslation();
+            }
+            
             _valueTranslation.WriteTo(context);
+            
             WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
         }
     }

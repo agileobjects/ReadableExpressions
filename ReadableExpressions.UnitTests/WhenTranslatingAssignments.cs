@@ -93,7 +93,7 @@ checked
         var one = Console.Read();
         var two = Console.Read();
 
-        return (one + two);
+        return one + two;
     }
 }";
 
