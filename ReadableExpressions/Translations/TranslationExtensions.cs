@@ -8,8 +8,16 @@
 
     internal static class TranslationExtensions
     {
-        public static bool IsMultiStatement(this ITranslatable translation)
+        public static bool IsMultiStatement(this ITranslation translation)
         {
+            switch (translation.NodeType)
+            {
+                case ExpressionType.Call:
+                case ExpressionType.MemberAccess:
+                case ExpressionType.Parameter:
+                    return false;
+            }
+
             return (translation is IPotentialMultiStatementTranslatable multiStatementTranslatable) &&
                     multiStatementTranslatable.IsMultiStatement;
         }

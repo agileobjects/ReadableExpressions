@@ -19,18 +19,20 @@
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
+        private readonly bool _hasMultipleStatements;
+        private readonly bool _hasMultiStatementStatement;
         private readonly bool _writeReturnKeyword;
         private readonly bool _addBlankLineBeforeFinalStatement;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
             _variables = GetVariableDeclarations(block, context);
-            _statements = GetBlockStatements(block, context);
-            EstimatedSize = GetEstimatedSize();
-            IsMultiStatement = _statements.Count > 1;
+            _statements = GetBlockStatements(block, context, out _hasMultiStatementStatement, out var estimatedStatementsSize);
+            EstimatedSize = GetEstimatedSize(estimatedStatementsSize);
+            _hasMultipleStatements = _statements.Count > 1;
             IsTerminated = true;
 
-            if (IsMultiStatement && block.IsReturnable())
+            if (_hasMultipleStatements && block.IsReturnable())
             {
                 if (_statements.Last().HasGoto)
                 {
@@ -65,12 +67,19 @@
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
         }
 
-        private static IList<BlockStatementTranslation> GetBlockStatements(BlockExpression block, ITranslationContext context)
+        private static IList<BlockStatementTranslation> GetBlockStatements(
+            BlockExpression block,
+            ITranslationContext context,
+            out bool hasMultiStatementStatement,
+            out int estimatedStatementsSize)
         {
             var expressions = block.Expressions;
             var expressionCount = expressions.Count;
             var translations = new BlockStatementTranslation[expressionCount];
             var statementIndex = 0;
+
+            hasMultiStatementStatement = false;
+            estimatedStatementsSize = 0;
 
             for (int i = 0, lastExpressionIndex = expressionCount - 1; ; ++i)
             {
@@ -78,9 +87,13 @@
 
                 if (Include(expression, block))
                 {
-                    translations[statementIndex++] = context.IsNotJoinedAssignment(expression)
+                    var statementTranslation = context.IsNotJoinedAssignment(expression)
                         ? new BlockStatementTranslation(expression, context)
                         : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+
+                    translations[statementIndex++] = statementTranslation;
+                    estimatedStatementsSize += statementTranslation.EstimatedSize;
+                    hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
                 }
 
                 if (i == lastExpressionIndex)
@@ -120,22 +133,19 @@
             return (expression.NodeType != Constant) || expression.IsComment();
         }
 
-        private int GetEstimatedSize()
+        private int GetEstimatedSize(int estimatedStatementsSize)
         {
-            var estimatedSize = 0;
-
-            if (_variables.Count != 0)
+            if (_variables.Count == 0)
             {
-                foreach (var parametersByType in _variables)
-                {
-                    estimatedSize += parametersByType.Key.EstimatedSize;
-                    estimatedSize += parametersByType.Value.EstimatedSize;
-                }
+                return estimatedStatementsSize;
             }
 
-            for (int i = 0, l = _statements.Count; i < l; i++)
+            var estimatedSize = estimatedStatementsSize;
+
+            foreach (var parametersByType in _variables)
             {
-                estimatedSize += _statements[i].EstimatedSize;
+                estimatedSize += parametersByType.Key.EstimatedSize;
+                estimatedSize += parametersByType.Value.EstimatedSize;
             }
 
             return estimatedSize;
@@ -148,7 +158,7 @@
 
         public int EstimatedSize { get; }
 
-        public bool IsMultiStatement { get; }
+        public bool IsMultiStatement => _hasMultipleStatements || _hasMultiStatementStatement;
 
         public bool IsTerminated { get; private set; }
 
@@ -210,7 +220,7 @@
             }
         }
 
-        private class BlockStatementTranslation : ITranslation
+        private class BlockStatementTranslation : ITranslation, IPotentialMultiStatementTranslatable
         {
             private readonly ITranslation _statementTranslation;
             private readonly bool _statementIsUnterminated;
@@ -241,6 +251,8 @@
             public ExpressionType NodeType { get; }
 
             public int EstimatedSize { get; protected set; }
+
+            public bool IsMultiStatement => _statementTranslation.IsMultiStatement();
 
             public bool DoNotTerminate { private get; set; }
 
