@@ -231,7 +231,6 @@
                     case Lambda:
                         return false;
 
-                    case Assign:
                     case MemberInit:
                         return true;
                 }

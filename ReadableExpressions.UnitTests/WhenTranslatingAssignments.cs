@@ -292,7 +292,7 @@ checked
 
             const string EXPECTED = @"
 int j;
-var i = ((long)(j = 10));";
+var i = (long)(j = 10);";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

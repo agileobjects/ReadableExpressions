@@ -9,7 +9,10 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class AssignmentTranslation : CheckedOperationTranslationBase, ITranslation
+    internal class AssignmentTranslation :
+        CheckedOperationTranslationBase,
+        ITranslation,
+        IPotentialSelfTerminatingTranslatable
     {
         private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
             new Dictionary<ExpressionType, string>
@@ -104,6 +107,8 @@
         public ExpressionType NodeType { get; }
 
         public int EstimatedSize { get; }
+
+        public bool IsTerminated => _valueTranslation.IsTerminated();
 
         protected override bool IsMultiStatement()
             => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
