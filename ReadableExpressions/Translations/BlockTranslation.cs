@@ -21,8 +21,6 @@
         private readonly IList<BlockStatementTranslation> _statements;
         private readonly bool _hasMultipleStatements;
         private readonly bool _hasMultiStatementStatement;
-        private readonly bool _writeReturnKeyword;
-        private readonly bool _addBlankLineBeforeFinalStatement;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
@@ -34,16 +32,18 @@
 
             if (_hasMultipleStatements && block.IsReturnable())
             {
-                if (_statements.Last().HasGoto)
+                var finalStatement = _statements.Last();
+
+                if (finalStatement.HasGoto)
                 {
                     HasGoto = true;
                 }
                 else
                 {
-                    _writeReturnKeyword = true;
+                    finalStatement.WriteReturnKeyword();
                 }
 
-                _addBlankLineBeforeFinalStatement = AddBlankLineBeforeFinalStatement(block);
+                finalStatement.IsFinalStatement(AddBlankLineBeforeFinalStatement());
             }
         }
 
@@ -151,8 +151,23 @@
             return estimatedSize;
         }
 
-        private static bool AddBlankLineBeforeFinalStatement(BlockExpression block)
-            => !block.Expressions[block.Expressions.Count - 2].IsComment();
+        private bool AddBlankLineBeforeFinalStatement()
+        {
+            var penultimateTranslation = _statements[_statements.Count - 2];
+
+            switch (penultimateTranslation.NodeType)
+            {
+                case Label:
+                    return false;
+            }
+
+            if (penultimateTranslation.WriteBlankLineAfter())
+            {
+                return false;
+            }
+
+            return !penultimateTranslation.Expression.IsComment();
+        }
 
         public ExpressionType NodeType => Block;
 
@@ -188,35 +203,16 @@
 
             for (int i = 0, l = _statements.Count - 1; ; ++i)
             {
-                var isFinalLine = i == l;
                 var statement = _statements[i];
-
-                if (isFinalLine)
-                {
-                    if (_addBlankLineBeforeFinalStatement)
-                    {
-                        context.WriteNewLineToTranslation();
-                    }
-
-                    if (_writeReturnKeyword)
-                    {
-                        context.WriteToTranslation("return ");
-                    }
-                }
 
                 statement.WriteTo(context);
 
-                if (isFinalLine)
+                if (i == l)
                 {
                     break;
                 }
 
                 context.WriteNewLineToTranslation();
-
-                if ((_addBlankLineBeforeFinalStatement == false) && statement.LeaveBlankLineAfter())
-                {
-                    context.WriteNewLineToTranslation();
-                }
             }
         }
 
@@ -224,12 +220,17 @@
         {
             private readonly ITranslation _statementTranslation;
             private readonly bool _statementIsUnterminated;
+            private bool _writeBlankLineBefore;
+            private bool _suppressBlankLineAfter;
+            private bool _writeReturnKeyword;
 
             public BlockStatementTranslation(Expression expression, ITranslationContext context)
             {
                 NodeType = expression.NodeType;
+                Expression = expression;
                 _statementTranslation = context.GetTranslationFor(expression);
                 _statementIsUnterminated = StatementIsUnterminated(expression);
+                _writeBlankLineBefore = WriteBlankLineBefore();
                 EstimatedSize = _statementTranslation.EstimatedSize + 1;
             }
 
@@ -248,7 +249,11 @@
                 return !(expression.IsComment() || _statementTranslation.IsTerminated());
             }
 
+            private bool WriteBlankLineBefore() => NodeType == Label;
+
             public ExpressionType NodeType { get; }
+
+            public Expression Expression { get; }
 
             public int EstimatedSize { get; protected set; }
 
@@ -256,30 +261,56 @@
 
             public bool DoNotTerminate { private get; set; }
 
-            public bool LeaveBlankLineAfter()
+            public void WriteReturnKeyword() => _writeReturnKeyword = true;
+
+            public void IsFinalStatement(bool leaveBlankLineBefore)
+            {
+                _writeBlankLineBefore = leaveBlankLineBefore;
+                _suppressBlankLineAfter = true;
+            }
+
+            public virtual bool HasGoto => _statementTranslation.HasGoto();
+
+            public void WriteTo(ITranslationContext context)
+            {
+                if (_writeBlankLineBefore)
+                {
+                    context.WriteNewLineToTranslation();
+                }
+
+                if (_writeReturnKeyword)
+                {
+                    context.WriteToTranslation("return ");
+                }
+
+                WriteStatementTo(context);
+
+                if ((_suppressBlankLineAfter == false) && WriteBlankLineAfter())
+                {
+                    context.WriteNewLineToTranslation();
+                }
+            }
+
+            protected virtual void WriteStatementTo(ITranslationContext context)
+            {
+                _statementTranslation.WriteTo(context);
+
+                if (_statementIsUnterminated && (DoNotTerminate == false))
+                {
+                    context.WriteToTranslation(';');
+                }
+            }
+
+            public bool WriteBlankLineAfter()
             {
                 switch (NodeType)
                 {
                     case Conditional:
-                    case Goto:
                     case Lambda:
                         return true;
                 }
 
                 return false;
-            }
-
-            public virtual bool HasGoto => _statementTranslation.HasGoto();
-
-            public virtual void WriteTo(ITranslationContext context)
-            {
-                _statementTranslation.WriteTo(context);
-
-                if (_statementIsUnterminated && 
-                   (DoNotTerminate == false))
-                {
-                    context.WriteToTranslation(';');
-                }
             }
         }
 
@@ -321,7 +352,7 @@
 
             public override bool HasGoto => false;
 
-            public override void WriteTo(ITranslationContext context)
+            protected override void WriteStatementTo(ITranslationContext context)
             {
                 if (_typeNameTranslation != null)
                 {
@@ -334,7 +365,7 @@
 
                 context.WriteSpaceToTranslation();
 
-                base.WriteTo(context);
+                base.WriteStatementTo(context);
             }
         }
     }
