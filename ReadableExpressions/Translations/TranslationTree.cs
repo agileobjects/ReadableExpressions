@@ -238,10 +238,12 @@
 
                 case Dynamic:
                     break;
+
                 case Extension:
-                    break;
+                    return new FixedValueTranslation(expression);
+
                 case Goto:
-                    return new GotoTranslation((GotoExpression)expression, this);
+                    return GotoTranslation.For((GotoExpression)expression, this);
 
                 case Index:
                     return new IndexAccessTranslation((IndexExpression)expression, this);

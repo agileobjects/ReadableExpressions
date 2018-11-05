@@ -6,62 +6,54 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class GotoTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+    internal static class GotoTranslation
     {
-        private const string _returnKeyword = "return ";
-        private readonly string _fixedTranslation;
-        private readonly CodeBlockTranslation _returnValueTranslation;
-
-        public GotoTranslation(GotoExpression @goto, ITranslationContext context)
+        public static ITranslation For(GotoExpression @goto, ITranslationContext context)
         {
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    _fixedTranslation = "break;";
-                    break;
+                    return new FixedValueTranslation(ExpressionType.Goto, "break;");
 
                 case GotoExpressionKind.Continue:
-                    _fixedTranslation = "continue;";
-                    break;
+                    return new FixedValueTranslation(ExpressionType.Goto, "continue;");
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        _fixedTranslation = "return;";
-                        break;
+                        return new FixedValueTranslation(ExpressionType.Goto, "return;");
                     }
 
-                    _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                    EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length;
-                    return;
+                    return new ReturnValueTranslation(@goto, context);
 
                 case GotoExpressionKind.Goto when context.GoesToReturnLabel(@goto):
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    _fixedTranslation = "goto " + @goto.Target.Name + ";";
-                    break;
+                    return new FixedValueTranslation(ExpressionType.Goto, "goto " + @goto.Target.Name + ";");
             }
-
-            EstimatedSize = _fixedTranslation.Length;
         }
 
-        public bool IsTerminated => _fixedTranslation != null;
-
-        public ExpressionType NodeType => ExpressionType.Goto;
-
-        public int EstimatedSize { get; }
-
-        public void WriteTo(ITranslationContext context)
+        private class ReturnValueTranslation : ITranslation
         {
-            if (_fixedTranslation != null)
+            private const string _returnKeyword = "return ";
+            private readonly CodeBlockTranslation _returnValueTranslation;
+
+            public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
-                context.WriteToTranslation(_fixedTranslation);
-                return;
+                _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
+                EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length;
             }
 
-            context.WriteToTranslation(_returnKeyword);
-            _returnValueTranslation.WriteTo(context);
+            public ExpressionType NodeType => ExpressionType.Goto;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation(_returnKeyword);
+                _returnValueTranslation.WriteTo(context);
+            }
         }
     }
 }
