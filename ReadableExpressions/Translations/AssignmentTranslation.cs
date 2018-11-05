@@ -72,19 +72,16 @@
         {
             var valueBlock = context.GetCodeBlockTranslationFor(assignedValue);
 
-            if (!valueBlock.IsMultiStatement())
+            if (valueBlock.IsMultiStatement())
             {
-                return IsCheckedOperation
-                    ? valueBlock.WithoutBraces().WithTermination()
-                    : valueBlock.WithoutBraces().WithoutTermination();
+                return (valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda)
+                    ? valueBlock.WithoutBraces()
+                    : valueBlock.WithBraces();
             }
 
-            if ((valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda))
-            {
-                return valueBlock.WithoutBraces();
-            }
-
-            return valueBlock.WithBraces();
+            return IsCheckedOperation
+                ? valueBlock.WithoutBraces().WithTermination()
+                : valueBlock.WithoutBraces().WithoutTermination();
         }
 
         private int GetEstimatedSize()
