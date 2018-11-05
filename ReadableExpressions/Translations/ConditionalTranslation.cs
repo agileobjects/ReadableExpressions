@@ -201,7 +201,7 @@
             }
         }
 
-        private class IfElseTranslation : ConditionalTranslationBase
+        private class IfElseTranslation : ConditionalTranslationBase, IPotentialSelfTerminatingTranslatable
         {
             private readonly bool _isElseIf;
 
@@ -224,6 +224,8 @@
 
             private static bool IsElseIf(ConditionalExpression conditional)
                 => conditional.IfFalse.NodeType == ExpressionType.Conditional;
+
+            public bool IsTerminated => true;
 
             public override void WriteTo(ITranslationContext context)
             {
