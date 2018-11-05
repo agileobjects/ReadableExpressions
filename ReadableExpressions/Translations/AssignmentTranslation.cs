@@ -123,9 +123,9 @@
             {
                 context.WriteSpaceToTranslation();
             }
-            
+
             _valueTranslation.WriteTo(context);
-            
+
             WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
         }
     }

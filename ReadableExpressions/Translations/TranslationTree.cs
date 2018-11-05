@@ -293,8 +293,9 @@
 
                 case Throw:
                     break;
+
                 case Try:
-                    break;
+                    return new TryCatchTranslation((TryExpression)expression, this);
 
                 case TypeEqual:
                     return new TypeEqualTranslation((TypeBinaryExpression)expression, this);
