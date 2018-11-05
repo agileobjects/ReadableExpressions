@@ -19,32 +19,15 @@
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
-        private readonly bool _hasMultipleStatements;
-        private readonly bool _hasMultiStatementStatement;
+        private readonly bool _hasGoto;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
             _variables = GetVariableDeclarations(block, context);
-            _statements = GetBlockStatements(block, context, out _hasMultiStatementStatement, out var estimatedStatementsSize);
+            _statements = GetBlockStatements(block, context, out var hasMultiStatementStatement, out var estimatedStatementsSize, out _hasGoto);
             EstimatedSize = GetEstimatedSize(estimatedStatementsSize);
-            _hasMultipleStatements = _statements.Count > 1;
+            IsMultiStatement = hasMultiStatementStatement || _statements.Count > 1;
             IsTerminated = true;
-
-            if (_hasMultipleStatements && block.IsReturnable())
-            {
-                var finalStatement = _statements.Last();
-
-                if (finalStatement.HasGoto)
-                {
-                    HasGoto = true;
-                }
-                else
-                {
-                    finalStatement.WriteReturnKeyword();
-                }
-
-                finalStatement.IsFinalStatement(AddBlankLineBeforeFinalStatement());
-            }
         }
 
         private static IDictionary<ITranslation, ParameterSetTranslation> GetVariableDeclarations(
@@ -67,11 +50,12 @@
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
         }
 
-        private static IList<BlockStatementTranslation> GetBlockStatements(
+        private IList<BlockStatementTranslation> GetBlockStatements(
             BlockExpression block,
             ITranslationContext context,
             out bool hasMultiStatementStatement,
-            out int estimatedStatementsSize)
+            out int estimatedStatementsSize,
+            out bool hasGoto)
         {
             var expressions = block.Expressions;
             var expressionCount = expressions.Count;
@@ -80,9 +64,11 @@
 
             hasMultiStatementStatement = false;
             estimatedStatementsSize = 0;
+            hasGoto = false;
 
             for (int i = 0, lastExpressionIndex = expressionCount - 1; ; ++i)
             {
+                var isFinalStatement = i == lastExpressionIndex;
                 var expression = expressions[i];
 
                 if (Include(expression, block))
@@ -91,12 +77,21 @@
                         ? new BlockStatementTranslation(expression, context)
                         : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
 
+                    if (statementIndex == 0)
+                    {
+                        statementTranslation.IsFirstStatement();
+                    }
+                    else if (isFinalStatement && block.IsReturnable())
+                    {
+                        ConfigureFinalStatement(statementTranslation, translations, ref hasGoto);
+                    }
+
                     translations[statementIndex++] = statementTranslation;
                     estimatedStatementsSize += statementTranslation.EstimatedSize;
                     hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
                 }
 
-                if (i == lastExpressionIndex)
+                if (isFinalStatement)
                 {
                     break;
                 }
@@ -133,6 +128,23 @@
             return (expression.NodeType != Constant) || expression.IsComment();
         }
 
+        private static void ConfigureFinalStatement(
+            BlockStatementTranslation statementTranslation,
+            IList<BlockStatementTranslation> statementTranslations,
+            ref bool hasGoto)
+        {
+            if (statementTranslation.HasGoto)
+            {
+                hasGoto = true;
+            }
+            else
+            {
+                statementTranslation.WriteReturnKeyword();
+            }
+
+            statementTranslation.IsFinalStatement(AddBlankLineBeforeFinalStatement(statementTranslations));
+        }
+
         private int GetEstimatedSize(int estimatedStatementsSize)
         {
             if (_variables.Count == 0)
@@ -151,9 +163,9 @@
             return estimatedSize;
         }
 
-        private bool AddBlankLineBeforeFinalStatement()
+        private static bool AddBlankLineBeforeFinalStatement(IList<BlockStatementTranslation> statementTranslations)
         {
-            var penultimateTranslation = _statements[_statements.Count - 2];
+            var penultimateTranslation = statementTranslations[statementTranslations.Count - 2];
 
             switch (penultimateTranslation.NodeType)
             {
@@ -173,11 +185,11 @@
 
         public int EstimatedSize { get; }
 
-        public bool IsMultiStatement => _hasMultipleStatements || _hasMultiStatementStatement;
+        public bool IsMultiStatement { get; }
 
         public bool IsTerminated { get; private set; }
 
-        public bool HasGoto { get; }
+        public bool HasGoto => _hasGoto;
 
         public BlockTranslation WithoutTermination()
         {
@@ -261,13 +273,15 @@
 
             public bool DoNotTerminate { private get; set; }
 
-            public void WriteReturnKeyword() => _writeReturnKeyword = true;
+            public void IsFirstStatement() => _writeBlankLineBefore = false;
 
             public void IsFinalStatement(bool leaveBlankLineBefore)
             {
                 _writeBlankLineBefore = leaveBlankLineBefore;
                 _suppressBlankLineAfter = true;
             }
+
+            public void WriteReturnKeyword() => _writeReturnKeyword = true;
 
             public virtual bool HasGoto => _statementTranslation.HasGoto();
 
