@@ -28,6 +28,12 @@
             NodeType = negationType;
             _operator = @operator;
             _negatedValue = negatedValue;
+
+            if (_negatedValue.IsBinary() || _negatedValue.IsAssignment())
+            {
+                _negatedValue = _negatedValue.WithParentheses();
+            }
+
             EstimatedSize = negatedValue.EstimatedSize + 1;
         }
 

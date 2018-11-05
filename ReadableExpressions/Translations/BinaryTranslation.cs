@@ -10,7 +10,7 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class BinaryTranslation : ITranslation
+    internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
         private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
             new Dictionary<ExpressionType, string>(23)
@@ -44,10 +44,10 @@
         private readonly string _operator;
         private readonly ITranslation _rightOperandTranslation;
         private readonly StandaloneBoolean _standaloneBoolean;
-        private readonly bool _isCheckedOperation;
         private readonly Action<ITranslationContext> _translationWriter;
 
         public BinaryTranslation(BinaryExpression binary, ITranslationContext context)
+            : base(IsCheckedBinary(binary.NodeType), "(", ")")
         {
             NodeType = binary.NodeType;
 
@@ -79,19 +79,14 @@
                     _leftOperandTranslation = context.GetTranslationFor(binary.Left);
                     _operator = GetOperator(binary);
                     _rightOperandTranslation = context.GetTranslationFor(binary.Right);
-                    _isCheckedOperation = IsCheckedOperation();
                     EstimatedSize = GetEstimatedSize();
                     break;
             }
         }
 
-        public static string GetOperator(BinaryExpression expression) => _operatorsByNodeType[expression.NodeType];
-
-        public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
-
-        private bool IsCheckedOperation()
+        private static bool IsCheckedBinary(ExpressionType nodeType)
         {
-            switch (NodeType)
+            switch (nodeType)
             {
                 case AddChecked:
                 case MultiplyChecked:
@@ -102,6 +97,10 @@
             return false;
         }
 
+        public static string GetOperator(BinaryExpression expression) => _operatorsByNodeType[expression.NodeType];
+
+        public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
+
         private int GetEstimatedSize()
         {
             var estimatedSize =
@@ -109,7 +108,7 @@
                _operator.Length +
                _rightOperandTranslation.EstimatedSize;
 
-            if (_isCheckedOperation)
+            if (IsCheckedOperation)
             {
                 estimatedSize += 10;
             }
@@ -147,45 +146,6 @@
             WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
         }
 
-        private void WriteOpeningCheckedIfNecessary(ITranslationContext context, out bool isMultiStatementChecked)
-        {
-            if (_isCheckedOperation == false)
-            {
-                isMultiStatementChecked = false;
-                return;
-            }
-
-            context.WriteToTranslation("checked");
-
-            isMultiStatementChecked =
-                _leftOperandTranslation.IsMultiStatement() ||
-                _rightOperandTranslation.IsMultiStatement();
-
-            if (isMultiStatementChecked)
-            {
-                context.WriteOpeningBraceToTranslation();
-                return;
-            }
-
-            context.WriteToTranslation('(');
-        }
-
-        private void WriteClosingCheckedIfNecessary(ITranslationContext context, bool isMultiStatementChecked)
-        {
-            if (_isCheckedOperation == false)
-            {
-                return;
-            }
-
-            if (isMultiStatementChecked)
-            {
-                context.WriteClosingBraceToTranslation();
-                return;
-            }
-
-            context.WriteToTranslation(')');
-        }
-
         private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)
         {
             if (IsBooleanConstant(comparison.Right))
@@ -209,6 +169,9 @@
             return ((expression.NodeType == Constant) || (expression.NodeType == Default)) &&
                     (expression.Type == typeof(bool));
         }
+
+        protected override bool IsMultiStatement()
+            => _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
 
         private class StandaloneBoolean
         {

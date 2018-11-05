@@ -8,55 +8,28 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class ConditionalTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+    internal static class ConditionalTranslation
     {
-        private readonly bool _hasNoElseCondition;
-        private readonly ITranslation _testTranslation;
-        private readonly ITranslation _ifTrueTranslation;
-        private readonly ITranslation _ifFalseTranslation;
-        private readonly Action<ITranslationContext> _translationWriter;
-        private readonly bool _isElseIf;
-
-        public ConditionalTranslation(ConditionalExpression conditional, ITranslationContext context)
+        public static ITranslation For(ConditionalExpression conditional, ITranslationContext context)
         {
-            _testTranslation = new ConditionTranslation(conditional.Test, context);
-            _hasNoElseCondition = HasNoElseCondition(conditional);
-            _ifTrueTranslation = context.GetTranslationFor(conditional.IfTrue);
+            var hasNoElseCondition = HasNoElseCondition(conditional);
 
-            if (_hasNoElseCondition)
+            if (hasNoElseCondition)
             {
-                _ifTrueTranslation = GetIfTrueCodeBlockTranslation(conditional);
-                _translationWriter = WriteIfStatement;
-                IsTerminated = true;
-                goto EstimateSize;
+                return new IfStatementTranslation(conditional, context);
             }
-
-            _ifFalseTranslation = context.GetTranslationFor(conditional.IfFalse);
 
             if (IsTernary(conditional))
             {
-                _translationWriter = WriteTernary;
-                goto EstimateSize;
+                return new TernaryTranslation(conditional, context);
             }
 
             if (conditional.IfTrue.IsReturnable())
             {
-                _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: true);
-                _translationWriter = WriteShortCircuitingIf;
-                goto EstimateSize;
+                return new ShortCircuitingIfTranslation(conditional, context);
             }
 
-            IsTerminated = true;
-            _ifTrueTranslation = GetIfTrueCodeBlockTranslation(withReturnKeyword: false);
-            _isElseIf = IsElseIf(conditional);
-
-            if (_isElseIf == false)
-            {
-                _ifFalseTranslation = GetCodeBlockTranslation(_ifFalseTranslation, conditional.IfFalse.IsReturnable());
-            }
-
-            EstimateSize:
-            EstimatedSize = GetEstimatedSize();
+            return new IfElseTranslation(conditional, context);
         }
 
         private static bool HasNoElseCondition(ConditionalExpression conditional)
@@ -65,120 +38,206 @@
                    (conditional.Type == typeof(void));
         }
 
-        private ITranslation GetIfTrueCodeBlockTranslation(ConditionalExpression conditional)
-            => GetIfTrueCodeBlockTranslation(conditional.IfTrue.IsReturnable());
-
-        private ITranslation GetIfTrueCodeBlockTranslation(bool withReturnKeyword)
-            => GetCodeBlockTranslation(_ifTrueTranslation, withReturnKeyword);
-
-        private static ITranslation GetCodeBlockTranslation(ITranslation translation, bool withReturnKeyword)
-        {
-            var codeBlockTranslation = new CodeBlockTranslation(translation)
-                .WithTermination()
-                .WithBraces();
-
-            if (withReturnKeyword)
-            {
-                codeBlockTranslation = codeBlockTranslation.WithReturnKeyword();
-            }
-
-            return codeBlockTranslation;
-        }
-
         private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
 
-        private static bool IsElseIf(ConditionalExpression conditional)
-            => conditional.IfFalse.NodeType == ExpressionType.Conditional;
-
-        private int GetEstimatedSize()
+        private abstract class ConditionalTranslationBase : ITranslation
         {
-            var estimatedSize = _testTranslation.EstimatedSize + _ifTrueTranslation.EstimatedSize;
+            private int? _estimatedSize;
 
-            if (_hasNoElseCondition == false)
+            protected ConditionalTranslationBase(
+                ConditionalExpression conditional,
+                ITranslation ifTrueTranslation,
+                ITranslationContext context)
             {
-                estimatedSize += _ifFalseTranslation.EstimatedSize;
+                TestTranslation = new ConditionTranslation(conditional.Test, context);
+                IfTrueTranslation = ifTrueTranslation;
             }
 
-            // +10 for parentheses, ternary symbols, etc:
-            return estimatedSize + 10;
-        }
-
-        public ExpressionType NodeType => ExpressionType.Conditional;
-
-        public int EstimatedSize { get; }
-
-        public bool IsTerminated { get; }
-
-        private void WriteIfStatement(ITranslationContext context)
-        {
-            context.WriteToTranslation("if ");
-            _testTranslation.WriteInParentheses(context);
-            _ifTrueTranslation.WriteTo(context);
-        }
-
-        private void WriteTernary(ITranslationContext context)
-        {
-            var writeToMultipleLines = this.ExceedsLengthThreshold();
-
-            _testTranslation.WriteInParenthesesIfRequired(context);
-
-            if (writeToMultipleLines)
+            protected ConditionalTranslationBase(
+                ConditionalExpression conditional,
+                ITranslation ifTrueTranslation,
+                ITranslation ifFalseTranslation,
+                ITranslationContext context)
+                : this(conditional, ifTrueTranslation, context)
             {
+                IfFalseTranslation = ifFalseTranslation;
+            }
+
+            public ExpressionType NodeType => ExpressionType.Conditional;
+
+            protected ITranslation TestTranslation { get; }
+
+            protected ITranslation IfTrueTranslation { get; }
+
+            protected ITranslation IfFalseTranslation { get; set; }
+
+            public int EstimatedSize
+                => _estimatedSize ?? ((_estimatedSize = GetEstimatedSize()).Value);
+
+            private int GetEstimatedSize()
+            {
+                var estimatedSize = TestTranslation.EstimatedSize + IfTrueTranslation.EstimatedSize;
+
+                if (IfFalseTranslation != null)
+                {
+                    estimatedSize += IfFalseTranslation.EstimatedSize;
+                }
+
+                // +10 for parentheses, ternary symbols, etc:
+                return estimatedSize + 10;
+            }
+
+            protected static ITranslation GetCodeBlockTranslation(ITranslation translation, bool withReturnKeyword)
+            {
+                var codeBlockTranslation = new CodeBlockTranslation(translation)
+                    .WithTermination()
+                    .WithBraces();
+
+                if (withReturnKeyword)
+                {
+                    codeBlockTranslation = codeBlockTranslation.WithReturnKeyword();
+                }
+
+                return codeBlockTranslation;
+            }
+
+            public abstract void WriteTo(ITranslationContext context);
+
+            protected void WriteIfStatement(ITranslationContext context)
+            {
+                context.WriteToTranslation("if ");
+                TestTranslation.WriteInParentheses(context);
+                IfTrueTranslation.WriteTo(context);
+            }
+        }
+
+        private class IfStatementTranslation : ConditionalTranslationBase, IPotentialSelfTerminatingTranslatable
+        {
+            public IfStatementTranslation(ConditionalExpression conditional, ITranslationContext context)
+                : base(
+                    conditional,
+                    GetCodeBlockTranslation(
+                        context.GetTranslationFor(conditional.IfTrue),
+                        withReturnKeyword: conditional.IfTrue.IsReturnable()),
+                    context)
+            {
+            }
+
+            public bool IsTerminated => true;
+
+            public override void WriteTo(ITranslationContext context) => WriteIfStatement(context);
+        }
+
+        private class TernaryTranslation : ConditionalTranslationBase
+        {
+            private readonly Action<ITranslationContext> _translationWriter;
+
+            public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
+                : base(
+                    conditional,
+                    context.GetCodeBlockTranslationFor(conditional.IfTrue).WithoutStartingNewLine(),
+                    context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutStartingNewLine(),
+                    context)
+            {
+                if (this.ExceedsLengthThreshold())
+                {
+                    _translationWriter = WriteMultiLineTernary;
+                }
+                else
+                {
+                    _translationWriter = WriteSingleLineTernary;
+                }
+            }
+
+            public override void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);
+
+            private void WriteSingleLineTernary(ITranslationContext context)
+            {
+                TestTranslation.WriteInParenthesesIfRequired(context);
+                context.WriteToTranslation(" ? ");
+                IfTrueTranslation.WriteTo(context);
+                context.WriteToTranslation(" : ");
+                IfFalseTranslation.WriteTo(context);
+            }
+
+            private void WriteMultiLineTernary(ITranslationContext context)
+            {
+                TestTranslation.WriteInParenthesesIfRequired(context);
+
                 context.WriteNewLineToTranslation();
                 context.Indent();
                 context.WriteToTranslation("? ");
-            }
-            else
-            {
-                context.WriteToTranslation(" ? ");
-            }
 
-            _ifTrueTranslation.WriteTo(context);
+                IfTrueTranslation.WriteTo(context);
 
-            if (writeToMultipleLines)
-            {
                 context.WriteNewLineToTranslation();
                 context.WriteToTranslation(": ");
-            }
-            else
-            {
-                context.WriteToTranslation(" : ");
-            }
 
-            _ifFalseTranslation.WriteTo(context);
+                IfFalseTranslation.WriteTo(context);
 
-            if (writeToMultipleLines)
-            {
                 context.Unindent();
             }
         }
 
-        private void WriteShortCircuitingIf(ITranslationContext context)
+        private class ShortCircuitingIfTranslation : ConditionalTranslationBase
         {
-            WriteIfStatement(context);
-            context.WriteNewLineToTranslation();
-            context.WriteNewLineToTranslation();
-            _ifFalseTranslation.WriteTo(context);
+            public ShortCircuitingIfTranslation(ConditionalExpression conditional, ITranslationContext context)
+                : base(
+                    conditional,
+                    GetCodeBlockTranslation(
+                        context.GetTranslationFor(conditional.IfTrue),
+                        withReturnKeyword: true),
+                    context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutBraces(),
+                    context)
+            {
+            }
+
+            public override void WriteTo(ITranslationContext context)
+            {
+                WriteIfStatement(context);
+                context.WriteNewLineToTranslation();
+                context.WriteNewLineToTranslation();
+                IfFalseTranslation.WriteTo(context);
+            }
         }
 
-        public void WriteTo(ITranslationContext context)
+        private class IfElseTranslation : ConditionalTranslationBase
         {
-            if (_translationWriter != null)
+            private readonly bool _isElseIf;
+
+            public IfElseTranslation(ConditionalExpression conditional, ITranslationContext context)
+                : base(
+                    conditional,
+                    GetCodeBlockTranslation(
+                        context.GetTranslationFor(conditional.IfTrue),
+                        withReturnKeyword: false),
+                    context.GetTranslationFor(conditional.IfFalse),
+                    context)
             {
-                _translationWriter.Invoke(context);
-                return;
+                _isElseIf = IsElseIf(conditional);
+
+                if (_isElseIf == false)
+                {
+                    IfFalseTranslation = GetCodeBlockTranslation(IfFalseTranslation, conditional.IfFalse.IsReturnable());
+                }
             }
 
-            WriteIfStatement(context);
-            context.WriteNewLineToTranslation();
-            context.WriteToTranslation("else");
+            private static bool IsElseIf(ConditionalExpression conditional)
+                => conditional.IfFalse.NodeType == ExpressionType.Conditional;
 
-            if (_isElseIf)
+            public override void WriteTo(ITranslationContext context)
             {
-                context.WriteSpaceToTranslation();
-            }
+                WriteIfStatement(context);
+                context.WriteNewLineToTranslation();
+                context.WriteToTranslation("else");
 
-            _ifFalseTranslation.WriteTo(context);
+                if (_isElseIf)
+                {
+                    context.WriteSpaceToTranslation();
+                }
+
+                IfFalseTranslation.WriteTo(context);
+            }
         }
     }
 }

@@ -9,10 +9,8 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
-    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
-    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -48,7 +46,7 @@
 
             var translated = ToReadableString(addTenAndAssign);
 
-            translated.ShouldBe("checked { i += 10 }");
+            translated.ShouldBe("checked { i += 10; }");
         }
 
         [Fact]
@@ -95,7 +93,7 @@ checked
         var one = Console.Read();
         var two = Console.Read();
 
-        return (one + two);
+        return one + two;
     }
 }";
 
@@ -121,7 +119,7 @@ checked
 
             var translated = ToReadableString(doubleAndAssign);
 
-            translated.ShouldBe("checked { i *= 2 }");
+            translated.ShouldBe("checked { i *= 2; }");
         }
 
         [Fact]
@@ -294,7 +292,7 @@ checked
 
             const string EXPECTED = @"
 int j;
-var i = ((long)(j = 10));";
+var i = (long)(j = 10);";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -527,7 +525,7 @@ result =
     var one = Console.Read();
     var two = Console.Read();
 
-    return (one - two);
+    return one - two;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
