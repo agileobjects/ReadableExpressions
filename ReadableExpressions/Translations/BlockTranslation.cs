@@ -19,14 +19,16 @@
     {
         private readonly IDictionary<ITranslation, ParameterSetTranslation> _variables;
         private readonly IList<BlockStatementTranslation> _statements;
+        private readonly int _statementCount;
         private readonly bool _hasGoto;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
             _variables = GetVariableDeclarations(block, context);
             _statements = GetBlockStatements(block, context, out var hasMultiStatementStatement, out var estimatedStatementsSize, out _hasGoto);
+            _statementCount = _statements.Count;
             EstimatedSize = GetEstimatedSize(estimatedStatementsSize);
-            IsMultiStatement = hasMultiStatementStatement || _statements.Count > 1;
+            IsMultiStatement = hasMultiStatementStatement || (_statementCount > 1) || (_variables.Count > 0);
             IsTerminated = true;
         }
 
@@ -193,7 +195,7 @@
 
         public BlockTranslation WithoutTermination()
         {
-            _statements[_statements.Count - 1].DoNotTerminate = true;
+            _statements[_statementCount - 1].DoNotTerminate = true;
             IsTerminated = false;
             return this;
         }
@@ -213,7 +215,7 @@
                 context.WriteNewLineToTranslation();
             }
 
-            for (int i = 0, l = _statements.Count - 1; ; ++i)
+            for (int i = 0, l = _statementCount - 1; ; ++i)
             {
                 var statement = _statements[i];
 
