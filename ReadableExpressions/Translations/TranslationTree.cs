@@ -261,7 +261,8 @@
                     return new ListInitialisationTranslation((ListInitExpression)expression, this);
 
                 case Loop:
-                    break;
+                    return new LoopTranslation((LoopExpression)expression, this);
+
                 case MemberAccess:
                     return new MemberAccessTranslation((MemberExpression)expression, this);
 

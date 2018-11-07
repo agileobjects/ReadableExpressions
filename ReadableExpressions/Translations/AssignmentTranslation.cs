@@ -87,9 +87,9 @@
         private int GetEstimatedSize()
         {
             var estimatedSize =
-                _targetTranslation.EstimatedSize +
-                _operator.Length +
-                _valueTranslation.EstimatedSize;
+               _targetTranslation.EstimatedSize +
+               _operator.Length +
+               _valueTranslation.EstimatedSize;
 
             if (IsCheckedOperation)
             {

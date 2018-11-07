@@ -50,7 +50,7 @@
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
         }
 
-        private IList<BlockStatementTranslation> GetBlockStatements(
+        private static IList<BlockStatementTranslation> GetBlockStatements(
             BlockExpression block,
             ITranslationContext context,
             out bool hasMultiStatementStatement,
