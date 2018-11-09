@@ -4,501 +4,576 @@
     using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
     using Translators;
 #else
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
     using Extensions;
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
 
-    internal class ConstantTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+    internal static class ConstantTranslation
     {
-        private const string _null = "null";
-
-        private readonly ConstantExpression _constant;
-        private readonly bool _isEnumValue;
-        private readonly ITranslation _typeNameTranslation;
-
-        public ConstantTranslation(ConstantExpression constant, ITranslationContext context)
+        public static ITranslation For(ConstantExpression constant, ITranslationContext context)
         {
-            _constant = constant;
-            _isEnumValue = constant.Type.IsEnum();
-
-            if (_isEnumValue)
+            if (constant.Value == null)
             {
-                _typeNameTranslation = context.GetTranslationFor(constant.Type);
+                return FixedValueTranslation("null");
             }
 
-            EstimatedSize = GetEstimatedSize();
-        }
-
-        private int GetEstimatedSize()
-        {
-            if (_constant.Value == null)
+            if (constant.Type.IsEnum())
             {
-                return _null.Length;
+                return new EnumConstantTranslation(constant, context);
             }
 
-            // TODO: Update to use lambda translation.
-
-            var valueString = _constant.Value.ToString();
-
-            if (_isEnumValue)
+            if (TryTranslateFromTypeCode(constant, context, out var translation))
             {
-                return _typeNameTranslation.EstimatedSize + ".".Length + valueString.Length;
+                return translation;
             }
 
-            return valueString.Length;
-        }
-
-        public ExpressionType NodeType => ExpressionType.Constant;
-
-        public int EstimatedSize { get; }
-
-        public bool IsTerminated
-            => (_constant.NodeType == ExpressionType.Lambda) || _constant.IsComment();
-
-        public void WriteTo(ITranslationContext context)
-        {
-            if (_constant.Value == null)
-            {
-                context.WriteToTranslation(_null);
-                return;
-            }
-
-            if (_isEnumValue)
-            {
-                _typeNameTranslation.WriteTo(context);
-                context.WriteToTranslation('.');
-                context.WriteToTranslation(_constant.Value);
-                return;
-            }
-
-            if (TryWriteFromTypeCode(context))
-            {
-                return;
-            }
-
-            var valueType = _constant.Value.GetType();
+            var valueType = constant.Value.GetType();
 
             if (valueType.IsPrimitive() || valueType.IsValueType())
             {
-                context.WriteToTranslation(_constant.Value);
-                return;
+                return FixedValueTranslation(constant.Value);
             }
 
-            context.WriteToTranslation(valueType.GetFriendlyName(context.Settings));
+            return FixedValueTranslation(valueType.GetFriendlyName(context.Settings));
         }
 
-        private bool TryWriteFromTypeCode(ITranslationContext context)
+        private static ITranslation FixedValueTranslation(object value) => FixedValueTranslation(value.ToString());
+
+        private static ITranslation FixedValueTranslation(string value, bool isTerminated = false)
         {
-            switch ((Nullable.GetUnderlyingType(_constant.Type) ?? _constant.Type).GetTypeCode())
+            return isTerminated
+                ? new FixedTerminatedValueTranslation(Constant, value)
+                : new FixedValueTranslation(Constant, value);
+        }
+
+        private static bool TryTranslateFromTypeCode(
+            ConstantExpression constant,
+            ITranslationContext context,
+            out ITranslation translation)
+        {
+            switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
             {
                 case NetStandardTypeCode.Boolean:
-                    context.WriteToTranslation(_constant.Value.ToString().ToLowerInvariant());
+                    translation = FixedValueTranslation(constant.Value.ToString().ToLowerInvariant());
                     return true;
 
                 case NetStandardTypeCode.Char:
-                    context.WriteToTranslation('\'');
-                    context.WriteToTranslation(_constant.Value);
-                    context.WriteToTranslation('\'');
+                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WrappedIn("'", "'");
+
                     return true;
 
                 case NetStandardTypeCode.DateTime:
-                    if (!TryWriteDefault<DateTime>(context))
+                    if (!TryTranslateDefault<DateTime>(constant, out translation))
                     {
-                        WriteDateTime((DateTime)_constant.Value, context);
+                        translation = new DateTimeConstantTranslation(constant);
                     }
 
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    context.WriteToTranslation("DBNull.Value");
+                    translation = FixedValueTranslation("DBNull.Value");
                     return true;
 
                 case NetStandardTypeCode.Decimal:
-                    WriteNumeric((decimal)_constant.Value, 'm', context);
+                    translation = GetDecimalTranslation((decimal)constant.Value);
                     return true;
 
                 case NetStandardTypeCode.Double:
-                    WriteNumeric((double)_constant.Value, 'd', context);
+                    translation = GetDoubleTranslation((double)constant.Value);
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    context.WriteToTranslation(_constant.Value);
-                    context.WriteToTranslation('L');
+                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WithSuffix("L");
                     return true;
 
                 case NetStandardTypeCode.Int32:
-                    context.WriteToTranslation((int)_constant.Value);
+                    translation = FixedValueTranslation(constant.Value);
                     return true;
 
                 case NetStandardTypeCode.Object:
-                    if (TryWriteType(context) ||
-                        TryWriteLambda(context) ||
-                        TryWriteFunc(context) ||
-                        TryWriteRegex(context) ||
-                        TryWriteDefault<Guid>(context) ||
-                        TryWriteTimeSpan(context))
+                    if (TryGetTypeTranslation(constant, context, out translation) ||
+                        LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
+                        FuncConstantTranslation.TryCreate(constant, out translation) ||
+                        TryGetRegexTranslation(constant, out translation) ||
+                        TryTranslateDefault<Guid>(constant, out translation) ||
+                        TimeSpanConstantTranslation.TryCreate(constant, out translation))
                     {
                         return true;
                     }
+
                     break;
 
                 case NetStandardTypeCode.Single:
-                    WriteNumeric((float)_constant.Value, 'f', context);
+                    translation = GetFloatTranslation((float)constant.Value);
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = (string)_constant.Value;
+                    var stringValue = (string)constant.Value;
 
                     if (stringValue.IsComment())
                     {
-                        context.WriteToTranslation(stringValue);
+                        translation = FixedValueTranslation(stringValue, isTerminated: true);
                         return true;
                     }
 
-                    context.WriteToTranslation('"');
-                    context.WriteToTranslation(stringValue.Replace("\"", "\\\""));
-                    context.WriteToTranslation('"');
+                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""));
+                    translation = new TranslationWrapper(translation).WrappedIn("\"", "\"");
+
                     return true;
             }
 
+            translation = null;
             return false;
         }
 
-        private static void WriteDateTime(DateTime value, ITranslationContext context)
+        private static bool TryTranslateDefault<T>(ConstantExpression constant, out ITranslation translation)
         {
-            var hasMilliseconds = value.Millisecond != 0;
-            var hasTime = (value.Hour != 0) || (value.Minute != 0) || (value.Second != 0);
-
-            context.WriteToTranslation("new DateTime(");
-
-            context.WriteToTranslation(value.Year);
-            WriteTwoDigitDatePart(value.Month, context);
-            WriteTwoDigitDatePart(value.Day, context);
-
-            if (hasMilliseconds || hasTime)
+            if ((constant.Type != typeof(T)) || !constant.Value.Equals(default(T)))
             {
-                WriteTwoDigitDatePart(value.Hour, context);
-                WriteTwoDigitDatePart(value.Minute, context);
-                WriteTwoDigitDatePart(value.Second, context);
-
-                if (hasMilliseconds)
-                {
-                    context.WriteToTranslation(", ");
-                    context.WriteToTranslation(value.Millisecond);
-                }
-            }
-
-            context.WriteToTranslation(")");
-        }
-
-        private static void WriteTwoDigitDatePart(int datePart, ITranslationContext context)
-        {
-            context.WriteToTranslation(", ");
-
-            if (datePart > 9)
-            {
-                context.WriteToTranslation(datePart);
-                return;
-            }
-
-            context.WriteToTranslation('0');
-            context.WriteToTranslation(datePart);
-        }
-
-        private static void WriteNumeric(decimal value, char suffix, ITranslationContext context)
-        {
-            context.WriteToTranslation((value % 1).Equals(0)
-                ? value.ToString("0") : value.ToString(CurrentCulture));
-
-            context.WriteToTranslation(suffix);
-        }
-
-        private static void WriteNumeric(double value, char suffix, ITranslationContext context)
-        {
-            context.WriteToTranslation((value % 1).Equals(0)
-                ? value.ToString("0") : value.ToString(CurrentCulture));
-
-            context.WriteToTranslation(suffix);
-        }
-
-        private static void WriteNumeric(float value, char suffix, ITranslationContext context)
-        {
-            context.WriteToTranslation((value % 1).Equals(0)
-                ? value.ToString("0") : value.ToString(CurrentCulture));
-
-            context.WriteToTranslation(suffix);
-        }
-
-        private bool TryWriteType(ITranslationContext context)
-        {
-            if (!_constant.Type.IsAssignableTo(typeof(Type)))
-            {
+                translation = null;
                 return false;
             }
 
-            context.WriteToTranslation("typeof(");
-            context.GetTranslationFor((Type)_constant.Value).WriteTo(context);
-            context.WriteToTranslation(")");
+            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name)).WrappedIn("default(", ")");
             return true;
         }
 
-        private bool TryWriteLambda(ITranslationContext context)
+        private static ITranslation GetDecimalTranslation(decimal value)
         {
+            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+                ? value.ToString("0")
+                : value.ToString(CurrentCulture));
+
+            return new TranslationWrapper(valueTranslation).WithSuffix("m");
+        }
+
+        private static ITranslation GetDoubleTranslation(double value)
+        {
+            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+                ? value.ToString("0")
+                : value.ToString(CurrentCulture));
+
+            return new TranslationWrapper(valueTranslation).WithSuffix("d");
+        }
+
+        private static ITranslation GetFloatTranslation(float value)
+        {
+            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+                ? value.ToString("0")
+                : value.ToString(CurrentCulture));
+
+            return new TranslationWrapper(valueTranslation).WithSuffix("f");
+        }
+
+        private static bool TryGetTypeTranslation(
+            ConstantExpression constant,
+            ITranslationContext context,
+            out ITranslation translation)
+        {
+            if (!constant.Type.IsAssignableTo(typeof(Type)))
+            {
+                translation = null;
+                return false;
+            }
+
+            translation = context.GetTranslationFor((Type)constant.Value);
+            translation = new TranslationWrapper(translation).WrappedIn("typeof(", ")");
+            return true;
+        }
+
+        private static bool TryGetRegexTranslation(ConstantExpression constant, out ITranslation translation)
+        {
+            if (constant.Type != typeof(Regex))
+            {
+                translation = null;
+                return false;
+            }
+
+            translation = FixedValueTranslation(constant.Value);
+            translation = new TranslationWrapper(translation).WrappedIn("Regex /* ", " */");
+            return true;
+        }
+
+        private class EnumConstantTranslation : ITranslation
+        {
+            private readonly ITranslation _typeNameTranslation;
+            private readonly string _enumValue;
+
+            public EnumConstantTranslation(ConstantExpression constant, ITranslationContext context)
+            {
+                _typeNameTranslation = context.GetTranslationFor(constant.Type);
+                _enumValue = constant.Value.ToString();
+                EstimatedSize = _typeNameTranslation.EstimatedSize + 1 + _enumValue.Length;
+            }
+
+            public ExpressionType NodeType => Constant;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                _typeNameTranslation.WriteTo(context);
+                context.WriteToTranslation('.');
+                context.WriteToTranslation(_enumValue);
+            }
+        }
+
+        private class DateTimeConstantTranslation : ITranslation
+        {
+            private const string _newDateTime = "new DateTime(";
+            private readonly DateTime _value;
+            private readonly bool _hasMilliseconds;
+            private readonly bool _hasTime;
+
+            public DateTimeConstantTranslation(ConstantExpression constant)
+            {
+                _value = (DateTime)constant.Value;
+                _hasMilliseconds = _value.Millisecond != 0;
+                _hasTime = (_value.Hour != 0) || (_value.Minute != 0) || (_value.Second != 0);
+                EstimatedSize = GetEstimatedSize();
+            }
+
+            private int GetEstimatedSize()
+            {
+                var estimatedSize = _newDateTime.Length + 4 + 4 + 4;
+
+                if (_hasMilliseconds || _hasTime)
+                {
+                    estimatedSize += 4 + 4 + 4;
+
+                    if (_hasMilliseconds)
+                    {
+                        estimatedSize += 2 + 4;
+                    }
+                }
+
+                return estimatedSize + 1;
+            }
+
+            public ExpressionType NodeType => Constant;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation(_newDateTime);
+
+                context.WriteToTranslation(_value.Year);
+                WriteTwoDigitDatePart(_value.Month, context);
+                WriteTwoDigitDatePart(_value.Day, context);
+
+                if (_hasMilliseconds || _hasTime)
+                {
+                    WriteTwoDigitDatePart(_value.Hour, context);
+                    WriteTwoDigitDatePart(_value.Minute, context);
+                    WriteTwoDigitDatePart(_value.Second, context);
+
+                    if (_hasMilliseconds)
+                    {
+                        context.WriteToTranslation(", ");
+                        context.WriteToTranslation(_value.Millisecond);
+                    }
+                }
+
+                context.WriteToTranslation(")");
+            }
+
+            private static void WriteTwoDigitDatePart(int datePart, ITranslationContext context)
+            {
+                context.WriteToTranslation(", ");
+
+                if (datePart > 9)
+                {
+                    context.WriteToTranslation(datePart);
+                    return;
+                }
+
+                context.WriteToTranslation('0');
+                context.WriteToTranslation(datePart);
+            }
+        }
+
+        private class LambdaConstantTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        {
+            private readonly ITranslation _lambdaTranslation;
+
+            private LambdaConstantTranslation(LambdaExpression lambda, ITranslationContext context)
+            {
+                _lambdaTranslation = context.GetCodeBlockTranslationFor(lambda);
+            }
+
+            public static bool TryCreate(
+                ConstantExpression constant,
+                ITranslationContext context,
+                out ITranslation lambdaTranslation)
+            {
 #if NET35
-            if (_constant.Value is System.Linq.Expressions.LambdaExpression linqLambda)
+            if (constant.Value is System.Linq.Expressions.LambdaExpression linqLambda)
             {
                 var lambda = LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 #else
-            if (_constant.Value is LambdaExpression lambda)
-            {
+                if (constant.Value is LambdaExpression lambda)
+                {
 #endif
-                context.GetCodeBlockTranslationFor(lambda).WriteTo(context);
-                return true;
-            }
+                    lambdaTranslation = new LambdaConstantTranslation(lambda, context);
+                    return true;
+                }
 
-            return false;
-        }
-
-        private static readonly Regex _funcMatcher = new Regex(@"^System\.(?:Func|Action)`\d+\[.+\]$");
-
-        private bool TryWriteFunc(ITranslationContext context)
-        {
-            var match = _funcMatcher.Match(_constant.Value.ToString());
-
-            if (match.Success == false)
-            {
+                lambdaTranslation = null;
                 return false;
             }
 
-            WriteFuncFrom(match.Value, context);
-            return true;
+            public ExpressionType NodeType => Constant;
 
+            public int EstimatedSize => _lambdaTranslation.EstimatedSize;
+
+            public bool IsTerminated => true;
+
+            public void WriteTo(ITranslationContext context) => _lambdaTranslation.WriteTo(context);
         }
 
-        #region IsFunc Helpers
-
-        private static void WriteFuncFrom(string funcString, ITranslationContext context)
+        private class FuncConstantTranslation : ITranslation
         {
-            var symbols = new[] { '`', ',', '[', ']' };
-            var parseIndex = 0;
+            private static readonly Regex _funcMatcher = new Regex(@"^System\.(?:Func|Action)`\d+\[.+\]$");
 
-            while (true)
+            private readonly string _funcString;
+
+            private FuncConstantTranslation(string funcString)
             {
-                var nextSymbolIndex = funcString.IndexOfAny(symbols, parseIndex);
+                _funcString = funcString;
+                EstimatedSize = funcString.Length;
+            }
 
-                if (nextSymbolIndex == -1)
+            public static bool TryCreate(ConstantExpression constant, out ITranslation funcTranslation)
+            {
+                var match = _funcMatcher.Match(constant.Value.ToString());
+
+                if (match.Success)
                 {
-                    var substring = funcString.Substring(parseIndex);
-
-                    if (substring.Length > 0)
-                    {
-                        context.WriteToTranslation(GetTypeName(substring));
-                    }
-
-                    break;
+                    funcTranslation = new FuncConstantTranslation(match.Value);
+                    return true;
                 }
 
-                var substringLength = nextSymbolIndex - parseIndex;
+                funcTranslation = null;
+                return false;
+            }
 
-                if (substringLength > 0)
+            public ExpressionType NodeType => Constant;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                var symbols = new[] { '`', ',', '[', ']' };
+                var parseIndex = 0;
+
+                while (true)
                 {
-                    var substring = funcString.Substring(parseIndex, substringLength);
+                    var nextSymbolIndex = _funcString.IndexOfAny(symbols, parseIndex);
 
-                    if (substring == "System.Nullable")
+                    if (nextSymbolIndex == -1)
                     {
-                        var nullableTypeIndex = parseIndex + "System.Nullable`1[".Length;
-                        var nullableTypeEndIndex = funcString.IndexOf(']', nullableTypeIndex);
-                        var nullableTypeLength = nullableTypeEndIndex - nullableTypeIndex;
-                        substring = funcString.Substring(nullableTypeIndex, nullableTypeLength);
+                        var substring = _funcString.Substring(parseIndex);
 
-                        context.WriteToTranslation(GetTypeName(substring));
-                        context.WriteToTranslation('?');
-                        parseIndex = nullableTypeEndIndex + 1;
-                        continue;
-                    }
-                    else
-                    {
-                        context.WriteToTranslation(GetTypeName(substring));
-                        parseIndex = nextSymbolIndex + 1;
-                    }
-                }
-
-                switch (funcString[nextSymbolIndex])
-                {
-                    case '`':
-                        context.WriteToTranslation('<');
-                        parseIndex = funcString.IndexOf('[', parseIndex) + 1;
-                        continue;
-
-                    case ',':
-                        context.WriteToTranslation(", ");
-
-                        if (substringLength == 0)
+                        if (substring.Length > 0)
                         {
-                            ++parseIndex;
-                        }
-
-                        continue;
-
-                    case '[':
-                        context.WriteToTranslation("[]");
-                        ++parseIndex;
-                        continue;
-
-                    case ']':
-                        context.WriteToTranslation('>');
-
-                        if (substringLength == 0)
-                        {
-                            ++parseIndex;
+                            context.WriteToTranslation(GetTypeName(substring));
                         }
 
                         break;
+                    }
+
+                    var substringLength = nextSymbolIndex - parseIndex;
+
+                    if (substringLength > 0)
+                    {
+                        var substring = _funcString.Substring(parseIndex, substringLength);
+
+                        if (substring == "System.Nullable")
+                        {
+                            var nullableTypeIndex = parseIndex + "System.Nullable`1[".Length;
+                            var nullableTypeEndIndex = _funcString.IndexOf(']', nullableTypeIndex);
+                            var nullableTypeLength = nullableTypeEndIndex - nullableTypeIndex;
+                            substring = _funcString.Substring(nullableTypeIndex, nullableTypeLength);
+
+                            context.WriteToTranslation(GetTypeName(substring));
+                            context.WriteToTranslation('?');
+                            parseIndex = nullableTypeEndIndex + 1;
+                            continue;
+                        }
+
+                        context.WriteToTranslation(GetTypeName(substring));
+                        parseIndex = nextSymbolIndex + 1;
+                    }
+
+                    switch (_funcString[nextSymbolIndex])
+                    {
+                        case '`':
+                            context.WriteToTranslation('<');
+                            parseIndex = _funcString.IndexOf('[', parseIndex) + 1;
+                            continue;
+
+                        case ',':
+                            context.WriteToTranslation(", ");
+
+                            if (substringLength == 0)
+                            {
+                                ++parseIndex;
+                            }
+
+                            continue;
+
+                        case '[':
+                            context.WriteToTranslation("[]");
+                            ++parseIndex;
+                            continue;
+
+                        case ']':
+                            context.WriteToTranslation('>');
+
+                            if (substringLength == 0)
+                            {
+                                ++parseIndex;
+                            }
+
+                            break;
+                    }
                 }
             }
+
+            private static string GetTypeName(string typeFullName)
+            {
+                return typeFullName.GetSubstitutionOrNull() ??
+                       typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
+            }
         }
 
-        private static string GetTypeName(string typeFullName)
+        private class TimeSpanConstantTranslation : ITranslation
         {
-            return typeFullName.GetSubstitutionOrNull() ??
-                   typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
-        }
+            private readonly TimeSpan _timeSpan;
 
-        #endregion
-
-        private bool TryWriteRegex(ITranslationContext context)
-        {
-            if (_constant.Type != typeof(Regex))
+            private TimeSpanConstantTranslation(TimeSpan timeSpan)
             {
-                return false;
+                _timeSpan = timeSpan;
+                EstimatedSize = timeSpan.ToString().Length;
             }
 
-            context.WriteToTranslation("Regex /* ");
-            context.WriteToTranslation(_constant.Value);
-            context.WriteToTranslation(" */");
-            return true;
-        }
-
-        private bool TryWriteTimeSpan(ITranslationContext context)
-        {
-            if (_constant.Type != typeof(TimeSpan))
+            public static bool TryCreate(ConstantExpression constant, out ITranslation timeSpanTranslation)
             {
-                return false;
-            }
+                if (constant.Type != typeof(TimeSpan))
+                {
+                    timeSpanTranslation = null;
+                    return false;
+                }
 
-            if (TryWriteDefault<TimeSpan>(context))
-            {
+                if (TryTranslateDefault<TimeSpan>(constant, out timeSpanTranslation))
+                {
+                    return true;
+                }
+
+                timeSpanTranslation = new TimeSpanConstantTranslation((TimeSpan)constant.Value);
                 return true;
             }
 
-            var timeSpan = (TimeSpan)_constant.Value;
+            public ExpressionType NodeType => Constant;
 
-            if (TryWriteFactoryMethodCall(timeSpan.Days, timeSpan.TotalDays, "Days", context))
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
             {
-                return true;
-            }
+                if (TryWriteFactoryMethodCall(_timeSpan.Days, _timeSpan.TotalDays, "Days", context))
+                {
+                    return;
+                }
 
-            if (TryWriteFactoryMethodCall(timeSpan.Hours, timeSpan.TotalHours, "Hours", context))
-            {
-                return true;
-            }
+                if (TryWriteFactoryMethodCall(_timeSpan.Hours, _timeSpan.TotalHours, "Hours", context))
+                {
+                    return;
+                }
 
-            if (TryWriteFactoryMethodCall(timeSpan.Minutes, timeSpan.TotalMinutes, "Minutes", context))
-            {
-                return true;
-            }
+                if (TryWriteFactoryMethodCall(_timeSpan.Minutes, _timeSpan.TotalMinutes, "Minutes", context))
+                {
+                    return;
+                }
 
-            if (TryWriteFactoryMethodCall(timeSpan.Seconds, timeSpan.TotalSeconds, "Seconds", context))
-            {
-                return true;
-            }
+                if (TryWriteFactoryMethodCall(_timeSpan.Seconds, _timeSpan.TotalSeconds, "Seconds", context))
+                {
+                    return;
+                }
 
-            if (TryWriteFactoryMethodCall(timeSpan.Milliseconds, timeSpan.TotalMilliseconds, "Milliseconds", context))
-            {
-                return true;
-            }
+                if (TryWriteFactoryMethodCall(_timeSpan.Milliseconds, _timeSpan.TotalMilliseconds, "Milliseconds", context))
+                {
+                    return;
+                }
 
+                if ((_timeSpan.Days == 0) && (_timeSpan.Hours == 0) && (_timeSpan.Minutes == 0) && (_timeSpan.Seconds == 0))
+                {
+                    context.WriteToTranslation("TimeSpan.FromTicks(");
+                    context.WriteToTranslation(Math.Floor(_timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
+                    goto EndTranslation;
+                }
 
-            if ((timeSpan.Days == 0) && (timeSpan.Hours == 0) && (timeSpan.Minutes == 0) && (timeSpan.Seconds == 0))
-            {
-                context.WriteToTranslation("TimeSpan.FromTicks(");
-                context.WriteToTranslation(Math.Floor(timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
-                goto EndTranslation;
-            }
+                context.WriteToTranslation("new TimeSpan(");
 
-            context.WriteToTranslation("new TimeSpan(");
+                if (_timeSpan.Days == 0)
+                {
+                    WriteTimeSpanHoursMinutesSeconds(context, _timeSpan);
+                    goto EndTranslation;
+                }
 
-            if (timeSpan.Days == 0)
-            {
-                WriteTimeSpanHoursMinutesSeconds(context, timeSpan);
-                goto EndTranslation;
-            }
-
-            context.WriteToTranslation(timeSpan.Days);
-            context.WriteToTranslation(", ");
-            WriteTimeSpanHoursMinutesSeconds(context, timeSpan);
-
-            if (timeSpan.Milliseconds != 0)
-            {
+                context.WriteToTranslation(_timeSpan.Days);
                 context.WriteToTranslation(", ");
-                context.WriteToTranslation(timeSpan.Milliseconds);
+                WriteTimeSpanHoursMinutesSeconds(context, _timeSpan);
+
+                if (_timeSpan.Milliseconds != 0)
+                {
+                    context.WriteToTranslation(", ");
+                    context.WriteToTranslation(_timeSpan.Milliseconds);
+                }
+
+                EndTranslation:
+                context.WriteToTranslation(')');
             }
 
-            EndTranslation:
-            context.WriteToTranslation(')');
-            return true;
-        }
-
-        private static void WriteTimeSpanHoursMinutesSeconds(ITranslationContext context, TimeSpan timeSpan)
-        {
-            context.WriteToTranslation(timeSpan.Hours);
-            context.WriteToTranslation(", ");
-            context.WriteToTranslation(timeSpan.Minutes);
-            context.WriteToTranslation(", ");
-            context.WriteToTranslation(timeSpan.Seconds);
-        }
-
-        private static bool TryWriteFactoryMethodCall(
-            long value,
-            double totalValue,
-            string valueName,
-            ITranslationContext context)
-        {
-            if (value == 0)
+            private static void WriteTimeSpanHoursMinutesSeconds(ITranslationContext context, TimeSpan timeSpan)
             {
-                return false;
+                context.WriteToTranslation(timeSpan.Hours);
+                context.WriteToTranslation(", ");
+                context.WriteToTranslation(timeSpan.Minutes);
+                context.WriteToTranslation(", ");
+                context.WriteToTranslation(timeSpan.Seconds);
             }
 
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (value != totalValue)
+            private static bool TryWriteFactoryMethodCall(
+                long value,
+                double totalValue,
+                string valueName,
+                ITranslationContext context)
             {
-                return false;
+                if (value == 0)
+                {
+                    return false;
+                }
+
+                // ReSharper disable once CompareOfFloatsByEqualityOperator
+                if (value != totalValue)
+                {
+                    return false;
+                }
+
+                context.WriteToTranslation("TimeSpan.From");
+                context.WriteToTranslation(valueName);
+                context.WriteToTranslation('(');
+                context.WriteToTranslation(value);
+                context.WriteToTranslation(')');
+                return true;
             }
-
-            context.WriteToTranslation("TimeSpan.From");
-            context.WriteToTranslation(valueName);
-            context.WriteToTranslation('(');
-            context.WriteToTranslation(value);
-            context.WriteToTranslation(')');
-            return true;
-        }
-
-        private bool TryWriteDefault<T>(ITranslationContext context)
-        {
-            if ((_constant.Type != typeof(T)) || !_constant.Value.Equals(default(T)))
-            {
-                return false;
-            }
-
-            context.WriteToTranslation("default(");
-            context.WriteToTranslation(typeof(T).Name);
-            context.WriteToTranslation(")");
-            return true;
-
         }
     }
 }

@@ -222,7 +222,7 @@
                     return ConditionalTranslation.For((ConditionalExpression)expression, this);
 
                 case Constant:
-                    return new ConstantTranslation((ConstantExpression)expression, this);
+                    return ConstantTranslation.For((ConstantExpression)expression, this);
 
                 case ExpressionType.Convert:
                 case ConvertChecked:

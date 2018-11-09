@@ -40,6 +40,8 @@
             return estimatedSize;
         }
 
+        public TranslationWrapper WrappedIn(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
+
         public TranslationWrapper WithPrefix(string prefix)
         {
             _prefix = prefix;

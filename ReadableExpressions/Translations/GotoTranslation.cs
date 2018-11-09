@@ -13,15 +13,15 @@
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    return new FixedValueTranslation(ExpressionType.Goto, "break;");
+                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "break;");
 
                 case GotoExpressionKind.Continue:
-                    return new FixedValueTranslation(ExpressionType.Goto, "continue;");
+                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "continue;");
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        return new FixedValueTranslation(ExpressionType.Goto, "return;");
+                        return new FixedTerminatedValueTranslation(ExpressionType.Goto, "return;");
                     }
 
                     return new ReturnValueTranslation(@goto, context);
@@ -30,7 +30,7 @@
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    return new FixedValueTranslation(ExpressionType.Goto, "goto " + @goto.Target.Name + ";");
+                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "goto " + @goto.Target.Name + ";");
             }
         }
 

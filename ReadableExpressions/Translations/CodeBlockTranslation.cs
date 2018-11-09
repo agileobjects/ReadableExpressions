@@ -124,7 +124,7 @@
                 context.Indent();
             }
 
-            if (_ensureReturnKeyword && !_translation.IsMultiStatement())
+            if (_writeBraces && _ensureReturnKeyword && !_translation.IsMultiStatement())
             {
                 context.WriteToTranslation("return ");
             }

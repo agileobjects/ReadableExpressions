@@ -139,7 +139,7 @@
             {
                 hasGoto = true;
             }
-            else
+            else if (statementTranslations.Count > 1)
             {
                 statementTranslation.WriteReturnKeyword();
             }
@@ -167,7 +167,14 @@
 
         private static bool AddBlankLineBeforeFinalStatement(IList<BlockStatementTranslation> statementTranslations)
         {
-            var penultimateTranslation = statementTranslations[statementTranslations.Count - 2];
+            var translationCount = statementTranslations.Count;
+
+            if (translationCount < 2)
+            {
+                return false;
+            }
+
+            var penultimateTranslation = statementTranslations[translationCount - 2];
 
             switch (penultimateTranslation.NodeType)
             {

@@ -44,7 +44,7 @@
             => BinaryTranslation.IsBinary(translation.NodeType);
 
         public static ITranslation WithParentheses(this ITranslation translation)
-            => new TranslationWrapper(translation).WithPrefix("(").WithSuffix(")");
+            => new TranslationWrapper(translation).WrappedIn("(", ")");
 
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
