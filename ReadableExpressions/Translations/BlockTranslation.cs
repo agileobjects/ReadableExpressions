@@ -215,7 +215,7 @@
 
         public void WriteTo(ITranslationContext context)
         {
-            if (_variables.Count != 0)
+            if (_hasVariables)
             {
                 foreach (var parametersByType in _variables)
                 {
@@ -228,13 +228,13 @@
                 context.WriteNewLineToTranslation();
             }
 
-            for (int i = 0, l = _statementCount - 1; ; ++i)
+            for (int i = 0, l = _statementCount - 1; ; )
             {
                 var statement = _statements[i];
 
                 statement.WriteTo(context);
 
-                if (i == l)
+                if (i++ == l)
                 {
                     break;
                 }

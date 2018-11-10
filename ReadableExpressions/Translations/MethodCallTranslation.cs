@@ -85,7 +85,7 @@
         }
 
         private int GetEstimatedSize()
-            => _subject.EstimatedSize + ".".Length + _parameters.EstimatedSize;
+            => _subject.EstimatedSize + _method.Name.Length + ".".Length + _parameters.EstimatedSize;
 
         private MethodCallTranslation(
             ITranslation typeNameTranslation,

@@ -44,8 +44,7 @@
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
             return _translatorRegistry
-                .Translate(expression, configuration)?
-                .WithoutUnindents();
+                .Translate(expression, configuration);
         }
     }
 }
