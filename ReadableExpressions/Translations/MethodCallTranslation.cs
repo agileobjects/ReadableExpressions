@@ -14,88 +14,58 @@
     using Extensions;
     using NetStandardPolyfills;
 
-    internal class MethodCallTranslation : ITranslation
+    internal static class MethodCallTranslation
     {
-        private readonly IMethod _method;
-        private readonly ITranslation _subject;
-        private readonly ParameterSetTranslation _parameters;
-        private readonly Action<ITranslationContext> _translationWriter;
-
-        public MethodCallTranslation(InvocationExpression invocation, ITranslationContext context)
+        public static ITranslation For(InvocationExpression invocation, ITranslationContext context)
         {
-            NodeType = Invoke;
-
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
-            _method = new BclMethodWrapper(invocationMethod);
-            _parameters = new ParameterSetTranslation(_method, invocation.Arguments, context).WithParentheses();
-            _subject = context.GetTranslationFor(invocation.Expression);
+            var method = new BclMethodWrapper(invocationMethod);
+            var parameters = new ParameterSetTranslation(method, invocation.Arguments, context).WithParentheses();
+            var subject = context.GetTranslationFor(invocation.Expression);
 
-            if (_subject.NodeType == Lambda)
+            if (subject.NodeType == Lambda)
             {
-                _subject = _subject.WithParentheses();
+                subject = subject.WithParentheses();
             }
 
-            EstimatedSize = GetEstimatedSize();
+            return new StandardMethodCallTranslation(Invoke, subject, method, parameters);
         }
 
-        public MethodCallTranslation(MethodCallExpression methodCall, ITranslationContext context)
+        public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
-            NodeType = Call;
-            _method = new BclMethodWrapper(methodCall.Method);
-            _parameters = new ParameterSetTranslation(_method, methodCall.Arguments, context);
+            var method = new BclMethodWrapper(methodCall.Method);
+            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
             {
-                _subject = new CodeBlockTranslation(_parameters[0]);
-                _translationWriter = _subject.WriteTo;
-                EstimatedSize = _subject.EstimatedSize;
-                return;
+                return new TranslationWrapper(new CodeBlockTranslation(parameters[0])).WithNodeType(Call);
             }
 
-            _subject =
+            var subject =
                 context.GetTranslationFor(methodCall.GetSubject()) ??
                 context.GetTranslationFor(methodCall.Method.DeclaringType);
 
             if (IsIndexedPropertyAccess(methodCall))
             {
-                _subject = new IndexAccessTranslation(_subject, _parameters);
-                _translationWriter = _subject.WriteTo;
-                EstimatedSize = _subject.EstimatedSize;
-                return;
+                return new IndexAccessTranslation(subject, parameters);
             }
 
-            _parameters = _parameters.WithParentheses();
+            parameters = parameters.WithParentheses();
 
             if (methodCall.Method.IsExplicitOperator())
             {
-                var castTypeNameTranslation = context.GetTranslationFor(methodCall.Method.ReturnType);
-                _subject = CastTranslation.ForExplicitOperator(_parameters[0], castTypeNameTranslation);
-                _translationWriter = _subject.WriteTo;
-                EstimatedSize = _subject.EstimatedSize;
-                return;
+                return CastTranslation.ForExplicitOperator(
+                    parameters[0],
+                    context.GetTranslationFor(methodCall.Method.ReturnType));
             }
 
-            if (_subject.IsBinary())
+            if (subject.IsBinary())
             {
-                _subject = _subject.WithParentheses();
+                subject = subject.WithParentheses();
             }
 
-            EstimatedSize = GetEstimatedSize();
-        }
-
-        private int GetEstimatedSize()
-            => _subject.EstimatedSize + _method.Name.Length + ".".Length + _parameters.EstimatedSize;
-
-        private MethodCallTranslation(
-            ITranslation typeNameTranslation,
-            IMethod staticMethod,
-            ITranslation castValue)
-        {
-            NodeType = Call;
-            _subject = typeNameTranslation;
-            _method = staticMethod;
-            _parameters = new ParameterSetTranslation(castValue).WithParentheses();
+            return new StandardMethodCallTranslation(Call, subject, method, parameters);
         }
 
         public static ITranslation ForCustomMethodCast(
@@ -103,7 +73,11 @@
             IMethod castMethod,
             ITranslation castValue)
         {
-            return new MethodCallTranslation(typeNameTranslation, castMethod, castValue);
+            return new StandardMethodCallTranslation(
+                Call,
+                typeNameTranslation,
+                castMethod,
+                new ParameterSetTranslation(castValue).WithParentheses());
         }
 
         private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
@@ -117,89 +91,107 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
-        public ExpressionType NodeType { get; }
-
-        public int EstimatedSize { get; }
-
-        public void WriteTo(ITranslationContext context)
+        private class StandardMethodCallTranslation : ITranslation
         {
-            if (_translationWriter != null)
+            private readonly IMethod _method;
+            private readonly ITranslation _subject;
+            private readonly ParameterSetTranslation _parameters;
+
+            public StandardMethodCallTranslation(
+                ExpressionType nodeType,
+                ITranslation subject,
+                IMethod method,
+                ParameterSetTranslation parameters)
             {
-                _translationWriter.Invoke(context);
-                return;
+                NodeType = nodeType;
+                _method = method;
+                _subject = subject;
+                _parameters = parameters;
+                EstimatedSize = GetEstimatedSize();
             }
 
-            _subject.WriteTo(context);
-            context.WriteToTranslation('.');
-            context.WriteToTranslation(_method.Name);
-            WriteGenericArgumentsIfNecessary(context);
-            _parameters.WriteTo(context);
-        }
+            public ExpressionType NodeType { get; }
 
-        private void WriteGenericArgumentsIfNecessary(ITranslationContext context)
-        {
-            if (!_method.IsGenericMethod)
+            public int EstimatedSize { get; }
+
+            private int GetEstimatedSize()
+                => _subject.EstimatedSize + _method.Name.Length + ".".Length + _parameters.EstimatedSize;
+
+            public void WriteTo(ITranslationContext context)
             {
-                return;
+
+                _subject.WriteTo(context);
+                context.WriteToTranslation('.');
+                context.WriteToTranslation(_method.Name);
+                WriteGenericArgumentsIfNecessary(context);
+                _parameters.WriteTo(context);
             }
 
-            var methodGenericDefinition = _method.GetGenericMethodDefinition();
-            var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
-
-            if (context.Settings.UseImplicitGenericParameters)
+            private void WriteGenericArgumentsIfNecessary(ITranslationContext context)
             {
-                RemoveSuppliedGenericTypeParameters(
-                    methodGenericDefinition.GetParameters().Project(p => p.ParameterType),
-                    genericParameterTypes);
-            }
-
-            if (!genericParameterTypes.Any())
-            {
-                return;
-            }
-
-            var argumentNames = _method
-                .GetGenericArguments()
-                .Project(a => a.GetFriendlyName(context.Settings))
-                .Filter(name => name != null)
-                .ToArray();
-
-            if (argumentNames.Length == 0)
-            {
-                return;
-            }
-
-            context.WriteToTranslation('<');
-
-            for (int i = 0, l = argumentNames.Length - 1; ; ++i)
-            {
-                context.WriteToTranslation(argumentNames[i]);
-
-                if (i == l)
+                if (!_method.IsGenericMethod)
                 {
-                    break;
+                    return;
                 }
 
-                context.WriteToTranslation(", ");
-            }
+                var methodGenericDefinition = _method.GetGenericMethodDefinition();
+                var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
 
-            context.WriteToTranslation('>');
-        }
-
-        private static void RemoveSuppliedGenericTypeParameters(
-            IEnumerable<Type> types,
-            ICollection<Type> genericParameterTypes)
-        {
-            foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
-            {
-                if (type.IsGenericParameter && genericParameterTypes.Contains(type))
+                if (context.Settings.UseImplicitGenericParameters)
                 {
-                    genericParameterTypes.Remove(type);
+                    RemoveSuppliedGenericTypeParameters(
+                        methodGenericDefinition.GetParameters().Project(p => p.ParameterType),
+                        genericParameterTypes);
                 }
 
-                if (type.IsGenericType())
+                if (!genericParameterTypes.Any())
                 {
-                    RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
+                    return;
+                }
+
+                var argumentNames = _method
+                    .GetGenericArguments()
+                    .Project(a => a.GetFriendlyName(context.Settings))
+                    .Filter(name => name != null)
+                    .ToArray();
+
+                if (argumentNames.Length == 0)
+                {
+                    return;
+                }
+
+                context.WriteToTranslation('<');
+
+                for (int i = 0, l = argumentNames.Length - 1; ; ++i)
+                {
+                    context.WriteToTranslation(argumentNames[i]);
+
+                    if (i == l)
+                    {
+                        break;
+                    }
+
+                    context.WriteToTranslation(", ");
+                }
+
+                context.WriteToTranslation('>');
+            }
+
+            private static void RemoveSuppliedGenericTypeParameters(
+                IEnumerable<Type> types,
+                ICollection<Type> genericParameterTypes)
+            {
+                foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
+                {
+                    if (type.IsGenericParameter && genericParameterTypes.Contains(type))
+                    {
+                        genericParameterTypes.Remove(type);
+                    }
+
+                    if (type.IsGenericType())
+                    {
+                        RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
+                    }
                 }
             }
         }

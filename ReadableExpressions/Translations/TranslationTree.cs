@@ -216,7 +216,7 @@
                     return new BlockTranslation((BlockExpression)expression, this);
 
                 case Call:
-                    return new MethodCallTranslation((MethodCallExpression)expression, this);
+                    return MethodCallTranslation.For((MethodCallExpression)expression, this);
 
                 case Conditional:
                     return ConditionalTranslation.For((ConditionalExpression)expression, this);
@@ -249,7 +249,7 @@
                     return new IndexAccessTranslation((IndexExpression)expression, this);
 
                 case Invoke:
-                    return new MethodCallTranslation((InvocationExpression)expression, this);
+                    return MethodCallTranslation.For((InvocationExpression)expression, this);
 
                 case Label:
                     return new LabelTranslation((LabelExpression)expression, this);

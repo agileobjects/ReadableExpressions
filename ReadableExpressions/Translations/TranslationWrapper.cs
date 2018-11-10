@@ -13,13 +13,14 @@
         private bool _hasPrefix;
         private string _suffix;
         private bool _hasSuffix;
+        private ExpressionType? _nodeType;
 
         public TranslationWrapper(ITranslation translation)
         {
             _translation = translation;
         }
 
-        public ExpressionType NodeType => _translation.NodeType;
+        public ExpressionType NodeType => _nodeType ?? _translation.NodeType;
 
         public int EstimatedSize => GetEstimatedSize();
 
@@ -38,6 +39,12 @@
             }
 
             return estimatedSize;
+        }
+
+        public TranslationWrapper WithNodeType(ExpressionType nodeType)
+        {
+            _nodeType = nodeType;
+            return this;
         }
 
         public TranslationWrapper WrappedIn(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
