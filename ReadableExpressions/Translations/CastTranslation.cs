@@ -11,109 +11,66 @@
     using NetStandardPolyfills;
     using Translators;
 
-    internal class CastTranslation : ITranslation
+    internal static class CastTranslation
     {
-        private readonly ITranslation _castValueTranslation;
-        private readonly ITranslation _castTypeNameTranslation;
-        private readonly bool _isBoxing;
-        private readonly bool _isImplicitOperator;
-        private readonly bool _isOperator;
-        private readonly bool _writeCastValueInParentheses;
-        private readonly Action<ITranslationContext> _translationWriter;
-
-        public CastTranslation(UnaryExpression cast, ITranslationContext context)
-            : this(cast.Operand.NodeType)
+        public static ITranslation For(UnaryExpression cast, ITranslationContext context)
         {
-            NodeType = cast.NodeType;
-            _castValueTranslation = context.GetTranslationFor(cast.Operand);
-            var estimatedSizeFactory = default(Func<int>);
-            var isCustomMethodCast = false;
+            var castValueTranslation = context.GetTranslationFor(cast.Operand);
 
-            switch (NodeType)
+            switch (cast.NodeType)
             {
                 case ExpressionType.Convert:
                 case ConvertChecked:
-                    _isBoxing = cast.Type == typeof(object);
+                    if (cast.Type == typeof(object))
+                    {
+                        // Don't bother to show a boxing cast:
+                        return castValueTranslation;
+                    }
 
                     if (cast.Method != null)
                     {
-                        _isImplicitOperator = cast.Method.IsImplicitOperator();
-                        _isOperator = _isImplicitOperator || cast.Method.IsExplicitOperator();
+                        var isImplicitOperator = cast.Method.IsImplicitOperator();
 
-                        if (_isOperator == false)
+                        if (isImplicitOperator)
                         {
-                            isCustomMethodCast = true;
-                            _translationWriter = WriteCustomMethodCast;
-                            break;
+                            return WriteCastValueInParentheses(cast.Operand.NodeType)
+                                ? new TranslationWrapper(castValueTranslation).WrappedIn("(", ")")
+                                : castValueTranslation;
+                        }
+
+                        if (!cast.Method.IsExplicitOperator())
+                        {
+                            return MethodCallTranslation.ForCustomMethodCast(
+                                context.GetTranslationFor(cast.Type),
+                                new BclMethodWrapper(cast.Method),
+                                castValueTranslation);
                         }
                     }
 
-                    estimatedSizeFactory = EstimateCastSize;
                     break;
 
                 case TypeAs:
-                    _translationWriter = WriteTypeAsCast;
-                    estimatedSizeFactory = EstimateTypeCastSize;
-                    break;
-
-                case Unbox:
-                    _translationWriter = WriteCastCore;
-                    estimatedSizeFactory = EstimateCastSize;
-                    break;
+                    return new TypeTestedTranslation(TypeAs, castValueTranslation, " as ", cast.Type, context);
             }
 
-            if ((_isImplicitOperator == false) && (_isBoxing == false))
-            {
-                _castTypeNameTranslation = context.GetTranslationFor(cast.Type);
-            }
-
-            if (isCustomMethodCast == false)
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                EstimatedSize = estimatedSizeFactory.Invoke();
-                return;
-            }
-
-            _castValueTranslation = MethodCallTranslation.ForCustomMethodCast(
-                _castTypeNameTranslation,
-                new BclMethodWrapper(cast.Method),
-                _castValueTranslation);
-
-            EstimatedSize = _castValueTranslation.EstimatedSize;
+            return new StandardCastTranslation(cast, castValueTranslation, context);
         }
 
-        public CastTranslation(TypeBinaryExpression cast, ITranslationContext context)
-        {
-            NodeType = cast.NodeType;
-            _castValueTranslation = context.GetTranslationFor(cast.Expression);
-            _castTypeNameTranslation = context.GetTranslationFor(cast.TypeOperand);
-            _translationWriter = WriteTypeIsCast;
-            EstimatedSize = EstimateTypeCastSize();
-        }
+        private static bool WriteCastValueInParentheses(ExpressionType castValueNodeType)
+            => (castValueNodeType == Assign) || IsCast(castValueNodeType);
 
-        private CastTranslation(ITranslation castValueTranslation, ITranslation castTypeNameTranslation)
-            : this(castValueTranslation.NodeType)
-        {
-            _castValueTranslation = castValueTranslation;
-            _castTypeNameTranslation = castTypeNameTranslation;
-            _isOperator = true;
-            _translationWriter = WriteCastCore;
-            EstimatedSize = EstimateCastSize();
-        }
-
-        private CastTranslation(ExpressionType castValueNodeType)
-        {
-            if (castValueNodeType == Assign || IsCast(castValueNodeType))
-            {
-                _writeCastValueInParentheses = true;
-            }
-        }
+        public static ITranslation For(TypeBinaryExpression typeIs, ITranslationContext context)
+            => new TypeTestedTranslation(TypeIs, typeIs.Expression, " is ", typeIs.TypeOperand, context);
 
         public static ITranslation ForExplicitOperator(
             ITranslation castValueTranslation,
             ITranslation castTypeNameTranslation)
         {
-            return new CastTranslation(castValueTranslation, castTypeNameTranslation);
+            return new StandardCastTranslation(
+                Call,
+                castValueTranslation.NodeType,
+                castValueTranslation,
+                castTypeNameTranslation);
         }
 
         public static bool IsCast(ExpressionType nodeType)
@@ -131,107 +88,96 @@
             return false;
         }
 
-        private int EstimateCastSize()
+        private class TypeTestedTranslation : ITranslation
         {
-            var estimatedSize = GetBaseEstimatedSize();
+            private readonly ITranslation _testedValueTranslation;
+            private readonly string _test;
+            private readonly ITranslation _testedTypeNameTranslation;
 
-            if (_isBoxing || _isImplicitOperator)
+            public TypeTestedTranslation(
+                ExpressionType nodeType,
+                Expression testedValue,
+                string test,
+                Type testedType,
+                ITranslationContext context)
+                : this(nodeType, context.GetTranslationFor(testedValue), test, testedType, context)
             {
-                return estimatedSize;
             }
 
-            // +2 for cast type name parentheses:
-            estimatedSize += _castTypeNameTranslation.EstimatedSize + 2;
-
-            if (_isOperator)
+            public TypeTestedTranslation(
+                ExpressionType nodeType,
+                ITranslation testedValueTranslation,
+                string test,
+                Type testedType,
+                ITranslationContext context)
             {
-                // TODO: Explicit operator
-                return estimatedSize;
+                NodeType = nodeType;
+                _testedValueTranslation = testedValueTranslation;
+                _test = test;
+                _testedTypeNameTranslation = context.GetTranslationFor(testedType);
+                EstimatedSize = GetEstimatedSize();
             }
 
-            return estimatedSize;
+            private int GetEstimatedSize()
+            {
+                return _testedValueTranslation.EstimatedSize +
+                       _test.Length +
+                       _testedTypeNameTranslation.EstimatedSize;
+            }
+
+            public ExpressionType NodeType { get; }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                _testedValueTranslation.WriteTo(context);
+                context.WriteToTranslation(_test);
+                _testedTypeNameTranslation.WriteTo(context);
+            }
         }
 
-        private int EstimateTypeCastSize()
+        private class StandardCastTranslation : ITranslation
         {
-            var estimatedSize = GetBaseEstimatedSize();
+            private readonly ITranslation _castValueTranslation;
+            private readonly ITranslation _castTypeNameTranslation;
 
-            if (_isBoxing)
+            public StandardCastTranslation(UnaryExpression cast, ITranslation castValueTranslation, ITranslationContext context)
+                : this(
+                    cast.NodeType,
+                    cast.Operand.NodeType,
+                    context.GetTranslationFor(cast.Type),
+                    castValueTranslation)
             {
-                return estimatedSize;
             }
 
-            // +4 for ' as ' or ' is ':
-            return estimatedSize + 4;
-        }
-
-        private int GetBaseEstimatedSize()
-        {
-            var estimatedSize = _castValueTranslation.EstimatedSize;
-
-            if (_writeCastValueInParentheses && (_isBoxing == false))
+            public StandardCastTranslation(
+                ExpressionType nodeType,
+                ExpressionType castValueNodeType,
+                ITranslation castTypeNameTranslation,
+                ITranslation castValueTranslation)
             {
-                estimatedSize += 2;
+                NodeType = nodeType;
+                _castTypeNameTranslation = castTypeNameTranslation;
+                _castValueTranslation = castValueTranslation;
+
+                if (WriteCastValueInParentheses(castValueNodeType))
+                {
+                    _castValueTranslation = new TranslationWrapper(_castValueTranslation).WrappedIn("(", ")");
+                }
+
+                EstimatedSize = _castTypeNameTranslation.EstimatedSize + _castValueTranslation.EstimatedSize;
             }
 
-            return estimatedSize;
-        }
+            public ExpressionType NodeType { get; }
 
-        public ExpressionType NodeType { get; }
+            public int EstimatedSize { get; }
 
-        public int EstimatedSize { get; }
-
-        private void WriteCustomMethodCast(ITranslationContext context)
-            => _castValueTranslation.WriteTo(context);
-
-        private void WriteTypeAsCast(ITranslationContext context) => WriteTypeTestedCast(" as ", context);
-
-        private void WriteTypeIsCast(ITranslationContext context) => WriteTypeTestedCast(" is ", context);
-
-        private void WriteTypeTestedCast(string typeTest, ITranslationContext context)
-        {
-            WriteCastValueTranslation(context);
-            context.WriteToTranslation(typeTest);
-            _castTypeNameTranslation.WriteTo(context);
-        }
-
-        public void WriteTo(ITranslationContext context)
-        {
-            if (_translationWriter != null)
-            {
-                _translationWriter.Invoke(context);
-                return;
-            }
-
-            if (_isBoxing)
-            {
-                // Don't bother showing a boxing operation:
-                _castValueTranslation.WriteTo(context);
-                return;
-            }
-
-            WriteCastCore(context);
-        }
-
-        private void WriteCastCore(ITranslationContext context)
-        {
-            if (_isImplicitOperator == false)
+            public void WriteTo(ITranslationContext context)
             {
                 _castTypeNameTranslation.WriteInParentheses(context);
+                _castValueTranslation.WriteTo(context);
             }
-
-            WriteCastValueTranslation(context);
-        }
-
-        private void WriteCastValueTranslation(ITranslationContext context)
-        {
-            if (_writeCastValueInParentheses)
-            {
-                _castValueTranslation.WriteInParentheses(context);
-                return;
-            }
-
-            _castValueTranslation.WriteTo(context);
         }
     }
 }

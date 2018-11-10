@@ -228,7 +228,7 @@
                 case ConvertChecked:
                 case TypeAs:
                 case Unbox:
-                    return new CastTranslation((UnaryExpression)expression, this);
+                    return CastTranslation.For((UnaryExpression)expression, this);
 
                 case DebugInfo:
                     break;
@@ -302,7 +302,7 @@
                     return new TypeEqualTranslation((TypeBinaryExpression)expression, this);
 
                 case TypeIs:
-                    return new CastTranslation((TypeBinaryExpression)expression, this);
+                    return CastTranslation.For((TypeBinaryExpression)expression, this);
             }
 
             throw new ArgumentOutOfRangeException(expression.NodeType.ToString());
