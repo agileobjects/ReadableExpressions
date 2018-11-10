@@ -56,11 +56,15 @@
             return new StandardCastTranslation(cast, castValueTranslation, context);
         }
 
-        private static bool WriteCastValueInParentheses(ExpressionType castValueNodeType)
-            => (castValueNodeType == Assign) || IsCast(castValueNodeType);
-
         public static ITranslation For(TypeBinaryExpression typeIs, ITranslationContext context)
-            => new TypeTestedTranslation(TypeIs, typeIs.Expression, " is ", typeIs.TypeOperand, context);
+        {
+            return new TypeTestedTranslation(
+                TypeIs,
+                context.GetTranslationFor(typeIs.Expression),
+                " is ",
+                typeIs.TypeOperand,
+                context);
+        }
 
         public static ITranslation ForExplicitOperator(
             ITranslation castValueTranslation,
@@ -72,6 +76,9 @@
                 castValueTranslation,
                 castTypeNameTranslation);
         }
+
+        private static bool WriteCastValueInParentheses(ExpressionType castValueNodeType)
+            => (castValueNodeType == Assign) || IsCast(castValueNodeType);
 
         public static bool IsCast(ExpressionType nodeType)
         {
@@ -93,16 +100,6 @@
             private readonly ITranslation _testedValueTranslation;
             private readonly string _test;
             private readonly ITranslation _testedTypeNameTranslation;
-
-            public TypeTestedTranslation(
-                ExpressionType nodeType,
-                Expression testedValue,
-                string test,
-                Type testedType,
-                ITranslationContext context)
-                : this(nodeType, context.GetTranslationFor(testedValue), test, testedType, context)
-            {
-            }
 
             public TypeTestedTranslation(
                 ExpressionType nodeType,
