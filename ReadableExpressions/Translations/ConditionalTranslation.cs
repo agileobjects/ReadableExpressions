@@ -49,7 +49,7 @@
                 ITranslation ifTrueTranslation,
                 ITranslationContext context)
             {
-                TestTranslation = new ConditionTranslation(conditional.Test, context);
+                TestTranslation = ConditionTranslation.For(conditional.Test, context);
                 IfTrueTranslation = ifTrueTranslation;
             }
 
