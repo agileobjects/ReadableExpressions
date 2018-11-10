@@ -34,7 +34,7 @@
                         if (isImplicitOperator)
                         {
                             return WriteCastValueInParentheses(cast.Operand.NodeType)
-                                ? new TranslationWrapper(castValueTranslation).WrappedIn("(", ")")
+                                ? castValueTranslation.WithParentheses()
                                 : castValueTranslation;
                         }
 
@@ -160,7 +160,7 @@
 
                 if (WriteCastValueInParentheses(castValueNodeType))
                 {
-                    _castValueTranslation = new TranslationWrapper(_castValueTranslation).WrappedIn("(", ")");
+                    _castValueTranslation = _castValueTranslation.WithParentheses();
                 }
 
                 EstimatedSize = _castTypeNameTranslation.EstimatedSize + _castValueTranslation.EstimatedSize;
