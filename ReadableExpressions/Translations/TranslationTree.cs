@@ -42,6 +42,9 @@
         bool ITranslationContext.GoesToReturnLabel(GotoExpression @goto)
             => _context.GoesToReturnLabel(@goto);
 
+        bool ITranslationContext.IsPartOfMethodCallChain(Expression methodCall)
+            => _context.IsPartOfMethodCallChain(methodCall);
+
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
@@ -258,7 +261,7 @@
                     return new LambdaTranslation((LambdaExpression)expression, this);
 
                 case ListInit:
-                    return new ListInitialisationTranslation((ListInitExpression)expression, this);
+                    return ListInitialisationTranslation.For((ListInitExpression)expression, this);
 
                 case Loop:
                     return new LoopTranslation((LoopExpression)expression, this);
@@ -267,7 +270,7 @@
                     return new MemberAccessTranslation((MemberExpression)expression, this);
 
                 case MemberInit:
-                    return new MemberInitialisationTranslation((MemberInitExpression)expression, this);
+                    return MemberInitialisationTranslation.For((MemberInitExpression)expression, this);
 
                 case Negate:
                 case NegateChecked:
@@ -279,8 +282,9 @@
 
                 case NewArrayBounds:
                     break;
+
                 case NewArrayInit:
-                    break;
+                    return ArrayInitialisationTranslation.For((NewArrayExpression)expression, this);
 
                 case Parameter:
                     return new ParameterTranslation((ParameterExpression)expression);

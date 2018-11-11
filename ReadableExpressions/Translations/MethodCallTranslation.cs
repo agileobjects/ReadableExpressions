@@ -65,7 +65,14 @@
                 subject = subject.WithParentheses();
             }
 
-            return new StandardMethodCallTranslation(Call, subject, method, parameters);
+            var methodCallTranslation = new StandardMethodCallTranslation(Call, subject, method, parameters);
+
+            if (context.IsPartOfMethodCallChain(methodCall))
+            {
+                methodCallTranslation.AsPartOfMethodCallChain();
+            }
+
+            return methodCallTranslation;
         }
 
         public static ITranslation ForCustomMethodCast(
@@ -96,6 +103,7 @@
             private readonly IMethod _method;
             private readonly ITranslation _subject;
             private readonly ParameterSetTranslation _parameters;
+            private bool _isPartOfMethodCallChain;
 
             public StandardMethodCallTranslation(
                 ExpressionType nodeType,
@@ -117,14 +125,27 @@
             private int GetEstimatedSize()
                 => _subject.EstimatedSize + _method.Name.Length + ".".Length + _parameters.EstimatedSize;
 
+            public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
+
             public void WriteTo(ITranslationContext context)
             {
-
                 _subject.WriteTo(context);
+
+                if (_isPartOfMethodCallChain)
+                {
+                    context.WriteNewLineToTranslation();
+                    context.Indent();
+                }
+
                 context.WriteToTranslation('.');
                 context.WriteToTranslation(_method.Name);
                 WriteGenericArgumentsIfNecessary(context);
                 _parameters.WriteTo(context);
+
+                if (_isPartOfMethodCallChain)
+                {
+                    context.Unindent();
+                }
             }
 
             private void WriteGenericArgumentsIfNecessary(ITranslationContext context)

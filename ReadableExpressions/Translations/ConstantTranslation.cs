@@ -64,7 +64,7 @@
                     return true;
 
                 case NetStandardTypeCode.Char:
-                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WrappedIn("'", "'");
+                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WrappedWith("'", "'");
 
                     return true;
 
@@ -123,7 +123,7 @@
                     }
 
                     translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""));
-                    translation = new TranslationWrapper(translation).WrappedIn("\"", "\"");
+                    translation = new TranslationWrapper(translation).WrappedWith("\"", "\"");
 
                     return true;
             }
@@ -140,7 +140,7 @@
                 return false;
             }
 
-            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name)).WrappedIn("default(", ")");
+            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name)).WrappedWith("default(", ")");
             return true;
         }
 
@@ -183,7 +183,7 @@
             }
 
             translation = context.GetTranslationFor((Type)constant.Value);
-            translation = new TranslationWrapper(translation).WrappedIn("typeof(", ")");
+            translation = new TranslationWrapper(translation).WrappedWith("typeof(", ")");
             return true;
         }
 
@@ -196,7 +196,7 @@
             }
 
             translation = FixedValueTranslation(constant.Value);
-            translation = new TranslationWrapper(translation).WrappedIn("Regex /* ", " */");
+            translation = new TranslationWrapper(translation).WrappedWith("Regex /* ", " */");
             return true;
         }
 

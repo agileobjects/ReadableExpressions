@@ -47,7 +47,7 @@
             return this;
         }
 
-        public TranslationWrapper WrappedIn(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
+        public TranslationWrapper WrappedWith(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
 
         public TranslationWrapper WithPrefix(string prefix)
         {

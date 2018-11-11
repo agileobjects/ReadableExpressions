@@ -10,7 +10,7 @@
 
     internal class ListInitialisationTranslation : InitialisationTranslationBase<ElementInit>
     {
-        public ListInitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
+        private ListInitialisationTranslation(ListInitExpression listInit, ITranslationContext context)
             : base(
                 ExpressionType.ListInit,
                 listInit.NewExpression,
@@ -28,6 +28,16 @@
             }
 
             return new MultiArgumentInitializerTranslation(init, context);
+        }
+
+        public static ITranslation For(ListInitExpression listInit, ITranslationContext context)
+        {
+            if (InitHasNoInitializers(listInit.NewExpression, listInit.Initializers, context, out var newingTranslation))
+            {
+                return newingTranslation;
+            }
+
+            return new ListInitialisationTranslation(listInit, context);
         }
 
         private class MultiArgumentInitializerTranslation : ITranslatable

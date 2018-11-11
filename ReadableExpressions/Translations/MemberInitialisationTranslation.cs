@@ -8,7 +8,7 @@
 
     internal class MemberInitialisationTranslation : InitialisationTranslationBase<MemberBinding>
     {
-        public MemberInitialisationTranslation(MemberInitExpression memberInit, ITranslationContext context)
+        private MemberInitialisationTranslation(MemberInitExpression memberInit, ITranslationContext context)
             : base(
                 ExpressionType.MemberInit,
                 memberInit.NewExpression,
@@ -35,6 +35,16 @@
             }
 
             return null;
+        }
+
+        public static ITranslation For(MemberInitExpression memberInit, ITranslationContext context)
+        {
+            if (InitHasNoInitializers(memberInit.NewExpression, memberInit.Bindings, context, out var newingTranslation))
+            {
+                return newingTranslation;
+            }
+
+            return new MemberInitialisationTranslation(memberInit, context);
         }
 
         private class AssignmentBindingTranslatable : ITranslatable

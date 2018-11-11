@@ -20,6 +20,8 @@
 
         bool GoesToReturnLabel(GotoExpression @goto);
 
+        bool IsPartOfMethodCallChain(Expression methodCall);
+
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 
         ITranslation GetTranslationFor(Type type);
