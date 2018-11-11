@@ -11,7 +11,7 @@
 
     internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
-        private readonly NewingTranslation _newingTranslation;
+        private readonly ITranslation _newingTranslation;
         private readonly IList<ITranslatable> _initializerTranslations;
 
         protected InitialisationTranslationBase(
@@ -22,9 +22,9 @@
             ITranslationContext context)
         {
             NodeType = initType;
-            _newingTranslation = new NewingTranslation(newing, context);
             InitializerCount = initializers.Count;
             HasInitializers = InitializerCount != 0;
+            _newingTranslation = NewingTranslation.For(newing, context, omitParenthesesIfParameterless: HasInitializers);
 
             if (HasNoInitializers)
             {
@@ -32,8 +32,6 @@
                 EstimatedSize = _newingTranslation.EstimatedSize;
                 return;
             }
-
-            _newingTranslation = _newingTranslation.WithoutParenthesesIfParameterless();
 
             var estimatedSize = _newingTranslation.EstimatedSize;
             _initializerTranslations = new ITranslatable[InitializerCount];

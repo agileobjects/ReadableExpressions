@@ -275,7 +275,7 @@
                     return new NegationTranslation((UnaryExpression)expression, this);
 
                 case New:
-                    return new NewingTranslation((NewExpression)expression, this);
+                    return NewingTranslation.For((NewExpression)expression, this);
 
                 case NewArrayBounds:
                     break;

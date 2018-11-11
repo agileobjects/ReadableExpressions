@@ -9,93 +9,113 @@
 #endif
     using NetStandardPolyfills;
 
-    internal class NewingTranslation : ITranslation
+    internal static class NewingTranslation
     {
-        private readonly bool _isAnonymousType;
-        private readonly ParameterSetTranslation _parameters;
-        private readonly ParameterInfo[] _ctorParameters;
-        private readonly ITranslation _typeNameTranslation;
-        private bool _omitParenthesesIfParameterless;
-
-        public NewingTranslation(NewExpression newing, ITranslationContext context)
+        public static ITranslation For(
+            NewExpression newing,
+            ITranslationContext context,
+            bool omitParenthesesIfParameterless = false)
         {
-            _isAnonymousType = newing.Type.IsAnonymous();
-            _parameters = new ParameterSetTranslation(newing.Arguments, context);
+            if (newing.Type.IsAnonymous())
+            {
+                return new AnonymousTypeNewingTranslation(newing, context);
+            }
 
-            if (_isAnonymousType)
+            return new StandardNewingTranslation(newing, context, omitParenthesesIfParameterless);
+        }
+
+        private abstract class NewingTranslationBase
+        {
+            protected NewingTranslationBase(NewExpression newing, ITranslationContext context)
+            {
+                Parameters = new ParameterSetTranslation(newing.Arguments, context);
+            }
+
+            public ExpressionType NodeType => ExpressionType.New;
+
+            protected ParameterSetTranslation Parameters { get; }
+        }
+
+        private class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
+        {
+            private readonly ParameterInfo[] _ctorParameters;
+
+            public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
+                : base(newing, context)
             {
                 _ctorParameters = newing.Constructor.GetParameters();
-                EstimatedSize = GetAnonymousTypeEstimatedSize();
-                return;
+                EstimatedSize = GetEstimatedSize();
             }
 
-            _typeNameTranslation = context.GetTranslationFor(newing.Type);
-            EstimatedSize = GetEstimatedSize();
-        }
-
-        private int GetAnonymousTypeEstimatedSize()
-        {
-            return _ctorParameters.Sum(p => p.Name.Length) +
-                   (3 * _ctorParameters.Length) + // <- for ' = '
-                   _parameters.EstimatedSize +
-                   "new {  }".Length;
-        }
-
-        private int GetEstimatedSize()
-        {
-            return _typeNameTranslation.EstimatedSize +
-                   _parameters.EstimatedSize +
-                   "new ()".Length;
-        }
-
-        public ExpressionType NodeType => ExpressionType.New;
-
-        public int EstimatedSize { get; }
-
-        public NewingTranslation WithoutParenthesesIfParameterless()
-        {
-            _omitParenthesesIfParameterless = true;
-            return this;
-        }
-
-        public void WriteTo(ITranslationContext context)
-        {
-            if (_isAnonymousType)
+            private int GetEstimatedSize()
             {
-                WriteAnonymousTypeNewingTo(context);
-                return;
+                return _ctorParameters.Sum(p => p.Name.Length) +
+                       (3 * _ctorParameters.Length) + // <- for ' = '
+                        Parameters.EstimatedSize +
+                       "new {  }".Length;
             }
 
-            context.WriteToTranslation("new ");
-            _typeNameTranslation.WriteTo(context);
+            public int EstimatedSize { get; }
 
-            if (_omitParenthesesIfParameterless && _parameters.None)
+            public void WriteTo(ITranslationContext context)
             {
-                return;
-            }
+                context.WriteToTranslation("new { ");
 
-            _parameters.WithParentheses().WriteTo(context);
-        }
-
-        private void WriteAnonymousTypeNewingTo(ITranslationContext context)
-        {
-            context.WriteToTranslation("new { ");
-
-            for (int i = 0, l = _ctorParameters.Length - 1; ; ++i)
-            {
-                context.WriteToTranslation(_ctorParameters[i].Name);
-                context.WriteToTranslation(" = ");
-                _parameters[i].WriteTo(context);
-
-                if (i == l)
+                for (var i = 0; ;)
                 {
-                    break;
+                    context.WriteToTranslation(_ctorParameters[i].Name);
+                    context.WriteToTranslation(" = ");
+                    Parameters[i].WriteTo(context);
+
+                    if (++i == _ctorParameters.Length)
+                    {
+                        break;
+                    }
+
+                    context.WriteToTranslation(", ");
                 }
 
-                context.WriteToTranslation(", ");
+                context.WriteToTranslation(" }");
+            }
+        }
+
+        private class StandardNewingTranslation : NewingTranslationBase, ITranslation
+        {
+            private readonly ITranslation _typeNameTranslation;
+            private readonly bool _omitParenthesesIfParameterless;
+
+            public StandardNewingTranslation(
+                NewExpression newing,
+                ITranslationContext context,
+                bool omitParenthesesIfParameterless)
+                : base(newing, context)
+            {
+                _omitParenthesesIfParameterless = omitParenthesesIfParameterless;
+                _typeNameTranslation = context.GetTranslationFor(newing.Type);
+                EstimatedSize = GetEstimatedSize();
             }
 
-            context.WriteToTranslation(" }");
+            private int GetEstimatedSize()
+            {
+                return _typeNameTranslation.EstimatedSize +
+                       Parameters.EstimatedSize +
+                       "new ()".Length;
+            }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                context.WriteToTranslation("new ");
+                _typeNameTranslation.WriteTo(context);
+
+                if (_omitParenthesesIfParameterless && Parameters.None)
+                {
+                    return;
+                }
+
+                Parameters.WithParentheses().WriteTo(context);
+            }
         }
     }
 }
