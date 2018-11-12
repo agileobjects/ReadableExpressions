@@ -12,7 +12,7 @@
 
         public LoopTranslation(LoopExpression loop, ITranslationContext context)
         {
-            _loopBodyTranslation = context.GetCodeBlockTranslationFor(loop.Body).WithBraces();
+            _loopBodyTranslation = context.GetCodeBlockTranslationFor(loop.Body).WithTermination().WithBraces();
             EstimatedSize = _loopBodyTranslation.EstimatedSize + 10;
         }
 

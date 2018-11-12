@@ -81,11 +81,11 @@
 
         public void WriteTo(ITranslationContext context)
         {
-            var writeToMultipleLines = EstimatedSize > 40;
+            var isLongTranslation = EstimatedSize > 40;
 
             _newingTranslation.WriteTo(context);
 
-            if (writeToMultipleLines)
+            if (isLongTranslation || WriteLongTranslationsToMultipleLines)
             {
                 context.WriteOpeningBraceToTranslation();
             }
@@ -103,7 +103,7 @@
                     break;
                 }
 
-                if (writeToMultipleLines)
+                if (isLongTranslation)
                 {
                     context.WriteNewLineToTranslation();
                     continue;
@@ -112,7 +112,7 @@
                 context.WriteToTranslation(", ");
             }
 
-            if (writeToMultipleLines)
+            if (isLongTranslation || WriteLongTranslationsToMultipleLines)
             {
                 context.WriteClosingBraceToTranslation();
             }
@@ -121,5 +121,7 @@
                 context.WriteToTranslation(" }");
             }
         }
+
+        protected abstract bool WriteLongTranslationsToMultipleLines { get; }
     }
 }

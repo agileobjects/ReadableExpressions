@@ -22,7 +22,7 @@
         {
         }
 
-        public static ITranslation GetNewArrayTranslation(NewArrayExpression arrayInit, ITranslationContext context)
+        private static ITranslation GetNewArrayTranslation(NewArrayExpression arrayInit, ITranslationContext context)
         {
             var expressionTypes = arrayInit
                 .Expressions
@@ -55,5 +55,7 @@
 
             return new TranslationWrapper(emptyArrayNewing).WithNodeType(NewArrayInit);
         }
+
+        protected override bool WriteLongTranslationsToMultipleLines => false;
     }
 }

@@ -47,6 +47,8 @@
             return new MemberInitialisationTranslation(memberInit, context);
         }
 
+        protected override bool WriteLongTranslationsToMultipleLines => true;
+
         private class AssignmentBindingTranslatable : ITranslatable
         {
             private readonly string _memberName;

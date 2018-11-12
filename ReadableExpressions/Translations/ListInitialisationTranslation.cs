@@ -40,6 +40,8 @@
             return new ListInitialisationTranslation(listInit, context);
         }
 
+        protected override bool WriteLongTranslationsToMultipleLines => true;
+
         private class MultiArgumentInitializerTranslation : ITranslatable
         {
             private readonly IList<CodeBlockTranslation> _translations;

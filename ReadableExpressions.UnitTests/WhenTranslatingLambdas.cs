@@ -134,8 +134,8 @@ ObjectQuery<WhenTranslatingLambdas.Product>
             var translated = ToReadableString(quotedLambda, o => o.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
-    // Quoted to induce a closure:
-    i => (double)i";
+// Quoted to induce a closure:
+i => (double)i";
 
             translated.ShouldBe(EXPECTED);
         }
