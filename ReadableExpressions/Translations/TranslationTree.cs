@@ -234,7 +234,7 @@
                     return CastTranslation.For((UnaryExpression)expression, this);
 
                 case DebugInfo:
-                    break;
+                    return DebugInfoTranslation.For((DebugInfoExpression)expression, this);
 
                 case Default:
                     return new DefaultValueTranslation(expression, this);

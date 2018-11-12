@@ -6,7 +6,7 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class TranslationWrapper : ITranslation
+    internal class TranslationWrapper : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _translation;
         private string _prefix;
@@ -40,6 +40,8 @@
 
             return estimatedSize;
         }
+
+        public bool IsTerminated => _translation.IsTerminated();
 
         public TranslationWrapper WithNodeType(ExpressionType nodeType)
         {
