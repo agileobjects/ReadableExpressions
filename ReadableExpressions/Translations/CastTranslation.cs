@@ -73,8 +73,8 @@
             return new StandardCastTranslation(
                 Call,
                 castValueTranslation.NodeType,
-                castValueTranslation,
-                castTypeNameTranslation);
+                castTypeNameTranslation,
+                castValueTranslation);
         }
 
         private static bool WriteCastValueInParentheses(ExpressionType castValueNodeType)
