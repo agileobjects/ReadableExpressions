@@ -46,6 +46,9 @@
         public static ITranslation WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WrappedWith("(", ")");
 
+        public static ITranslation WithNodeType(this ITranslation translation, ExpressionType nodeType)
+            => new TranslationWrapper(translation).WithNodeType(nodeType);
+
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
             if (startOnNewLine && context.TranslationQuery(q => !q.TranslationEndsWith('{')))

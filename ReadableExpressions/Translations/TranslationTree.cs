@@ -290,7 +290,8 @@
                     return new ParameterTranslation((ParameterExpression)expression);
 
                 case Quote:
-                    break;
+                    return QuotedLambdaTranslation.For((UnaryExpression)expression, this);
+
                 case RuntimeVariables:
                     break;
                 case Switch:

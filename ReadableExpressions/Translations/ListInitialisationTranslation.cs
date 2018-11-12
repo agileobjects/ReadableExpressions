@@ -34,7 +34,7 @@
         {
             if (InitHasNoInitializers(listInit.NewExpression, listInit.Initializers, context, out var newingTranslation))
             {
-                return newingTranslation;
+                return newingTranslation.WithNodeType(ExpressionType.ListInit);
             }
 
             return new ListInitialisationTranslation(listInit, context);

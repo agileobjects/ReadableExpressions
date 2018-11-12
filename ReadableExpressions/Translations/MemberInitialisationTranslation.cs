@@ -41,7 +41,7 @@
         {
             if (InitHasNoInitializers(memberInit.NewExpression, memberInit.Bindings, context, out var newingTranslation))
             {
-                return newingTranslation;
+                return newingTranslation.WithNodeType(ExpressionType.MemberInit);
             }
 
             return new MemberInitialisationTranslation(memberInit, context);
