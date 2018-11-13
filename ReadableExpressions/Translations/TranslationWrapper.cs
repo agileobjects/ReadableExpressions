@@ -8,25 +8,30 @@
 
     internal class TranslationWrapper : ITranslation, IPotentialSelfTerminatingTranslatable
     {
-        private readonly ITranslation _translation;
+        private readonly ITranslatable _translatable;
         private string _prefix;
         private bool _hasPrefix;
         private string _suffix;
         private bool _hasSuffix;
-        private ExpressionType? _nodeType;
 
         public TranslationWrapper(ITranslation translation)
+            : this(translation.NodeType, translation)
         {
-            _translation = translation;
         }
 
-        public ExpressionType NodeType => _nodeType ?? _translation.NodeType;
+        public TranslationWrapper(ExpressionType nodeType, ITranslatable translatable)
+        {
+            NodeType = nodeType;
+            _translatable = translatable;
+        }
+
+        public ExpressionType NodeType { get; }
 
         public int EstimatedSize => GetEstimatedSize();
 
         private int GetEstimatedSize()
         {
-            var estimatedSize = _translation.EstimatedSize;
+            var estimatedSize = _translatable.EstimatedSize;
 
             if (_hasPrefix)
             {
@@ -41,13 +46,7 @@
             return estimatedSize;
         }
 
-        public bool IsTerminated => _translation.IsTerminated();
-
-        public TranslationWrapper WithNodeType(ExpressionType nodeType)
-        {
-            _nodeType = nodeType;
-            return this;
-        }
+        public bool IsTerminated => _translatable.IsTerminated();
 
         public TranslationWrapper WrappedWith(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
 
@@ -72,7 +71,7 @@
                 context.WriteToTranslation(_prefix);
             }
 
-            _translation.WriteTo(context);
+            _translatable.WriteTo(context);
 
             if (_hasSuffix)
             {

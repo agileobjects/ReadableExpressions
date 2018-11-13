@@ -293,7 +293,8 @@
                     return QuotedLambdaTranslation.For((UnaryExpression)expression, this);
 
                 case RuntimeVariables:
-                    break;
+                    return RuntimeVariablesTranslation.For((RuntimeVariablesExpression)expression, this);
+
                 case Switch:
                     return new SwitchTranslation((SwitchExpression)expression, this);
 

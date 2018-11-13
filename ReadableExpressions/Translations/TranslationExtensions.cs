@@ -43,11 +43,11 @@
         public static bool IsBinary(this ITranslation translation)
             => BinaryTranslation.IsBinary(translation.NodeType);
 
-        public static ITranslation WithParentheses(this ITranslation translation)
+        public static TranslationWrapper WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WrappedWith("(", ")");
 
-        public static ITranslation WithNodeType(this ITranslation translation, ExpressionType nodeType)
-            => new TranslationWrapper(translation).WithNodeType(nodeType);
+        public static TranslationWrapper WithNodeType(this ITranslatable translation, ExpressionType nodeType)
+            => new TranslationWrapper(nodeType, translation);
 
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {

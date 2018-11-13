@@ -53,7 +53,7 @@
         {
             var emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
 
-            return new TranslationWrapper(emptyArrayNewing).WithNodeType(NewArrayInit);
+            return emptyArrayNewing.WithNodeType(NewArrayInit);
         }
 
         protected override bool WriteLongTranslationsToMultipleLines => false;

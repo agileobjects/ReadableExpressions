@@ -39,7 +39,7 @@
 
             if (methodCall.Method.IsImplicitOperator())
             {
-                return new TranslationWrapper(new CodeBlockTranslation(parameters[0])).WithNodeType(Call);
+                return new CodeBlockTranslation(parameters[0]).WithNodeType(Call);
             }
 
             var subject =
