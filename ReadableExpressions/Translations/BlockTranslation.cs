@@ -50,7 +50,7 @@
             }
 
             return variablesByType.ToDictionary(
-                grp => context.GetTranslationFor(grp.Key),
+                grp => (ITranslation)context.GetTranslationFor(grp.Key),
                 grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
         }
 

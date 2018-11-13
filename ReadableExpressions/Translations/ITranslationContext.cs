@@ -24,7 +24,7 @@
 
         int? GetUnnamedVariableNumber(ParameterExpression variable);
 
-        ITranslation GetTranslationFor(Type type);
+        TypeNameTranslation GetTranslationFor(Type type);
 
         ITranslation GetTranslationFor(Expression expression);
 

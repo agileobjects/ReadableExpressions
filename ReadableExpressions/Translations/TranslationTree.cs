@@ -48,7 +48,7 @@
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
             => _context.GetUnnamedVariableNumber(variable);
 
-        ITranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
+        TypeNameTranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
 
         ITranslation ITranslationContext.GetTranslationFor(Expression expression)
             => GetTranslationFor(expression);

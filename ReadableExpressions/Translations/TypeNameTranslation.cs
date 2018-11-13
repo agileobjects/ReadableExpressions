@@ -11,9 +11,9 @@
     internal class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
-
         private readonly bool _isObject;
         private readonly string _typeName;
+        private bool _writeObjectTypeName;
 
         public TypeNameTranslation(Type type, ITranslationContext context)
         {
@@ -33,11 +33,21 @@
 
         public int EstimatedSize { get; }
 
+        public TypeNameTranslation WithObjectTypeName()
+        {
+            if (_isObject)
+            {
+                _writeObjectTypeName = true;
+            }
+
+            return this;
+        }
+
         public void WriteTo(ITranslationContext context)
         {
             if (_isObject)
             {
-                context.WriteToTranslation(_object);
+                context.WriteToTranslation(_writeObjectTypeName ? "Object" : _object);
                 return;
             }
 

@@ -91,7 +91,7 @@
                 : base(newing, context)
             {
                 _omitParenthesesIfParameterless = omitParenthesesIfParameterless;
-                _typeNameTranslation = context.GetTranslationFor(newing.Type);
+                _typeNameTranslation = context.GetTranslationFor(newing.Type).WithObjectTypeName();
                 EstimatedSize = GetEstimatedSize();
             }
 
