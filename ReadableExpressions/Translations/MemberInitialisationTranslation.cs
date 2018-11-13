@@ -12,29 +12,9 @@
             : base(
                 ExpressionType.MemberInit,
                 memberInit.NewExpression,
-                memberInit.Bindings,
-                GetMemberBindingTranslation,
+                new MemberBindingInitializerTranslationSet(memberInit, context),
                 context)
         {
-        }
-
-        private static ITranslatable GetMemberBindingTranslation(MemberBinding binding, ITranslationContext context)
-        {
-            switch (binding.BindingType)
-            {
-                case MemberBindingType.MemberBinding:
-
-                    break;
-
-                case MemberBindingType.ListBinding:
-
-                    break;
-
-                default:
-                    return new AssignmentBindingTranslatable((MemberAssignment)binding, context);
-            }
-
-            return null;
         }
 
         public static ITranslation For(MemberInitExpression memberInit, ITranslationContext context)
@@ -47,7 +27,36 @@
             return new MemberInitialisationTranslation(memberInit, context);
         }
 
-        protected override bool WriteLongTranslationsToMultipleLines => true;
+        protected override bool WriteLongTranslationsToMultipleLines => false;
+
+        private class MemberBindingInitializerTranslationSet : InitializerSetTranslation
+        {
+            public MemberBindingInitializerTranslationSet(MemberInitExpression memberInit, ITranslationContext context)
+                : base(memberInit.Bindings, context)
+            {
+            }
+
+            protected override ITranslatable GetTranslation(MemberBinding binding, ITranslationContext context)
+            {
+                switch (binding.BindingType)
+                {
+                    case MemberBindingType.MemberBinding:
+
+                        break;
+
+                    case MemberBindingType.ListBinding:
+
+                        break;
+
+                    default:
+                        return new AssignmentBindingTranslatable((MemberAssignment)binding, context);
+                }
+
+                return null;
+            }
+
+            public override bool WriteToMultipleLines => false;
+        }
 
         private class AssignmentBindingTranslatable : ITranslatable
         {

@@ -14,20 +14,9 @@
             : base(
                 ExpressionType.ListInit,
                 listInit.NewExpression,
-                listInit.Initializers,
-                GetListInitializerTranslation,
+                new ListInitializerSetTranslation(listInit, context),
                 context)
         {
-        }
-
-        private static ITranslatable GetListInitializerTranslation(ElementInit init, ITranslationContext context)
-        {
-            if (init.Arguments.Count == 1)
-            {
-                return context.GetCodeBlockTranslationFor(init.Arguments[0]);
-            }
-
-            return new MultiArgumentInitializerTranslation(init, context);
         }
 
         public static ITranslation For(ListInitExpression listInit, ITranslationContext context)
@@ -40,7 +29,31 @@
             return new ListInitialisationTranslation(listInit, context);
         }
 
-        protected override bool WriteLongTranslationsToMultipleLines => true;
+        protected override bool WriteLongTranslationsToMultipleLines => InitializerTranslations.WriteToMultipleLines;
+
+        private class ListInitializerSetTranslation : InitializerSetTranslation
+        {
+            private bool _hasMultiArgumentInitializers;
+
+            public ListInitializerSetTranslation(ListInitExpression listInit, ITranslationContext context)
+                : base(listInit.Initializers, context)
+            {
+            }
+
+            protected override ITranslatable GetTranslation(ElementInit init, ITranslationContext context)
+            {
+                if (init.Arguments.Count == 1)
+                {
+                    return context.GetCodeBlockTranslationFor(init.Arguments[0]);
+                }
+
+                _hasMultiArgumentInitializers = true;
+
+                return new MultiArgumentInitializerTranslation(init, context);
+            }
+
+            public override bool WriteToMultipleLines => _hasMultiArgumentInitializers;
+        }
 
         private class MultiArgumentInitializerTranslation : ITranslatable
         {

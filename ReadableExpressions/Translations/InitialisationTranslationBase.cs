@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using System;
     using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -11,50 +10,28 @@
     internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
         private readonly ITranslation _newingTranslation;
-        private readonly IList<ITranslatable> _initializerTranslations;
 
         protected InitialisationTranslationBase(
             ExpressionType initType,
             NewExpression newing,
-            IList<TInitializer> initializers,
-            Func<TInitializer, ITranslationContext, ITranslatable> initializerTranslationFactory,
+            InitializerSetTranslation initializerTranslations,
             ITranslationContext context)
             : this(
                 initType,
-                NewingTranslation.For(newing, context, omitParenthesesIfParameterless: initializers.Count != 0),
-                initializers,
-                initializerTranslationFactory,
-                context)
+                NewingTranslation.For(newing, context, omitParenthesesIfParameterless: initializerTranslations.Count != 0),
+                initializerTranslations)
         {
         }
 
         protected InitialisationTranslationBase(
             ExpressionType initType,
             ITranslation newingTranslation,
-            IList<TInitializer> initializers,
-            Func<TInitializer, ITranslationContext, ITranslatable> initializerTranslationFactory,
-            ITranslationContext context)
+            InitializerSetTranslation initializerTranslations)
         {
             NodeType = initType;
-            InitializerCount = initializers.Count;
             _newingTranslation = newingTranslation;
-
-            var estimatedSize = _newingTranslation.EstimatedSize;
-            _initializerTranslations = new ITranslatable[InitializerCount];
-
-            for (var i = 0; ;)
-            {
-                var initializerTranslation = initializerTranslationFactory.Invoke(initializers[i], context);
-                _initializerTranslations[i] = initializerTranslation;
-                estimatedSize += initializerTranslation.EstimatedSize;
-
-                if (++i == InitializerCount)
-                {
-                    break;
-                }
-            }
-
-            EstimatedSize = estimatedSize;
+            InitializerTranslations = initializerTranslations;
+            EstimatedSize = newingTranslation.EstimatedSize + initializerTranslations.EstimatedSize;
         }
 
         protected static bool InitHasNoInitializers(
@@ -77,15 +54,16 @@
 
         public int EstimatedSize { get; }
 
-        private int InitializerCount { get; }
+        protected InitializerSetTranslation InitializerTranslations { get; }
 
         public void WriteTo(ITranslationContext context)
         {
             var isLongTranslation = EstimatedSize > 40;
+            var writeToMultipleLines = WriteLongTranslationsToMultipleLines || isLongTranslation;
 
             _newingTranslation.WriteTo(context);
 
-            if (isLongTranslation || WriteLongTranslationsToMultipleLines)
+            if (writeToMultipleLines)
             {
                 context.WriteOpeningBraceToTranslation();
             }
@@ -94,26 +72,9 @@
                 context.WriteToTranslation(" { ");
             }
 
-            for (var i = 0; ;)
-            {
-                _initializerTranslations[i].WriteTo(context);
+            InitializerTranslations.WriteTo(context, isLongTranslation);
 
-                if (++i == InitializerCount)
-                {
-                    break;
-                }
-
-                if (isLongTranslation)
-                {
-                    context.WriteToTranslation(',');
-                    context.WriteNewLineToTranslation();
-                    continue;
-                }
-
-                context.WriteToTranslation(", ");
-            }
-
-            if (isLongTranslation || WriteLongTranslationsToMultipleLines)
+            if (writeToMultipleLines)
             {
                 context.WriteClosingBraceToTranslation();
             }
@@ -124,5 +85,63 @@
         }
 
         protected abstract bool WriteLongTranslationsToMultipleLines { get; }
+
+        protected abstract class InitializerSetTranslation
+        {
+            private readonly IList<ITranslatable> _initializerTranslations;
+
+            protected InitializerSetTranslation(IList<TInitializer> initializers, ITranslationContext context)
+            {
+                Count = initializers.Count;
+                _initializerTranslations = new ITranslatable[Count];
+
+                var estimatedSize = 0;
+
+                for (var i = 0; ;)
+                {
+                    // ReSharper disable once VirtualMemberCallInConstructor
+                    var initializerTranslation = GetTranslation(initializers[i], context);
+                    _initializerTranslations[i] = initializerTranslation;
+                    estimatedSize += initializerTranslation.EstimatedSize;
+
+                    if (++i == Count)
+                    {
+                        break;
+                    }
+                }
+
+                EstimatedSize = estimatedSize;
+            }
+
+            protected abstract ITranslatable GetTranslation(TInitializer initializer, ITranslationContext context);
+
+            public int EstimatedSize { get; }
+
+            public int Count { get; }
+
+            public abstract bool WriteToMultipleLines { get; }
+
+            public void WriteTo(ITranslationContext context, bool isLongTranslation)
+            {
+                for (var i = 0; ;)
+                {
+                    _initializerTranslations[i].WriteTo(context);
+
+                    if (++i == Count)
+                    {
+                        break;
+                    }
+
+                    if (WriteToMultipleLines || isLongTranslation)
+                    {
+                        context.WriteToTranslation(',');
+                        context.WriteNewLineToTranslation();
+                        continue;
+                    }
+
+                    context.WriteToTranslation(", ");
+                }
+            }
+        }
     }
 }

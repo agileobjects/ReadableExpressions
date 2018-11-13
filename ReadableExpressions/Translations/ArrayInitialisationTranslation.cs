@@ -12,13 +12,11 @@
 
     internal class ArrayInitialisationTranslation : InitialisationTranslationBase<Expression>
     {
-        public ArrayInitialisationTranslation(NewArrayExpression arrayInit, ITranslationContext context)
+        private ArrayInitialisationTranslation(NewArrayExpression arrayInit, ITranslationContext context)
             : base(
                 NewArrayInit,
                 GetNewArrayTranslation(arrayInit, context),
-                arrayInit.Expressions,
-                (init, c) => c.GetCodeBlockTranslationFor(init),
-                context)
+                new ArrayInitializerSetTranslation(arrayInit, context))
         {
         }
 
@@ -57,5 +55,18 @@
         }
 
         protected override bool WriteLongTranslationsToMultipleLines => false;
+
+        private class ArrayInitializerSetTranslation : InitializerSetTranslation
+        {
+            public ArrayInitializerSetTranslation(NewArrayExpression arrayInit, ITranslationContext context)
+                : base(arrayInit.Expressions, context)
+            {
+            }
+
+            protected override ITranslatable GetTranslation(Expression initializer, ITranslationContext context)
+                => context.GetCodeBlockTranslationFor(initializer);
+
+            public override bool WriteToMultipleLines => false;
+        }
     }
 }
