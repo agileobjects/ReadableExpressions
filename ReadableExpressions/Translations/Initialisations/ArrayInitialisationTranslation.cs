@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 {
     using System.Linq;
 #if NET35
@@ -52,21 +52,6 @@
             var emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
 
             return emptyArrayNewing.WithNodeType(NewArrayInit);
-        }
-
-        protected override bool WriteLongTranslationsToMultipleLines => false;
-
-        private class ArrayInitializerSetTranslation : InitializerSetTranslation
-        {
-            public ArrayInitializerSetTranslation(NewArrayExpression arrayInit, ITranslationContext context)
-                : base(arrayInit.Expressions, context)
-            {
-            }
-
-            protected override ITranslatable GetTranslation(Expression initializer, ITranslationContext context)
-                => context.GetCodeBlockTranslationFor(initializer);
-
-            public override bool WriteToMultipleLines => false;
         }
     }
 }

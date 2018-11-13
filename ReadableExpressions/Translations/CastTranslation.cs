@@ -43,7 +43,8 @@
                             return MethodCallTranslation.ForCustomMethodCast(
                                 context.GetTranslationFor(cast.Type),
                                 new BclMethodWrapper(cast.Method),
-                                castValueTranslation);
+                                castValueTranslation,
+                                context);
                         }
                     }
 
