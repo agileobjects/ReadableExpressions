@@ -2,6 +2,7 @@
 {
     using System.Linq;
     using System.Reflection;
+    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else

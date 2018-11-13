@@ -9,6 +9,7 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
     using Extensions;
+    using Interfaces;
 
     internal class ArrayInitialisationTranslation : InitialisationTranslationBase<Expression>
     {

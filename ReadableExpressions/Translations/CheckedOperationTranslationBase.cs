@@ -1,5 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using Interfaces;
+
     internal abstract class CheckedOperationTranslationBase
     {
         private readonly string _openingSymbol;

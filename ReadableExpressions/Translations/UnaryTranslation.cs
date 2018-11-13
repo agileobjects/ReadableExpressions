@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
+    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;

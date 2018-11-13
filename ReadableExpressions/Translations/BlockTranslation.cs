@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Extensions;
+    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;

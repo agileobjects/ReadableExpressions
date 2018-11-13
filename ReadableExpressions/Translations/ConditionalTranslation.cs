@@ -2,6 +2,7 @@
 {
     using System;
     using Extensions;
+    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else

@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
 {
     internal interface ITranslatable
     {

@@ -12,6 +12,7 @@
 #endif
     using Translators;
     using Extensions;
+    using Interfaces;
     using NetStandardPolyfills;
 
     internal static class MethodCallTranslation

@@ -5,6 +5,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Interfaces;
 
     internal class NewArrayTranslation : ITranslation
     {
@@ -21,7 +22,7 @@
             for (var i = 0; ;)
             {
                 var boundTranslation = context.GetTranslationFor(newArray.Expressions[i]);
-                
+
                 _boundTranslations[i] = boundTranslation;
                 estimatedSize += boundTranslation.EstimatedSize + 2;
 
@@ -44,7 +45,7 @@
             _typeNameTranslation.WriteTo(context);
             context.WriteToTranslation('[');
 
-            for (var i = 0; ; )
+            for (var i = 0; ;)
             {
                 _boundTranslations[i].WriteTo(context);
 

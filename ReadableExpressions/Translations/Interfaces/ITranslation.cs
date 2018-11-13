@@ -1,9 +1,10 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
 {
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
+
 #endif
 
     internal interface ITranslation : ITranslatable

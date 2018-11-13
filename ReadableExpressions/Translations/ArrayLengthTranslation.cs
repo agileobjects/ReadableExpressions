@@ -5,6 +5,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Interfaces;
 
     internal class ArrayLengthTranslation : ITranslation
     {
@@ -19,7 +20,7 @@
         }
 
         public ExpressionType NodeType => ExpressionType.ArrayLength;
-        
+
         public int EstimatedSize { get; }
 
         private static int LengthPropertyLength => _length.Length;
