@@ -7,7 +7,7 @@
 #endif
     using Interfaces;
 
-    internal class SwitchTranslation : ITranslation
+    internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _valueTranslation;
         private readonly ITranslation[][] _caseTestValueTranslations;
@@ -18,35 +18,58 @@
         {
             _valueTranslation = context.GetTranslationFor(switchStatement.SwitchValue);
 
+            var estimatedSize = _valueTranslation.EstimatedSize;
             var caseCount = switchStatement.Cases.Count;
+
             _caseTestValueTranslations = new ITranslation[caseCount][];
             _caseTranslations = new ITranslation[caseCount];
 
-            for (var i = 0; i < caseCount; ++i)
+            for (var i = 0; ;)
             {
                 var @case = switchStatement.Cases[i];
                 var testValueCount = @case.TestValues.Count;
 
                 var caseTestValueTranslations = new ITranslation[testValueCount];
 
-                for (var j = 0; j < testValueCount; ++j)
+                for (var j = 0; ;)
                 {
-                    caseTestValueTranslations[j] = context.GetTranslationFor(@case.TestValues[j]);
+                    var caseTestValueTranslation = context.GetTranslationFor(@case.TestValues[j]);
+                    caseTestValueTranslations[j] = caseTestValueTranslation;
+                    estimatedSize += caseTestValueTranslation.EstimatedSize;
+
+                    if (++j == testValueCount)
+                    {
+                        break;
+                    }
                 }
 
                 _caseTestValueTranslations[i] = caseTestValueTranslations;
-                _caseTranslations[i] = GetCaseBodyTranslation(@case.Body, context);
+                _caseTranslations[i] = GetCaseBodyTranslationOrNull(@case.Body, context);
+
+                if (++i == caseCount)
+                {
+                    break;
+                }
             }
 
-            _defaultCaseTranslation = GetCaseBodyTranslation(switchStatement.DefaultBody, context);
+            _defaultCaseTranslation = GetCaseBodyTranslationOrNull(switchStatement.DefaultBody, context);
+
+            if (_defaultCaseTranslation != null)
+            {
+                estimatedSize += _defaultCaseTranslation.EstimatedSize;
+            }
+
+            EstimatedSize = estimatedSize;
         }
 
-        private static CodeBlockTranslation GetCaseBodyTranslation(Expression caseBody, ITranslationContext context)
+        private static CodeBlockTranslation GetCaseBodyTranslationOrNull(Expression caseBody, ITranslationContext context)
             => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).WithTermination().WithoutBraces() : null;
 
         public ExpressionType NodeType => ExpressionType.Switch;
 
         public int EstimatedSize { get; }
+
+        public bool IsTerminated => true;
 
         public void WriteTo(ITranslationContext context)
         {
