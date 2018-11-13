@@ -224,11 +224,18 @@
                 context.Indent();
             }
 
-            for (int i = 0, l = ParameterCount - 1; ; ++i)
+            for (var i = 0; ;)
             {
-                _parameterTranslations[i].WriteTo(context);
+                var parameterTranslation = _parameterTranslations[i];
 
-                if (i == l)
+                if (writeParametersOnNewLines && (i == 0) && parameterTranslation.IsMultiStatement)
+                {
+                    parameterTranslation.WithoutStartingNewLine();
+                }
+
+                parameterTranslation.WriteTo(context);
+
+                if (++i == ParameterCount)
                 {
                     break;
                 }
@@ -236,7 +243,12 @@
                 if (writeParametersOnNewLines)
                 {
                     context.WriteToTranslation(',');
-                    context.WriteNewLineToTranslation();
+
+                    if (!_parameterTranslations[i].IsMultiStatement)
+                    {
+                        context.WriteNewLineToTranslation();
+                    }
+
                     continue;
                 }
 
