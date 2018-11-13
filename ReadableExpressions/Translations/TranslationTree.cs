@@ -281,7 +281,7 @@
                     return NewingTranslation.For((NewExpression)expression, this);
 
                 case NewArrayBounds:
-                    break;
+                    return new NewArrayTranslation((NewArrayExpression)expression, this);
 
                 case NewArrayInit:
                     return ArrayInitialisationTranslation.For((NewArrayExpression)expression, this);
