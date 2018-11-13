@@ -9,13 +9,18 @@
     using Extensions;
     using Interfaces;
 
-    internal class StringConcatenationTranslation : ITranslatable
+    internal class StringConcatenationTranslation : ITranslation
     {
         private readonly int _operandCount;
         private readonly IList<ITranslation> _operandTranslations;
 
-        public StringConcatenationTranslation(IList<Expression> operands, ITranslationContext context)
+        public StringConcatenationTranslation(
+            ExpressionType nodeType,
+            IList<Expression> operands,
+            ITranslationContext context)
         {
+            NodeType = nodeType;
+
             var estimatedSize = 0;
             _operandCount = operands.Count;
             _operandTranslations = new ITranslation[_operandCount];
@@ -42,24 +47,26 @@
             EstimatedSize = estimatedSize;
         }
 
+        public ExpressionType NodeType { get; }
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)
         {
-            for (int i = 0, l = _operandCount - 1; ; ++i)
+            for (var i = 0; ;)
             {
-                var operand = _operandTranslations[i];
+                var operandTranslation = _operandTranslations[i];
 
-                if (operand.NodeType == ExpressionType.Conditional)
+                if ((operandTranslation.NodeType == ExpressionType.Conditional) || operandTranslation.IsAssignment())
                 {
-                    operand.WriteInParentheses(context);
+                    operandTranslation.WriteInParentheses(context);
                 }
                 else
                 {
-                    operand.WriteTo(context);
+                    operandTranslation.WriteTo(context);
                 }
 
-                if (i == l)
+                if (++i == _operandCount)
                 {
                     break;
                 }

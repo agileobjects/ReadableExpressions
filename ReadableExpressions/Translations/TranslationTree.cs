@@ -192,7 +192,7 @@
                 case RightShift:
                 case Subtract:
                 case SubtractChecked:
-                    return new BinaryTranslation((BinaryExpression)expression, this);
+                    return BinaryTranslation.For((BinaryExpression)expression, this);
 
                 case AddAssign:
                 case AddAssignChecked:
@@ -301,7 +301,7 @@
                     return new SwitchTranslation((SwitchExpression)expression, this);
 
                 case Throw:
-                    break;
+                    return new ThrowTranslation((UnaryExpression)expression, this);
 
                 case Try:
                     return new TryCatchTranslation((TryExpression)expression, this);

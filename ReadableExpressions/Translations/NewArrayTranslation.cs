@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -17,18 +18,26 @@
             _typeNameTranslation = context.GetTranslationFor(newArray.Type.GetElementType());
 
             var estimatedSize = _typeNameTranslation.EstimatedSize + 6;
-            _boundTranslations = new ITranslation[newArray.Expressions.Count];
 
-            for (var i = 0; ;)
+            if (newArray.Expressions.Count == 0)
             {
-                var boundTranslation = context.GetTranslationFor(newArray.Expressions[i]);
+                _boundTranslations = Enumerable<ITranslation>.EmptyArray;
+            }
+            else
+            {
+                _boundTranslations = new ITranslation[newArray.Expressions.Count];
 
-                _boundTranslations[i] = boundTranslation;
-                estimatedSize += boundTranslation.EstimatedSize + 2;
-
-                if (++i == _boundTranslations.Length)
+                for (var i = 0; ;)
                 {
-                    break;
+                    var boundTranslation = context.GetTranslationFor(newArray.Expressions[i]);
+
+                    _boundTranslations[i] = boundTranslation;
+                    estimatedSize += boundTranslation.EstimatedSize + 2;
+
+                    if (++i == _boundTranslations.Length)
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -45,16 +54,19 @@
             _typeNameTranslation.WriteTo(context);
             context.WriteToTranslation('[');
 
-            for (var i = 0; ;)
+            if (_boundTranslations.Length != 0)
             {
-                _boundTranslations[i].WriteTo(context);
-
-                if (++i == _boundTranslations.Length)
+                for (var i = 0; ;)
                 {
-                    break;
-                }
+                    _boundTranslations[i].WriteTo(context);
 
-                context.WriteToTranslation("[]");
+                    if (++i == _boundTranslations.Length)
+                    {
+                        break;
+                    }
+
+                    context.WriteToTranslation("[]");
+                }
             }
 
             context.WriteToTranslation(']');

@@ -44,6 +44,9 @@
         public static bool IsBinary(this ITranslation translation)
             => BinaryTranslation.IsBinary(translation.NodeType);
 
+        public static bool IsCast(this ITranslation translation)
+            => CastTranslation.IsCast(translation.NodeType);
+
         public static TranslationWrapper WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WrappedWith("(", ")");
 
@@ -82,14 +85,19 @@
 
         public static void WriteInParenthesesIfRequired(this ITranslation translation, ITranslationContext context)
         {
-            if ((translation.NodeType == ExpressionType.Conditional) ||
-                 translation.IsBinary() || translation.IsAssignment())
+            if (ShouldWriteInParentheses(translation))
             {
                 translation.WriteInParentheses(context);
                 return;
             }
 
             new CodeBlockTranslation(translation).WriteTo(context);
+        }
+
+        public static bool ShouldWriteInParentheses(this ITranslation translation)
+        {
+            return (translation.NodeType == ExpressionType.Conditional) ||
+                    translation.IsBinary() || translation.IsAssignment() || translation.IsCast();
         }
 
         public static void WriteSpaceToTranslation(this ITranslationContext context)

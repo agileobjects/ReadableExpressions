@@ -62,18 +62,21 @@
             {
                 context.WriteToTranslation("new { ");
 
-                for (var i = 0; ;)
+                if (_ctorParameters.Length != 0)
                 {
-                    context.WriteToTranslation(_ctorParameters[i].Name);
-                    context.WriteToTranslation(" = ");
-                    Parameters[i].WriteTo(context);
-
-                    if (++i == _ctorParameters.Length)
+                    for (var i = 0; ;)
                     {
-                        break;
-                    }
+                        context.WriteToTranslation(_ctorParameters[i].Name);
+                        context.WriteToTranslation(" = ");
+                        Parameters[i].WriteTo(context);
 
-                    context.WriteToTranslation(", ");
+                        if (++i == _ctorParameters.Length)
+                        {
+                            break;
+                        }
+
+                        context.WriteToTranslation(", ");
+                    }
                 }
 
                 context.WriteToTranslation(" }");

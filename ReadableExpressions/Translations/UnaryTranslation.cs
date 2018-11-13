@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -9,11 +8,12 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using Interfaces;
 
     internal class UnaryTranslation : ITranslation
     {
         private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
-            new Dictionary<ExpressionType, string>(11)
+            new Dictionary<ExpressionType, string>(10)
             {
                 [Decrement] = "--",
                 [Increment] = "++",
@@ -24,7 +24,6 @@
                 [PostIncrementAssign] = "++",
                 [PreDecrementAssign] = "--",
                 [PreIncrementAssign] = "++",
-                [Throw] = "throw ",
                 [UnaryPlus] = "+"
             };
 
@@ -44,16 +43,6 @@
                     _operatorIsSuffix = true;
                     break;
             }
-
-            // ReSharper disable HeuristicUnreachableCode
-            // ReSharper disable ConditionIsAlwaysTrueOrFalse
-            // unary.Operand is null when using Expression.Rethrow():
-            if (unary.Operand == null)
-            {
-                EstimatedSize = _operator.Length;
-                return;
-            }
-            // ReSharper restore HeuristicUnreachableCode
 
             _operandTranslation = context.GetTranslationFor(unary.Operand);
             EstimatedSize = _operandTranslation.EstimatedSize + _operator.Length;

@@ -71,7 +71,7 @@ try
 {
     Console.Write(""Hello"");
 }
-catch (TimeoutException timeoutEx) when (timeoutEx.Data != null)
+catch (TimeoutException timeoutEx) when timeoutEx.Data != null
 {
 }";
             translated.ShouldBe(EXPECTED.TrimStart());

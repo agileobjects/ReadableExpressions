@@ -320,7 +320,7 @@ if (stream == null)
         {
             Console.WriteLine(""Wat"");
 
-            return ((long)Console.Read());
+            return (long)Console.Read();
         }
     };
 }";
@@ -441,7 +441,7 @@ return new WhenTranslatingBlocks.Employee
             const string EXPECTED = @"
 var myString = yourString;
 
-return (myString ?? string.Empty);";
+return myString ?? string.Empty;";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

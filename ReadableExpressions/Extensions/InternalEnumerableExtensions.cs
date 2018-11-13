@@ -21,15 +21,12 @@
             var itemCount = items.Count;
             var result = new TResult[itemCount];
 
-            for (var i = 0; ;)
+            for (var i = 0; i < itemCount; ++i)
             {
                 result[i] = projector.Invoke(items[i]);
-
-                if (++i == itemCount)
-                {
-                    return result;
-                }
             }
+
+            return result;
         }
 
         [DebuggerStepThrough]

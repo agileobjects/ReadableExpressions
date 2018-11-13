@@ -40,7 +40,7 @@
 
             if (IsStringConcatCall(methodCall))
             {
-                return new StringConcatenationTranslation(methodCall.Arguments, context).WithNodeType(Call);
+                return new StringConcatenationTranslation(Call, methodCall.Arguments, context);
             }
 
             if (methodCall.Method.IsImplicitOperator())

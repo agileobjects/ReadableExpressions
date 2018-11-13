@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Extensions;
     using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -9,7 +10,10 @@
     using System.Linq.Expressions;
 #endif
 
-    internal class TryCatchTranslation : ITranslation, IPotentialMultiStatementTranslatable
+    internal class TryCatchTranslation :
+        ITranslation,
+        IPotentialMultiStatementTranslatable,
+        IPotentialSelfTerminatingTranslatable
     {
         private readonly bool _isNonVoidTryCatch;
         private readonly ITranslatable _bodyTranslation;
@@ -67,6 +71,12 @@
             out int estimatedCatchBlocksSize,
             ITranslationContext context)
         {
+            if (catchBlocks.Count == 0)
+            {
+                estimatedCatchBlocksSize = 0;
+                return Enumerable<ITranslatable>.EmptyArray;
+            }
+
             var catchBlockTranslations = new ITranslatable[catchBlocks.Count];
 
             estimatedCatchBlocksSize = 0;
@@ -110,30 +120,29 @@
 
         public bool IsMultiStatement => true;
 
+        public bool IsTerminated => true;
+
         public void WriteTo(ITranslationContext context)
         {
             context.WriteToTranslation("try");
             _bodyTranslation.WriteTo(context);
 
-            for (int i = 0, l = _catchBlockTranslations.Count; ;)
+            for (int i = 0, l = _catchBlockTranslations.Count; i < l; ++i)
             {
                 context.WriteNewLineToTranslation();
                 _catchBlockTranslations[i].WriteTo(context);
-
-                if (++i == l)
-                {
-                    break;
-                }
             }
 
             if (_hasFault)
             {
+                context.WriteNewLineToTranslation();
                 context.WriteToTranslation("fault");
                 _faultTranslation.WriteTo(context);
             }
 
             if (_hasFinally)
             {
+                context.WriteNewLineToTranslation();
                 context.WriteToTranslation("finally");
                 _finallyTranslation.WriteTo(context);
             }
@@ -288,16 +297,16 @@
 
                 protected override Expression VisitParameter(ParameterExpression node)
                 {
-                    if (!_rethrowFound)
+                    if (_rethrowFound)
+                    {
+                        _rethrowFound = false;
+                    }
+                    else
                     {
                         if (node == _catchHandler.Variable)
                         {
                             _usageFound = true;
                         }
-                    }
-                    else
-                    {
-                        _rethrowFound = false;
                     }
 
                     return base.VisitParameter(node);

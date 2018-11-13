@@ -76,7 +76,7 @@
                 var isFinalStatement = i == lastExpressionIndex;
                 var expression = expressions[i];
 
-                if (Include(expression, block))
+                if (Include(expression, block, context))
                 {
                     var statementTranslation = context.IsNotJoinedAssignment(expression)
                         ? new BlockStatementTranslation(expression, context)
@@ -129,8 +129,14 @@
             return includedTranslations;
         }
 
-        private static bool Include(Expression expression, BlockExpression block)
+        private static bool Include(Expression expression, BlockExpression block, ITranslationContext context)
         {
+            if (expression.NodeType == Label)
+            {
+                return (expression.Type != typeof(void)) ||
+                        context.IsReferencedByGoto(((LabelExpression)expression).Target);
+            }
+
             if (expression == block.Result)
             {
                 return true;

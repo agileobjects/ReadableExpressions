@@ -34,7 +34,7 @@
 
                         if (isImplicitOperator)
                         {
-                            return WriteCastValueInParentheses(cast.Operand.NodeType)
+                            return castValueTranslation.ShouldWriteInParentheses()
                                 ? castValueTranslation.WithParentheses()
                                 : castValueTranslation;
                         }
@@ -74,13 +74,9 @@
         {
             return new StandardCastTranslation(
                 Call,
-                castValueTranslation.NodeType,
                 castTypeNameTranslation,
                 castValueTranslation);
         }
-
-        private static bool WriteCastValueInParentheses(ExpressionType castValueNodeType)
-            => (castValueNodeType == Assign) || IsCast(castValueNodeType);
 
         public static bool IsCast(ExpressionType nodeType)
         {
@@ -141,10 +137,9 @@
             private readonly ITranslation _castValueTranslation;
             private readonly ITranslation _castTypeNameTranslation;
 
-            public StandardCastTranslation(UnaryExpression cast, ITranslation castValueTranslation, ITranslationContext context)
+            public StandardCastTranslation(Expression cast, ITranslation castValueTranslation, ITranslationContext context)
                 : this(
                     cast.NodeType,
-                    cast.Operand.NodeType,
                     context.GetTranslationFor(cast.Type),
                     castValueTranslation)
             {
@@ -152,7 +147,6 @@
 
             public StandardCastTranslation(
                 ExpressionType nodeType,
-                ExpressionType castValueNodeType,
                 ITranslation castTypeNameTranslation,
                 ITranslation castValueTranslation)
             {
@@ -160,7 +154,7 @@
                 _castTypeNameTranslation = castTypeNameTranslation;
                 _castValueTranslation = castValueTranslation;
 
-                if (WriteCastValueInParentheses(castValueNodeType))
+                if (_castValueTranslation.ShouldWriteInParentheses())
                 {
                     _castValueTranslation = _castValueTranslation.WithParentheses();
                 }

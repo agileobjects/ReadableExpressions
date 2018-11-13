@@ -1,8 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using System;
     using System.Collections.Generic;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -10,6 +8,7 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using Interfaces;
 
     internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
@@ -44,45 +43,41 @@
         private readonly ITranslation _leftOperandTranslation;
         private readonly string _operator;
         private readonly ITranslation _rightOperandTranslation;
-        private readonly StandaloneBoolean _standaloneBoolean;
-        private readonly Action<ITranslationContext> _translationWriter;
 
-        public BinaryTranslation(BinaryExpression binary, ITranslationContext context)
+        private BinaryTranslation(BinaryExpression binary, ITranslationContext context)
             : base(IsCheckedBinary(binary.NodeType), "(", ")")
         {
             NodeType = binary.NodeType;
+            _leftOperandTranslation = context.GetTranslationFor(binary.Left);
+            _operator = GetOperator(binary);
+            _rightOperandTranslation = context.GetTranslationFor(binary.Right);
+            EstimatedSize = GetEstimatedSize();
+        }
 
-            switch (NodeType)
+        public static ITranslation For(BinaryExpression binary, ITranslationContext context)
+        {
+            switch (binary.NodeType)
             {
                 case Add:
                     if (binary.Type != typeof(string))
                     {
-                        goto default;
-                    }
-
-                    var operands = new[] { binary.Left, binary.Right };
-                    _translationWriter = new StringConcatenationTranslation(operands, context).WriteTo;
-                    break;
-
-                case Equal:
-                case NotEqual:
-                    if (TryGetStandaloneBoolean(binary, out _standaloneBoolean))
-                    {
-                        _leftOperandTranslation = context.GetTranslationFor(_standaloneBoolean.Expression);
-                        EstimatedSize = _leftOperandTranslation.EstimatedSize + 1;
-                        _translationWriter = WriteStandaloneEqualityComparison;
                         break;
                     }
 
-                    goto default;
+                    var operands = new[] { binary.Left, binary.Right };
+                    return new StringConcatenationTranslation(Add, operands, context);
 
-                default:
-                    _leftOperandTranslation = context.GetTranslationFor(binary.Left);
-                    _operator = GetOperator(binary);
-                    _rightOperandTranslation = context.GetTranslationFor(binary.Right);
-                    EstimatedSize = GetEstimatedSize();
+                case Equal:
+                case NotEqual:
+                    if (StandaloneEqualityComparisonTranslation.TryGetTranslation(binary, context, out var translation))
+                    {
+                        return translation;
+                    }
+
                     break;
             }
+
+            return new BinaryTranslation(binary, context);
         }
 
         private static bool IsCheckedBinary(ExpressionType nodeType)
@@ -121,25 +116,8 @@
 
         public int EstimatedSize { get; }
 
-        private void WriteStandaloneEqualityComparison(ITranslationContext context)
-        {
-            if (_standaloneBoolean.IsComparisonToTrue)
-            {
-                _leftOperandTranslation.WriteTo(context);
-                return;
-            }
-
-            NegationTranslation.ForNot(_leftOperandTranslation).WriteTo(context);
-        }
-
         public void WriteTo(ITranslationContext context)
         {
-            if (_translationWriter != null)
-            {
-                _translationWriter.Invoke(context);
-                return;
-            }
-
             WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
             _leftOperandTranslation.WriteInParenthesesIfRequired(context);
             context.WriteToTranslation(_operator);
@@ -147,54 +125,100 @@
             WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
         }
 
-        private static bool TryGetStandaloneBoolean(BinaryExpression comparison, out StandaloneBoolean standalone)
-        {
-            if (IsBooleanConstant(comparison.Right))
-            {
-                standalone = new StandaloneBoolean(comparison.Left, comparison.NodeType, comparison.Right);
-                return true;
-            }
-
-            if (IsBooleanConstant(comparison.Left))
-            {
-                standalone = new StandaloneBoolean(comparison.Right, comparison.NodeType, comparison.Left);
-                return true;
-            }
-
-            standalone = null;
-            return false;
-        }
-
-        private static bool IsBooleanConstant(Expression expression)
-        {
-            return ((expression.NodeType == Constant) || (expression.NodeType == Default)) &&
-                    (expression.Type == typeof(bool));
-        }
-
         protected override bool IsMultiStatement()
             => _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
 
-        private class StandaloneBoolean
+        private class StandaloneEqualityComparisonTranslation : ITranslation
         {
-            public StandaloneBoolean(
+            private readonly StandaloneBoolean _standaloneBoolean;
+            private readonly ITranslation _operandTranslation;
+
+            private StandaloneEqualityComparisonTranslation(
+                ExpressionType nodeType,
                 Expression boolean,
                 ExpressionType @operator,
-                Expression comparison)
+                Expression comparison,
+                ITranslationContext context)
             {
-                Expression = boolean;
-
-                var comparisonValue =
-                    (comparison.NodeType != Default) &&
-                    (bool)((ConstantExpression)comparison).Value;
-
-                IsComparisonToTrue =
-                    (comparisonValue && (@operator == Equal)) ||
-                    (!comparisonValue && (@operator == NotEqual));
+                NodeType = nodeType;
+                _standaloneBoolean = new StandaloneBoolean(boolean, @operator, comparison);
+                _operandTranslation = context.GetTranslationFor(_standaloneBoolean.Expression);
+                EstimatedSize = _operandTranslation.EstimatedSize + 1;
             }
 
-            public Expression Expression { get; }
+            public static bool TryGetTranslation(BinaryExpression comparison, ITranslationContext context, out ITranslation translation)
+            {
+                if (IsBooleanConstant(comparison.Right))
+                {
+                    translation = new StandaloneEqualityComparisonTranslation(
+                        comparison.NodeType,
+                        comparison.Left,
+                        comparison.NodeType,
+                        comparison.Right,
+                        context);
 
-            public bool IsComparisonToTrue { get; }
+                    return true;
+                }
+
+                if (IsBooleanConstant(comparison.Left))
+                {
+                    translation = new StandaloneEqualityComparisonTranslation(
+                        comparison.NodeType,
+                        comparison.Right,
+                        comparison.NodeType,
+                        comparison.Left,
+                        context);
+
+                    return true;
+                }
+
+                translation = null;
+                return false;
+            }
+
+            private static bool IsBooleanConstant(Expression expression)
+            {
+                return ((expression.NodeType == Constant) || (expression.NodeType == Default)) &&
+                        (expression.Type == typeof(bool));
+            }
+
+            public ExpressionType NodeType { get; }
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                if (_standaloneBoolean.IsComparisonToTrue)
+                {
+                    _operandTranslation.WriteTo(context);
+                    return;
+                }
+
+                NegationTranslation.ForNot(_operandTranslation).WriteTo(context);
+            }
+
+            private class StandaloneBoolean
+            {
+                public StandaloneBoolean(
+                    Expression boolean,
+                    ExpressionType @operator,
+                    Expression comparison)
+                {
+                    Expression = boolean;
+
+                    var comparisonValue =
+                        (comparison.NodeType != Default) &&
+                        (bool)((ConstantExpression)comparison).Value;
+
+                    IsComparisonToTrue =
+                        (comparisonValue && (@operator == Equal)) ||
+                       (!comparisonValue && (@operator == NotEqual));
+                }
+
+                public Expression Expression { get; }
+
+                public bool IsComparisonToTrue { get; }
+            }
         }
     }
 }
