@@ -38,6 +38,11 @@
             var method = new BclMethodWrapper(methodCall.Method);
             var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
 
+            if (IsStringConcatCall(methodCall))
+            {
+                return new StringConcatenationTranslation(methodCall.Arguments, context).WithNodeType(Call);
+            }
+
             if (methodCall.Method.IsImplicitOperator())
             {
                 return new CodeBlockTranslation(parameters[0]).WithNodeType(Call);
@@ -74,6 +79,13 @@
             }
 
             return methodCallTranslation;
+        }
+
+        private static bool IsStringConcatCall(MethodCallExpression methodCall)
+        {
+            return methodCall.Method.IsStatic &&
+                   (methodCall.Method.DeclaringType == typeof(string)) &&
+                   (methodCall.Method.Name == "Concat");
         }
 
         public static ITranslation ForCustomMethodCast(
