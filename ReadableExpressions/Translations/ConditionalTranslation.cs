@@ -39,7 +39,7 @@
                    (conditional.Type == typeof(void));
         }
 
-        private static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
+        public static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
 
         private abstract class ConditionalTranslationBase : ITranslation
         {

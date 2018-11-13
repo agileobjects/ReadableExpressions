@@ -155,13 +155,18 @@
 
         private class CatchBlockTranslation : ITranslatable
         {
-            private readonly ITranslatable _catchBodyTranslation;
+            private readonly CodeBlockTranslation _catchBodyTranslation;
             private readonly ITranslatable _exceptionClause;
 
             public CatchBlockTranslation(CatchBlock catchBlock, ITranslationContext context)
             {
                 _catchBodyTranslation = GetBlockTranslation(catchBlock.Body, context);
                 _exceptionClause = GetExceptionClauseOrNullFor(catchBlock, context);
+
+                if (_catchBodyTranslation.NodeType != ExpressionType.Throw)
+                {
+                    _catchBodyTranslation.WithReturnKeyword();
+                }
 
                 EstimatedSize = _catchBodyTranslation.EstimatedSize;
 

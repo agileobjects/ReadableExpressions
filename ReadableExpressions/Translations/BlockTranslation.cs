@@ -131,10 +131,14 @@
 
         private static bool Include(Expression expression, BlockExpression block, ITranslationContext context)
         {
-            if (expression.NodeType == Label)
+            switch (expression.NodeType)
             {
-                return (expression.Type != typeof(void)) ||
-                        context.IsReferencedByGoto(((LabelExpression)expression).Target);
+                case Label:
+                    return (expression.Type != typeof(void)) ||
+                           context.IsReferencedByGoto(((LabelExpression)expression).Target);
+
+                case Default when expression.Type == typeof(void):
+                    return false;
             }
 
             if (expression == block.Result)
@@ -239,6 +243,14 @@
                 }
 
                 context.WriteNewLineToTranslation();
+
+                switch (_statements[0].NodeType)
+                {
+                    case Conditional when !ConditionalTranslation.IsTernary(_statements[0].Expression):
+                    case Switch:
+                        context.WriteNewLineToTranslation();
+                        break;
+                }
             }
 
             for (var i = 0; ;)
