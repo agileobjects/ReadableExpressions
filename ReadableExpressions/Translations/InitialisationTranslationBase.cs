@@ -105,6 +105,7 @@
 
                 if (isLongTranslation)
                 {
+                    context.WriteToTranslation(',');
                     context.WriteNewLineToTranslation();
                     continue;
                 }
