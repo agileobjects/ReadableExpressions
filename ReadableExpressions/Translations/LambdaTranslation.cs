@@ -19,6 +19,11 @@
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
             _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
             EstimatedSize = GetEstimatedSize();
+
+            if (_bodyTranslation.IsMultiStatement == false)
+            {
+                _bodyTranslation.WithoutTermination();
+            }
         }
 
         private int GetEstimatedSize()
