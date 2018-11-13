@@ -90,9 +90,19 @@
                         statementTranslation.IsFirstStatement();
                     }
 
-                    if (isFinalStatement && block.IsReturnable())
+                    if (isFinalStatement)
                     {
-                        ConfigureFinalStatement(statementTranslation, statementIndex, translations, ref hasGoto);
+                        var isReturnable = block.IsReturnable();
+
+                        if (isReturnable)
+                        {
+                            ConfigureFinalStatementReturn(statementTranslation, statementIndex, ref hasGoto);
+                        }
+
+                        var addBlankLineBefore =
+                            isReturnable && AddBlankLineBeforeFinalStatement(statementIndex, translations);
+
+                        statementTranslation.IsFinalStatement(addBlankLineBefore);
                     }
                 }
 
@@ -133,10 +143,9 @@
             return (expression.NodeType != Constant) || expression.IsComment();
         }
 
-        private void ConfigureFinalStatement(
+        private void ConfigureFinalStatementReturn(
             BlockStatementTranslation statementTranslation,
             int translationCount,
-            IList<BlockStatementTranslation> statementTranslations,
             ref bool hasGoto)
         {
             if (statementTranslation.HasGoto)
@@ -148,9 +157,6 @@
                 statementTranslation.WriteReturnKeyword();
                 hasGoto = true;
             }
-
-            statementTranslation.IsFinalStatement(
-                AddBlankLineBeforeFinalStatement(translationCount, statementTranslations));
         }
 
         private int GetEstimatedSize(int estimatedStatementsSize)
@@ -228,7 +234,7 @@
                 context.WriteNewLineToTranslation();
             }
 
-            for (int i = 0, l = _statementCount - 1; ; )
+            for (int i = 0, l = _statementCount - 1; ;)
             {
                 var statement = _statements[i];
 

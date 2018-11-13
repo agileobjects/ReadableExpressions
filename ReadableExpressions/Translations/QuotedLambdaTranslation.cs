@@ -15,9 +15,7 @@
             var comment = ReadableExpression.Comment("Quoted to induce a closure:");
             var quotedLambdaBlock = Expression.Block(comment, quotedLambda.Operand);
 
-            _quotedLambdaTranslation = context
-                .GetCodeBlockTranslationFor(quotedLambdaBlock)
-                .WithoutBraces();
+            _quotedLambdaTranslation = context.GetTranslationFor(quotedLambdaBlock);
         }
 
         public static ITranslation For(UnaryExpression quotedLambda, ITranslationContext context)
