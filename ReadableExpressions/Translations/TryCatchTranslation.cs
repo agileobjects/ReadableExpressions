@@ -27,7 +27,7 @@
         {
             _isNonVoidTryCatch = tryCatchFinally.Type != typeof(void);
 
-            _bodyTranslation = GetBlockTranslation(tryCatchFinally.Body, context);
+            _bodyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Body, context);
 
             _catchBlockTranslations = GetCatchBlockTranslations(
                 tryCatchFinally.Handlers,
@@ -38,25 +38,22 @@
 
             if (_hasFault)
             {
-                _faultTranslation = GetBlockTranslation(tryCatchFinally.Fault, context);
+                _faultTranslation = GetReturnableBlockTranslation(tryCatchFinally.Fault, context);
             }
 
             _hasFinally = tryCatchFinally.Finally != null;
 
             if (_hasFinally)
             {
-                _finallyTranslation = GetBlockTranslation(tryCatchFinally.Finally, context);
+                _finallyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Finally, context);
             }
 
             EstimatedSize = GetEstimatedSize(estimatedCatchBlocksSize);
         }
 
-        private ITranslatable GetBlockTranslation(Expression block, ITranslationContext context)
+        private ITranslation GetReturnableBlockTranslation(Expression block, ITranslationContext context)
         {
-            var translation = context
-                .GetCodeBlockTranslationFor(block)
-                .WithTermination()
-                .WithBraces();
+            var translation = GetBlockTranslation(block, context);
 
             if (_isNonVoidTryCatch)
             {
@@ -66,7 +63,15 @@
             return translation;
         }
 
-        private IList<ITranslatable> GetCatchBlockTranslations(
+        private static CodeBlockTranslation GetBlockTranslation(Expression block, ITranslationContext context)
+        {
+            return context
+                .GetCodeBlockTranslationFor(block)
+                .WithTermination()
+                .WithBraces();
+        }
+
+        private static IList<ITranslatable> GetCatchBlockTranslations(
             IList<CatchBlock> catchBlocks,
             out int estimatedCatchBlocksSize,
             ITranslationContext context)
@@ -83,7 +88,7 @@
 
             for (int i = 0, l = catchBlocks.Count; ;)
             {
-                var catchBlockTranslation = new CatchBlockTranslation(catchBlocks[i], this, context);
+                var catchBlockTranslation = new CatchBlockTranslation(catchBlocks[i], context);
 
                 estimatedCatchBlocksSize += catchBlockTranslation.EstimatedSize;
                 catchBlockTranslations[i] = catchBlockTranslation;
@@ -153,12 +158,9 @@
             private readonly ITranslatable _catchBodyTranslation;
             private readonly ITranslatable _exceptionClause;
 
-            public CatchBlockTranslation(
-                CatchBlock catchBlock,
-                TryCatchTranslation parent,
-                ITranslationContext context)
+            public CatchBlockTranslation(CatchBlock catchBlock, ITranslationContext context)
             {
-                _catchBodyTranslation = parent.GetBlockTranslation(catchBlock.Body, context);
+                _catchBodyTranslation = GetBlockTranslation(catchBlock.Body, context);
                 _exceptionClause = GetExceptionClauseOrNullFor(catchBlock, context);
 
                 EstimatedSize = _catchBodyTranslation.EstimatedSize;
