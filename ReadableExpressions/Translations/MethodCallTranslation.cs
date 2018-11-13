@@ -66,11 +66,6 @@
                     context.GetTranslationFor(methodCall.Method.ReturnType));
             }
 
-            if (subject.IsBinary() || subject.IsAssignment())
-            {
-                subject = subject.WithParentheses();
-            }
-
             var methodCallTranslation = new StandardMethodCallTranslation(Call, subject, method, parameters, context);
 
             if (context.IsPartOfMethodCallChain(methodCall))
@@ -143,7 +138,7 @@
 
             public void WriteTo(ITranslationContext context)
             {
-                _subject.WriteTo(context);
+                _subject.WriteInParenthesesIfRequired(context);
 
                 if (_isPartOfMethodCallChain)
                 {

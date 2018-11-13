@@ -61,6 +61,12 @@
         public CodeBlockTranslation WithoutTermination()
         {
             _ensureTerminated = false;
+
+            if (NodeType == ExpressionType.Block)
+            {
+                ((BlockTranslation)_translation).WithoutTermination();
+            }
+
             return this;
         }
 

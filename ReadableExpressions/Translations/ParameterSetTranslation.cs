@@ -120,7 +120,7 @@
 
                     estimatedSize += translation.EstimatedSize;
 
-                    return new CodeBlockTranslation(translation);
+                    return new CodeBlockTranslation(translation).WithoutTermination();
                 })
                 .ToArray();
 
