@@ -43,6 +43,11 @@
             this Expression expression,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
+            if (expression == null)
+            {
+                return null;
+            }
+
             return _translatorRegistry
                 .Translate(expression, configuration);
         }

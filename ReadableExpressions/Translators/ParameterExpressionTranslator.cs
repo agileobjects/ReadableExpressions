@@ -53,7 +53,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             if (parameterName.IsNullOrWhiteSpace())
             {
-                var variableNumber = context.GetUnnamedVariableNumber(parameter);
+                var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
 
                 parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings) + variableNumber;
             }

@@ -145,6 +145,17 @@ namespace AgileObjects.ReadableExpressions
         }
 
         /// <summary>
+        /// Returns a value indicating whether the given <paramref name="expression"/> is the Exception
+        /// variable in a Catch block.
+        /// </summary>
+        /// <param name="expression">The expression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> is the Exception variable in a Catch block,
+        /// otherwise false.
+        /// </returns>
+        public bool IsCatchBlockVariable(Expression expression) => _analyzer.IsCatchBlockVariable(expression);
+
+        /// <summary>
         /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
         /// <see cref="GotoExpression"/>.
         /// </summary>
@@ -153,8 +164,7 @@ namespace AgileObjects.ReadableExpressions
         /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
         /// otherwise false.
         /// </returns>
-        public bool IsReferencedByGoto(LabelTarget labelTarget)
-            => _analyzer.NamedLabelTargets.Contains(labelTarget);
+        public bool IsReferencedByGoto(LabelTarget labelTarget) => _analyzer.IsReferencedByGoto(labelTarget);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
@@ -165,8 +175,7 @@ namespace AgileObjects.ReadableExpressions
         /// True if the given <paramref name="goto"/> goes to the final statement in a block,
         /// otherwise false.
         /// </returns>
-        public bool GoesToReturnLabel(GotoExpression @goto)
-            => _analyzer.GotoReturnGotos.Contains(@goto);
+        public bool GoesToReturnLabel(GotoExpression @goto) => _analyzer.GoesToReturnLabel(@goto);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
@@ -186,7 +195,7 @@ namespace AgileObjects.ReadableExpressions
         /// </summary>
         /// <param name="variable">The variable for which to get the 1-based index.</param>
         /// <returns>The 1-based index of the given <paramref name="variable"/>.</returns>
-        public int? GetUnnamedVariableNumber(ParameterExpression variable)
+        public int? GetUnnamedVariableNumberOrNull(ParameterExpression variable)
         {
             var variablesOfType = _analyzer.UnnamedVariablesByType[variable.Type];
 
@@ -207,6 +216,7 @@ namespace AgileObjects.ReadableExpressions
             private readonly List<Expression> _assignedAssignments;
             private readonly Stack<BlockExpression> _blocks;
             private readonly Stack<object> _constructs;
+            private List<ParameterExpression> _catchBlockVariables;
             private ICollection<LabelTarget> _namedLabelTargets;
             private ICollection<GotoExpression> _gotoReturnGotos;
             private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
@@ -240,10 +250,25 @@ namespace AgileObjects.ReadableExpressions
 
             public ICollection<BinaryExpression> JoinedAssignments { get; }
 
-            public ICollection<LabelTarget> NamedLabelTargets
+            public bool IsCatchBlockVariable(Expression variable)
+            {
+                return variable.NodeType == ExpressionType.Parameter &&
+                     (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
+            }
+
+            private ICollection<ParameterExpression> CatchBlockVariables
+                => _catchBlockVariables ?? (_catchBlockVariables = new List<ParameterExpression>());
+
+            public bool IsReferencedByGoto(LabelTarget labelTarget)
+                => _namedLabelTargets?.Contains(labelTarget) == true;
+
+            private ICollection<LabelTarget> NamedLabelTargets
                 => _namedLabelTargets ?? (_namedLabelTargets = new List<LabelTarget>());
 
-            public ICollection<GotoExpression> GotoReturnGotos
+            public bool GoesToReturnLabel(GotoExpression @goto)
+                => _gotoReturnGotos?.Contains(@goto) == true;
+
+            private ICollection<GotoExpression> GotoReturnGotos
                 => _gotoReturnGotos ?? (_gotoReturnGotos = new List<GotoExpression>());
 
             public List<MethodCallExpression> ChainedMethodCalls { get; }
@@ -680,6 +705,11 @@ namespace AgileObjects.ReadableExpressions
 
             private void Visit(CatchBlock @catch)
             {
+                if (@catch.Variable != null)
+                {
+                    CatchBlockVariables.Add(@catch.Variable);
+                }
+
                 VisitConstruct(@catch, c =>
                 {
                     Visit(c.Variable);

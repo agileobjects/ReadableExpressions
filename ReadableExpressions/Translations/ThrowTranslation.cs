@@ -14,17 +14,15 @@
 
         public ThrowTranslation(UnaryExpression throwExpression, ITranslationContext context)
         {
-            // ReSharper disable HeuristicUnreachableCode
-            // ReSharper disable ConditionIsAlwaysTrueOrFalse
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             // unary.Operand is null when using Expression.Rethrow():
-            if (throwExpression.Operand == null)
+            if ((throwExpression.Operand == null) || context.IsCatchBlockVariable(throwExpression.Operand))
             {
                 EstimatedSize = _throw.Length;
                 return;
             }
 
             _thrownItemTranslation = context.GetTranslationFor(throwExpression.Operand);
-            // ReSharper restore HeuristicUnreachableCode
         }
 
         public ExpressionType NodeType => ExpressionType.Throw;

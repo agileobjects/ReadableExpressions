@@ -15,6 +15,8 @@
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
 
         bool IsNotJoinedAssignment(Expression expression);
+        
+        bool IsCatchBlockVariable(Expression expression);
 
         bool IsReferencedByGoto(LabelTarget labelTarget);
 

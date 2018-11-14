@@ -38,6 +38,9 @@
         bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
             => _context.IsNotJoinedAssignment(expression);
 
+        bool ITranslationContext.IsCatchBlockVariable(Expression expression)
+            => _context.IsCatchBlockVariable(expression);
+
         bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
             => _context.IsReferencedByGoto(labelTarget);
 
@@ -48,7 +51,7 @@
             => _context.IsPartOfMethodCallChain(methodCall);
 
         int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
-            => _context.GetUnnamedVariableNumber(variable);
+            => _context.GetUnnamedVariableNumberOrNull(variable);
 
         TypeNameTranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
 
