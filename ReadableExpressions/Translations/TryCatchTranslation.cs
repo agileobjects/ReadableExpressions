@@ -163,7 +163,7 @@
                 _catchBodyTranslation = GetBlockTranslation(catchBlock.Body, context);
                 _exceptionClause = GetExceptionClauseOrNullFor(catchBlock, context);
 
-                if (_catchBodyTranslation.NodeType != ExpressionType.Throw)
+                if ((_catchBodyTranslation.NodeType != ExpressionType.Throw) && catchBlock.Body.IsReturnable())
                 {
                     _catchBodyTranslation.WithReturnKeyword();
                 }
