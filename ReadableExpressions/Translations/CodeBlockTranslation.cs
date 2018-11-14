@@ -62,7 +62,7 @@
         {
             _ensureTerminated = false;
 
-            if (NodeType == ExpressionType.Block)
+            if ((_writeBraces == false) && (NodeType == ExpressionType.Block))
             {
                 ((BlockTranslation)_translation).WithoutTermination();
             }
