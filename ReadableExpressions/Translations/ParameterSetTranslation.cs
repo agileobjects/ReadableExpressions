@@ -15,6 +15,7 @@
 
     internal class ParameterSetTranslation : ITranslatable
     {
+        private const int _splitArgumentsThreshold = 3;
         private const string _openAndCloseParentheses = "()";
 
         private readonly IList<CodeBlockTranslation> _parameterTranslations;
@@ -106,9 +107,8 @@
                     {
                         translation = new MethodGroupTranslation(
                             ExpressionType.Lambda,
-                            lambdaBodyMethodCall,
-                            lambdaBodyMethodCall.Method,
-                            context);
+                            MethodCallTranslation.GetSubjectTranslation(lambdaBodyMethodCall, context),
+                            lambdaBodyMethodCall.Method);
 
                         goto CreateCodeBlock;
                     }
@@ -268,7 +268,7 @@
                 context.WriteToTranslation('(');
             }
 
-            var writeParametersOnNewLines = this.ExceedsLengthThreshold();
+            var writeParametersOnNewLines = (ParameterCount > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
 
             if (writeParametersOnNewLines)
             {

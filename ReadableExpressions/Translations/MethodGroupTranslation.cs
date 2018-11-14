@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -18,14 +19,11 @@
 
         public MethodGroupTranslation(
             ExpressionType nodeType,
-            MethodCallExpression methodCall,
-            MemberInfo subjectMethodInfo,
-            ITranslationContext context)
+            ITranslation subjectTranslation,
+            MemberInfo subjectMethodInfo)
         {
             NodeType = nodeType;
-
-            _subjectTranslation = MethodCallTranslation.GetSubjectTranslation(methodCall, context);
-
+            _subjectTranslation = subjectTranslation;
             _subjectMethodName = subjectMethodInfo.Name;
             EstimatedSize = _subjectTranslation.EstimatedSize + ".".Length + _subjectMethodName.Length;
         }
@@ -41,7 +39,11 @@
             // ReSharper disable once PossibleNullReferenceException
             var subjectMethod = (MethodInfo)((ConstantExpression)createDelegateCall.Object).Value;
 #endif
-            return new MethodGroupTranslation(nodeType, createDelegateCall, subjectMethod, context);
+            var subjectTranslation = subjectMethod.IsStatic
+                ? context.GetTranslationFor(subjectMethod.DeclaringType)
+                : context.GetTranslationFor(createDelegateCall.Arguments.ElementAtOrDefault(1));
+
+            return new MethodGroupTranslation(nodeType, subjectTranslation, subjectMethod);
         }
 
         public ExpressionType NodeType { get; }
