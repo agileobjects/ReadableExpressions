@@ -40,12 +40,25 @@
         private readonly ITranslation _valueTranslation;
 
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
-            : base(IsCheckedAssignment(assignment.NodeType), " { ", " }")
+            : this(
+                assignment.NodeType,
+                context.GetCodeBlockTranslationFor(assignment.Left),
+                assignment.Right,
+                context)
         {
-            NodeType = assignment.NodeType;
-            _targetTranslation = context.GetCodeBlockTranslationFor(assignment.Left);
+        }
+
+        public AssignmentTranslation(
+            ExpressionType nodeType,
+            ITranslation targetTranslation,
+            Expression value,
+            ITranslationContext context)
+            : base(IsCheckedAssignment(nodeType), " { ", " }")
+        {
+            NodeType = nodeType;
+            _targetTranslation = targetTranslation;
             _operator = _symbolsByNodeType[NodeType];
-            _valueTranslation = GetValueTranslation(assignment.Right, context);
+            _valueTranslation = GetValueTranslation(value, context);
             EstimatedSize = GetEstimatedSize();
         }
 

@@ -20,23 +20,32 @@
                 return translation;
             }
 
+            if (DynamicMemberWriteTranslation.TryGetTranslation(args, out translation))
+            {
+                return translation;
+            }
+
             return new FixedValueTranslation(ExpressionType.Dynamic, args.OperationDescription);
         }
 
         private class DynamicTranslationArgs
         {
+            private readonly DynamicExpression _dynamicExpression;
+
             public DynamicTranslationArgs(DynamicExpression dynamicExpression, ITranslationContext context)
             {
-                DynamicExpression = dynamicExpression;
+                _dynamicExpression = dynamicExpression;
                 OperationDescription = dynamicExpression.ToString();
                 Context = context;
             }
 
-            public DynamicExpression DynamicExpression { get; }
-
             public string OperationDescription { get; }
 
             public ITranslationContext Context { get; }
+
+            public Expression FirstArgument => _dynamicExpression.Arguments.First();
+
+            public Expression LastArgument => _dynamicExpression.Arguments.Last();
 
             public bool IsMatch(Regex matcher, out Match match)
             {
@@ -58,10 +67,39 @@
                     return false;
                 }
 
-                var subject = args.Context.GetTranslationFor(args.DynamicExpression.Arguments.First());
+                translation = GetTranslation(args, match);
+                return true;
+            }
+
+            public static ITranslation GetTranslation(DynamicTranslationArgs args, Match match)
+            {
+                var subject = args.Context.GetTranslationFor(args.FirstArgument);
                 var memberName = match.Groups["MemberName"].Value;
 
-                translation = new MemberAccessTranslation(subject, memberName);
+                return new MemberAccessTranslation(subject, memberName);
+            }
+        }
+
+        private static class DynamicMemberWriteTranslation
+        {
+            private static readonly Regex _matcher = new Regex(@"^SetMember (?<MemberName>[^\(]+)\(");
+
+            public static bool TryGetTranslation(DynamicTranslationArgs args, out ITranslation translation)
+            {
+                if (!args.IsMatch(_matcher, out var match))
+                {
+                    translation = null;
+                    return false;
+                }
+
+                var targetTranslation = DynamicMemberAccessTranslation.GetTranslation(args, match);
+
+                translation = new AssignmentTranslation(
+                    ExpressionType.Assign,
+                    targetTranslation,
+                    args.LastArgument,
+                    args.Context);
+
                 return true;
             }
         }
