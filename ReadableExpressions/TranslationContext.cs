@@ -635,6 +635,11 @@ namespace AgileObjects.ReadableExpressions
 
             private void Visit(ParameterExpression variable)
             {
+                if (variable == null)
+                {
+                    return;
+                }
+
                 if (VariableHasNotYetBeenAccessed(variable))
                 {
                     _accessedVariables.Add(variable);

@@ -4,8 +4,9 @@
     using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
     using Translators;
+    using static Microsoft.Scripting.Ast.ExpressionType;
+    using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #else
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
@@ -315,13 +316,15 @@
                 out ITranslation lambdaTranslation)
             {
 #if NET35
-            if (constant.Value is System.Linq.Expressions.LambdaExpression linqLambda)
-            {
-                var lambda = LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
-#else
+                if (constant.Value is LinqLambda linqLambda)
+                {
+                    var convertedLambda = LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+                    lambdaTranslation = new LambdaConstantTranslation(convertedLambda, context);
+                    return true;
+                }
+#endif
                 if (constant.Value is LambdaExpression lambda)
                 {
-#endif
                     lambdaTranslation = new LambdaConstantTranslation(lambda, context);
                     return true;
                 }
