@@ -102,6 +102,17 @@
                 {
                     ITranslation translation;
 
+                    if (CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
+                    {
+                        translation = new MethodGroupTranslation(
+                            ExpressionType.Lambda,
+                            lambdaBodyMethodCall,
+                            lambdaBodyMethodCall.Method,
+                            context);
+
+                        goto CreateCodeBlock;
+                    }
+
                     if (methodProvided)
                     {
                         // If a parameter is a params array then index will increase
@@ -118,6 +129,7 @@
                         translation = context.GetTranslationFor(p);
                     }
 
+                    CreateCodeBlock:
                     estimatedSize += translation.EstimatedSize;
 
                     return new CodeBlockTranslation(translation).WithoutTermination();
@@ -177,6 +189,45 @@
             }
 
             return translation;
+        }
+
+        private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
+        {
+            if (argument.NodeType != ExpressionType.Lambda)
+            {
+                lambdaBodyMethodCall = null;
+                return false;
+            }
+
+            var argumentLambda = (LambdaExpression)argument;
+
+            if (argumentLambda.Body.NodeType != ExpressionType.Call)
+            {
+                lambdaBodyMethodCall = null;
+                return false;
+            }
+
+            lambdaBodyMethodCall = (MethodCallExpression)argumentLambda.Body;
+
+            IList<Expression> lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments;
+
+            if (lambdaBodyMethodCall.Method.IsExtensionMethod())
+            {
+                lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
+            }
+
+            if (lambdaBodyMethodCallArguments.Count != argumentLambda.Parameters.Count)
+            {
+                return false;
+            }
+
+            var i = 0;
+
+            var allArgumentTypesMatch = argumentLambda
+                .Parameters
+                .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
+
+            return allArgumentTypesMatch;
         }
 
         public int EstimatedSize { get; }

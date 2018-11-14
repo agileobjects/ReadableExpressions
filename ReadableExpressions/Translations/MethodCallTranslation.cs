@@ -48,9 +48,7 @@
                 return new CodeBlockTranslation(parameters[0]).WithNodeType(Call);
             }
 
-            var subject =
-                context.GetTranslationFor(methodCall.GetSubject()) ??
-                context.GetTranslationFor(methodCall.Method.DeclaringType);
+            var subject = GetSubjectTranslation(methodCall, context);
 
             if (IsIndexedPropertyAccess(methodCall))
             {
@@ -81,6 +79,12 @@
             return methodCall.Method.IsStatic &&
                    (methodCall.Method.DeclaringType == typeof(string)) &&
                    (methodCall.Method.Name == "Concat");
+        }
+
+        public static ITranslation GetSubjectTranslation(MethodCallExpression methodCall, ITranslationContext context)
+        {
+            return context.GetTranslationFor(methodCall.GetSubject()) ??
+                   context.GetTranslationFor(methodCall.Method.DeclaringType);
         }
 
         private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)

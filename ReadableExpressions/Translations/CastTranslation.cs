@@ -1,8 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Linq;
-    using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -55,7 +53,7 @@
 
                     if (IsDelegateCast(cast, out var createDelegateCall))
                     {
-                        return new CreateDelegateCallTranslation(cast.NodeType, createDelegateCall, context);
+                        return MethodGroupTranslation.ForCreateDelegateCall(cast.NodeType, createDelegateCall, context);
                     }
 
                     break;
@@ -113,44 +111,6 @@
             }
 
             return false;
-        }
-
-        private class CreateDelegateCallTranslation : ITranslation
-        {
-            private readonly ITranslation _methodSubjectTranslation;
-            private readonly string _subjectMethodName;
-
-            public CreateDelegateCallTranslation(
-                ExpressionType nodeType,
-                MethodCallExpression createDelegateCall,
-                ITranslationContext context)
-            {
-                NodeType = nodeType;
-#if NET35
-                var subjectMethod = (MethodInfo)((ConstantExpression)createDelegateCall.Arguments.Last()).Value;
-#else
-                // ReSharper disable once PossibleNullReferenceException
-                var subjectMethod = (MethodInfo)((ConstantExpression)createDelegateCall.Object).Value;
-#endif
-
-                _methodSubjectTranslation = subjectMethod.IsStatic
-                    ? context.GetTranslationFor(subjectMethod.DeclaringType)
-                    : context.GetTranslationFor(createDelegateCall.Arguments.ElementAtOrDefault(1));
-
-                _subjectMethodName = subjectMethod.Name;
-                EstimatedSize = _methodSubjectTranslation.EstimatedSize + ".".Length + _subjectMethodName.Length;
-            }
-
-            public ExpressionType NodeType { get; }
-
-            public int EstimatedSize { get; }
-
-            public void WriteTo(ITranslationContext context)
-            {
-                _methodSubjectTranslation.WriteTo(context);
-                context.WriteToTranslation('.');
-                context.WriteToTranslation(_subjectMethodName);
-            }
         }
 
         private class TypeTestedTranslation : ITranslation
