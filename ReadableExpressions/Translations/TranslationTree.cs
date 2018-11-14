@@ -316,7 +316,7 @@
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
             }
 
-            throw new ArgumentOutOfRangeException(expression.NodeType.ToString());
+            return new FixedValueTranslation(expression.NodeType, expression.ToString());
         }
 
         public string GetTranslation()
