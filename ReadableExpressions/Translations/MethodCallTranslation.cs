@@ -83,6 +83,17 @@
                    (methodCall.Method.Name == "Concat");
         }
 
+        private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
+        {
+            var property = methodCall
+                .Object?
+                .Type
+                .GetPublicInstanceProperties()
+                .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
+
+            return property?.GetIndexParameters().Any() == true;
+        }
+
         public static ITranslation ForCustomMethodCast(
             ITranslation typeNameTranslation,
             IMethod castMethod,
@@ -97,38 +108,41 @@
                 context);
         }
 
-        private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
+        public static ITranslation ForDynamicMethodCall(
+            ITranslation subjectTranslation,
+            IMethod method,
+            ICollection<Expression> arguments,
+            ITranslationContext context)
         {
-            var property = methodCall
-                .Object?
-                .Type
-                .GetPublicInstanceProperties()
-                .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
-
-            return property?.GetIndexParameters().Any() == true;
+            return new StandardMethodCallTranslation(
+                Dynamic,
+                subjectTranslation,
+                method,
+                new ParameterSetTranslation(arguments, context).WithParentheses(),
+                context);
         }
 
         private class StandardMethodCallTranslation : ITranslation
         {
-            private readonly ITranslation _subject;
+            private readonly ITranslation _subjectTranslation;
             private readonly MethodInvocationTranslatable _methodInvocationTranslatable;
             private bool _isPartOfMethodCallChain;
 
             public StandardMethodCallTranslation(
                 ExpressionType nodeType,
-                ITranslation subject,
+                ITranslation subjectTranslation,
                 IMethod method,
                 ParameterSetTranslation parameters,
                 ITranslationContext context)
             {
                 NodeType = nodeType;
-                _subject = subject;
+                _subjectTranslation = subjectTranslation;
                 _methodInvocationTranslatable = new MethodInvocationTranslatable(method, parameters, context);
                 EstimatedSize = GetEstimatedSize();
             }
 
             private int GetEstimatedSize()
-                => _subject.EstimatedSize + ".".Length + _methodInvocationTranslatable.EstimatedSize;
+                => _subjectTranslation.EstimatedSize + ".".Length + _methodInvocationTranslatable.EstimatedSize;
 
             public ExpressionType NodeType { get; }
 
@@ -138,7 +152,7 @@
 
             public void WriteTo(ITranslationContext context)
             {
-                _subject.WriteInParenthesesIfRequired(context);
+                _subjectTranslation.WriteInParenthesesIfRequired(context);
 
                 if (_isPartOfMethodCallChain)
                 {

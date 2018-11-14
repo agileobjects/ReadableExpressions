@@ -1,5 +1,11 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using AgileObjects.ReadableExpressions.Translators;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
+    using System.Reflection;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -8,6 +14,7 @@
 #endif
     using Extensions;
     using Interfaces;
+    using NetStandardPolyfills;
 
     internal static class DynamicTranslation
     {
@@ -21,6 +28,11 @@
             }
 
             if (DynamicMemberWriteTranslation.TryGetTranslation(args, out translation))
+            {
+                return translation;
+            }
+
+            if (DynamicMethodCallTranslation.TryGetTranslation(args, out translation))
             {
                 return translation;
             }
@@ -43,9 +55,13 @@
 
             public ITranslationContext Context { get; }
 
-            public Expression FirstArgument => _dynamicExpression.Arguments.First();
+            public Expression FirstArgument => Arguments.First();
 
-            public Expression LastArgument => _dynamicExpression.Arguments.Last();
+            public IList<Expression> Arguments => _dynamicExpression.Arguments;
+
+            public Expression LastArgument => Arguments.Last();
+
+            public Type ExpressionType => _dynamicExpression.Type;
 
             public bool IsMatch(Regex matcher, out Match match)
             {
@@ -101,6 +117,128 @@
                     args.Context);
 
                 return true;
+            }
+        }
+
+        private static class DynamicMethodCallTranslation
+        {
+            private static readonly Regex _matcher = new Regex(@"^Call (?<MethodName>[^\(]+)\(");
+
+            public static bool TryGetTranslation(DynamicTranslationArgs args, out ITranslation translation)
+            {
+                if (!args.IsMatch(_matcher, out var match))
+                {
+                    translation = null;
+                    return false;
+                }
+
+                var subjectObject = args.FirstArgument;
+                var subjectTranslation = args.Context.GetTranslationFor(subjectObject);
+                var methodName = match.Groups["MethodName"].Value;
+                var methodInfo = subjectObject.Type.GetPublicMethod(methodName);
+                var methodArguments = args.Arguments.Skip(1).ToArray();
+
+                var method = GetMethod(
+                    methodName,
+                    methodInfo,
+                    methodArguments,
+                    args.ExpressionType);
+
+                translation = MethodCallTranslation.ForDynamicMethodCall(
+                    subjectTranslation,
+                    method,
+                    methodArguments,
+                    args.Context);
+
+                return true;
+            }
+
+            private static IMethod GetMethod(
+                string methodName,
+                MethodInfo method,
+                Expression[] methodArguments,
+                Type methodReturnType)
+            {
+                if (method == null)
+                {
+                    return new MissingMethod(methodName);
+                }
+
+                return new BclMethodWrapper(
+                    method,
+                    GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
+            }
+
+            private static Type[] GetGenericArgumentsOrNull(
+                MethodInfo method,
+                Expression[] methodArguments,
+                Type methodReturnType)
+            {
+                if (!method.IsGenericMethod)
+                {
+                    return null;
+                }
+
+                var genericParameterTypes = method.GetGenericArguments();
+
+                var methodParameters = method
+                    .GetParameters()
+                    .ProjectToArray((p, i) => new { Index = i, Parameter = p });
+
+                var genericArguments = new Type[genericParameterTypes.Length];
+
+                for (var i = 0; i < genericParameterTypes.Length; i++)
+                {
+                    var genericParameterType = genericParameterTypes[i];
+
+                    if (genericParameterType == method.ReturnType)
+                    {
+                        genericArguments[i] = methodReturnType;
+                        continue;
+                    }
+
+                    var matchingMethodParameter = methodParameters
+                        .FirstOrDefault(p => p.Parameter.ParameterType == genericParameterType);
+
+                    if (matchingMethodParameter == null)
+                    {
+                        return null;
+                    }
+
+                    var matchingMethodArgument = methodArguments
+                        .ElementAtOrDefault(matchingMethodParameter.Index);
+
+                    if (matchingMethodArgument == null)
+                    {
+                        return null;
+                    }
+
+                    genericArguments[i] = matchingMethodArgument.Type;
+                }
+
+                return genericArguments;
+            }
+
+            private class MissingMethod : IMethod
+            {
+                public MissingMethod(string name)
+                {
+                    Name = name;
+                }
+
+                public string Name { get; }
+
+                public bool IsGenericMethod => false;
+
+                public bool IsExtensionMethod => false;
+
+                public MethodInfo GetGenericMethodDefinition() => null;
+
+                public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
+
+                public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
+
+                public Type GetGenericArgumentFor(Type parameterType) => null;
             }
         }
     }

@@ -29,6 +29,19 @@
             return result;
         }
 
+        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, int, TResult> projector)
+        {
+            var itemCount = items.Count;
+            var result = new TResult[itemCount];
+
+            for (var i = 0; i < itemCount; ++i)
+            {
+                result[i] = projector.Invoke(items[i], i);
+            }
+
+            return result;
+        }
+
         [DebuggerStepThrough]
         public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
         {
