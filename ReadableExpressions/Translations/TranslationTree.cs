@@ -242,7 +242,7 @@
                     return new DefaultValueTranslation(expression, this);
 
                 case Dynamic:
-                    break;
+                    return DynamicTranslation.For((DynamicExpression)expression, this);
 
                 case Extension:
                     return new FixedValueTranslation(expression);

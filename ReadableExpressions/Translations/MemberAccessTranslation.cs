@@ -9,48 +9,60 @@
 
     internal class MemberAccessTranslation : ITranslation
     {
-        private readonly MemberExpression _memberAccess;
+        private readonly string _memberName;
         private readonly ITranslation _subject;
 
         public MemberAccessTranslation(MemberExpression memberAccess, ITranslationContext context)
+            : this(memberAccess.Member.Name)
         {
-            _memberAccess = memberAccess;
-            _subject = GetSubjectOrNull(context);
+            _subject = GetSubjectOrNull(memberAccess, context);
             EstimatedSize = GetEstimatedSize();
         }
 
-        private ITranslation GetSubjectOrNull(ITranslationContext context)
+        private static ITranslation GetSubjectOrNull(MemberExpression memberAccess, ITranslationContext context)
         {
-            if (_memberAccess.Expression == null)
+            if (memberAccess.Expression == null)
             {
-                return context.GetTranslationFor(_memberAccess.Member.DeclaringType);
+                return context.GetTranslationFor(memberAccess.Member.DeclaringType);
             }
 
-            if (SubjectIsCapturedInstance())
+            if (SubjectIsCapturedInstance(memberAccess))
             {
                 return null;
             }
 
-            return context.GetTranslationFor(_memberAccess.Expression);
+            return context.GetTranslationFor(memberAccess.Expression);
         }
 
-        private bool SubjectIsCapturedInstance()
+        private static bool SubjectIsCapturedInstance(MemberExpression memberAccess)
         {
-            if (_memberAccess.Expression.NodeType != ExpressionType.Constant)
+            if (memberAccess.Expression.NodeType != ExpressionType.Constant)
             {
                 return false;
             }
 
-            var subjectType = ((ConstantExpression)_memberAccess.Expression).Type;
+            var subjectType = ((ConstantExpression)memberAccess.Expression).Type;
 
-            return subjectType == _memberAccess.Member.DeclaringType;
+            return subjectType == memberAccess.Member.DeclaringType;
+        }
+
+        public MemberAccessTranslation(ITranslation subject, string memberName)
+            : this(memberName)
+        {
+            _subject = subject;
+            EstimatedSize = GetEstimatedSize();
+        }
+
+        private MemberAccessTranslation(string memberName)
+        {
+            _memberName = memberName;
         }
 
         private int GetEstimatedSize()
         {
             return (_subject != null)
-                ? _subject.EstimatedSize + ".".Length + _memberAccess.Member.Name.Length
-                : _memberAccess.Member.Name.Length;
+                ? _subject.EstimatedSize + ".".Length + _memberName.Length
+                : _memberName.Length;
         }
 
         public ExpressionType NodeType => ExpressionType.MemberAccess;
@@ -61,7 +73,7 @@
         {
             if (_subject != null)
             {
-                if (CastTranslation.IsCast(_subject.NodeType))
+                if (_subject.IsCast())
                 {
                     _subject.WriteInParentheses(context);
                 }
@@ -73,7 +85,7 @@
                 context.WriteToTranslation('.');
             }
 
-            context.WriteToTranslation(_memberAccess.Member.Name);
+            context.WriteToTranslation(_memberName);
         }
     }
 }
