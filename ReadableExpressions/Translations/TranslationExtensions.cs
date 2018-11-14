@@ -41,12 +41,6 @@
         public static bool IsAssignment(this ITranslation translation)
             => AssignmentTranslation.IsAssignment(translation.NodeType);
 
-        public static bool IsBinary(this ITranslation translation)
-            => BinaryTranslation.IsBinary(translation.NodeType);
-
-        public static bool IsCast(this ITranslation translation)
-            => CastTranslation.IsCast(translation.NodeType);
-
         public static TranslationWrapper WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WrappedWith("(", ")");
 
@@ -97,7 +91,9 @@
         public static bool ShouldWriteInParentheses(this ITranslation translation)
         {
             return (translation.NodeType == ExpressionType.Conditional) ||
-                    translation.IsBinary() || translation.IsAssignment() || translation.IsCast();
+                    BinaryTranslation.IsBinary(translation.NodeType) || 
+                    translation.IsAssignment() || 
+                    CastTranslation.IsCast(translation.NodeType);
         }
 
         public static void WriteSpaceToTranslation(this ITranslationContext context)

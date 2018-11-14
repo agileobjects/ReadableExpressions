@@ -61,8 +61,8 @@
         private int GetEstimatedSize()
         {
             return (_subject != null)
-                ? _subject.EstimatedSize + ".".Length + _memberName.Length
-                : _memberName.Length;
+                  ? _subject.EstimatedSize + ".".Length + _memberName.Length
+                  : _memberName.Length;
         }
 
         public ExpressionType NodeType => ExpressionType.MemberAccess;
@@ -73,15 +73,7 @@
         {
             if (_subject != null)
             {
-                if (_subject.IsCast())
-                {
-                    _subject.WriteInParentheses(context);
-                }
-                else
-                {
-                    _subject.WriteTo(context);
-                }
-
+                _subject.WriteInParenthesesIfRequired(context);
                 context.WriteToTranslation('.');
             }
 

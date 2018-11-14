@@ -86,7 +86,7 @@
         {
             var valueBlock = context.GetCodeBlockTranslationFor(assignedValue);
 
-            if (valueBlock.IsMultiStatement())
+            if (valueBlock.IsMultiStatement)
             {
                 return (valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda)
                     ? valueBlock.WithoutBraces()

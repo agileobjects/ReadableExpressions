@@ -134,9 +134,9 @@
 
         bool ITranslationQuery.TranslationEndsWith(char character)
         {
-            for (var i = _content.Length - 1; i > -1; --i)
+            for (var i = _content.Length; i > -1;)
             {
-                var contentCharacter = _content[i];
+                var contentCharacter = _content[--i];
 
                 if (char.IsWhiteSpace(contentCharacter))
                 {

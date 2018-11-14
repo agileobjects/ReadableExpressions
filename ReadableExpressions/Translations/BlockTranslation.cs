@@ -104,7 +104,10 @@
                             isReturnable && AddBlankLineBeforeFinalStatement(statementIndex, translations);
 
                         statementTranslation.IsFinalStatement(addBlankLineBefore);
+                        break;
                     }
+
+                    continue;
                 }
 
                 if (isFinalStatement)

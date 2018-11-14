@@ -29,13 +29,7 @@
             NodeType = negationType;
             _operator = @operator;
             _negatedValue = negatedValue;
-
-            if (_negatedValue.IsBinary() || _negatedValue.IsAssignment())
-            {
-                _negatedValue = _negatedValue.WithParentheses();
-            }
-
-            EstimatedSize = negatedValue.EstimatedSize + 1;
+            EstimatedSize = negatedValue.EstimatedSize + 3;
         }
 
         public static ITranslation ForNot(ITranslation negatedValue)
@@ -48,7 +42,7 @@
         public void WriteTo(ITranslationContext context)
         {
             context.WriteToTranslation(_operator);
-            _negatedValue.WriteTo(context);
+            _negatedValue.WriteInParenthesesIfRequired(context);
         }
     }
 }
