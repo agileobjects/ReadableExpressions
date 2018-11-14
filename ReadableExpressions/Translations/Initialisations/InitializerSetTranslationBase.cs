@@ -40,9 +40,11 @@
 
         public abstract bool ForceWriteToMultipleLines { get; }
 
+        private bool WriteToMultipleLines => ForceWriteToMultipleLines || IsLongTranslation;
+
         public void WriteTo(ITranslationContext context)
         {
-            if (IsLongTranslation || ForceWriteToMultipleLines)
+            if (WriteToMultipleLines)
             {
                 context.WriteOpeningBraceToTranslation();
             }
@@ -60,7 +62,7 @@
                     break;
                 }
 
-                if (IsLongTranslation || ForceWriteToMultipleLines)
+                if (WriteToMultipleLines)
                 {
                     context.WriteToTranslation(',');
                     context.WriteNewLineToTranslation();
@@ -70,7 +72,7 @@
                 context.WriteToTranslation(", ");
             }
 
-            if (IsLongTranslation || ForceWriteToMultipleLines)
+            if (WriteToMultipleLines)
             {
                 context.WriteClosingBraceToTranslation();
             }

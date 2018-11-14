@@ -240,9 +240,8 @@
                     context.WriteSpaceToTranslation();
                     parametersByType.Value.WriteTo(context);
                     context.WriteToTranslation(';');
+                    context.WriteNewLineToTranslation();
                 }
-
-                context.WriteNewLineToTranslation();
 
                 switch (_statements[0].NodeType)
                 {
@@ -270,6 +269,7 @@
         {
             private readonly ITranslation _statementTranslation;
             private readonly bool _statementIsUnterminated;
+            private bool? _isMultiStatement;
             private bool _writeBlankLineBefore;
             private bool _suppressBlankLineAfter;
             private bool _writeReturnKeyword;
@@ -307,7 +307,8 @@
 
             public int EstimatedSize { get; protected set; }
 
-            public bool IsMultiStatement => _statementTranslation.IsMultiStatement();
+            public bool IsMultiStatement
+                => _isMultiStatement ?? (_isMultiStatement = _statementTranslation.IsMultiStatement()).Value;
 
             public bool DoNotTerminate { private get; set; }
 
@@ -353,7 +354,7 @@
                 }
             }
 
-            public bool WriteBlankLineAfter()
+            public virtual bool WriteBlankLineAfter()
             {
                 switch (NodeType)
                 {
@@ -419,6 +420,8 @@
 
                 base.WriteStatementTo(context);
             }
+
+            public override bool WriteBlankLineAfter() => IsMultiStatement;
         }
     }
 }

@@ -887,7 +887,7 @@ new MemoryStream
     {
         Console.WriteLine(""Wat"");
 
-        return ((long)Console.Read());
+        return (long)Console.Read();
     }
 };
 
