@@ -37,7 +37,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 return translation;
             }
 
-            return new FixedValueTranslation(ExpressionType.Dynamic, args.OperationDescription);
+            return new FixedValueTranslation(ExpressionType.Dynamic, args.OperationDescription, dynamicExpression.Type);
         }
 
         private class DynamicTranslationArgs
@@ -92,7 +92,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 var subject = args.Context.GetTranslationFor(args.FirstArgument);
                 var memberName = match.Groups["MemberName"].Value;
 
-                return new MemberAccessTranslation(subject, memberName);
+                return new MemberAccessTranslation(subject, memberName, args.ExpressionType);
             }
         }
 
@@ -239,6 +239,8 @@ namespace AgileObjects.ReadableExpressions.Translations
                 public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
 
                 public Type GetGenericArgumentFor(Type parameterType) => null;
+
+                public Type ReturnType => typeof(void);
             }
         }
     }

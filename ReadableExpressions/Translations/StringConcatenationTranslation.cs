@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
 #if NET35
@@ -48,6 +50,8 @@
         }
 
         public ExpressionType NodeType { get; }
+
+        public Type Type => typeof(string);
 
         public int EstimatedSize { get; }
 

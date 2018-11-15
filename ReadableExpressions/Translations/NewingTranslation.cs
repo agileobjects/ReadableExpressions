@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Linq;
     using System.Reflection;
@@ -44,6 +46,7 @@
             public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
                 : base(newing, context)
             {
+                Type = newing.Type;
                 _ctorParameters = newing.Constructor.GetParameters();
                 EstimatedSize = GetEstimatedSize();
             }
@@ -55,6 +58,8 @@
                         Parameters.EstimatedSize +
                        "new {  }".Length;
             }
+
+            public Type Type { get; }
 
             public int EstimatedSize { get; }
 
@@ -120,6 +125,8 @@
 
                 Parameters.WithParentheses().WriteTo(context);
             }
+
+            public Type Type => _typeNameTranslation.Type;
         }
     }
 }

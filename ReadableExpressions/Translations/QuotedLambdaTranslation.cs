@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -30,6 +31,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Quote;
+
+        public Type Type => _quotedLambdaTranslation.Type;
 
         public int EstimatedSize => _quotedLambdaTranslation.EstimatedSize;
 

@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -20,6 +22,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.ArrayLength;
+
+        public Type Type => typeof(int);
 
         public int EstimatedSize { get; }
 

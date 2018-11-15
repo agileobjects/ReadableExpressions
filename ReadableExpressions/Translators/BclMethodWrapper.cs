@@ -37,5 +37,7 @@ namespace AgileObjects.ReadableExpressions.Translators
 
             return _genericArguments[parameterIndex];
         }
+
+        public Type ReturnType => _method.ReturnType;
     }
 }

@@ -22,7 +22,7 @@
         {
             if (constant.Value == null)
             {
-                return FixedValueTranslation("null");
+                return FixedValueTranslation("null", constant.Type);
             }
 
             if (constant.Type.IsEnum())
@@ -39,19 +39,21 @@
 
             if (valueType.IsPrimitive() || valueType.IsValueType())
             {
-                return FixedValueTranslation(constant.Value);
+                return FixedValueTranslation(constant.Value, valueType);
             }
 
-            return FixedValueTranslation(valueType.GetFriendlyName(context.Settings));
+            return FixedValueTranslation(valueType.GetFriendlyName(context.Settings), valueType);
         }
 
-        private static ITranslation FixedValueTranslation(object value) => FixedValueTranslation(value.ToString());
+        private static ITranslation FixedValueTranslation(ConstantExpression constant) => FixedValueTranslation(constant.Value, constant.Type);
 
-        private static ITranslation FixedValueTranslation(string value, bool isTerminated = false)
+        private static ITranslation FixedValueTranslation(object value, Type type) => FixedValueTranslation(value.ToString(), type);
+
+        private static ITranslation FixedValueTranslation(string value, Type type, bool isTerminated = false)
         {
             return isTerminated
-                ? new FixedTerminatedValueTranslation(Constant, value)
-                : new FixedValueTranslation(Constant, value);
+                ? new FixedTerminatedValueTranslation(Constant, value, type)
+                : new FixedValueTranslation(Constant, value, type);
         }
 
         private static bool TryTranslateFromTypeCode(
@@ -62,11 +64,11 @@
             switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
             {
                 case NetStandardTypeCode.Boolean:
-                    translation = FixedValueTranslation(constant.Value.ToString().ToLowerInvariant());
+                    translation = FixedValueTranslation(constant.Value.ToString().ToLowerInvariant(), constant.Type);
                     return true;
 
                 case NetStandardTypeCode.Char:
-                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WrappedWith("'", "'");
+                    translation = new TranslationWrapper(FixedValueTranslation(constant)).WrappedWith("'", "'");
 
                     return true;
 
@@ -79,23 +81,23 @@
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    translation = FixedValueTranslation("DBNull.Value");
+                    translation = FixedValueTranslation("DBNull.Value", constant.Type);
                     return true;
 
                 case NetStandardTypeCode.Decimal:
-                    translation = GetDecimalTranslation((decimal)constant.Value);
+                    translation = GetDecimalTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Double:
-                    translation = GetDoubleTranslation((double)constant.Value);
+                    translation = GetDoubleTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    translation = new TranslationWrapper(FixedValueTranslation(constant.Value)).WithSuffix("L");
+                    translation = new TranslationWrapper(FixedValueTranslation(constant)).WithSuffix("L");
                     return true;
 
                 case NetStandardTypeCode.Int32:
-                    translation = FixedValueTranslation(constant.Value);
+                    translation = FixedValueTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Object:
@@ -112,7 +114,7 @@
                     break;
 
                 case NetStandardTypeCode.Single:
-                    translation = GetFloatTranslation((float)constant.Value);
+                    translation = GetFloatTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.String:
@@ -120,11 +122,11 @@
 
                     if (stringValue.IsComment())
                     {
-                        translation = FixedValueTranslation(stringValue, isTerminated: true);
+                        translation = FixedValueTranslation(stringValue, typeof(string), isTerminated: true);
                         return true;
                     }
 
-                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""));
+                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string));
                     translation = new TranslationWrapper(translation).WrappedWith("\"", "\"");
 
                     return true;
@@ -142,33 +144,39 @@
                 return false;
             }
 
-            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name)).WrappedWith("default(", ")");
+            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name, typeof(T))).WrappedWith("default(", ")");
             return true;
         }
 
-        private static ITranslation GetDecimalTranslation(decimal value)
+        private static ITranslation GetDecimalTranslation(ConstantExpression constant)
         {
+            var value = (decimal)constant.Value;
+
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture));
+                : value.ToString(CurrentCulture), constant.Type);
 
             return new TranslationWrapper(valueTranslation).WithSuffix("m");
         }
 
-        private static ITranslation GetDoubleTranslation(double value)
+        private static ITranslation GetDoubleTranslation(ConstantExpression constant)
         {
+            var value = (double)constant.Value;
+
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture));
+                : value.ToString(CurrentCulture), constant.Type);
 
             return new TranslationWrapper(valueTranslation).WithSuffix("d");
         }
 
-        private static ITranslation GetFloatTranslation(float value)
+        private static ITranslation GetFloatTranslation(ConstantExpression constant)
         {
+            var value = (float)constant.Value;
+
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture));
+                : value.ToString(CurrentCulture), constant.Type);
 
             return new TranslationWrapper(valueTranslation).WithSuffix("f");
         }
@@ -197,7 +205,7 @@
                 return false;
             }
 
-            translation = FixedValueTranslation(constant.Value);
+            translation = FixedValueTranslation(constant);
             translation = new TranslationWrapper(translation).WrappedWith("Regex /* ", " */");
             return true;
         }
@@ -215,6 +223,8 @@
             }
 
             public ExpressionType NodeType => Constant;
+
+            public Type Type => _typeNameTranslation.Type;
 
             public int EstimatedSize { get; }
 
@@ -235,6 +245,7 @@
 
             public DateTimeConstantTranslation(ConstantExpression constant)
             {
+                Type = constant.Type;
                 _value = (DateTime)constant.Value;
                 _hasMilliseconds = _value.Millisecond != 0;
                 _hasTime = (_value.Hour != 0) || (_value.Minute != 0) || (_value.Second != 0);
@@ -259,6 +270,8 @@
             }
 
             public ExpressionType NodeType => Constant;
+
+            public Type Type { get; }
 
             public int EstimatedSize { get; }
 
@@ -335,6 +348,8 @@
 
             public ExpressionType NodeType => Constant;
 
+            public Type Type => _lambdaTranslation.Type;
+
             public int EstimatedSize => _lambdaTranslation.EstimatedSize;
 
             public bool IsTerminated => true;
@@ -348,8 +363,9 @@
 
             private readonly string _funcString;
 
-            private FuncConstantTranslation(string funcString)
+            private FuncConstantTranslation(Type funcType, string funcString)
             {
+                Type = funcType;
                 _funcString = funcString;
                 EstimatedSize = funcString.Length;
             }
@@ -360,7 +376,7 @@
 
                 if (match.Success)
                 {
-                    funcTranslation = new FuncConstantTranslation(match.Value);
+                    funcTranslation = new FuncConstantTranslation(constant.Type, match.Value);
                     return true;
                 }
 
@@ -369,6 +385,8 @@
             }
 
             public ExpressionType NodeType => Constant;
+
+            public Type Type { get; }
 
             public int EstimatedSize { get; }
 
@@ -462,10 +480,11 @@
         {
             private readonly TimeSpan _timeSpan;
 
-            private TimeSpanConstantTranslation(TimeSpan timeSpan)
+            private TimeSpanConstantTranslation(ConstantExpression timeSpanConstant)
             {
-                _timeSpan = timeSpan;
-                EstimatedSize = timeSpan.ToString().Length;
+                Type = timeSpanConstant.Type;
+                _timeSpan = (TimeSpan)timeSpanConstant.Value;
+                EstimatedSize = _timeSpan.ToString().Length;
             }
 
             public static bool TryCreate(ConstantExpression constant, out ITranslation timeSpanTranslation)
@@ -481,11 +500,13 @@
                     return true;
                 }
 
-                timeSpanTranslation = new TimeSpanConstantTranslation((TimeSpan)constant.Value);
+                timeSpanTranslation = new TimeSpanConstantTranslation(constant);
                 return true;
             }
 
             public ExpressionType NodeType => Constant;
+
+            public Type Type { get; }
 
             public int EstimatedSize { get; }
 

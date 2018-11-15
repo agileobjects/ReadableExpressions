@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 {
     using System.Collections.Generic;
     using Interfaces;
@@ -54,6 +56,8 @@
         }
 
         public ExpressionType NodeType { get; }
+
+        public Type Type => _newingTranslation.Type;
 
         public int EstimatedSize { get; }
 

@@ -82,6 +82,8 @@
 
         public ExpressionType NodeType => ExpressionType.TypeEqual;
 
+        public Type Type => typeof(bool);
+
         public int EstimatedSize { get; }
 
         public void WriteTo(ITranslationContext context)

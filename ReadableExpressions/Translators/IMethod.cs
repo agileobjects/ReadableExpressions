@@ -18,5 +18,7 @@ namespace AgileObjects.ReadableExpressions.Translators
         ParameterInfo[] GetParameters();
 
         Type GetGenericArgumentFor(Type parameterType);
+
+        Type ReturnType { get; }
     }
 }

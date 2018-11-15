@@ -4,6 +4,8 @@
     {
         bool TranslationEndsWith(char character);
         
+        bool TranslationEndsWith(string substring);
+        
         bool TranslationEndsWithBlankLine();
     }
 }

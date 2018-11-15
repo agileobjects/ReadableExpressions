@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -62,6 +64,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Parameter;
+        
+        public Type Type => _parameter.Type;
 
         public int EstimatedSize { get; }
 

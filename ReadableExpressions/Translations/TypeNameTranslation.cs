@@ -18,6 +18,7 @@
 
         public TypeNameTranslation(Type type, ITranslationContext context)
         {
+            Type = type;
             _isObject = type == typeof(object);
 
             if (_isObject)
@@ -31,6 +32,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

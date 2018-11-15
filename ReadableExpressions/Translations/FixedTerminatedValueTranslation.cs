@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,8 +10,8 @@
 
     internal class FixedTerminatedValueTranslation : FixedValueTranslation, IPotentialSelfTerminatingTranslatable
     {
-        public FixedTerminatedValueTranslation(ExpressionType expressionType, string value)
-            : base(expressionType, value)
+        public FixedTerminatedValueTranslation(ExpressionType expressionType, string value, Type type)
+            : base(expressionType, value, type)
         {
         }
 

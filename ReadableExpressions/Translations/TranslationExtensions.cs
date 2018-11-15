@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -44,8 +45,11 @@
         public static TranslationWrapper WithParentheses(this ITranslation translation)
             => new TranslationWrapper(translation).WrappedWith("(", ")");
 
-        public static TranslationWrapper WithNodeType(this ITranslatable translation, ExpressionType nodeType)
-            => new TranslationWrapper(nodeType, translation);
+        public static TranslationWrapper WithNodeType(this ITranslation translation, ExpressionType nodeType)
+            => new TranslationWrapper(nodeType, translation, translation.Type);
+
+        public static TranslationWrapper WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
+            => new TranslationWrapper(nodeType, translatable, type);
 
         public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
         {
@@ -91,8 +95,8 @@
         public static bool ShouldWriteInParentheses(this ITranslation translation)
         {
             return (translation.NodeType == ExpressionType.Conditional) ||
-                    BinaryTranslation.IsBinary(translation.NodeType) || 
-                    translation.IsAssignment() || 
+                    BinaryTranslation.IsBinary(translation.NodeType) ||
+                    translation.IsAssignment() ||
                     CastTranslation.IsCast(translation.NodeType);
         }
 

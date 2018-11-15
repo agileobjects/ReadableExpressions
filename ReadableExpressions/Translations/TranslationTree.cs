@@ -141,7 +141,7 @@
 
             var newlineEncountered = false;
 
-            for (var i = _content.Length; i > -1;)
+            for (var i = _content.Length; i > 0;)
             {
                 var contentCharacter = _content[--i];
 
@@ -167,6 +167,57 @@
             return false;
         }
 
+        bool ITranslationQuery.TranslationEndsWith(string substring)
+        {
+            var substringLength = substring.Length;
+
+            if (_content.Length < substringLength)
+            {
+                return false;
+            }
+
+            var newlineEncountered = false;
+            var finalCharacter = substring[substringLength - 1];
+
+            for (var i = _content.Length; i > 0;)
+            {
+                var contentCharacter = _content[--i];
+
+                if (contentCharacter == '\n')
+                {
+                    if (newlineEncountered)
+                    {
+                        return false;
+                    }
+
+                    newlineEncountered = true;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(contentCharacter))
+                {
+                    continue;
+                }
+
+                if (contentCharacter != finalCharacter)
+                {
+                    return false;
+                }
+
+                for (var j = substringLength - 2; j > -1;)
+                {
+                    if (_content[--i] != substring[j--])
+                    {
+                        return false;
+                    }
+                }
+                        
+                return true;
+            }
+
+            return false;
+        }
+
         bool ITranslationQuery.TranslationEndsWithBlankLine()
         {
             if (_content.Length < 2)
@@ -176,7 +227,7 @@
 
             var newlineEncountered = false;
 
-            for (var i = _content.Length; i > -1;)
+            for (var i = _content.Length; i > 0;)
             {
                 var contentCharacter = _content[--i];
 
@@ -369,7 +420,7 @@
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
             }
 
-            return new FixedValueTranslation(expression.NodeType, expression.ToString());
+            return new FixedValueTranslation(expression);
         }
 
         public string GetTranslation()

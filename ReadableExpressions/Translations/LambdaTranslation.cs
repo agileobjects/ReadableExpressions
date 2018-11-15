@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -16,6 +18,7 @@
 
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
+            Type = lambda.Type;
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
             _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
             EstimatedSize = GetEstimatedSize();
@@ -30,6 +33,8 @@
             => _parameters.EstimatedSize + _fatArrow.Length + _bodyTranslation.EstimatedSize;
 
         public ExpressionType NodeType => ExpressionType.Lambda;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

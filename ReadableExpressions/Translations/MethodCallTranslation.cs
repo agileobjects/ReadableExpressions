@@ -52,7 +52,7 @@
 
             if (IsIndexedPropertyAccess(methodCall))
             {
-                return new IndexAccessTranslation(subject, parameters);
+                return new IndexAccessTranslation(subject, parameters, methodCall.Type);
             }
 
             parameters = parameters.WithParentheses();
@@ -150,6 +150,8 @@
 
             public ExpressionType NodeType { get; }
 
+            public Type Type => _methodInvocationTranslatable.Type;
+
             public int EstimatedSize { get; }
 
             public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
@@ -174,7 +176,7 @@
             }
         }
 
-        public class MethodInvocationTranslatable : ITranslatable
+        private class MethodInvocationTranslatable : ITranslatable
         {
             private readonly IMethod _method;
             private readonly ParameterSetTranslation _parameters;
@@ -252,6 +254,8 @@
                     }
                 }
             }
+
+            public Type Type => _method.ReturnType;
 
             public int EstimatedSize { get; }
 

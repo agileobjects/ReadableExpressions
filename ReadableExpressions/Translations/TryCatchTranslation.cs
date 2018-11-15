@@ -25,7 +25,8 @@
 
         public TryCatchTranslation(TryExpression tryCatchFinally, ITranslationContext context)
         {
-            _isNonVoidTryCatch = tryCatchFinally.Type != typeof(void);
+            Type = tryCatchFinally.Type;
+            _isNonVoidTryCatch = Type != typeof(void);
 
             _bodyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Body, context);
 
@@ -120,6 +121,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Try;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -16,6 +17,7 @@
 
         public SwitchTranslation(SwitchExpression switchStatement, ITranslationContext context)
         {
+            Type = switchStatement.Type;
             _valueTranslation = context.GetTranslationFor(switchStatement.SwitchValue);
 
             var estimatedSize = _valueTranslation.EstimatedSize;
@@ -66,6 +68,8 @@
             => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).WithTermination().WithoutBraces() : null;
 
         public ExpressionType NodeType => ExpressionType.Switch;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -15,6 +16,7 @@
         public MemberAccessTranslation(MemberExpression memberAccess, ITranslationContext context)
             : this(memberAccess.Member.Name)
         {
+            Type = memberAccess.Type;
             _subject = GetSubjectOrNull(memberAccess, context);
             EstimatedSize = GetEstimatedSize();
         }
@@ -46,9 +48,10 @@
             return subjectType == memberAccess.Member.DeclaringType;
         }
 
-        public MemberAccessTranslation(ITranslation subject, string memberName)
+        public MemberAccessTranslation(ITranslation subject, string memberName, Type memberType)
             : this(memberName)
         {
+            Type = memberType;
             _subject = subject;
             EstimatedSize = GetEstimatedSize();
         }
@@ -66,6 +69,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.MemberAccess;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

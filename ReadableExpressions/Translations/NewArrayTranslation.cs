@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using Extensions;
 #if NET35
@@ -15,6 +17,7 @@
 
         public NewArrayTranslation(NewArrayExpression newArray, ITranslationContext context)
         {
+            Type = newArray.Type;
             _typeNameTranslation = context.GetTranslationFor(newArray.Type.GetElementType());
 
             var estimatedSize = _typeNameTranslation.EstimatedSize + 6;
@@ -45,6 +48,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.NewArrayBounds;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

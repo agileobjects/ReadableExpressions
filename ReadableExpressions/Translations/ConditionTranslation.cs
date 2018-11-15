@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -13,7 +15,7 @@
         {
             var conditionTranslation = context.GetTranslationFor(condition);
 
-            if (SplitBinaryConditionToMultipleLines(condition, conditionTranslation))
+            if (IsMultiLineBinary(condition, conditionTranslation))
             {
                 return new MultiLineBinaryConditionTranslation((BinaryExpression)condition, conditionTranslation, context);
             }
@@ -25,7 +27,7 @@
                 : conditionCodeBlockTranslation;
         }
 
-        private static bool SplitBinaryConditionToMultipleLines(Expression condition, ITranslatable conditionTranslation)
+        private static bool IsMultiLineBinary(Expression condition, ITranslatable conditionTranslation)
             => conditionTranslation.ExceedsLengthThreshold() && IsRelevantBinary(condition);
 
         private static bool IsRelevantBinary(Expression condition)
@@ -61,6 +63,8 @@
             }
 
             public ExpressionType NodeType { get; }
+
+            public Type Type => typeof(bool);
 
             public int EstimatedSize { get; }
 

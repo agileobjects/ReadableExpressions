@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Linq;
 #if NET35
@@ -20,9 +22,10 @@
         public MethodGroupTranslation(
             ExpressionType nodeType,
             ITranslation subjectTranslation,
-            MemberInfo subjectMethodInfo)
+            MethodInfo subjectMethodInfo)
         {
             NodeType = nodeType;
+            Type = subjectMethodInfo.ReturnType;
             _subjectTranslation = subjectTranslation;
             _subjectMethodName = subjectMethodInfo.Name;
             EstimatedSize = _subjectTranslation.EstimatedSize + ".".Length + _subjectMethodName.Length;
@@ -47,6 +50,8 @@
         }
 
         public ExpressionType NodeType { get; }
+
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

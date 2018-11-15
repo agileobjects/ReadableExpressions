@@ -22,6 +22,7 @@
 
         public LabelTranslation(LabelExpression label, ITranslationContext context)
         {
+            Type = label.Type;
             _labelName = GetLabelNamePart(label, context);
             _labelIsNamed = _labelName != null;
             _labelHasNoValue = label.DefaultValue == null;
@@ -59,6 +60,8 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Label;
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

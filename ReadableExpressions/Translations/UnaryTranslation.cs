@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
 #if NET35
@@ -34,6 +36,7 @@
         public UnaryTranslation(UnaryExpression unary, ITranslationContext context)
         {
             NodeType = unary.NodeType;
+            Type = unary.Type;
             _operator = _operatorsByNodeType[NodeType];
 
             switch (NodeType)
@@ -49,6 +52,8 @@
         }
 
         public ExpressionType NodeType { get; }
+        
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

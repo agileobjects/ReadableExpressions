@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -36,6 +38,8 @@
             => new NegationTranslation(ExpressionType.Not, _bang, negatedValue);
 
         public ExpressionType NodeType { get; }
+
+        public Type Type => typeof(bool);
 
         public int EstimatedSize { get; }
 

@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -16,17 +18,20 @@
         private bool _hasSuffix;
 
         public TranslationWrapper(ITranslation translation)
-            : this(translation.NodeType, translation)
+            : this(translation.NodeType, translation, translation.Type)
         {
         }
 
-        public TranslationWrapper(ExpressionType nodeType, ITranslatable translatable)
+        public TranslationWrapper(ExpressionType nodeType, ITranslatable translatable, Type type)
         {
             NodeType = nodeType;
+            Type = type;
             _translatable = translatable;
         }
 
         public ExpressionType NodeType { get; }
+        
+        public Type Type { get; }
 
         public int EstimatedSize => GetEstimatedSize();
 

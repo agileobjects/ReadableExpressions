@@ -142,6 +142,8 @@
 
             public ExpressionType NodeType { get; }
 
+            public Type Type => _testedTypeNameTranslation.Type;
+
             public int EstimatedSize { get; }
 
             public void WriteTo(ITranslationContext context)
@@ -183,6 +185,8 @@
             }
 
             public ExpressionType NodeType { get; }
+
+            public Type Type => _castTypeNameTranslation.Type;
 
             public int EstimatedSize { get; }
 

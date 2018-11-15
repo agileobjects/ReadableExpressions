@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
 #if NET35
@@ -48,6 +50,7 @@
             : base(IsCheckedBinary(binary.NodeType), "(", ")")
         {
             NodeType = binary.NodeType;
+            Type = binary.Type;
             _leftOperandTranslation = context.GetTranslationFor(binary.Left);
             _operator = GetOperator(binary);
             _rightOperandTranslation = context.GetTranslationFor(binary.Right);
@@ -113,6 +116,8 @@
         }
 
         public ExpressionType NodeType { get; }
+
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 
@@ -183,6 +188,8 @@
             }
 
             public ExpressionType NodeType { get; }
+
+            public Type Type => typeof(bool);
 
             public int EstimatedSize { get; }
 

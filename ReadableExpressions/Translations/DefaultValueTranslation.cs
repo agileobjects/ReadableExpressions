@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -20,7 +21,9 @@
             ITranslationContext context,
             bool allowNullKeyword = true)
         {
-            if (defaultExpression.Type == typeof(void))
+            Type = defaultExpression.Type;
+            
+            if (Type == typeof(void))
             {
                 IsEmpty = true;
                 return;
@@ -28,7 +31,7 @@
 
             if (allowNullKeyword)
             {
-                _typeCanBeNull = defaultExpression.Type.CanBeNull();
+                _typeCanBeNull = Type.CanBeNull();
 
                 if (_typeCanBeNull)
                 {
@@ -37,11 +40,13 @@
                 }
             }
 
-            _typeNameTranslation = context.GetTranslationFor(defaultExpression.Type);
+            _typeNameTranslation = context.GetTranslationFor(Type);
             EstimatedSize = _default.Length + _typeNameTranslation.EstimatedSize + 2;
         }
 
         public ExpressionType NodeType => ExpressionType.Default;
+
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 

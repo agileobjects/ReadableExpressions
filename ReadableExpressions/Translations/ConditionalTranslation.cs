@@ -50,6 +50,7 @@
                 ITranslation ifTrueTranslation,
                 ITranslationContext context)
             {
+                Type = conditional.Type;
                 TestTranslation = ConditionTranslation.For(conditional.Test, context);
                 IfTrueTranslation = ifTrueTranslation;
             }
@@ -65,6 +66,8 @@
             }
 
             public ExpressionType NodeType => ExpressionType.Conditional;
+            
+            public Type Type { get; }
 
             protected ITranslation TestTranslation { get; }
 

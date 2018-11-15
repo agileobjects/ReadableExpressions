@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -14,15 +15,15 @@
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "break;");
+                    return FixedTerminatedValueTranslation("break;", @goto);
 
                 case GotoExpressionKind.Continue:
-                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "continue;");
+                    return FixedTerminatedValueTranslation("continue;", @goto);
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        return new FixedTerminatedValueTranslation(ExpressionType.Goto, "return;");
+                        return FixedTerminatedValueTranslation("return;", @goto);
                     }
 
                     return new ReturnValueTranslation(@goto, context);
@@ -31,9 +32,12 @@
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    return new FixedTerminatedValueTranslation(ExpressionType.Goto, "goto " + @goto.Target.Name + ";");
+                    return FixedTerminatedValueTranslation("goto " + @goto.Target.Name + ";", @goto);
             }
         }
+
+        private static FixedTerminatedValueTranslation FixedTerminatedValueTranslation(string value, GotoExpression @goto)
+            => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type);
 
         private class ReturnValueTranslation : ITranslation
         {
@@ -47,6 +51,8 @@
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
+
+            public Type Type => _returnValueTranslation.Type;
 
             public int EstimatedSize { get; }
 

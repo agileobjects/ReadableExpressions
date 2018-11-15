@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -26,6 +28,7 @@
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
+            Type = block.Type;
             _variables = GetVariableDeclarations(block, context);
             _hasVariables = _variables.Count > 0;
             _statements = GetBlockStatements(block, context, out var hasMultiStatementStatement, out var estimatedStatementsSize, out _hasGoto);
@@ -217,6 +220,7 @@
         }
 
         public ExpressionType NodeType => Block;
+        public Type Type { get; }
 
         public int EstimatedSize { get; }
 
@@ -310,6 +314,8 @@
 
             public ExpressionType NodeType { get; }
 
+            public Type Type => Expression.Type;
+
             public Expression Expression { get; }
 
             public int EstimatedSize { get; protected set; }
@@ -337,7 +343,8 @@
 
             public void WriteTo(ITranslationContext context)
             {
-                if (_writeBlankLineBefore && !context.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
+                if ((_writeBlankLineBefore || context.TranslationQuery(q => q.TranslationEndsWith("};"))) && 
+                     !context.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
                     context.WriteNewLineToTranslation();
                 }

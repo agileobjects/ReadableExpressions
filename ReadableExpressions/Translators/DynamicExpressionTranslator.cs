@@ -259,6 +259,8 @@ namespace AgileObjects.ReadableExpressions.Translators
                 public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
 
                 public Type GetGenericArgumentFor(Type parameterType) => null;
+
+                public Type ReturnType => typeof(void);
             }
         }
 

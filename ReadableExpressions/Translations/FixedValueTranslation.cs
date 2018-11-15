@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿using System;
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -12,17 +14,20 @@
         private readonly string _value;
 
         public FixedValueTranslation(Expression expression)
-            : this(expression.NodeType, expression.ToString())
+            : this(expression.NodeType, expression.ToString(), expression.Type)
         {
         }
 
-        public FixedValueTranslation(ExpressionType expressionType, string value)
+        public FixedValueTranslation(ExpressionType expressionType, string value, Type type)
         {
             NodeType = expressionType;
+            Type = type;
             _value = value;
         }
 
         public ExpressionType NodeType { get; }
+        
+        public Type Type { get; }
 
         public int EstimatedSize => _value.Length;
 
