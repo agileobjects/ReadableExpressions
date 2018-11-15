@@ -42,6 +42,12 @@ namespace AgileObjects.ReadableExpressions.Translations
                 }
 
                 var operandTranslation = context.GetTranslationFor(operand);
+
+                if ((operandTranslation.Type != typeof(string)) && operandTranslation.IsBinary())
+                {
+                    operandTranslation = operandTranslation.WithParentheses();
+                }
+
                 _operandTranslations[i] = operandTranslation;
                 estimatedSize += operandTranslation.EstimatedSize + 3; // <- +3 for ' + '
             }

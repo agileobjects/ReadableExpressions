@@ -1011,6 +1011,8 @@ ints.Add(
     {
         public override ExpressionType NodeType => (ExpressionType)5346372;
 
+        public override Type Type => typeof(void);
+
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {
             // See CommentExpression for why this is necessary:
