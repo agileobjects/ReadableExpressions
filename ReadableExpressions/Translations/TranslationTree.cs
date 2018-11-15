@@ -414,7 +414,7 @@
                     return new TryCatchTranslation((TryExpression)expression, this);
 
                 case TypeEqual:
-                    return new TypeEqualTranslation((TypeBinaryExpression)expression, this);
+                    return TypeEqualTranslation.For((TypeBinaryExpression)expression, this);
 
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);

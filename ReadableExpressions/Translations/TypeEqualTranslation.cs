@@ -11,60 +11,9 @@
 #endif
     using NetStandardPolyfills;
 
-    internal class TypeEqualTranslation : ITranslation
+    internal static class TypeEqualTranslation
     {
         private static readonly MethodInfo _reduceTypeEqualMethod;
-        private const string _is = " is ";
-        private const string _typeOf = " TypeOf typeof(";
-        private readonly ITranslation _operandTranslation;
-        private readonly ITranslation _typeNameTranslation;
-        private readonly Action<ITranslationContext> _translationWriter;
-        private readonly bool _typedOperandIsClass;
-
-        public TypeEqualTranslation(TypeBinaryExpression typeBinary, ITranslationContext context)
-        {
-            if (_reduceTypeEqualMethod != null)
-            {
-                try
-                {
-                    // TypeEqual '123 TypeEqual int' is reduced to a Block with the Expressions '123' and 'true',
-                    // 'o TypeEqual string' is reduced to (o != null) && (o is string):
-                    var reducedTypeBinary = (Expression)_reduceTypeEqualMethod.Invoke(typeBinary, null);
-                    _operandTranslation = context.GetTranslationFor(reducedTypeBinary);
-
-                    if (_operandTranslation.NodeType == ExpressionType.Block)
-                    {
-                        _operandTranslation = ((BlockTranslation)_operandTranslation).WithoutTermination();
-                    }
-
-                    EstimatedSize = _operandTranslation.EstimatedSize;
-                    _translationWriter = WriteReducedTypeBinary;
-                    return;
-                }
-                catch
-                {
-                    // Unable to invoke the non-public ReduceTypeEqual method - ignore
-                }
-            }
-
-            _operandTranslation = context.GetTranslationFor(typeBinary.Expression);
-            _typeNameTranslation = context.GetTranslationFor(typeBinary.TypeOperand);
-            _typedOperandIsClass = typeBinary.TypeOperand.IsClass();
-            EstimatedSize = GetEstimatedSize();
-        }
-
-        private int GetEstimatedSize()
-        {
-            var estimatedSize =
-                _operandTranslation.EstimatedSize +
-                _typeNameTranslation.EstimatedSize;
-
-            estimatedSize += _typedOperandIsClass
-                ? _is.Length
-                : _typeOf.Length + 2; // <- +2 for parentheses
-
-            return estimatedSize;
-        }
 
         static TypeEqualTranslation()
         {
@@ -80,31 +29,81 @@
             }
         }
 
-        public ExpressionType NodeType => ExpressionType.TypeEqual;
-
-        public Type Type => typeof(bool);
-
-        public int EstimatedSize { get; }
-
-        public void WriteTo(ITranslationContext context)
+        public static ITranslation For(TypeBinaryExpression typeBinary, ITranslationContext context)
         {
-            if (_translationWriter != null)
+            ITranslation operandTranslation;
+
+            if (_reduceTypeEqualMethod != null)
             {
-                _translationWriter.Invoke(context);
-                return;
+                try
+                {
+                    // TypeEqual '123 TypeEqual int' is reduced to a Block with the Expressions '123' and 'true',
+                    // 'o TypeEqual string' is reduced to (o != null) && (o is string):
+                    var reducedTypeBinary = (Expression)_reduceTypeEqualMethod.Invoke(typeBinary, null);
+
+                    operandTranslation = context.GetTranslationFor(reducedTypeBinary);
+
+                    if (operandTranslation.NodeType == ExpressionType.Block)
+                    {
+                        operandTranslation = ((BlockTranslation)operandTranslation).WithoutTermination();
+                    }
+
+                    return operandTranslation.WithTypes(ExpressionType.TypeEqual, typeof(bool));
+                }
+                catch
+                {
+                    // Unable to invoke the non-public ReduceTypeEqual method - ignore
+                }
             }
 
-            _operandTranslation.WriteTo(context);
-            context.WriteToTranslation(_typedOperandIsClass ? _is : _typeOf);
-            _typeNameTranslation.WriteTo(context);
+            operandTranslation = context.GetTranslationFor(typeBinary.Expression);
+            var typeNameTranslation = context.GetTranslationFor(typeBinary.TypeOperand);
 
-            if (_typedOperandIsClass)
+            if (typeBinary.TypeOperand.IsClass())
             {
+                return CastTranslation.For(typeBinary, context);
+            }
+
+            return new TypeOfTranslation(operandTranslation, typeNameTranslation);
+        }
+
+        private class TypeOfTranslation : ITranslation
+        {
+            private const string _typeOf = " TypeOf typeof(";
+            private readonly ITranslation _operandTranslation;
+            private readonly ITranslation _typeNameTranslation;
+
+            public TypeOfTranslation(ITranslation operandTranslation, ITranslation typeNameTranslation)
+            {
+                _operandTranslation = operandTranslation;
+                _typeNameTranslation = typeNameTranslation;
+                EstimatedSize = GetEstimatedSize();
+            }
+
+            private int GetEstimatedSize()
+            {
+                var estimatedSize =
+                    _operandTranslation.EstimatedSize +
+                    _typeNameTranslation.EstimatedSize;
+
+                estimatedSize += _typeOf.Length + 2; // <- +2 for parentheses
+
+                return estimatedSize;
+            }
+
+            public ExpressionType NodeType => ExpressionType.TypeEqual;
+
+            public Type Type => typeof(bool);
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(ITranslationContext context)
+            {
+                _operandTranslation.WriteTo(context);
+                context.WriteToTranslation(_typeOf);
+                _typeNameTranslation.WriteTo(context);
                 context.WriteToTranslation(')');
             }
         }
-
-        private void WriteReducedTypeBinary(ITranslationContext context)
-            => _operandTranslation.WriteTo(context);
     }
 }
