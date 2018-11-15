@@ -302,7 +302,11 @@
                 return !(expression.IsComment() || _statementTranslation.IsTerminated());
             }
 
-            private bool WriteBlankLineBefore() => NodeType == Label;
+            private bool WriteBlankLineBefore()
+            {
+                return (NodeType == Label) ||
+                      ((NodeType == Conditional) && !ConditionalTranslation.IsTernary(Expression));
+            }
 
             public ExpressionType NodeType { get; }
 
@@ -319,7 +323,11 @@
 
             public void IsFinalStatement(bool leaveBlankLineBefore)
             {
-                _writeBlankLineBefore = leaveBlankLineBefore;
+                if ((_writeBlankLineBefore == false) && leaveBlankLineBefore)
+                {
+                    _writeBlankLineBefore = true;
+                }
+                
                 _suppressBlankLineAfter = true;
             }
 
@@ -329,7 +337,7 @@
 
             public void WriteTo(ITranslationContext context)
             {
-                if (_writeBlankLineBefore)
+                if (_writeBlankLineBefore && !context.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
                     context.WriteNewLineToTranslation();
                 }

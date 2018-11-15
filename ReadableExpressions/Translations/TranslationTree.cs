@@ -134,9 +134,27 @@
 
         bool ITranslationQuery.TranslationEndsWith(char character)
         {
+            if (_content.Length == 0)
+            {
+                return false;
+            }
+
+            var newlineEncountered = false;
+
             for (var i = _content.Length; i > -1;)
             {
                 var contentCharacter = _content[--i];
+
+                if (contentCharacter == '\n')
+                {
+                    if (newlineEncountered)
+                    {
+                        return false;
+                    }
+
+                    newlineEncountered = true;
+                    continue;
+                }
 
                 if (char.IsWhiteSpace(contentCharacter))
                 {
@@ -144,6 +162,41 @@
                 }
 
                 return contentCharacter == character;
+            }
+
+            return false;
+        }
+
+        bool ITranslationQuery.TranslationEndsWithBlankLine()
+        {
+            if (_content.Length < 2)
+            {
+                return false;
+            }
+
+            var newlineEncountered = false;
+
+            for (var i = _content.Length; i > -1;)
+            {
+                var contentCharacter = _content[--i];
+
+                if (contentCharacter == '\n')
+                {
+                    if (newlineEncountered)
+                    {
+                        return true;
+                    }
+
+                    newlineEncountered = true;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(contentCharacter))
+                {
+                    continue;
+                }
+
+                return false;
             }
 
             return false;

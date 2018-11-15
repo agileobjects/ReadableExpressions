@@ -3,5 +3,7 @@
     internal interface ITranslationQuery
     {
         bool TranslationEndsWith(char character);
+        
+        bool TranslationEndsWithBlankLine();
     }
 }
