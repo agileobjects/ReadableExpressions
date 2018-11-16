@@ -6,7 +6,6 @@ namespace AgileObjects.ReadableExpressions.Translations
     using System.Reflection;
     using Extensions;
     using Microsoft.Scripting.Ast;
-    using Expression = Microsoft.Scripting.Ast.Expression;
     using LinqExp = System.Linq.Expressions;
 
     /// <summary>
