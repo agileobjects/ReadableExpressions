@@ -249,30 +249,30 @@
             return this;
         }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             switch (ParameterCount)
             {
                 case 0:
-                    context.WriteToTranslation(_openAndCloseParentheses);
+                    buffer.WriteToTranslation(_openAndCloseParentheses);
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.Always):
-                    _parameterTranslations[0].WriteTo(context);
+                    _parameterTranslations[0].WriteTo(buffer);
                     return;
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                context.WriteToTranslation('(');
+                buffer.WriteToTranslation('(');
             }
 
             var writeParametersOnNewLines = (ParameterCount > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
 
             if (writeParametersOnNewLines)
             {
-                context.WriteNewLineToTranslation();
-                context.Indent();
+                buffer.WriteNewLineToTranslation();
+                buffer.Indent();
             }
 
             for (var i = 0; ;)
@@ -284,7 +284,7 @@
                     parameterTranslation.WithoutStartingNewLine();
                 }
 
-                parameterTranslation.WriteTo(context);
+                parameterTranslation.WriteTo(buffer);
 
                 if (++i == ParameterCount)
                 {
@@ -293,27 +293,27 @@
 
                 if (writeParametersOnNewLines)
                 {
-                    context.WriteToTranslation(',');
+                    buffer.WriteToTranslation(',');
 
                     if (!_parameterTranslations[i].IsMultiStatement)
                     {
-                        context.WriteNewLineToTranslation();
+                        buffer.WriteNewLineToTranslation();
                     }
 
                     continue;
                 }
 
-                context.WriteToTranslation(", ");
+                buffer.WriteToTranslation(", ");
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                context.WriteToTranslation(')');
+                buffer.WriteToTranslation(')');
             }
 
             if (writeParametersOnNewLines)
             {
-                context.Unindent();
+                buffer.Unindent();
             }
         }
 

@@ -37,13 +37,13 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            _parameters.WriteTo(context);
+            _parameters.WriteTo(buffer);
 
-            context.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
+            buffer.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
 
-            _bodyTranslation.WriteTo(context);
+            _bodyTranslation.WriteTo(buffer);
         }
     }
 }

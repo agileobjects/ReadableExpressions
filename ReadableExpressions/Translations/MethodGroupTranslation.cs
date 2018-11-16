@@ -52,11 +52,11 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            _subjectTranslation.WriteTo(context);
-            context.WriteToTranslation('.');
-            context.WriteToTranslation(_subjectMethodName);
+            _subjectTranslation.WriteTo(buffer);
+            buffer.WriteToTranslation('.');
+            buffer.WriteToTranslation(_subjectMethodName);
         }
     }
 }

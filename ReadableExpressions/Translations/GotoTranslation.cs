@@ -56,10 +56,10 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation(_returnKeyword);
-                _returnValueTranslation.WriteTo(context);
+                buffer.WriteToTranslation(_returnKeyword);
+                _returnValueTranslation.WriteTo(buffer);
             }
         }
     }

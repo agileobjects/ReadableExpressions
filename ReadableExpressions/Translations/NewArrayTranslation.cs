@@ -52,28 +52,28 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteToTranslation("new ");
-            _typeNameTranslation.WriteTo(context);
-            context.WriteToTranslation('[');
+            buffer.WriteToTranslation("new ");
+            _typeNameTranslation.WriteTo(buffer);
+            buffer.WriteToTranslation('[');
 
             if (_boundTranslations.Length != 0)
             {
                 for (var i = 0; ;)
                 {
-                    _boundTranslations[i].WriteTo(context);
+                    _boundTranslations[i].WriteTo(buffer);
 
                     if (++i == _boundTranslations.Length)
                     {
                         break;
                     }
 
-                    context.WriteToTranslation("[]");
+                    buffer.WriteToTranslation("[]");
                 }
             }
 
-            context.WriteToTranslation(']');
+            buffer.WriteToTranslation(']');
         }
     }
 }

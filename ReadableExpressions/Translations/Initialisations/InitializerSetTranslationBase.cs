@@ -42,7 +42,7 @@
 
         private bool WriteToMultipleLines => ForceWriteToMultipleLines || IsLongTranslation;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (WriteToMultipleLines)
             {
@@ -50,12 +50,12 @@
             }
             else
             {
-                context.WriteToTranslation(" { ");
+                buffer.WriteToTranslation(" { ");
             }
 
             for (var i = 0; ;)
             {
-                _initializerTranslations[i].WriteTo(context);
+                _initializerTranslations[i].WriteTo(buffer);
 
                 if (++i == Count)
                 {
@@ -64,12 +64,12 @@
 
                 if (WriteToMultipleLines)
                 {
-                    context.WriteToTranslation(',');
-                    context.WriteNewLineToTranslation();
+                    buffer.WriteToTranslation(',');
+                    buffer.WriteNewLineToTranslation();
                     continue;
                 }
 
-                context.WriteToTranslation(", ");
+                buffer.WriteToTranslation(", ");
             }
 
             if (WriteToMultipleLines)
@@ -78,7 +78,7 @@
             }
             else
             {
-                context.WriteToTranslation(" }");
+                buffer.WriteToTranslation(" }");
             }
         }
     }

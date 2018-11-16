@@ -47,15 +47,15 @@
             return this;
         }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_isObject)
             {
-                context.WriteToTranslation(_writeObjectTypeName ? "Object" : _object);
+                buffer.WriteToTranslation(_writeObjectTypeName ? "Object" : _object);
                 return;
             }
 
-            context.WriteToTranslation(_typeName);
+            buffer.WriteToTranslation(_typeName);
         }
     }
 }

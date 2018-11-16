@@ -36,10 +36,10 @@
 
         public int EstimatedSize => _quotedLambdaTranslation.EstimatedSize;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteNewLineToTranslation();
-            _quotedLambdaTranslation.WriteTo(context);
+            buffer.WriteNewLineToTranslation();
+            _quotedLambdaTranslation.WriteTo(buffer);
         }
     }
 }

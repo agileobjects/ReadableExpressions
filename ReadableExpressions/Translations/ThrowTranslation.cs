@@ -34,17 +34,17 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteToTranslation(_throw);
+            buffer.WriteToTranslation(_throw);
 
             if (_thrownItemTranslation == null)
             {
                 return;
             }
 
-            context.WriteSpaceToTranslation();
-            _thrownItemTranslation.WriteTo(context);
+            buffer.WriteSpaceToTranslation();
+            _thrownItemTranslation.WriteTo(buffer);
         }
     }
 }

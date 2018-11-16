@@ -1,7 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using Interfaces;
-
     internal abstract class CheckedOperationTranslationBase
     {
         private readonly string _openingSymbol;
@@ -16,7 +14,7 @@
 
         protected bool IsCheckedOperation { get; }
 
-        protected void WriteOpeningCheckedIfNecessary(ITranslationContext context, out bool isMultiStatementChecked)
+        protected void WriteOpeningCheckedIfNecessary(TranslationBuffer buffer, out bool isMultiStatementChecked)
         {
             if (IsCheckedOperation == false)
             {
@@ -24,22 +22,22 @@
                 return;
             }
 
-            context.WriteToTranslation("checked");
+            buffer.WriteToTranslation("checked");
 
             isMultiStatementChecked = IsMultiStatement();
 
             if (isMultiStatementChecked)
             {
-                context.WriteOpeningBraceToTranslation();
+                buffer.WriteOpeningBraceToTranslation();
                 return;
             }
 
-            context.WriteToTranslation(_openingSymbol);
+            buffer.WriteToTranslation(_openingSymbol);
         }
 
         protected abstract bool IsMultiStatement();
 
-        protected void WriteClosingCheckedIfNecessary(ITranslationContext context, bool isMultiStatementChecked)
+        protected void WriteClosingCheckedIfNecessary(TranslationBuffer buffer, bool isMultiStatementChecked)
         {
             if (IsCheckedOperation == false)
             {
@@ -48,11 +46,11 @@
 
             if (isMultiStatementChecked)
             {
-                context.WriteClosingBraceToTranslation();
+                buffer.WriteClosingBraceToTranslation();
                 return;
             }
 
-            context.WriteToTranslation(_closingSymbol);
+            buffer.WriteToTranslation(_closingSymbol);
         }
     }
 }

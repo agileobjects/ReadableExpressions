@@ -130,29 +130,29 @@
 
         public bool IsTerminated => true;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteToTranslation("try");
-            _bodyTranslation.WriteTo(context);
+            buffer.WriteToTranslation("try");
+            _bodyTranslation.WriteTo(buffer);
 
             for (int i = 0, l = _catchBlockTranslations.Count; i < l; ++i)
             {
-                context.WriteNewLineToTranslation();
-                _catchBlockTranslations[i].WriteTo(context);
+                buffer.WriteNewLineToTranslation();
+                _catchBlockTranslations[i].WriteTo(buffer);
             }
 
             if (_hasFault)
             {
-                context.WriteNewLineToTranslation();
-                context.WriteToTranslation("fault");
-                _faultTranslation.WriteTo(context);
+                buffer.WriteNewLineToTranslation();
+                buffer.WriteToTranslation("fault");
+                _faultTranslation.WriteTo(buffer);
             }
 
             if (_hasFinally)
             {
-                context.WriteNewLineToTranslation();
-                context.WriteToTranslation("finally");
-                _finallyTranslation.WriteTo(context);
+                buffer.WriteNewLineToTranslation();
+                buffer.WriteToTranslation("finally");
+                _finallyTranslation.WriteTo(buffer);
             }
         }
 
@@ -181,11 +181,11 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation("catch");
-                _exceptionClause?.WriteTo(context);
-                _catchBodyTranslation.WriteTo(context);
+                buffer.WriteToTranslation("catch");
+                _exceptionClause?.WriteTo(buffer);
+                _catchBodyTranslation.WriteTo(buffer);
             }
 
             private static ITranslatable GetExceptionClauseOrNullFor(CatchBlock catchBlock, ITranslationContext context)
@@ -215,13 +215,13 @@
 
                 public virtual int EstimatedSize { get; }
 
-                public virtual void WriteTo(ITranslationContext context)
+                public virtual void WriteTo(TranslationBuffer buffer)
                 {
-                    context.WriteToTranslation(" (");
-                    _exceptionTypeTranslation.WriteTo(context);
-                    context.WriteSpaceToTranslation();
-                    context.WriteToTranslation(_variableName);
-                    context.WriteToTranslation(')');
+                    buffer.WriteToTranslation(" (");
+                    _exceptionTypeTranslation.WriteTo(buffer);
+                    buffer.WriteSpaceToTranslation();
+                    buffer.WriteToTranslation(_variableName);
+                    buffer.WriteToTranslation(')');
                 }
             }
 
@@ -238,11 +238,11 @@
 
                 public override int EstimatedSize { get; }
 
-                public override void WriteTo(ITranslationContext context)
+                public override void WriteTo(TranslationBuffer buffer)
                 {
-                    base.WriteTo(context);
-                    context.WriteToTranslation(" when ");
-                    _filterTranslation.WriteTo(context);
+                    base.WriteTo(buffer);
+                    buffer.WriteToTranslation(" when ");
+                    _filterTranslation.WriteTo(buffer);
                 }
             }
 
@@ -258,10 +258,10 @@
 
                 public int EstimatedSize { get; }
 
-                public void WriteTo(ITranslationContext context)
+                public void WriteTo(TranslationBuffer buffer)
                 {
-                    context.WriteSpaceToTranslation();
-                    _exceptionTypeTranslation.WriteInParentheses(context);
+                    buffer.WriteSpaceToTranslation();
+                    _exceptionTypeTranslation.WriteInParentheses(buffer);
                 }
             }
 

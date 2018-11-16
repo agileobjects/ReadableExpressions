@@ -31,7 +31,7 @@
         /// is declared as part of the assignment statement, otherwise false.
         /// </returns>
         bool IsNotJoinedAssignment(Expression expression);
-        
+
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="expression"/> is the Exception
         /// variable in a Catch block.
@@ -92,21 +92,5 @@
         ITranslation GetTranslationFor(Expression expression);
 
         CodeBlockTranslation GetCodeBlockTranslationFor(Expression expression);
-
-        bool TranslationQuery(Func<ITranslationQuery, bool> predicate);
-
-        void Indent();
-
-        void Unindent();
-
-        void WriteNewLineToTranslation();
-
-        void WriteToTranslation(char character);
-
-        void WriteToTranslation(string stringValue);
-
-        void WriteToTranslation(int intValue);
-
-        void WriteToTranslation(object value);
     }
 }

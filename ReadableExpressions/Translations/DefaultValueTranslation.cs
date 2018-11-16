@@ -52,11 +52,11 @@
 
         public bool IsEmpty { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_typeCanBeNull)
             {
-                context.WriteToTranslation(_null);
+                buffer.WriteToTranslation(_null);
             }
 
             if (_typeNameTranslation == null)
@@ -65,8 +65,8 @@
                 return;
             }
 
-            context.WriteToTranslation(_default);
-            _typeNameTranslation.WriteInParentheses(context);
+            buffer.WriteToTranslation(_default);
+            _typeNameTranslation.WriteInParentheses(buffer);
         }
     }
 }

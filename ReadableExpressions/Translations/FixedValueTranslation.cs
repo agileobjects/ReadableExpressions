@@ -30,6 +30,6 @@
 
         public int EstimatedSize => _value.Length;
 
-        public void WriteTo(ITranslationContext context) => context.WriteToTranslation(_value);
+        public void WriteTo(TranslationBuffer buffer) => buffer.WriteToTranslation(_value);
     }
 }

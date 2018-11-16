@@ -145,11 +145,11 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                _testedValueTranslation.WriteTo(context);
-                context.WriteToTranslation(_test);
-                _testedTypeNameTranslation.WriteTo(context);
+                _testedValueTranslation.WriteTo(buffer);
+                buffer.WriteToTranslation(_test);
+                _testedTypeNameTranslation.WriteTo(buffer);
             }
         }
 
@@ -189,10 +189,10 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                _castTypeNameTranslation.WriteInParentheses(context);
-                _castValueTranslation.WriteTo(context);
+                _castTypeNameTranslation.WriteInParentheses(buffer);
+                _castValueTranslation.WriteTo(buffer);
             }
         }
     }

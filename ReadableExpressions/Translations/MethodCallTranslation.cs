@@ -155,22 +155,22 @@
 
             public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                _subjectTranslation.WriteInParenthesesIfRequired(context);
+                _subjectTranslation.WriteInParenthesesIfRequired(buffer);
 
                 if (_isPartOfMethodCallChain)
                 {
-                    context.WriteNewLineToTranslation();
-                    context.Indent();
+                    buffer.WriteNewLineToTranslation();
+                    buffer.Indent();
                 }
 
-                context.WriteToTranslation('.');
-                _methodInvocationTranslatable.WriteTo(context);
+                buffer.WriteToTranslation('.');
+                _methodInvocationTranslatable.WriteTo(buffer);
 
                 if (_isPartOfMethodCallChain)
                 {
-                    context.Unindent();
+                    buffer.Unindent();
                 }
             }
         }
@@ -258,35 +258,35 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation(_method.Name);
-                WriteGenericArgumentNamesIfNecessary(context);
-                _parameters.WriteTo(context);
+                buffer.WriteToTranslation(_method.Name);
+                WriteGenericArgumentNamesIfNecessary(buffer);
+                _parameters.WriteTo(buffer);
             }
 
-            private void WriteGenericArgumentNamesIfNecessary(ITranslationContext context)
+            private void WriteGenericArgumentNamesIfNecessary(TranslationBuffer buffer)
             {
                 if (_explicitGenericArgumentNames.Length == 0)
                 {
                     return;
                 }
 
-                context.WriteToTranslation('<');
+                buffer.WriteToTranslation('<');
 
                 for (int i = 0, l = _explicitGenericArgumentNames.Length - 1; ; ++i)
                 {
-                    context.WriteToTranslation(_explicitGenericArgumentNames[i]);
+                    buffer.WriteToTranslation(_explicitGenericArgumentNames[i]);
 
                     if (i == l)
                     {
                         break;
                     }
 
-                    context.WriteToTranslation(", ");
+                    buffer.WriteToTranslation(", ");
                 }
 
-                context.WriteToTranslation('>');
+                buffer.WriteToTranslation('>');
             }
         }
     }

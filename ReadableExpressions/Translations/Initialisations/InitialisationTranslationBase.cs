@@ -63,10 +63,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 
         protected InitializerSetTranslationBase<TInitializer> InitializerTranslations { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            _newingTranslation.WriteTo(context);
-            InitializerTranslations.WriteTo(context);
+            _newingTranslation.WriteTo(buffer);
+            InitializerTranslations.WriteTo(buffer);
         }
     }
 }

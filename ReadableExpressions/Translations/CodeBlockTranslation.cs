@@ -116,14 +116,14 @@
             return this;
         }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_writeBraces)
             {
-                context.WriteOpeningBraceToTranslation(
+                buffer.WriteOpeningBraceToTranslation(
                     startOnNewLine: _startOnSameLine == false && _formatAsSingleLambdaParameter == false);
 
-                if (WriteEmptyCodeBlock(context))
+                if (WriteEmptyCodeBlock(buffer))
                 {
                     return;
                 }
@@ -131,37 +131,37 @@
 
             if (_formatAsSingleLambdaParameter)
             {
-                context.Indent();
+                buffer.Indent();
             }
 
             if (_writeBraces && _ensureReturnKeyword && !_translation.IsMultiStatement())
             {
-                context.WriteToTranslation("return ");
+                buffer.WriteToTranslation("return ");
             }
 
-            _translation.WriteTo(context);
+            _translation.WriteTo(buffer);
 
             if (EnsureTerminated())
             {
-                context.WriteToTranslation(';');
+                buffer.WriteToTranslation(';');
             }
 
             if (_writeBraces)
             {
-                context.WriteClosingBraceToTranslation();
+                buffer.WriteClosingBraceToTranslation();
             }
 
             if (_formatAsSingleLambdaParameter)
             {
-                context.Unindent();
+                buffer.Unindent();
             }
         }
 
-        private bool WriteEmptyCodeBlock(ITranslationContext context)
+        private bool WriteEmptyCodeBlock(TranslationBuffer buffer)
         {
             if ((_translation is IPotentialEmptyTranslatable emptyTranslatable) && emptyTranslatable.IsEmpty)
             {
-                context.WriteClosingBraceToTranslation(startOnNewLine: false);
+                buffer.WriteClosingBraceToTranslation(startOnNewLine: false);
                 return true;
             }
 

@@ -4,6 +4,6 @@
     {
         int EstimatedSize { get; }
 
-        void WriteTo(ITranslationContext context);
+        void WriteTo(TranslationBuffer buffer);
     }
 }

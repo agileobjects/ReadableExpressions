@@ -54,45 +54,45 @@
         public static TranslationWrapper WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
             => new TranslationWrapper(nodeType, translatable, type);
 
-        public static void WriteOpeningBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
+        public static void WriteOpeningBraceToTranslation(this TranslationBuffer buffer, bool startOnNewLine = true)
         {
-            if (startOnNewLine && context.TranslationQuery(q => !q.TranslationEndsWith('{')))
+            if (startOnNewLine && buffer.TranslationQuery(q => !q.TranslationEndsWith('{')))
             {
-                context.WriteNewLineToTranslation();
+                buffer.WriteNewLineToTranslation();
             }
 
-            context.WriteToTranslation('{');
-            context.WriteNewLineToTranslation();
-            context.Indent();
+            buffer.WriteToTranslation('{');
+            buffer.WriteNewLineToTranslation();
+            buffer.Indent();
         }
 
-        public static void WriteClosingBraceToTranslation(this ITranslationContext context, bool startOnNewLine = true)
+        public static void WriteClosingBraceToTranslation(this TranslationBuffer buffer, bool startOnNewLine = true)
         {
             if (startOnNewLine)
             {
-                context.WriteNewLineToTranslation();
+                buffer.WriteNewLineToTranslation();
             }
 
-            context.Unindent();
-            context.WriteToTranslation('}');
+            buffer.Unindent();
+            buffer.WriteToTranslation('}');
         }
 
-        public static void WriteInParentheses(this ITranslation translation, ITranslationContext context)
+        public static void WriteInParentheses(this ITranslation translation, TranslationBuffer buffer)
         {
-            context.WriteToTranslation('(');
-            translation.WriteTo(context);
-            context.WriteToTranslation(')');
+            buffer.WriteToTranslation('(');
+            translation.WriteTo(buffer);
+            buffer.WriteToTranslation(')');
         }
 
-        public static void WriteInParenthesesIfRequired(this ITranslation translation, ITranslationContext context)
+        public static void WriteInParenthesesIfRequired(this ITranslation translation, TranslationBuffer buffer)
         {
             if (ShouldWriteInParentheses(translation))
             {
-                translation.WriteInParentheses(context);
+                translation.WriteInParentheses(buffer);
                 return;
             }
 
-            new CodeBlockTranslation(translation).WriteTo(context);
+            new CodeBlockTranslation(translation).WriteTo(buffer);
         }
 
         public static bool ShouldWriteInParentheses(this ITranslation translation)
@@ -102,9 +102,7 @@
                     CastTranslation.IsCast(translation.NodeType);
         }
 
-        public static void WriteSpaceToTranslation(this ITranslationContext context)
-        {
-            context.WriteToTranslation(' ');
-        }
+        public static void WriteSpaceToTranslation(this TranslationBuffer buffer)
+            => buffer.WriteToTranslation(' ');
     }
 }

@@ -51,13 +51,13 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
                 _bindingTranslations.IsLongTranslation = _parent.IsLongTranslation;
 
-                context.WriteToTranslation(_memberName);
-                context.WriteToTranslation(" =");
-                _bindingTranslations.WriteTo(context);
+                buffer.WriteToTranslation(_memberName);
+                buffer.WriteToTranslation(" =");
+                _bindingTranslations.WriteTo(buffer);
             }
         }
 
@@ -80,13 +80,13 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
                 _initializerTranslations.IsLongTranslation = _parent.IsLongTranslation;
 
-                context.WriteToTranslation(_memberName);
-                context.WriteToTranslation(" =");
-                _initializerTranslations.WriteTo(context);
+                buffer.WriteToTranslation(_memberName);
+                buffer.WriteToTranslation(" =");
+                _initializerTranslations.WriteTo(buffer);
             }
         }
 
@@ -104,11 +104,11 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation(_memberName);
-                context.WriteToTranslation(" = ");
-                _valueTranslation.WriteTo(context);
+                buffer.WriteToTranslation(_memberName);
+                buffer.WriteToTranslation(" = ");
+                _valueTranslation.WriteTo(buffer);
             }
         }
     }

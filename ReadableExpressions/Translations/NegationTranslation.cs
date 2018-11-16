@@ -42,10 +42,10 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteToTranslation(_operator);
-            _negatedValue.WriteInParenthesesIfRequired(context);
+            buffer.WriteToTranslation(_operator);
+            _negatedValue.WriteInParenthesesIfRequired(buffer);
         }
     }
 }

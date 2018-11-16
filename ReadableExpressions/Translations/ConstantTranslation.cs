@@ -227,11 +227,11 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                _typeNameTranslation.WriteTo(context);
-                context.WriteToTranslation('.');
-                context.WriteToTranslation(_enumValue);
+                _typeNameTranslation.WriteTo(buffer);
+                buffer.WriteToTranslation('.');
+                buffer.WriteToTranslation(_enumValue);
             }
         }
 
@@ -274,42 +274,42 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation(_newDateTime);
+                buffer.WriteToTranslation(_newDateTime);
 
-                context.WriteToTranslation(_value.Year);
-                WriteTwoDigitDatePart(_value.Month, context);
-                WriteTwoDigitDatePart(_value.Day, context);
+                buffer.WriteToTranslation(_value.Year);
+                WriteTwoDigitDatePart(_value.Month, buffer);
+                WriteTwoDigitDatePart(_value.Day, buffer);
 
                 if (_hasMilliseconds || _hasTime)
                 {
-                    WriteTwoDigitDatePart(_value.Hour, context);
-                    WriteTwoDigitDatePart(_value.Minute, context);
-                    WriteTwoDigitDatePart(_value.Second, context);
+                    WriteTwoDigitDatePart(_value.Hour, buffer);
+                    WriteTwoDigitDatePart(_value.Minute, buffer);
+                    WriteTwoDigitDatePart(_value.Second, buffer);
 
                     if (_hasMilliseconds)
                     {
-                        context.WriteToTranslation(", ");
-                        context.WriteToTranslation(_value.Millisecond);
+                        buffer.WriteToTranslation(", ");
+                        buffer.WriteToTranslation(_value.Millisecond);
                     }
                 }
 
-                context.WriteToTranslation(")");
+                buffer.WriteToTranslation(")");
             }
 
-            private static void WriteTwoDigitDatePart(int datePart, ITranslationContext context)
+            private static void WriteTwoDigitDatePart(int datePart, TranslationBuffer buffer)
             {
-                context.WriteToTranslation(", ");
+                buffer.WriteToTranslation(", ");
 
                 if (datePart > 9)
                 {
-                    context.WriteToTranslation(datePart);
+                    buffer.WriteToTranslation(datePart);
                     return;
                 }
 
-                context.WriteToTranslation('0');
-                context.WriteToTranslation(datePart);
+                buffer.WriteToTranslation('0');
+                buffer.WriteToTranslation(datePart);
             }
         }
 
@@ -353,7 +353,7 @@
 
             public bool IsTerminated => true;
 
-            public void WriteTo(ITranslationContext context) => _lambdaTranslation.WriteTo(context);
+            public void WriteTo(TranslationBuffer buffer) => _lambdaTranslation.WriteTo(buffer);
         }
 
         private class FuncConstantTranslation : ITranslation
@@ -389,7 +389,7 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
                 var symbols = new[] { '`', ',', '[', ']' };
                 var parseIndex = 0;
@@ -404,7 +404,7 @@
 
                         if (substring.Length > 0)
                         {
-                            context.WriteToTranslation(GetTypeName(substring));
+                            buffer.WriteToTranslation(GetTypeName(substring));
                         }
 
                         break;
@@ -423,25 +423,25 @@
                             var nullableTypeLength = nullableTypeEndIndex - nullableTypeIndex;
                             substring = _funcString.Substring(nullableTypeIndex, nullableTypeLength);
 
-                            context.WriteToTranslation(GetTypeName(substring));
-                            context.WriteToTranslation('?');
+                            buffer.WriteToTranslation(GetTypeName(substring));
+                            buffer.WriteToTranslation('?');
                             parseIndex = nullableTypeEndIndex + 1;
                             continue;
                         }
 
-                        context.WriteToTranslation(GetTypeName(substring));
+                        buffer.WriteToTranslation(GetTypeName(substring));
                         parseIndex = nextSymbolIndex + 1;
                     }
 
                     switch (_funcString[nextSymbolIndex])
                     {
                         case '`':
-                            context.WriteToTranslation('<');
+                            buffer.WriteToTranslation('<');
                             parseIndex = _funcString.IndexOf('[', parseIndex) + 1;
                             continue;
 
                         case ',':
-                            context.WriteToTranslation(", ");
+                            buffer.WriteToTranslation(", ");
 
                             if (substringLength == 0)
                             {
@@ -451,12 +451,12 @@
                             continue;
 
                         case '[':
-                            context.WriteToTranslation("[]");
+                            buffer.WriteToTranslation("[]");
                             ++parseIndex;
                             continue;
 
                         case ']':
-                            context.WriteToTranslation('>');
+                            buffer.WriteToTranslation('>');
 
                             if (substringLength == 0)
                             {
@@ -509,76 +509,76 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                if (TryWriteFactoryMethodCall(_timeSpan.Days, _timeSpan.TotalDays, "Days", context))
+                if (TryWriteFactoryMethodCall(_timeSpan.Days, _timeSpan.TotalDays, "Days", buffer))
                 {
                     return;
                 }
 
-                if (TryWriteFactoryMethodCall(_timeSpan.Hours, _timeSpan.TotalHours, "Hours", context))
+                if (TryWriteFactoryMethodCall(_timeSpan.Hours, _timeSpan.TotalHours, "Hours", buffer))
                 {
                     return;
                 }
 
-                if (TryWriteFactoryMethodCall(_timeSpan.Minutes, _timeSpan.TotalMinutes, "Minutes", context))
+                if (TryWriteFactoryMethodCall(_timeSpan.Minutes, _timeSpan.TotalMinutes, "Minutes", buffer))
                 {
                     return;
                 }
 
-                if (TryWriteFactoryMethodCall(_timeSpan.Seconds, _timeSpan.TotalSeconds, "Seconds", context))
+                if (TryWriteFactoryMethodCall(_timeSpan.Seconds, _timeSpan.TotalSeconds, "Seconds", buffer))
                 {
                     return;
                 }
 
-                if (TryWriteFactoryMethodCall(_timeSpan.Milliseconds, _timeSpan.TotalMilliseconds, "Milliseconds", context))
+                if (TryWriteFactoryMethodCall(_timeSpan.Milliseconds, _timeSpan.TotalMilliseconds, "Milliseconds", buffer))
                 {
                     return;
                 }
 
                 if ((_timeSpan.Days == 0) && (_timeSpan.Hours == 0) && (_timeSpan.Minutes == 0) && (_timeSpan.Seconds == 0))
                 {
-                    context.WriteToTranslation("TimeSpan.FromTicks(");
-                    context.WriteToTranslation(Math.Floor(_timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
+                    buffer.WriteToTranslation("TimeSpan.FromTicks(");
+                    buffer.WriteToTranslation(Math.Floor(_timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
                     goto EndTranslation;
                 }
 
-                context.WriteToTranslation("new TimeSpan(");
+                buffer.WriteToTranslation("new TimeSpan(");
 
                 if (_timeSpan.Days == 0)
                 {
-                    WriteTimeSpanHoursMinutesSeconds(context, _timeSpan);
+                    WriteTimeSpanHoursMinutesSeconds(buffer, _timeSpan);
                     goto EndTranslation;
                 }
 
-                context.WriteToTranslation(_timeSpan.Days);
-                context.WriteToTranslation(", ");
-                WriteTimeSpanHoursMinutesSeconds(context, _timeSpan);
+                buffer.WriteToTranslation(_timeSpan.Days);
+                buffer.WriteToTranslation(", ");
+                WriteTimeSpanHoursMinutesSeconds(buffer, _timeSpan);
 
                 if (_timeSpan.Milliseconds != 0)
                 {
-                    context.WriteToTranslation(", ");
-                    context.WriteToTranslation(_timeSpan.Milliseconds);
+                    buffer.WriteToTranslation(", ");
+                    buffer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
                 EndTranslation:
-                context.WriteToTranslation(')');
+                buffer.WriteToTranslation(')');
             }
 
-            private static void WriteTimeSpanHoursMinutesSeconds(ITranslationContext context, TimeSpan timeSpan)
+            private static void WriteTimeSpanHoursMinutesSeconds(TranslationBuffer buffer, TimeSpan timeSpan)
             {
-                context.WriteToTranslation(timeSpan.Hours);
-                context.WriteToTranslation(", ");
-                context.WriteToTranslation(timeSpan.Minutes);
-                context.WriteToTranslation(", ");
-                context.WriteToTranslation(timeSpan.Seconds);
+                buffer.WriteToTranslation(timeSpan.Hours);
+                buffer.WriteToTranslation(", ");
+                buffer.WriteToTranslation(timeSpan.Minutes);
+                buffer.WriteToTranslation(", ");
+                buffer.WriteToTranslation(timeSpan.Seconds);
             }
 
             private static bool TryWriteFactoryMethodCall(
                 long value,
                 double totalValue,
                 string valueName,
-                ITranslationContext context)
+                TranslationBuffer buffer)
             {
                 if (value == 0)
                 {
@@ -591,11 +591,11 @@
                     return false;
                 }
 
-                context.WriteToTranslation("TimeSpan.From");
-                context.WriteToTranslation(valueName);
-                context.WriteToTranslation('(');
-                context.WriteToTranslation(value);
-                context.WriteToTranslation(')');
+                buffer.WriteToTranslation("TimeSpan.From");
+                buffer.WriteToTranslation(valueName);
+                buffer.WriteToTranslation('(');
+                buffer.WriteToTranslation(value);
+                buffer.WriteToTranslation(')');
                 return true;
             }
         }

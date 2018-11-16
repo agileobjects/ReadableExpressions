@@ -62,28 +62,28 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation("new { ");
+                buffer.WriteToTranslation("new { ");
 
                 if (_ctorParameters.Length != 0)
                 {
                     for (var i = 0; ;)
                     {
-                        context.WriteToTranslation(_ctorParameters[i].Name);
-                        context.WriteToTranslation(" = ");
-                        Parameters[i].WriteTo(context);
+                        buffer.WriteToTranslation(_ctorParameters[i].Name);
+                        buffer.WriteToTranslation(" = ");
+                        Parameters[i].WriteTo(buffer);
 
                         if (++i == _ctorParameters.Length)
                         {
                             break;
                         }
 
-                        context.WriteToTranslation(", ");
+                        buffer.WriteToTranslation(", ");
                     }
                 }
 
-                context.WriteToTranslation(" }");
+                buffer.WriteToTranslation(" }");
             }
         }
 
@@ -112,17 +112,17 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                context.WriteToTranslation("new ");
-                _typeNameTranslation.WriteTo(context);
+                buffer.WriteToTranslation("new ");
+                _typeNameTranslation.WriteTo(buffer);
 
                 if (_omitParenthesesIfParameterless && Parameters.None)
                 {
                     return;
                 }
 
-                Parameters.WithParentheses().WriteTo(context);
+                Parameters.WithParentheses().WriteTo(buffer);
             }
 
             public Type Type => _typeNameTranslation.Type;

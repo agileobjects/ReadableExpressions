@@ -68,7 +68,7 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             var parameterName = _parameter.Name;
 
@@ -86,10 +86,10 @@
 
             if (!variableNumber.HasValue && _keywords.Contains(parameterName))
             {
-                context.WriteToTranslation('@');
+                buffer.WriteToTranslation('@');
             }
 
-            context.WriteToTranslation(parameterName);
+            buffer.WriteToTranslation(parameterName);
 
             if (variableNumber == null)
             {
@@ -98,11 +98,11 @@
 
             if (variableNumber.Value < 10)
             {
-                context.WriteToTranslation(variableNumber.Value.ToString()[0]);
+                buffer.WriteToTranslation(variableNumber.Value.ToString()[0]);
                 return;
             }
 
-            context.WriteToTranslation(variableNumber.Value.ToString());
+            buffer.WriteToTranslation(variableNumber.Value.ToString());
         }
     }
 }

@@ -127,20 +127,20 @@
         protected override bool IsMultiStatement()
             => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
-            _targetTranslation.WriteTo(context);
-            context.WriteToTranslation(_operator);
+            WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
+            _targetTranslation.WriteTo(buffer);
+            buffer.WriteToTranslation(_operator);
 
             if (_valueTranslation.IsMultiStatement() == false)
             {
-                context.WriteSpaceToTranslation();
+                buffer.WriteSpaceToTranslation();
             }
 
-            _valueTranslation.WriteTo(context);
+            _valueTranslation.WriteTo(buffer);
 
-            WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
+            WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
         }
     }
 }

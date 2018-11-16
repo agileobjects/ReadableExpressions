@@ -120,13 +120,13 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            WriteOpeningCheckedIfNecessary(context, out var isMultiStatementChecked);
-            _leftOperandTranslation.WriteInParenthesesIfRequired(context);
-            context.WriteToTranslation(_operator);
-            _rightOperandTranslation.WriteInParenthesesIfRequired(context);
-            WriteClosingCheckedIfNecessary(context, isMultiStatementChecked);
+            WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
+            _leftOperandTranslation.WriteInParenthesesIfRequired(buffer);
+            buffer.WriteToTranslation(_operator);
+            _rightOperandTranslation.WriteInParenthesesIfRequired(buffer);
+            WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
         }
 
         protected override bool IsMultiStatement()
@@ -192,15 +192,15 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
                 if (_standaloneBoolean.IsComparisonToTrue)
                 {
-                    _operandTranslation.WriteTo(context);
+                    _operandTranslation.WriteTo(buffer);
                     return;
                 }
 
-                NegationTranslation.ForNot(_operandTranslation).WriteTo(context);
+                NegationTranslation.ForNot(_operandTranslation).WriteTo(buffer);
             }
 
             private class StandaloneBoolean

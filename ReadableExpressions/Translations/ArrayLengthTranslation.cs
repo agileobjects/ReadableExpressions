@@ -28,10 +28,10 @@
 
         private static int LengthPropertyLength => _length.Length;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            _operand.WriteTo(context);
-            context.WriteToTranslation(_length);
+            _operand.WriteTo(buffer);
+            buffer.WriteToTranslation(_length);
         }
     }
 }

@@ -27,10 +27,10 @@
 
         public bool IsTerminated => true;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
-            context.WriteToTranslation("while (true)");
-            _loopBodyTranslation.WriteTo(context);
+            buffer.WriteToTranslation("while (true)");
+            _loopBodyTranslation.WriteTo(buffer);
         }
     }
 }

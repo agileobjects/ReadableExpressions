@@ -67,14 +67,14 @@
 
             public int EstimatedSize { get; }
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(context);
-                context.WriteToTranslation(_binaryConditionOperator.TrimEnd());
-                context.WriteNewLineToTranslation();
-                context.Indent();
-                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(context);
-                context.Unindent();
+                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(buffer);
+                buffer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
+                buffer.WriteNewLineToTranslation();
+                buffer.Indent();
+                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(buffer);
+                buffer.Unindent();
             }
         }
     }

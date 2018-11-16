@@ -60,7 +60,7 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             for (var i = 0; ;)
             {
@@ -68,11 +68,11 @@
 
                 if ((operandTranslation.NodeType == ExpressionType.Conditional) || operandTranslation.IsAssignment())
                 {
-                    operandTranslation.WriteInParentheses(context);
+                    operandTranslation.WriteInParentheses(buffer);
                 }
                 else
                 {
-                    operandTranslation.WriteTo(context);
+                    operandTranslation.WriteTo(buffer);
                 }
 
                 if (++i == _operandCount)
@@ -80,7 +80,7 @@
                     break;
                 }
 
-                context.WriteToTranslation(" + ");
+                buffer.WriteToTranslation(" + ");
             }
         }
     }

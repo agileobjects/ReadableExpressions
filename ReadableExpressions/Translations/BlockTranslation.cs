@@ -237,38 +237,38 @@ namespace AgileObjects.ReadableExpressions.Translations
             return this;
         }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_hasVariables)
             {
                 foreach (var parametersByType in _variables)
                 {
-                    parametersByType.Key.WriteTo(context);
-                    context.WriteSpaceToTranslation();
-                    parametersByType.Value.WriteTo(context);
-                    context.WriteToTranslation(';');
-                    context.WriteNewLineToTranslation();
+                    parametersByType.Key.WriteTo(buffer);
+                    buffer.WriteSpaceToTranslation();
+                    parametersByType.Value.WriteTo(buffer);
+                    buffer.WriteToTranslation(';');
+                    buffer.WriteNewLineToTranslation();
                 }
 
                 switch (_statements[0].NodeType)
                 {
                     case Conditional when !ConditionalTranslation.IsTernary(_statements[0].Expression):
                     case Switch:
-                        context.WriteNewLineToTranslation();
+                        buffer.WriteNewLineToTranslation();
                         break;
                 }
             }
 
             for (var i = 0; ;)
             {
-                _statements[i].WriteTo(context);
+                _statements[i].WriteTo(buffer);
 
                 if (++i == _statementCount)
                 {
                     break;
                 }
 
-                context.WriteNewLineToTranslation();
+                buffer.WriteNewLineToTranslation();
             }
         }
 
@@ -341,34 +341,34 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             public virtual bool HasGoto => _writeReturnKeyword || _statementTranslation.HasGoto();
 
-            public void WriteTo(ITranslationContext context)
+            public void WriteTo(TranslationBuffer buffer)
             {
-                if ((_writeBlankLineBefore || context.TranslationQuery(q => q.TranslationEndsWith("};"))) && 
-                     !context.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
+                if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) && 
+                     !buffer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
-                    context.WriteNewLineToTranslation();
+                    buffer.WriteNewLineToTranslation();
                 }
 
                 if (_writeReturnKeyword)
                 {
-                    context.WriteToTranslation("return ");
+                    buffer.WriteToTranslation("return ");
                 }
 
-                WriteStatementTo(context);
+                WriteStatementTo(buffer);
 
                 if ((_suppressBlankLineAfter == false) && WriteBlankLineAfter())
                 {
-                    context.WriteNewLineToTranslation();
+                    buffer.WriteNewLineToTranslation();
                 }
             }
 
-            protected virtual void WriteStatementTo(ITranslationContext context)
+            protected virtual void WriteStatementTo(TranslationBuffer buffer)
             {
-                _statementTranslation.WriteTo(context);
+                _statementTranslation.WriteTo(buffer);
 
                 if (_statementIsUnterminated && (DoNotTerminate == false))
                 {
-                    context.WriteToTranslation(';');
+                    buffer.WriteToTranslation(';');
                 }
             }
 
@@ -423,20 +423,20 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             public override bool HasGoto => false;
 
-            protected override void WriteStatementTo(ITranslationContext context)
+            protected override void WriteStatementTo(TranslationBuffer buffer)
             {
                 if (_typeNameTranslation != null)
                 {
-                    _typeNameTranslation.WriteTo(context);
+                    _typeNameTranslation.WriteTo(buffer);
                 }
                 else
                 {
-                    context.WriteToTranslation(_var);
+                    buffer.WriteToTranslation(_var);
                 }
 
-                context.WriteSpaceToTranslation();
+                buffer.WriteSpaceToTranslation();
 
-                base.WriteStatementTo(context);
+                base.WriteStatementTo(buffer);
             }
 
             public override bool WriteBlankLineAfter() => IsMultiStatement;

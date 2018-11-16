@@ -105,13 +105,13 @@
                 return codeBlockTranslation;
             }
 
-            public abstract void WriteTo(ITranslationContext context);
+            public abstract void WriteTo(TranslationBuffer buffer);
 
-            protected void WriteIfStatement(ITranslationContext context)
+            protected void WriteIfStatement(TranslationBuffer buffer)
             {
-                context.WriteToTranslation("if ");
-                TestTranslation.WriteInParentheses(context);
-                IfTrueTranslation.WriteTo(context);
+                buffer.WriteToTranslation("if ");
+                TestTranslation.WriteInParentheses(buffer);
+                IfTrueTranslation.WriteTo(buffer);
             }
         }
 
@@ -129,12 +129,12 @@
 
             public bool IsTerminated => true;
 
-            public override void WriteTo(ITranslationContext context) => WriteIfStatement(context);
+            public override void WriteTo(TranslationBuffer buffer) => WriteIfStatement(buffer);
         }
 
         private class TernaryTranslation : ConditionalTranslationBase
         {
-            private readonly Action<ITranslationContext> _translationWriter;
+            private readonly Action<TranslationBuffer> _translationWriter;
 
             public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
@@ -153,33 +153,33 @@
                 }
             }
 
-            public override void WriteTo(ITranslationContext context) => _translationWriter.Invoke(context);
+            public override void WriteTo(TranslationBuffer buffer) => _translationWriter.Invoke(buffer);
 
-            private void WriteSingleLineTernary(ITranslationContext context)
+            private void WriteSingleLineTernary(TranslationBuffer buffer)
             {
-                TestTranslation.WriteInParenthesesIfRequired(context);
-                context.WriteToTranslation(" ? ");
-                IfTrueTranslation.WriteTo(context);
-                context.WriteToTranslation(" : ");
-                IfFalseTranslation.WriteTo(context);
+                TestTranslation.WriteInParenthesesIfRequired(buffer);
+                buffer.WriteToTranslation(" ? ");
+                IfTrueTranslation.WriteTo(buffer);
+                buffer.WriteToTranslation(" : ");
+                IfFalseTranslation.WriteTo(buffer);
             }
 
-            private void WriteMultiLineTernary(ITranslationContext context)
+            private void WriteMultiLineTernary(TranslationBuffer buffer)
             {
-                TestTranslation.WriteInParenthesesIfRequired(context);
+                TestTranslation.WriteInParenthesesIfRequired(buffer);
 
-                context.WriteNewLineToTranslation();
-                context.Indent();
-                context.WriteToTranslation("? ");
+                buffer.WriteNewLineToTranslation();
+                buffer.Indent();
+                buffer.WriteToTranslation("? ");
 
-                IfTrueTranslation.WriteTo(context);
+                IfTrueTranslation.WriteTo(buffer);
 
-                context.WriteNewLineToTranslation();
-                context.WriteToTranslation(": ");
+                buffer.WriteNewLineToTranslation();
+                buffer.WriteToTranslation(": ");
 
-                IfFalseTranslation.WriteTo(context);
+                IfFalseTranslation.WriteTo(buffer);
 
-                context.Unindent();
+                buffer.Unindent();
             }
         }
 
@@ -196,12 +196,12 @@
             {
             }
 
-            public override void WriteTo(ITranslationContext context)
+            public override void WriteTo(TranslationBuffer buffer)
             {
-                WriteIfStatement(context);
-                context.WriteNewLineToTranslation();
-                context.WriteNewLineToTranslation();
-                IfFalseTranslation.WriteTo(context);
+                WriteIfStatement(buffer);
+                buffer.WriteNewLineToTranslation();
+                buffer.WriteNewLineToTranslation();
+                IfFalseTranslation.WriteTo(buffer);
             }
         }
 
@@ -231,18 +231,18 @@
 
             public bool IsTerminated => true;
 
-            public override void WriteTo(ITranslationContext context)
+            public override void WriteTo(TranslationBuffer buffer)
             {
-                WriteIfStatement(context);
-                context.WriteNewLineToTranslation();
-                context.WriteToTranslation("else");
+                WriteIfStatement(buffer);
+                buffer.WriteNewLineToTranslation();
+                buffer.WriteToTranslation("else");
 
                 if (_isElseIf)
                 {
-                    context.WriteSpaceToTranslation();
+                    buffer.WriteSpaceToTranslation();
                 }
 
-                IfFalseTranslation.WriteTo(context);
+                IfFalseTranslation.WriteTo(buffer);
             }
         }
     }

@@ -56,18 +56,18 @@
 
         public int EstimatedSize { get; }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_operatorIsSuffix == false)
             {
-                context.WriteToTranslation(_operator);
+                buffer.WriteToTranslation(_operator);
             }
 
-            _operandTranslation?.WriteTo(context);
+            _operandTranslation?.WriteTo(buffer);
 
             if (_operatorIsSuffix)
             {
-                context.WriteToTranslation(_operator);
+                buffer.WriteToTranslation(_operator);
             }
         }
     }

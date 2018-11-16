@@ -71,12 +71,12 @@
 
         public bool HasGoto => !_labelHasNoValue;
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_labelIsNamed)
             {
-                context.WriteToTranslation(_labelName);
-                context.WriteToTranslation(':');
+                buffer.WriteToTranslation(_labelName);
+                buffer.WriteToTranslation(':');
             }
 
             if (_labelHasNoValue)
@@ -84,9 +84,9 @@
                 return;
             }
 
-            context.WriteToTranslation("return ");
-            _labelValueTranslation.WriteTo(context);
-            context.WriteToTranslation(';');
+            buffer.WriteToTranslation("return ");
+            _labelValueTranslation.WriteTo(buffer);
+            buffer.WriteToTranslation(';');
         }
     }
 }

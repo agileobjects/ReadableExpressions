@@ -69,18 +69,18 @@
             return this;
         }
 
-        public void WriteTo(ITranslationContext context)
+        public void WriteTo(TranslationBuffer buffer)
         {
             if (_hasPrefix)
             {
-                context.WriteToTranslation(_prefix);
+                buffer.WriteToTranslation(_prefix);
             }
 
-            _translatable.WriteTo(context);
+            _translatable.WriteTo(buffer);
 
             if (_hasSuffix)
             {
-                context.WriteToTranslation(_suffix);
+                buffer.WriteToTranslation(_suffix);
             }
         }
     }
