@@ -11,7 +11,7 @@
     using Extensions;
     using Interfaces;
 
-    internal class ParameterTranslation : ITranslation
+    internal static class ParameterTranslation
     {
         // TODO: array-specific Combine overload
         private static readonly IEnumerable<string> _keywords = InternalTypeExtensions
@@ -40,69 +40,110 @@
             })
             .ToArray();
 
-        private readonly ParameterExpression _parameter;
-        private readonly bool _isUnnamedParameter;
-
-        public ParameterTranslation(ParameterExpression parameter)
+        public static ITranslation For(ParameterExpression parameter, ITranslationContext context)
         {
-            _parameter = parameter;
-            _isUnnamedParameter = parameter.Name.IsNullOrWhiteSpace();
-            EstimatedSize = GetEstimatedSize();
+            if (parameter.Name.IsNullOrWhiteSpace())
+            {
+                return new UnnamedParameterTranslation(parameter, context);
+            }
+
+            return new StandardParameterTranslation(parameter);
         }
 
-        private int GetEstimatedSize()
+        private class StandardParameterTranslation : ITranslation
         {
-            if (_isUnnamedParameter)
+            private readonly ParameterExpression _parameter;
+            private readonly bool _useLiteralPrefix;
+
+            public StandardParameterTranslation(ParameterExpression parameter)
             {
-                return (int)(_parameter.Type.Name.Length * 1.2);
+                _parameter = parameter;
+                _useLiteralPrefix = _keywords.Contains(parameter.Name);
+                EstimatedSize = GetEstimatedSize();
             }
 
-            return _keywords.Contains(_parameter.Name)
-                ? _parameter.Name.Length + 1
-                : _parameter.Name.Length;
+            private int GetEstimatedSize()
+            {
+                var estimatedSize = _parameter.Name.Length;
+
+                if (_useLiteralPrefix)
+                {
+                    ++estimatedSize;
+                }
+
+                return estimatedSize;
+            }
+
+            public ExpressionType NodeType => ExpressionType.Parameter;
+
+            public Type Type => _parameter.Type;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                if (_useLiteralPrefix)
+                {
+                    buffer.WriteToTranslation('@');
+                }
+
+                buffer.WriteToTranslation(_parameter.Name);
+            }
         }
 
-        public ExpressionType NodeType => ExpressionType.Parameter;
-        
-        public Type Type => _parameter.Type;
-
-        public int EstimatedSize { get; }
-
-        public void WriteTo(TranslationBuffer buffer)
+        private class UnnamedParameterTranslation : ITranslation
         {
-            var parameterName = _parameter.Name;
+            private readonly ParameterExpression _parameter;
+            private readonly int? _variableNumber;
+            private readonly string _parameterName;
+            private readonly bool _useLiteralPrefix;
 
-            int? variableNumber;
-
-            if (_isUnnamedParameter)
+            public UnnamedParameterTranslation(ParameterExpression parameter, ITranslationContext context)
             {
-                variableNumber = context.GetUnnamedVariableNumberOrNull(_parameter);
-                parameterName = _parameter.Type.GetVariableNameInCamelCase(context.Settings);
-            }
-            else
-            {
-                variableNumber = default(int?);
-            }
-
-            if (!variableNumber.HasValue && _keywords.Contains(parameterName))
-            {
-                buffer.WriteToTranslation('@');
+                _parameter = parameter;
+                _variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
+                _parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
+                _useLiteralPrefix = (_variableNumber == null) && _keywords.Contains(_parameterName);
+                EstimatedSize = GetEstimatedSize();
             }
 
-            buffer.WriteToTranslation(parameterName);
-
-            if (variableNumber == null)
+            private int GetEstimatedSize()
             {
-                return;
+                var estimatedSize = _parameterName.Length;
+
+                if (_useLiteralPrefix)
+                {
+                    ++estimatedSize;
+                }
+
+                if (_variableNumber.HasValue)
+                {
+                    estimatedSize += 2;
+                }
+
+                return estimatedSize;
             }
 
-            if (variableNumber.Value < 10)
-            {
-                buffer.WriteToTranslation(variableNumber.Value.ToString()[0]);
-                return;
-            }
+            public ExpressionType NodeType => ExpressionType.Parameter;
 
-            buffer.WriteToTranslation(variableNumber.Value.ToString());
+            public Type Type => _parameter.Type;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                if (_useLiteralPrefix)
+                {
+                    buffer.WriteToTranslation('@');
+                }
+
+                buffer.WriteToTranslation(_parameterName);
+
+                if (_variableNumber != null)
+                {
+                    buffer.WriteToTranslation(_variableNumber.Value.ToString());
+                }
+            }
         }
     }
 }

@@ -209,9 +209,9 @@
 
                 case NewArrayInit:
                     return ArrayInitialisationTranslation.For((NewArrayExpression)expression, this);
-
+                    
                 case Parameter:
-                    return new ParameterTranslation((ParameterExpression)expression);
+                    return ParameterTranslation.For((ParameterExpression)expression, this);
 
                 case Quote:
                     return QuotedLambdaTranslation.For((UnaryExpression)expression, this);

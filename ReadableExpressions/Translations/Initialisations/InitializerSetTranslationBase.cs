@@ -46,7 +46,7 @@
         {
             if (WriteToMultipleLines)
             {
-                context.WriteOpeningBraceToTranslation();
+                buffer.WriteOpeningBraceToTranslation();
             }
             else
             {
@@ -74,7 +74,7 @@
 
             if (WriteToMultipleLines)
             {
-                context.WriteClosingBraceToTranslation();
+                buffer.WriteClosingBraceToTranslation();
             }
             else
             {
