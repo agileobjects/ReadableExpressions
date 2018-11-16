@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -13,8 +12,7 @@
 
     internal static class ParameterTranslation
     {
-        // TODO: array-specific Combine overload
-        private static readonly IEnumerable<string> _keywords = InternalTypeExtensions
+        private static readonly IList<string> _keywords = InternalTypeExtensions
             .TypeNames
             .Combine(new[]
             {
@@ -37,8 +35,7 @@
                 "return",
                 "implicit",
                 "explicit"
-            })
-            .ToArray();
+            });
 
         public static ITranslation For(ParameterExpression parameter, ITranslationContext context)
         {

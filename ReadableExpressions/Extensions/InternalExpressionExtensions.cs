@@ -1,14 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-#if !NET35
-    using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
-#else
+#if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
 
     internal static class InternalExpressionExtensions
@@ -33,7 +30,7 @@
                 case Call:
                 case Coalesce:
                 case Conditional:
-                case ExpressionType.Convert:
+                case Convert:
                 case ConvertChecked:
                 case Default:
                 case Divide:
@@ -60,42 +57,9 @@
             => (block.Type != typeof(void)) && block.Result.IsReturnable();
 
         public static bool IsComment(this Expression expression)
-            => (expression.NodeType == Constant) && ((ConstantExpression)expression).IsComment();
+            => (expression.NodeType == Constant) && IsComment((ConstantExpression)expression);
 
-        public static bool IsComment(this ConstantExpression constant)
+        private static bool IsComment(ConstantExpression constant)
             => (constant.Value is string value) && value.IsComment();
-
-        public static bool IsAssignment(this Expression expression)
-        {
-            switch (expression.NodeType)
-            {
-                case AddAssign:
-                case AddAssignChecked:
-                case AndAssign:
-                case Assign:
-                case DivideAssign:
-                case ExclusiveOrAssign:
-                case LeftShiftAssign:
-                case ModuloAssign:
-                case MultiplyAssign:
-                case MultiplyAssignChecked:
-                case OrAssign:
-                case PowerAssign:
-                case SubtractAssign:
-                case SubtractAssignChecked:
-                case RightShiftAssign:
-                    return true;
-            }
-
-            return false;
-        }
-
-        public static ExpressionType[] GetCheckedExpressionTypes(this Dictionary<ExpressionType, string> valuesByExpressionTypes)
-        {
-            return valuesByExpressionTypes
-               .Keys
-               .Filter(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
-               .ToArray();
-        }
     }
 }

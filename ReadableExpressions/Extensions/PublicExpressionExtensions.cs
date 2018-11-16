@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
