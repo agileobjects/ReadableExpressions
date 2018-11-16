@@ -303,6 +303,11 @@ namespace AgileObjects.ReadableExpressions.Translations
                         return true;
                 }
 
+                if (_statementTranslation.IsAssignment())
+                {
+                    return true;
+                }
+
                 return !(expression.IsComment() || _statementTranslation.IsTerminated());
             }
 
@@ -333,7 +338,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 {
                     _writeBlankLineBefore = true;
                 }
-                
+
                 _suppressBlankLineAfter = true;
             }
 
@@ -343,7 +348,7 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) && 
+                if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
                      !buffer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
                     buffer.WriteNewLineToTranslation();

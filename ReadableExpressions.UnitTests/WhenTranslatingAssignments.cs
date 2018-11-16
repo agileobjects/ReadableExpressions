@@ -302,6 +302,8 @@ var i = (long)(j = 10);";
         {
             var intVariable = Expression.Variable(typeof(int), "i");
 
+            var assignIntToZero = Expression.Assign(intVariable, Expression.Constant(0));
+
             var read = CreateLambda(() => Console.Read());
 
             var returnDefault = Expression.Catch(typeof(IOException), Expression.Default(typeof(int)));
@@ -309,9 +311,12 @@ var i = (long)(j = 10);";
 
             var assignReadOrDefault = Expression.Assign(intVariable, readOrDefault);
 
-            var translated = ToReadableString(assignReadOrDefault);
+            var assignmentBlock = Expression.Block(new[] { intVariable }, assignIntToZero, assignReadOrDefault);
+
+            var translated = ToReadableString(assignmentBlock);
 
             const string EXPECTED = @"
+var i = 0;
 i =
 {
     try
@@ -322,7 +327,7 @@ i =
     {
         return default(int);
     }
-}";
+};";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
