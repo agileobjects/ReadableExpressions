@@ -3,7 +3,7 @@
     using System;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Translators;
+    using Translations;
     using LinqExp = System.Linq.Expressions;
 #else
     using System.Linq.Expressions;

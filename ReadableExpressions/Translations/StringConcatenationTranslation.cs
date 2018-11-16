@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;

@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Linq;
     using System.Reflection;
     using Interfaces;

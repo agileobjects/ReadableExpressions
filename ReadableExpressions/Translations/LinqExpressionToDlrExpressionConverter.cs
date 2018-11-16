@@ -1,5 +1,5 @@
 ﻿#if NET35
-namespace AgileObjects.ReadableExpressions.Translators
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
     using System.Collections.Generic;

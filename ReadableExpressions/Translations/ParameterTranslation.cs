@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 #if NET35
@@ -77,7 +76,7 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             if (_isUnnamedParameter)
             {
-                variableNumber = context.GetUnnamedVariableNumber(_parameter);
+                variableNumber = context.GetUnnamedVariableNumberOrNull(_parameter);
                 parameterName = _parameter.Type.GetVariableNameInCamelCase(context.Settings);
             }
             else

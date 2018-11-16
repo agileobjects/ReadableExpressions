@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -33,7 +32,7 @@ namespace AgileObjects.ReadableExpressions.Translations
             => _parameters.EstimatedSize + _fatArrow.Length + _bodyTranslation.EstimatedSize;
 
         public ExpressionType NodeType => ExpressionType.Lambda;
-        
+
         public Type Type { get; }
 
         public int EstimatedSize { get; }

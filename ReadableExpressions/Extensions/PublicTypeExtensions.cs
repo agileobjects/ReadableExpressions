@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using NetStandardPolyfills;
-    using static TranslationContext;
+    using static ExpressionExtensions;
 
     /// <summary>
     /// Provides a set of static extension methods for type information.

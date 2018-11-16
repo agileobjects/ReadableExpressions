@@ -4,7 +4,6 @@
     using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Translators;
     using static Microsoft.Scripting.Ast.ExpressionType;
     using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #else

@@ -38,11 +38,13 @@
         {
             context.WriteToTranslation(_throw);
 
-            if (_thrownItemTranslation != null)
+            if (_thrownItemTranslation == null)
             {
-                context.WriteSpaceToTranslation();
-                _thrownItemTranslation.WriteTo(context);
+                return;
             }
+
+            context.WriteSpaceToTranslation();
+            _thrownItemTranslation.WriteTo(context);
         }
     }
 }

@@ -5,7 +5,7 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
+    using static System.Environment;
 
     /// <summary>
     /// A factory class providing the Comment Expression
@@ -19,6 +19,11 @@
         /// <param name="text">The text of the comment to create, without slashes or /* */.</param>
         /// <returns>A <see cref="ConstantExpression"/> representing a code comment.</returns>
         public static ConstantExpression Comment(string text)
-            => Expression.Constant(text.AsComment());
+            => Expression.Constant(GetComment(text));
+
+        private const string _commentString = "// ";
+
+        private static string GetComment(string text)
+            => _commentString + text.Trim().Replace(NewLine, NewLine + _commentString);
     }
 }

@@ -15,43 +15,57 @@
 
     internal class TranslationTree : ITranslationContext, ITranslationQuery
     {
-        private readonly TranslationContext _context;
+        private readonly TranslationSettings _settings;
+        private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationTree(Expression expression, TranslationContext context)
+        public TranslationTree(Expression expression, TranslationSettings settings)
         {
-            _context = context;
+            _settings = settings;
+            _expressionAnalysis = ExpressionAnalysis.For(expression);
             _root = GetTranslationFor(expression);
             _content = new StringBuilder(_root.EstimatedSize);
         }
 
         #region ITranslationContext Members
 
-        TranslationSettings ITranslationContext.Settings => _context.Settings;
+        TranslationSettings ITranslationContext.Settings => _settings;
 
         IEnumerable<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
-            => _context.JoinedAssignmentVariables;
+            => _expressionAnalysis.JoinedAssignmentVariables;
 
         bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
-            => _context.IsNotJoinedAssignment(expression);
+        {
+            return (expression.NodeType != Assign) ||
+                   !_expressionAnalysis.JoinedAssignments.Contains((BinaryExpression)expression);
+        }
 
         bool ITranslationContext.IsCatchBlockVariable(Expression expression)
-            => _context.IsCatchBlockVariable(expression);
+            => _expressionAnalysis.IsCatchBlockVariable(expression);
 
         bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
-            => _context.IsReferencedByGoto(labelTarget);
+            => _expressionAnalysis.IsReferencedByGoto(labelTarget);
 
         bool ITranslationContext.GoesToReturnLabel(GotoExpression @goto)
-            => _context.GoesToReturnLabel(@goto);
+            => _expressionAnalysis.GoesToReturnLabel(@goto);
 
-        bool ITranslationContext.IsPartOfMethodCallChain(Expression methodCall)
-            => _context.IsPartOfMethodCallChain(methodCall);
+        bool ITranslationContext.IsPartOfMethodCallChain(MethodCallExpression methodCall)
+            => _expressionAnalysis.ChainedMethodCalls.Contains(methodCall);
 
-        int? ITranslationContext.GetUnnamedVariableNumber(ParameterExpression variable)
-            => _context.GetUnnamedVariableNumberOrNull(variable);
+        int? ITranslationContext.GetUnnamedVariableNumberOrNull(ParameterExpression variable)
+        {
+            var variablesOfType = _expressionAnalysis.UnnamedVariablesByType[variable.Type];
+
+            if (variablesOfType.Length == 1)
+            {
+                return null;
+            }
+
+            return Array.IndexOf(variablesOfType, variable, 0) + 1;
+        }
 
         TypeNameTranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
 
@@ -211,7 +225,7 @@
                         return false;
                     }
                 }
-                        
+
                 return true;
             }
 

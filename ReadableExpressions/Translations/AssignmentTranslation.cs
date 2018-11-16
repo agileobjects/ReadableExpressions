@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using Interfaces;
 #if NET35
@@ -118,7 +117,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         public static bool IsAssignment(ExpressionType nodeType) => _symbolsByNodeType.ContainsKey(nodeType);
 
         public ExpressionType NodeType { get; }
-        
+
         public Type Type => _targetTranslation.Type;
 
         public int EstimatedSize { get; }

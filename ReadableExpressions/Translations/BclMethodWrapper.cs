@@ -1,8 +1,9 @@
-namespace AgileObjects.ReadableExpressions.Translators
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
     using System.Diagnostics;
     using System.Reflection;
+    using Interfaces;
     using NetStandardPolyfills;
 
     internal class BclMethodWrapper : IMethod

@@ -1,7 +1,6 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -48,7 +47,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         }
 
         public ExpressionType NodeType => ExpressionType.NewArrayBounds;
-        
+
         public Type Type { get; }
 
         public int EstimatedSize { get; }
