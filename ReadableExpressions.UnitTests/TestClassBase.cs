@@ -13,25 +13,25 @@
     {
 #if NET35
         protected static LambdaExpression CreateLambda(LinqExp.Expression<Action> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg>(LinqExp.Expression<Action<TArg>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2>(LinqExp.Expression<Action<TArg1, TArg2>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         internal static LambdaExpression CreateLambda<TReturn>(LinqExp.Expression<Func<TReturn>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg, TReturn>(LinqExp.Expression<Func<TArg, TReturn>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TReturn>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TArg3, TReturn>> linqLambda)
-            => (LambdaExpression)LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         internal static string ToReadableString(Expression expression, Func<TranslationSettings, TranslationSettings> configuration = null)
             => expression.ToReadableString(configuration);

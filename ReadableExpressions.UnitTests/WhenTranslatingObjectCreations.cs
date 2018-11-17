@@ -27,6 +27,26 @@
         }
 
         [Fact]
+        public void ShouldTranslateAParameterlessNoNamespaceaNewExpression()
+        {
+            var createObject = CreateLambda(() => new NoNamespace());
+
+            var translated = ToReadableString(createObject.Body);
+
+            translated.ShouldBe("new NoNamespace()");
+        }
+
+        [Fact]
+        public void ShouldTranslateAFullyQualifiedParameterlessNoNamespaceaNewExpression()
+        {
+            var createObject = CreateLambda(() => new NoNamespace());
+
+            var translated = ToReadableString(createObject.Body, s => s.UseFullyQualifiedTypeNames);
+
+            translated.ShouldBe("new NoNamespace()");
+        }
+
+        [Fact]
         public void ShouldTranslateANewExpressionWithParameters()
         {
             var createToday = CreateLambda(() => new DateTime(2014, 08, 23));
@@ -34,6 +54,16 @@
             var translated = ToReadableString(createToday.Body);
 
             translated.ShouldBe("new DateTime(2014, 8, 23)");
+        }
+
+        [Fact]
+        public void ShouldTranslateAFullyQualifiedNewExpressionWithParameters()
+        {
+            var createToday = CreateLambda(() => new DateTime(2018, 11, 17));
+
+            var translated = ToReadableString(createToday.Body, s => s.UseFullyQualifiedTypeNames);
+
+            translated.ShouldBe("new System.DateTime(2018, 11, 17)");
         }
 
         [Fact]
@@ -45,6 +75,16 @@
             var translated = ToReadableString(emptyInit);
 
             translated.ShouldBe("new MemoryStream()");
+        }
+
+        [Fact]
+        public void ShouldTranslateANewFullQualifiedNestedGenericTypeExpression()
+        {
+            var createArray = CreateLambda(() => new NestedType<int>.NestedValue<DateTime>());
+
+            var translated = ToReadableString(createArray.Body, s => s.UseFullyQualifiedTypeNames);
+
+            translated.ShouldBe("new AgileObjects.ReadableExpressions.UnitTests.NestedType<int>.NestedValue<System.DateTime>()");
         }
 
         [Fact]
@@ -189,6 +229,16 @@ new Dictionary<int, decimal>
         }
 
         [Fact]
+        public void ShouldTranslateANewFullyQualifiedGenericTypeArrayExpression()
+        {
+            var createArray = CreateLambda(() => new List<decimal>[5]);
+
+            var translated = ToReadableString(createArray.Body, s => s.UseFullyQualifiedTypeNames);
+
+            translated.ShouldBe("new System.Collections.Generic.List<decimal>[5]");
+        }
+
+        [Fact]
         public void ShouldTranslateAnImplicitTypeNewArrayExpressionWithAdditions()
         {
             var createArray = CreateLambda(() => new[] { 1.00f, 2.3f, 3.00f });
@@ -316,7 +366,7 @@ new StringBuilder(
         public void ShouldTranslateAnAnonymousTypeCreation()
         {
             var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
-            var constructor = anonType.GetConstructor(new[] { typeof(string), typeof(int) });
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
 
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = Expression.New(constructor, Expression.Constant("How much?!"), Expression.Constant(100));
@@ -324,6 +374,20 @@ new StringBuilder(
             var translated = ToReadableString(creation);
 
             translated.ShouldBe("new { ValueString = \"How much?!\", ValueInt = 100 }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAFullyQualfiedAnonymousTypeCreation()
+        {
+            var anonType = new { ValueString = default(string), TimeSpanValue = default(TimeSpan) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(TimeSpan));
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = Expression.New(constructor, Expression.Constant("How much?!"), Expression.Default(typeof(TimeSpan)));
+
+            var translated = ToReadableString(creation, s => s.UseFullyQualifiedTypeNames);
+
+            translated.ShouldBe("new { ValueString = \"How much?!\", TimeSpanValue = default(System.TimeSpan) }");
         }
     }
 
@@ -355,5 +419,17 @@ new StringBuilder(
         public List<string> PhoneNumbers { get; set; }
     }
 
+    internal class NestedType<T>
+    {
+        internal class NestedValue<TValue>
+        {
+            public T Type { get; set; }
+
+            public TValue Value { get; set; }
+        }
+    }
+
     #endregion
 }
+
+public class NoNamespace { }
