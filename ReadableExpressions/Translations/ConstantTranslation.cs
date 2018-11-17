@@ -41,7 +41,7 @@
                 return FixedValueTranslation(constant.Value, valueType);
             }
 
-            return FixedValueTranslation(valueType.GetFriendlyName(context.Settings), valueType);
+            return context.GetTranslationFor(valueType).WithNodeType(Constant);
         }
 
         private static ITranslation FixedValueTranslation(ConstantExpression constant) => FixedValueTranslation(constant.Value, constant.Type);

@@ -36,14 +36,17 @@
 
             if (!type.IsGenericType())
             {
-                var qualifiedTypeName = type.FullName.GetSubstitutionOrNull() ?? type.Name;
+                var substitutedTypeName = type.FullName.GetSubstitutionOrNull();
+                var qualifiedTypeName = substitutedTypeName ?? type.Name;
 
                 if (type.IsNested)
                 {
                     return type.DeclaringType.GetFriendlyName(translationSettings) + "." + qualifiedTypeName;
                 }
 
-                return qualifiedTypeName;
+                return (substitutedTypeName == null)
+                    ? GetFinalisedTypeName(type, qualifiedTypeName, translationSettings)
+                    : qualifiedTypeName;
             }
 
             Type underlyingNullableType;
@@ -63,7 +66,7 @@
 
             if (!genericType.IsNested)
             {
-                return genericTypeName;
+                return GetFinalisedTypeName(genericType, genericTypeName, settings);
             }
 
             // ReSharper disable once PossibleNullReferenceException
@@ -119,7 +122,7 @@
         private static string GetGenericTypeName(
             Type type,
             int numberOfParameters,
-            IEnumerable<Type> typeArguments,
+            IList<Type> typeArguments,
             TranslationSettings settings)
         {
             var anonTypeIndex = 0;
@@ -135,12 +138,12 @@
 
             var typeName = type.Name;
 
-            var typeGenericTypeArgumentFriendlyNames =
-                typeArguments.Project(t => GetFriendlyName(t, settings)).Join(", ");
+            var typeGenericTypeArgumentNames = typeArguments
+                .ProjectToArray(t => GetFriendlyName(t, settings));
 
             typeName = typeName.Replace(
                 "`" + numberOfParameters,
-                "<" + typeGenericTypeArgumentFriendlyNames + ">");
+                "<" + typeGenericTypeArgumentNames.Join(", ") + ">");
 
             return isAnonType ? GetAnonymousTypeName(typeName, anonTypeIndex) : typeName;
         }
@@ -155,6 +158,13 @@
             typeName = typeName.Remove(trimStartIndex, argumentsStartIndex - trimStartIndex);
 
             return typeName;
+        }
+
+        private static string GetFinalisedTypeName(Type type, string typeName, TranslationSettings settings)
+        {
+            return settings.FullyQualifyTypeNames && (type.Namespace != null)
+                ? type.Namespace + "." + typeName
+                : typeName;
         }
 
         /// <summary>
@@ -297,9 +307,8 @@
                 }
             }
 
-            var interfaceType = type
-                .GetAllInterfaces()
-                .FirstOrDefault(t => t.IsClosedTypeOf(typeof(IDictionary<,>)));
+            var interfaceType = InternalEnumerableExtensions.FirstOrDefault(type
+                    .GetAllInterfaces(), t => t.IsClosedTypeOf(typeof(IDictionary<,>)));
 
             return interfaceType;
         }
@@ -326,14 +335,13 @@
 
             if (enumerableType.IsGenericType())
             {
-                return enumerableType.GetGenericTypeArguments().Last();
+                return InternalEnumerableExtensions.Last(enumerableType.GetGenericTypeArguments());
             }
 
-            var enumerableInterfaceType = enumerableType
-                .GetAllInterfaces()
-                .FirstOrDefault(interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
+            var enumerableInterfaceType = InternalEnumerableExtensions.FirstOrDefault(enumerableType
+                    .GetAllInterfaces(), interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
 
-            return enumerableInterfaceType?.GetGenericTypeArguments().First() ?? typeof(object);
+            return InternalEnumerableExtensions.First(enumerableInterfaceType?.GetGenericTypeArguments()) ?? typeof(object);
         }
 
         /// <summary>

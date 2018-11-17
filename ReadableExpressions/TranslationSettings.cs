@@ -15,6 +15,20 @@
         }
 
         /// <summary>
+        /// Fully qualify Type names with their namespace.
+        /// </summary>
+        public TranslationSettings UseFullyQualifiedTypeNames
+        {
+            get
+            {
+                FullyQualifyTypeNames = true;
+                return this;
+            }
+        }
+
+        internal bool FullyQualifyTypeNames { get; private set; }
+
+        /// <summary>
         /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;
         /// </summary>
         public TranslationSettings UseExplicitGenericParameters

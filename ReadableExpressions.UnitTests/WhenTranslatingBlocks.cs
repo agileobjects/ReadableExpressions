@@ -275,7 +275,7 @@ Console.WriteLine();";
         {
             var objectVariable = Expression.Variable(typeof(object), "o");
             var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
-            var intToStringMethod = typeof(int).GetPublicInstanceMethods("ToString").First();
+            var intToStringMethod = typeof(int).GetPublicInstanceMethod("ToString", parameterCount: 0);
             var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
             var intToStringBlock = Expression.Block(intToStringCall);
             var openTextFile = CreateLambda((string str) => File.OpenText(str));
