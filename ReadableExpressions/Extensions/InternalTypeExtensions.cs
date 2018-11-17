@@ -23,13 +23,11 @@
             { typeof(object).FullName, "object" },
         };
 
-        internal static IEnumerable<string> TypeNames => _typeNameSubstitutions.Values;
+        internal static ICollection<string> TypeNames => _typeNameSubstitutions.Values;
 
         public static string GetSubstitutionOrNull(this string typeFullName)
         {
-            string substitutedName;
-
-            return _typeNameSubstitutions.TryGetValue(typeFullName, out substitutedName)
+            return _typeNameSubstitutions.TryGetValue(typeFullName, out var substitutedName)
                 ? substitutedName : null;
         }
     }

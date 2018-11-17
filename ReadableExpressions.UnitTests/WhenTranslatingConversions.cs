@@ -7,7 +7,7 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -74,7 +74,7 @@
 
             var translated = ToReadableString(streamAsDisposable.Body);
 
-            translated.ShouldBe("(stream as IDisposable)");
+            translated.ShouldBe("stream as IDisposable");
         }
 
         [Fact]
@@ -85,7 +85,7 @@
 
             var translated = ToReadableString(unboxObjectToInt);
 
-            translated.ShouldBe("((int)o)");
+            translated.ShouldBe("(int)o");
         }
 
         // https://github.com/agileobjects/ReadableExpressions/issues/20

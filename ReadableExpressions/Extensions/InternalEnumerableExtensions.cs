@@ -10,6 +10,35 @@
     internal static class InternalEnumerableExtensions
     {
         [DebuggerStepThrough]
+        public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
+
+        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, TResult> projector)
+        {
+            var itemCount = items.Count;
+            var result = new TResult[itemCount];
+
+            for (var i = 0; i < itemCount; ++i)
+            {
+                result[i] = projector.Invoke(items[i]);
+            }
+
+            return result;
+        }
+
+        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, int, TResult> projector)
+        {
+            var itemCount = items.Count;
+            var result = new TResult[itemCount];
+
+            for (var i = 0; i < itemCount; ++i)
+            {
+                result[i] = projector.Invoke(items[i], i);
+            }
+
+            return result;
+        }
+
+        [DebuggerStepThrough]
         public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
         {
             foreach (var item in items)
@@ -30,17 +59,23 @@
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<T> Combine<T>(this IEnumerable<T> first, IEnumerable<T> second)
+        public static IList<T> Combine<T>(this ICollection<T> first, IList<T> second)
         {
+            var secondCount = second.Count;
+            var combined = new T[first.Count + secondCount];
+            var index = 0;
+
             foreach (var item in first)
             {
-                yield return item;
+                combined[index++] = item;
             }
 
-            foreach (var item in second)
+            for (var i = 0; i < secondCount;)
             {
-                yield return item;
+                combined[index++] = second[i++];
             }
+
+            return combined;
         }
 
         [DebuggerStepThrough]

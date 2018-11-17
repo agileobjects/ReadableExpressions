@@ -125,7 +125,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
             var translated = TestClassBase.ToReadableString(intIsLong);
 
-            translated.ShouldBe("(i TypeOf typeof(long))");
+            translated.ShouldBe("i TypeOf typeof(long)");
         }
 
         public void TestObjectTypeEqualExpressionTranslation()
@@ -134,7 +134,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
             var translated = TestClassBase.ToReadableString(objectIsString);
 
-            translated.ShouldBe("(o is string)");
+            translated.ShouldBe("o is string");
         }
     }
 }

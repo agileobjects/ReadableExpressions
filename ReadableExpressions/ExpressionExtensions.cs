@@ -1,10 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Extensions;
+    using Translations;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Translators;
     using LinqExpression = System.Linq.Expressions.Expression;
 #else
     using System.Linq.Expressions;
@@ -15,8 +14,6 @@
     /// </summary>
     public static class ExpressionExtensions
     {
-        private static readonly ExpressionTranslatorRegistry _translatorRegistry = new ExpressionTranslatorRegistry();
-
 #if NET35
         /// <summary>
         /// Translates the given Linq <paramref name="expression"/> to a source-code string.
@@ -43,9 +40,21 @@
             this Expression expression,
             Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            return _translatorRegistry
-                .Translate(expression, configuration)?
-                .WithoutUnindents();
+            if (expression == null)
+            {
+                return null;
+            }
+
+            var settings = GetTranslationSettings(configuration);
+            var translation = new TranslationTree(expression, settings);
+
+            return translation.GetTranslation();
+        }
+
+        internal static TranslationSettings GetTranslationSettings(
+            Func<TranslationSettings, TranslationSettings> configuration)
+        {
+            return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;
         }
     }
 }

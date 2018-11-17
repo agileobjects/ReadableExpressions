@@ -11,7 +11,7 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -322,7 +322,7 @@
             var helper = new CapturedInstanceHelper(5);
             var translated = helper.GetComparisonTranslation(3);
 
-            translated.ShouldBe("(_i == comparator)");
+            translated.ShouldBe("_i == comparator");
         }
 
         [Fact]

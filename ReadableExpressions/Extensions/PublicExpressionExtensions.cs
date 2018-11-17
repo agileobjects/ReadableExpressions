@@ -1,13 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System.Linq;
-#if !NET35
-    using System.Linq.Expressions;
+#if NET35
+    using Microsoft.Scripting.Ast;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
-    using MemberExpression = Microsoft.Scripting.Ast.MemberExpression;
-    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
+    using System.Linq.Expressions;
 #endif
     using NetStandardPolyfills;
 

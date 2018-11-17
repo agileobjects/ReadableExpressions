@@ -9,11 +9,8 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
-    using ExpressionVisitor = Microsoft.Scripting.Ast.ExpressionVisitor;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
-    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -887,7 +884,7 @@ new MemoryStream
     {
         Console.WriteLine(""Wat"");
 
-        return ((long)Console.Read());
+        return (long)Console.Read();
     }
 };
 
@@ -1010,6 +1007,8 @@ ints.Add(
     internal class UnknownExpression : Expression
     {
         public override ExpressionType NodeType => (ExpressionType)5346372;
+
+        public override Type Type => typeof(void);
 
         protected override Expression VisitChildren(ExpressionVisitor visitor)
         {

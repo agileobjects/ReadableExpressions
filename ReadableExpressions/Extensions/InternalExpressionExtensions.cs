@@ -1,15 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-#if !NET35
-    using System.Linq.Expressions;
+#if NET35
+    using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
-    using BlockExpression = Microsoft.Scripting.Ast.BlockExpression;
-    using ConstantExpression = Microsoft.Scripting.Ast.ConstantExpression;
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using ExpressionType = Microsoft.Scripting.Ast.ExpressionType;
+    using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
 
     internal static class InternalExpressionExtensions
@@ -23,33 +19,34 @@
 
             switch (expression.NodeType)
             {
-                case ExpressionType.Block:
+                case Block:
                     return ((BlockExpression)expression).IsReturnable();
 
-                case ExpressionType.Constant:
+                case Constant:
                     return !expression.IsComment();
 
-                case ExpressionType.Add:
-                case ExpressionType.AddChecked:
-                case ExpressionType.Call:
-                case ExpressionType.Coalesce:
-                case ExpressionType.Conditional:
-                case ExpressionType.Convert:
-                case ExpressionType.ConvertChecked:
-                case ExpressionType.Default:
-                case ExpressionType.Divide:
-                case ExpressionType.Invoke:
-                case ExpressionType.ListInit:
-                case ExpressionType.MemberAccess:
-                case ExpressionType.MemberInit:
-                case ExpressionType.Multiply:
-                case ExpressionType.MultiplyChecked:
-                case ExpressionType.New:
-                case ExpressionType.NewArrayBounds:
-                case ExpressionType.NewArrayInit:
-                case ExpressionType.Parameter:
-                case ExpressionType.Subtract:
-                case ExpressionType.SubtractChecked:
+                case Add:
+                case AddChecked:
+                case Call:
+                case Coalesce:
+                case Conditional:
+                case Convert:
+                case ConvertChecked:
+                case Default:
+                case Divide:
+                case Invoke:
+                case Label:
+                case ListInit:
+                case MemberAccess:
+                case MemberInit:
+                case Multiply:
+                case MultiplyChecked:
+                case New:
+                case NewArrayBounds:
+                case NewArrayInit:
+                case Parameter:
+                case Subtract:
+                case SubtractChecked:
                     return true;
             }
 
@@ -57,53 +54,12 @@
         }
 
         public static bool IsReturnable(this BlockExpression block)
-        {
-            return (block.Type != typeof(void)) && block.Result.IsReturnable();
-        }
+            => (block.Type != typeof(void)) && block.Result.IsReturnable();
 
         public static bool IsComment(this Expression expression)
-        {
-            if (expression.NodeType != ExpressionType.Constant)
-            {
-                return false;
-            }
+            => (expression.NodeType == Constant) && IsComment((ConstantExpression)expression);
 
-            var value = ((ConstantExpression)expression).Value as string;
-
-            return (value != null) && value.IsComment();
-        }
-
-        public static bool IsAssignment(this Expression expression)
-        {
-            switch (expression.NodeType)
-            {
-                case ExpressionType.AddAssign:
-                case ExpressionType.AddAssignChecked:
-                case ExpressionType.AndAssign:
-                case ExpressionType.Assign:
-                case ExpressionType.DivideAssign:
-                case ExpressionType.ExclusiveOrAssign:
-                case ExpressionType.LeftShiftAssign:
-                case ExpressionType.ModuloAssign:
-                case ExpressionType.MultiplyAssign:
-                case ExpressionType.MultiplyAssignChecked:
-                case ExpressionType.OrAssign:
-                case ExpressionType.PowerAssign:
-                case ExpressionType.SubtractAssign:
-                case ExpressionType.SubtractAssignChecked:
-                case ExpressionType.RightShiftAssign:
-                    return true;
-            }
-
-            return false;
-        }
-
-        public static ExpressionType[] GetCheckedExpressionTypes(this Dictionary<ExpressionType, string> valuesByExpressionTypes)
-        {
-            return valuesByExpressionTypes
-               .Keys
-               .Filter(nt => nt.ToString().EndsWith("Checked", StringComparison.Ordinal))
-               .ToArray();
-        }
+        private static bool IsComment(ConstantExpression constant)
+            => (constant.Value is string value) && value.IsComment();
     }
 }

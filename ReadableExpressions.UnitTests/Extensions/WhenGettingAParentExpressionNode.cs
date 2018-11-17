@@ -8,9 +8,7 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
-    using MemberExpression = Microsoft.Scripting.Ast.MemberExpression;
-    using ParameterExpression = Microsoft.Scripting.Ast.ParameterExpression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]

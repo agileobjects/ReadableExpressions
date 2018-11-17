@@ -9,9 +9,8 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
-    using MethodCallExpression = Microsoft.Scripting.Ast.MethodCallExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -320,7 +319,7 @@ if (stream == null)
         {
             Console.WriteLine(""Wat"");
 
-            return ((long)Console.Read());
+            return (long)Console.Read();
         }
     };
 }";
@@ -441,7 +440,7 @@ return new WhenTranslatingBlocks.Employee
             const string EXPECTED = @"
 var myString = yourString;
 
-return (myString ?? string.Empty);";
+return myString ?? string.Empty;";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

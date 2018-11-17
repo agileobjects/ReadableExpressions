@@ -8,7 +8,7 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -134,8 +134,8 @@ ObjectQuery<WhenTranslatingLambdas.Product>
             var translated = ToReadableString(quotedLambda, o => o.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
-    // Quoted to induce a closure:
-    i => (double)i";
+// Quoted to induce a closure:
+i => (double)i";
 
             translated.ShouldBe(EXPECTED);
         }

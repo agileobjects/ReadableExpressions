@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -129,7 +129,7 @@ checked
         var one = Console.Read();
         var two = Console.Read();
 
-        return (one + two);
+        return one + two;
     } * i
 }";
 
@@ -145,7 +145,7 @@ checked
 
             var translated = ToReadableString(varOneToThePowerOfVarTwo);
 
-            translated.ShouldBe("(d1 ** d2)");
+            translated.ShouldBe("d1 ** d2");
         }
 
         [Fact]
@@ -165,7 +165,7 @@ checked
 
             var translated = ToReadableString(findModulo.Body);
 
-            translated.ShouldBe("(i1 % i2)");
+            translated.ShouldBe("i1 % i2");
         }
 
         [Fact]
@@ -251,7 +251,7 @@ checked
 
             var translated = ToReadableString(mather.Body);
 
-            translated.ShouldBe("((i + j) * k)");
+            translated.ShouldBe("(i + j) * k");
         }
     }
 }

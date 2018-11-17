@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bothBoolsAreTheSame.Body);
 
-            translated.ShouldBe("(b1 && b2)");
+            translated.ShouldBe("b1 && b2");
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bitwiseAnd.Body);
 
-            translated.ShouldBe("(b1 & b2)");
+            translated.ShouldBe("b1 & b2");
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(eitherBoolsIsTrue.Body);
 
-            translated.ShouldBe("(b1 || b2)");
+            translated.ShouldBe("b1 || b2");
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bitwiseOr.Body);
 
-            translated.ShouldBe("(b1 | b2)");
+            translated.ShouldBe("b1 | b2");
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bitwiseExclusiveOr.Body);
 
-            translated.ShouldBe("(b1 ^ b2)");
+            translated.ShouldBe("b1 ^ b2");
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bitwiseLeftShift.Body);
 
-            translated.ShouldBe("(i1 << i2)");
+            translated.ShouldBe("i1 << i2");
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(bitwiseRightShift.Body);
 
-            translated.ShouldBe("(i1 >> i2)");
+            translated.ShouldBe("i1 >> i2");
         }
 
         [Fact]
@@ -111,7 +111,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(oneOrTwo.Body);
 
-            translated.ShouldBe("(b1 ?? b2)");
+            translated.ShouldBe("b1 ?? b2");
         }
 
         [Fact]
@@ -131,7 +131,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(objectIsDisposable.Body);
 
-            translated.ShouldBe("(o is IDisposable)");
+            translated.ShouldBe("o is IDisposable");
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(nullableLongIsNullableLong);
 
-            translated.ShouldBe("(l != null)");
+            translated.ShouldBe("l != null");
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableString(objectIsString);
 
-            translated.ShouldBe("((o != null) && (o.GetType() == typeof(string)))");
+            translated.ShouldBe("(o != null) && (o.GetType() == typeof(string))");
         }
 
         [Fact]

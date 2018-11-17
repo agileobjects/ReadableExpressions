@@ -9,9 +9,8 @@
     using System.Linq.Expressions;
     using Xunit;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
-    using MemberBinding = Microsoft.Scripting.Ast.MemberBinding;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -80,7 +79,7 @@ new MemoryStream
         Console.WriteLine(""Wat"");
         Console.WriteLine(""Wat"");
 
-        return ((long)Console.Read());
+        return (long)Console.Read();
     }
 }";
             translated.ShouldBe(EXPECTED.TrimStart());

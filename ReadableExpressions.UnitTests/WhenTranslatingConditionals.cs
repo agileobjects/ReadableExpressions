@@ -9,7 +9,7 @@
     using static Issue22;
     using static Issue22.InheritanceTests;
 #else
-    using Expression = Microsoft.Scripting.Ast.Expression;
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -338,6 +338,36 @@ switch (i)
         }
 
         [Fact]
+        public void ShouldTranslateASwitchStatementWithMultipleCaseTestValues()
+        {
+            var intVariable = Expression.Variable(typeof(int), "i");
+
+            var writeOneOrTwo = CreateLambda(() => Console.WriteLine("One or Two"));
+            var writeOneOrTwoCase = Expression.SwitchCase(writeOneOrTwo.Body, Expression.Constant(1), Expression.Constant(2));
+
+            var writeThree = CreateLambda(() => Console.WriteLine("Three"));
+            var writeThreeCase = Expression.SwitchCase(writeThree.Body, Expression.Constant(3));
+
+            var switchStatement = Expression.Switch(intVariable, writeOneOrTwoCase, writeThreeCase);
+
+            var translated = ToReadableString(switchStatement);
+
+            const string EXPECTED = @"
+switch (i)
+{
+    case 1:
+    case 2:
+        Console.WriteLine(""One or Two"");
+        break;
+
+    case 3:
+        Console.WriteLine(""Three"");
+        break;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateASwitchStatementWithADefault()
         {
             var intVariable = Expression.Variable(typeof(int), "i");
@@ -436,7 +466,7 @@ if (true)
 Console.WriteLine(""One!"");
 Console.WriteLine(""One!"");
 
-return ((long?)1);";
+return (long?)1;";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
