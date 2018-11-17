@@ -82,9 +82,9 @@
         {
             var createArray = CreateLambda(() => new NestedType<int>.NestedValue<DateTime>());
 
-            var translated = ToReadableString(createArray.Body);
+            var translated = ToReadableString(createArray.Body, s => s.UseFullyQualifiedTypeNames);
 
-            translated.ShouldBe("new AgileObjects.ReadableExpressions.UnitTests.WhenTranslatingObjectCreations.NestedType<int>.NestedValue<System.DateTime>()");
+            translated.ShouldBe("new AgileObjects.ReadableExpressions.UnitTests.NestedType<int>.NestedValue<System.DateTime>()");
         }
 
         [Fact]

@@ -62,7 +62,7 @@
         private static string GetGenericTypeName(Type genericType, TranslationSettings settings)
         {
             var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
-            var genericTypeName = GetGenericTypeName(genericType, typeGenericTypeArguments.Length, typeGenericTypeArguments, settings);
+            var genericTypeName = GetClosedGenericTypeName(genericType, ref typeGenericTypeArguments, settings);
 
             if (!genericType.IsNested)
             {
@@ -73,50 +73,60 @@
             while (genericType.IsNested)
             {
                 genericType = genericType.DeclaringType;
-                var parentTypeName = genericType.Name;
-
-                var backtickIndex = parentTypeName.IndexOf("`", StringComparison.Ordinal);
-
-                if (backtickIndex != -1)
-                {
-                    var numberOfParameters = int.Parse(parentTypeName.Substring(backtickIndex + 1));
-
-                    Type[] typeArguments;
-
-                    if (numberOfParameters == typeGenericTypeArguments.Length)
-                    {
-                        typeArguments = typeGenericTypeArguments;
-                    }
-                    else
-                    {
-                        typeArguments = new Type[numberOfParameters];
-                        var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
-                        var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
-
-                        Array.Copy(
-                            typeGenericTypeArguments,
-                            numberOfRemainingTypeArguments,
-                            typeArguments,
-                            0,
-                            numberOfParameters);
-
-                        Array.Copy(
-                            typeGenericTypeArguments,
-                            0,
-                            typeGenericTypeArgumentsSubset,
-                            0,
-                            numberOfRemainingTypeArguments);
-
-                        typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
-                    }
-
-                    parentTypeName = GetGenericTypeName(genericType, numberOfParameters, typeArguments, settings);
-                }
+                var parentTypeName = GetClosedGenericTypeName(genericType, ref typeGenericTypeArguments, settings);
 
                 genericTypeName = parentTypeName + "." + genericTypeName;
             }
 
-            return genericTypeName;
+            return GetFinalisedTypeName(genericType, genericTypeName, settings);
+        }
+
+        private static string GetClosedGenericTypeName(
+            Type genericType,
+            ref Type[] typeGenericTypeArguments,
+            TranslationSettings settings)
+        {
+            var typeName = genericType.Name;
+
+            var backtickIndex = typeName.IndexOf("`", StringComparison.Ordinal);
+
+            if (backtickIndex == -1)
+            {
+                return typeName;
+            }
+
+            var numberOfParameters = int.Parse(typeName.Substring(backtickIndex + 1));
+
+            Type[] typeArguments;
+
+            if (numberOfParameters == typeGenericTypeArguments.Length)
+            {
+                typeArguments = typeGenericTypeArguments;
+            }
+            else
+            {
+                typeArguments = new Type[numberOfParameters];
+                var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
+                var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
+
+                Array.Copy(
+                    typeGenericTypeArguments,
+                    numberOfRemainingTypeArguments,
+                    typeArguments,
+                    0,
+                    numberOfParameters);
+
+                Array.Copy(
+                    typeGenericTypeArguments,
+                    0,
+                    typeGenericTypeArgumentsSubset,
+                    0,
+                    numberOfRemainingTypeArguments);
+
+                typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
+            }
+
+            return GetGenericTypeName(genericType, numberOfParameters, typeArguments, settings);
         }
 
         private static string GetGenericTypeName(
