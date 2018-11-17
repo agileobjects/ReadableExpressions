@@ -220,6 +220,7 @@ namespace AgileObjects.ReadableExpressions.Translations
         }
 
         public ExpressionType NodeType => Block;
+
         public Type Type { get; }
 
         public int EstimatedSize { get; }
@@ -349,7 +350,7 @@ namespace AgileObjects.ReadableExpressions.Translations
             public void WriteTo(TranslationBuffer buffer)
             {
                 if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
-                     !buffer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
+                    !buffer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
                     buffer.WriteNewLineToTranslation();
                 }
