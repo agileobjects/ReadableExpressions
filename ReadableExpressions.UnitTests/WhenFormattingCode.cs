@@ -604,6 +604,36 @@ if (WhenFormattingCode.JoinStrings(
         }
 
         [Fact]
+        public void ShouldPlaceSingleArgumentLambdaParametersOnMethodNameLine()
+        {
+            var stringParam1 = Expression.Parameter(typeof(string), "string1");
+            var stringParam2 = Expression.Parameter(typeof(string), "string2");
+
+            var writeString = CreateLambda(() => Console.WriteLine("String!")).Body;
+            var writeStringsBlock = Expression.Block(writeString, writeString, writeString);
+
+            var stringLambda = Expression.Lambda<Action<string, string>>(
+                writeStringsBlock,
+                stringParam1,
+                stringParam2);
+
+            var lambdaMethod = typeof(HelperClass).GetPublicStaticMethod("GiveMeALambda");
+            var lambdaMethodCall = Expression.Call(lambdaMethod, stringLambda);
+
+            const string EXPECTED = @"
+HelperClass.GiveMeALambda((string1, string2) =>
+{
+    Console.WriteLine(""String!"");
+    Console.WriteLine(""String!"");
+    Console.WriteLine(""String!"");
+})";
+
+            var translated = ToReadableString(lambdaMethodCall);
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldUseMethodGroupsForStaticMethods()
         {
             var selectTimeSpans = CreateLambda(() => new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays));
@@ -965,6 +995,10 @@ ints.Add(
         }
 
         public void GiveMeFourInts(int intOne, int intTwo, int intThree, int intFour)
+        {
+        }
+
+        public static void GiveMeALambda(Action<string, string> lambda)
         {
         }
     }

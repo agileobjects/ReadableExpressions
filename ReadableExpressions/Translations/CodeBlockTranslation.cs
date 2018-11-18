@@ -16,15 +16,16 @@
         private readonly ITranslation _translation;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
-        private bool _startOnSameLine;
-        private bool _formatAsSingleLambdaParameter;
+        private bool _startOnNewLine;
+        private bool _indentContents;
         private bool _writeBraces;
 
         public CodeBlockTranslation(ITranslation translation)
         {
             NodeType = translation.NodeType;
             _translation = translation;
-            _writeBraces = translation.IsMultiStatement();
+            _startOnNewLine = true;
+            _writeBraces = IsMultiStatement = translation.IsMultiStatement();
             CalculateEstimatedSize();
         }
 
@@ -49,11 +50,23 @@
 
         public int EstimatedSize { get; private set; }
 
-        public bool IsMultiStatement => _translation.IsMultiStatement();
+        public bool IsMultiStatement { get; }
 
         public bool IsTerminated => _ensureTerminated || _translation.IsTerminated();
 
         public bool HasBraces => _writeBraces;
+
+        public bool IsMultiStatementLambda(ITranslationContext context)
+        {
+            switch (NodeType)
+            {
+                case ExpressionType.Lambda:
+                case ExpressionType.Quote when context.Settings.DoNotCommentQuotedLambdas:
+                    return IsMultiStatement;
+            }
+
+            return false;
+        }
 
         public CodeBlockTranslation WithTermination()
         {
@@ -73,10 +86,17 @@
             return this;
         }
 
+        public CodeBlockTranslation WithSingleCodeBlockParameterFormatting()
+        {
+            _startOnNewLine = false;
+            _indentContents = true;
+            return this;
+        }
+
         public CodeBlockTranslation WithSingleLamdaParameterFormatting()
         {
-            _formatAsSingleLambdaParameter = true;
-            return this;
+            _startOnNewLine = false;
+            return WithoutBraces();
         }
 
         public CodeBlockTranslation WithReturnKeyword()
@@ -112,7 +132,7 @@
 
         public CodeBlockTranslation WithoutStartingNewLine()
         {
-            _startOnSameLine = true;
+            _startOnNewLine = false;
             return this;
         }
 
@@ -120,8 +140,7 @@
         {
             if (_writeBraces)
             {
-                buffer.WriteOpeningBraceToTranslation(
-                    startOnNewLine: _startOnSameLine == false && _formatAsSingleLambdaParameter == false);
+                buffer.WriteOpeningBraceToTranslation(_startOnNewLine);
 
                 if (WriteEmptyCodeBlock(buffer))
                 {
@@ -129,7 +148,7 @@
                 }
             }
 
-            if (_formatAsSingleLambdaParameter)
+            if (_indentContents)
             {
                 buffer.Indent();
             }
@@ -151,7 +170,7 @@
                 buffer.WriteClosingBraceToTranslation();
             }
 
-            if (_formatAsSingleLambdaParameter)
+            if (_indentContents)
             {
                 buffer.Unindent();
             }

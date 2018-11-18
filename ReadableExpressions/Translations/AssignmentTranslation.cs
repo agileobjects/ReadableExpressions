@@ -39,6 +39,7 @@
         private readonly ITranslation _targetTranslation;
         private readonly string _operator;
         private readonly ITranslation _valueTranslation;
+        private bool _suppressSpaceBeforeValue;
 
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
             : this(
@@ -87,16 +88,23 @@
         {
             var valueBlock = context.GetCodeBlockTranslationFor(assignedValue);
 
-            if (valueBlock.IsMultiStatement)
+            if (valueBlock.IsMultiStatement == false)
             {
-                return (valueBlock.NodeType == Conditional) || (valueBlock.NodeType == Lambda)
-                    ? valueBlock.WithoutBraces()
-                    : valueBlock.WithBraces();
+                return IsCheckedOperation
+                    ? valueBlock.WithoutBraces().WithTermination()
+                    : valueBlock.WithoutBraces().WithoutTermination();
             }
 
-            return IsCheckedOperation
-                ? valueBlock.WithoutBraces().WithTermination()
-                : valueBlock.WithoutBraces().WithoutTermination();
+            if (valueBlock.IsMultiStatementLambda(context))
+            {
+                return valueBlock.WithoutBraces();
+            }
+
+            _suppressSpaceBeforeValue = true;
+
+            return (valueBlock.NodeType == Conditional)
+                ? valueBlock.WithoutBraces() 
+                : valueBlock.WithBraces();
         }
 
         private int GetEstimatedSize()
@@ -133,7 +141,7 @@
             _targetTranslation.WriteTo(buffer);
             buffer.WriteToTranslation(_operator);
 
-            if (_valueTranslation.IsMultiStatement() == false)
+            if (_suppressSpaceBeforeValue == false)
             {
                 buffer.WriteSpaceToTranslation();
             }

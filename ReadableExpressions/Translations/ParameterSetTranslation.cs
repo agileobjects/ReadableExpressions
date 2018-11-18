@@ -5,8 +5,10 @@
     using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+    using static System.Linq.Expressions.ExpressionType;
 #endif
     using Extensions;
     using Interfaces;
@@ -18,6 +20,7 @@
         private const string _openAndCloseParentheses = "()";
 
         private readonly IList<CodeBlockTranslation> _parameterTranslations;
+        private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
         public ParameterSetTranslation(ITranslation parameter)
@@ -95,6 +98,8 @@
                 methodParameters = null;
             }
 
+            var hasSingleParameter = ParameterCount == 1;
+            var singleParameterIsMultiLineLambda = false;
             var estimatedSize = 0;
 
             _parameterTranslations = parameters
@@ -105,7 +110,7 @@
                     if (CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
                     {
                         translation = new MethodGroupTranslation(
-                            ExpressionType.Lambda,
+                            Lambda,
                             MethodCallTranslation.GetSubjectTranslation(lambdaBodyMethodCall, context),
                             lambdaBodyMethodCall.Method);
 
@@ -131,10 +136,20 @@
                     CreateCodeBlock:
                     estimatedSize += translation.EstimatedSize;
 
-                    return new CodeBlockTranslation(translation).WithoutTermination();
+                    // TODO: Only use code blocks where useful:
+                    var parameterCodeBlock = new CodeBlockTranslation(translation).WithoutTermination();
+
+                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda(context))
+                    {
+                        singleParameterIsMultiLineLambda = true;
+                        parameterCodeBlock.WithSingleLamdaParameterFormatting();
+                    }
+
+                    return parameterCodeBlock;
                 })
                 .ToArray();
 
+            _hasSingleMultiStatementLambdaParameter = singleParameterIsMultiLineLambda;
             EstimatedSize = estimatedSize + (ParameterCount * 2) + 4;
         }
 
@@ -192,7 +207,7 @@
 
         private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
         {
-            if (argument.NodeType != ExpressionType.Lambda)
+            if (argument.NodeType != Lambda)
             {
                 lambdaBodyMethodCall = null;
                 return false;
@@ -200,7 +215,7 @@
 
             var argumentLambda = (LambdaExpression)argument;
 
-            if (argumentLambda.Body.NodeType != ExpressionType.Call)
+            if (argumentLambda.Body.NodeType != Call)
             {
                 lambdaBodyMethodCall = null;
                 return false;
@@ -267,7 +282,7 @@
                 buffer.WriteToTranslation('(');
             }
 
-            var writeParametersOnNewLines = (ParameterCount > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
+            var writeParametersOnNewLines = WriteParametersOnNewLines();
 
             if (writeParametersOnNewLines)
             {
@@ -315,6 +330,16 @@
             {
                 buffer.Unindent();
             }
+        }
+
+        private bool WriteParametersOnNewLines()
+        {
+            if (_hasSingleMultiStatementLambdaParameter)
+            {
+                return false;
+            }
+
+            return (ParameterCount > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
         }
 
         private enum ParenthesesMode

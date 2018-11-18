@@ -8,7 +8,7 @@
 #endif
     using Interfaces;
 
-    internal class LambdaTranslation : ITranslation
+    internal class LambdaTranslation : ITranslation, IPotentialMultiStatementTranslatable
     {
         private const string _fatArrow = " => ";
 
@@ -36,6 +36,8 @@
         public Type Type { get; }
 
         public int EstimatedSize { get; }
+
+        public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
 
         public void WriteTo(TranslationBuffer buffer)
         {

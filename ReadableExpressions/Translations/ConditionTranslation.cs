@@ -22,7 +22,7 @@
             var conditionCodeBlockTranslation = new CodeBlockTranslation(conditionTranslation);
 
             return conditionTranslation.IsMultiStatement()
-                ? conditionCodeBlockTranslation.WithSingleLamdaParameterFormatting()
+                ? conditionCodeBlockTranslation.WithSingleCodeBlockParameterFormatting()
                 : conditionCodeBlockTranslation;
         }
 
