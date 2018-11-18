@@ -11,9 +11,27 @@ The extension method (in the namespace `AgileObjects.ReadableExpressions`) is us
 
 ...it also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
 
-You can optionally maintain explicit generic arguments on method calls where they are implied like so:
+### Options
 
-    string readable = myExpression.ToReadableString(c => c.UseExplicitGenericParameters);
+To maintain explicit generic arguments on method calls where they are implied, use:
+
+    string readable = myExpression
+        .ToReadableString(c => c.UseExplicitGenericParameters);
+
+To include namespaces when outputting Type names, use:
+
+    string readable = myExpression
+        .ToReadableString(c => c.UseFullyQualifiedTypeNames);
+
+To define a custom factory for naming anonymous types, use:
+
+    string readable = myExpression
+        .ToReadableString(c => c.NameAnonymousTypesUsing(anonType => GetAnonTypeName(anonType)));
+
+To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
+
+    string readable = myExpression
+        .ToReadableString(c => c.ShowQuotedLambdaComments);
 
 ### Debugger Visualizers
 An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
