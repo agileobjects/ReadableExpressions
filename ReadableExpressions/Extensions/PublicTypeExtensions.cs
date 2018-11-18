@@ -345,13 +345,14 @@
 
             if (enumerableType.IsGenericType())
             {
-                return InternalEnumerableExtensions.Last(enumerableType.GetGenericTypeArguments());
+                return enumerableType.GetGenericTypeArguments().Last();
             }
 
-            var enumerableInterfaceType = InternalEnumerableExtensions.FirstOrDefault(enumerableType
-                    .GetAllInterfaces(), interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
+            var enumerableInterfaceType = enumerableType
+                .GetAllInterfaces()
+                .FirstOrDefault(interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
 
-            return InternalEnumerableExtensions.First(enumerableInterfaceType?.GetGenericTypeArguments()) ?? typeof(object);
+            return enumerableInterfaceType?.GetGenericTypeArguments().First() ?? typeof(object);
         }
 
         /// <summary>
@@ -360,9 +361,7 @@
         /// <param name="type">The type for which to make the determination.</param>
         /// <returns>True if the given <paramref name="type"/> can be null, otherwise false.</returns>
         public static bool CanBeNull(this Type type)
-        {
-            return type.IsClass() || type.IsInterface() || type.IsNullableType();
-        }
+            => type.IsClass() || type.IsInterface() || type.IsNullableType();
 
         /// <summary>
         /// Returns a value indicating if the given <paramref name="type"/> is a Nullable{T}.
@@ -370,9 +369,7 @@
         /// <param name="type">The type for which to make the determination.</param>
         /// <returns>True if the given <paramref name="type"/> is a Nullable{T}, otherwise false.</returns>
         public static bool IsNullableType(this Type type)
-        {
-            return Nullable.GetUnderlyingType(type) != null;
-        }
+            => Nullable.GetUnderlyingType(type) != null;
 
         /// <summary>
         /// Gets the underlying non-nullable Type of this <paramref name="type"/>, or returns this

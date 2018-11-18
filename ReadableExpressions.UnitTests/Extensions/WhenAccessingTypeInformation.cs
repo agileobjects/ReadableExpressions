@@ -31,6 +31,12 @@
         }
 
         [Fact]
+        public void ShouldEvaluateANonGenericEnumerableAsEnumerable()
+        {
+            typeof(IEnumerable).IsEnumerable().ShouldBeTrue();
+        }
+
+        [Fact]
         public void ShouldNotEvaluateAStringAsEnumerable()
         {
             typeof(string).IsEnumerable().ShouldBeFalse();
