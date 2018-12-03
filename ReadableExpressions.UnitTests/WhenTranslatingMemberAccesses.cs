@@ -160,6 +160,41 @@
         }
 
         [Fact]
+        public void ShouldTranslateMultiParameterCallParamsArrayArgument()
+        {
+            var stringJoinMethod = typeof(string)
+                .GetPublicStaticMethods("Join")
+                .First(m =>
+                    (m.GetParameters().Length == 2) &&
+                    (m.GetParameters()[0].ParameterType == typeof(string)) &&
+                    (m.GetParameters()[1].ParameterType == typeof(string[])));
+
+            var stringEmpty = Expression.Field(null, typeof(string).GetPublicStaticField("Empty"));
+            var expressions = new Expression[] { Expression.Constant("Value["), Expression.Constant("0"), Expression.Constant("]") };
+            var newStringArray = Expression.NewArrayInit(typeof(string), expressions);
+
+            var stringJoinCall = Expression.Call(stringJoinMethod, stringEmpty, newStringArray);
+
+            var translated = stringJoinCall.ToReadableString();
+
+            // string.Join(string, string[]) in .NET 3.5 doesn't take a params array:
+#if NET35
+            const string EXPECTED = @"
+string.Join(string.Empty, new[] { ""Value["", ""0"", ""]"" })";
+#else
+            const string EXPECTED = @"
+string.Join(
+    string.Empty,
+    ""Value["",
+    ""0"",
+    ""]"")";
+#endif
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+
+        }
+
+        [Fact]
         public void ShouldTranslateAnIndexedPropertyAccessExpression()
         {
             var getPropertyIndex = CreateLambda((IndexedProperty p, int index) => p[index]);

@@ -119,11 +119,14 @@
 
                     if (methodProvided)
                     {
-                        // If a parameter is a params array then index will increase
-                        // past parameterCount, so adjust here:
-                        var parameterIndex = (ParameterCount != parameterCount)
-                            ? ParameterCount - parameterCount - index
-                            : index;
+                        var parameterIndex = index;
+
+                        if (ParameterCount != parameterCount)
+                        {
+                            // If a parameter is a params array then index will increase
+                            // past parameterCount, so adjust here:
+                            parameterIndex -= ParameterCount - parameterCount;
+                        }
 
                         // ReSharper disable once PossibleNullReferenceException
                         translation = GetParameterTranslation(p, methodParameters[parameterIndex], context);
