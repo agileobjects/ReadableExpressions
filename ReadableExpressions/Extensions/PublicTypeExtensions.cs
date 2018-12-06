@@ -1,4 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Extensions
+﻿using AgileObjects.ReadableExpressions.Translations;
+
+namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
     using System.Collections;
@@ -29,59 +31,120 @@
                 return null;
             }
 
+            var buffer = new TranslationBuffer(type.FullName.Length);
+
+            buffer.WriteFriendlyName(type, translationSettings);
+
+            return buffer.GetContent();
+        }
+
+        internal static void WriteFriendlyName(
+            this TranslationBuffer buffer,
+            Type type,
+            TranslationSettings settings)
+        {
+            if (type.FullName == null)
+            {
+                // An open generic parameter Type:
+                return;
+            }
+
             if (type.IsArray)
             {
-                return type.GetElementType().GetFriendlyName(translationSettings) + "[]";
+                buffer.WriteFriendlyName(type.GetElementType(), settings);
+                buffer.WriteToTranslation("[]");
+                return;
             }
 
             if (!type.IsGenericType())
             {
-                var substitutedTypeName = type.FullName.GetSubstitutionOrNull();
-                var qualifiedTypeName = substitutedTypeName ?? type.Name;
+                var substitutedTypeName = type.GetSubstitutionOrNull();
 
                 if (type.IsNested)
                 {
-                    return type.DeclaringType.GetFriendlyName(translationSettings) + "." + qualifiedTypeName;
+                    buffer.WriteFriendlyName(type.DeclaringType, settings);
+                    buffer.WriteToTranslation('.');
+                    buffer.WriteToTranslation(substitutedTypeName ?? type.Name);
+                    return;
                 }
 
-                return (substitutedTypeName == null)
-                    ? GetFinalisedTypeName(type, qualifiedTypeName, translationSettings)
-                    : qualifiedTypeName;
+                if (substitutedTypeName != null)
+                {
+                    buffer.WriteToTranslation(substitutedTypeName);
+                    return;
+                }
+
+                buffer.WriteTypeNamespaceIfRequired(type, settings);
+                buffer.WriteToTranslation(type.Name);
+                return;
             }
 
             Type underlyingNullableType;
 
-            if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) != null)
+            if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) == null)
             {
-                return underlyingNullableType.GetFriendlyName(translationSettings) + "?";
+                buffer.WriteGenericTypeName(type, settings);
+                return;
             }
 
-            return GetGenericTypeName(type, translationSettings);
+            buffer.WriteFriendlyName(underlyingNullableType, settings);
+            buffer.WriteToTranslation('?');
         }
 
-        private static string GetGenericTypeName(Type genericType, TranslationSettings settings)
+        private static void WriteTypeNamespaceIfRequired(
+            this TranslationBuffer buffer,
+            Type type,
+            TranslationSettings settings)
+        {
+            if (!settings.FullyQualifyTypeNames || (type.Namespace == null))
+            {
+                return;
+            }
+
+            buffer.WriteToTranslation(type.Namespace);
+            buffer.WriteToTranslation('.');
+        }
+
+        private static void WriteGenericTypeName(
+            this TranslationBuffer buffer,
+            Type genericType,
+            TranslationSettings settings)
         {
             var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
-            var genericTypeName = GetClosedGenericTypeName(genericType, ref typeGenericTypeArguments, settings);
 
             if (!genericType.IsNested)
             {
-                return GetFinalisedTypeName(genericType, genericTypeName, settings);
+                buffer.WriteTypeNamespaceIfRequired(genericType, settings);
+                buffer.WriteClosedGenericTypeName(genericType, ref typeGenericTypeArguments, settings);
+                return;
             }
+
+            var types = new List<Type> { genericType };
 
             // ReSharper disable once PossibleNullReferenceException
             while (genericType.IsNested)
             {
                 genericType = genericType.DeclaringType;
-                var parentTypeName = GetClosedGenericTypeName(genericType, ref typeGenericTypeArguments, settings);
-
-                genericTypeName = parentTypeName + "." + genericTypeName;
+                types.Add(genericType);
             }
 
-            return GetFinalisedTypeName(genericType, genericTypeName, settings);
+            buffer.WriteTypeNamespaceIfRequired(genericType, settings);
+
+            for (var i = types.Count; ;)
+            {
+                buffer.WriteClosedGenericTypeName(types[--i], ref typeGenericTypeArguments, settings);
+
+                if (i == 0)
+                {
+                    return;
+                }
+
+                buffer.WriteToTranslation('.');
+            }
         }
 
-        private static string GetClosedGenericTypeName(
+        private static void WriteClosedGenericTypeName(
+            this TranslationBuffer buffer,
             Type genericType,
             ref Type[] typeGenericTypeArguments,
             TranslationSettings settings)
@@ -92,7 +155,8 @@
 
             if (backtickIndex == -1)
             {
-                return typeName;
+                buffer.WriteToTranslation(typeName);
+                return;
             }
 
             var numberOfParameters = int.Parse(typeName.Substring(backtickIndex + 1));
@@ -102,79 +166,93 @@
             if (numberOfParameters == typeGenericTypeArguments.Length)
             {
                 typeArguments = typeGenericTypeArguments;
+                goto WriteName;
             }
-            else
+
+            switch (numberOfParameters)
             {
-                typeArguments = new Type[numberOfParameters];
-                var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
-                var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
+                case 1:
+                    typeArguments = new[] { typeGenericTypeArguments[0] };
+                    break;
 
-                Array.Copy(
-                    typeGenericTypeArguments,
-                    numberOfRemainingTypeArguments,
-                    typeArguments,
-                    0,
-                    numberOfParameters);
+                case 2:
+                    typeArguments = new[] { typeGenericTypeArguments[0], typeGenericTypeArguments[1] };
+                    break;
 
-                Array.Copy(
-                    typeGenericTypeArguments,
-                    0,
-                    typeGenericTypeArgumentsSubset,
-                    0,
-                    numberOfRemainingTypeArguments);
+                default:
+                    typeArguments = new Type[numberOfParameters];
 
-                typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
+                    Array.Copy(
+                        typeGenericTypeArguments,
+                        typeArguments,
+                        numberOfParameters);
+
+                    break;
             }
 
-            return GetGenericTypeName(genericType, numberOfParameters, typeArguments, settings);
+            var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
+            var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
+
+            Array.Copy(
+                typeGenericTypeArguments,
+                numberOfParameters,
+                typeGenericTypeArgumentsSubset,
+                0,
+                numberOfRemainingTypeArguments);
+
+            typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
+
+            WriteName:
+            buffer.WriteGenericTypeName(genericType, numberOfParameters, typeArguments, settings);
         }
 
-        private static string GetGenericTypeName(
+        private static void WriteGenericTypeName(
+            this TranslationBuffer buffer,
             Type type,
             int numberOfParameters,
             IList<Type> typeArguments,
             TranslationSettings settings)
         {
-            var anonTypeIndex = 0;
-
             var isAnonType =
                 type.Name.StartsWith('<') &&
-               ((anonTypeIndex = type.Name.IndexOf("AnonymousType", StringComparison.Ordinal)) != -1);
+               (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal)) != -1;
 
             if (isAnonType && (settings.AnonymousTypeNameFactory != null))
             {
-                return settings.AnonymousTypeNameFactory.Invoke(type);
+                buffer.WriteToTranslation(settings.AnonymousTypeNameFactory.Invoke(type));
+                return;
             }
 
-            var typeName = type.Name;
+            string typeName;
 
-            var typeGenericTypeArgumentNames = typeArguments
-                .ProjectToArray(t => GetFriendlyName(t, settings));
+            if (isAnonType)
+            {
+                typeName = "AnonymousType";
+            }
+            else
+            {
+                var parameterCountIndex = type.Name.IndexOf("`" + numberOfParameters, StringComparison.Ordinal);
+                typeName = type.Name.Substring(0, parameterCountIndex);
+            }
 
-            typeName = typeName.Replace(
-                "`" + numberOfParameters,
-                "<" + typeGenericTypeArgumentNames.Join(", ") + ">");
+            buffer.WriteToTranslation(typeName);
+            buffer.WriteToTranslation('<');
 
-            return isAnonType ? GetAnonymousTypeName(typeName, anonTypeIndex) : typeName;
-        }
+            for (var i = 0; ;)
+            {
+                var typeArgument = typeArguments[i++];
 
-        private static string GetAnonymousTypeName(string typeName, int anonTypeIndex)
-        {
-            typeName = typeName.Substring(anonTypeIndex);
+                buffer.WriteFriendlyName(typeArgument, settings);
 
-            var trimStartIndex = "AnonymousType".Length;
-            var argumentsStartIndex = typeName.IndexOf('<');
+                if (i == typeArguments.Count)
+                {
+                    break;
+                }
 
-            typeName = typeName.Remove(trimStartIndex, argumentsStartIndex - trimStartIndex);
+                buffer.WriteToTranslation(", ");
+            }
 
-            return typeName;
-        }
-
-        private static string GetFinalisedTypeName(Type type, string typeName, TranslationSettings settings)
-        {
-            return settings.FullyQualifyTypeNames && (type.Namespace != null)
-                ? type.Namespace + "." + typeName
-                : typeName;
+            buffer.WriteToTranslation('>');
         }
 
         /// <summary>
@@ -198,7 +276,7 @@
         public static string GetVariableNameInPascalCase(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
             => GetVariableNameInPascalCase(type, GetTranslationSettings(configuration));
 
-        internal static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
+        private static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
             => GetVariableName(type, settings).ToPascalCase();
 
         private static string GetVariableName(Type type, TranslationSettings settings)

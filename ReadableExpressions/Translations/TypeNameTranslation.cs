@@ -12,13 +12,14 @@
     internal class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
+        private readonly TranslationSettings _translationSettings;
         private readonly bool _isObject;
-        private readonly string _typeName;
         private bool _writeObjectTypeName;
 
         public TypeNameTranslation(Type type, ITranslationContext context)
         {
             Type = type;
+            _translationSettings = context.Settings;
             _isObject = type == typeof(object);
 
             if (_isObject)
@@ -27,12 +28,27 @@
                 return;
             }
 
-            _typeName = type.GetFriendlyName(context.Settings);
-            EstimatedSize = (int)(_typeName.Length * 1.1);
+            if (type.FullName == null)
+            {
+                return;
+            }
+
+            if (_translationSettings.FullyQualifyTypeNames && (type.Namespace != null))
+            {
+                EstimatedSize = type.Namespace.Length;
+            }
+
+            EstimatedSize += type.GetSubstitutionOrNull()?.Length ?? type.Name.Length;
+
+            while (type.IsNested)
+            {
+                type = type.DeclaringType;
+                EstimatedSize += type.Name.Length;
+            }
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
-        
+
         public Type Type { get; }
 
         public int EstimatedSize { get; }
@@ -55,7 +71,7 @@
                 return;
             }
 
-            buffer.WriteToTranslation(_typeName);
+            buffer.WriteFriendlyName(Type, _translationSettings);
         }
     }
 }

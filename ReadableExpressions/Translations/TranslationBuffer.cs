@@ -11,9 +11,9 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationBuffer(ITranslatable rootTranslation)
+        public TranslationBuffer(int estimatedSize)
         {
-            _content = new StringBuilder(rootTranslation.EstimatedSize);
+            _content = new StringBuilder(estimatedSize);
         }
 
         #region ITranslationQuery

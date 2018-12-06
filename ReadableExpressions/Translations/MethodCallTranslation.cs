@@ -179,22 +179,22 @@
         {
             private readonly IMethod _method;
             private readonly ParameterSetTranslation _parameters;
-            private readonly string[] _explicitGenericArgumentNames;
+            private readonly ITranslatable[] _explicitGenericArguments;
 
             public MethodInvocationTranslatable(IMethod method, ParameterSetTranslation parameters, ITranslationContext context)
             {
                 _method = method;
                 _parameters = parameters;
-                _explicitGenericArgumentNames = GetRequiredExplicitGenericArgumentNames(context, out var totalLength);
+                _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var totalLength);
                 EstimatedSize = method.Name.Length + totalLength + parameters.EstimatedSize;
             }
 
-            private string[] GetRequiredExplicitGenericArgumentNames(ITranslationContext context, out int totalLength)
+            private ITranslatable[] GetRequiredExplicitGenericArguments(ITranslationContext context, out int totalLength)
             {
                 if (!_method.IsGenericMethod)
                 {
                     totalLength = 0;
-                    return Enumerable<string>.EmptyArray;
+                    return Enumerable<ITranslatable>.EmptyArray;
                 }
 
                 var methodGenericDefinition = _method.GetGenericMethodDefinition();
@@ -210,30 +210,32 @@
                 if (!genericParameterTypes.Any())
                 {
                     totalLength = 0;
-                    return Enumerable<string>.EmptyArray;
+                    return Enumerable<ITranslatable>.EmptyArray;
                 }
 
-                var argumentNamesLength = 0;
+                var argumentsLength = 0;
 
-                var argumentNames = _method
+                var arguments = _method
                     .GetGenericArguments()
-                    .Project(a =>
+                    .Project(argumentType =>
                     {
-                        var argumentName = a.GetFriendlyName(context.Settings);
-
-                        if (argumentName != null)
+                        if (argumentType.FullName == null)
                         {
-                            argumentNamesLength += argumentName.Length + 2;
+                            return null;
                         }
 
-                        return argumentName;
+                        ITranslatable argumentTypeTranslation = context.GetTranslationFor(argumentType);
+
+                        argumentsLength += argumentTypeTranslation.EstimatedSize + 2;
+
+                        return argumentTypeTranslation;
                     })
-                    .Filter(name => name != null)
+                    .Filter(argument => argument != null)
                     .ToArray();
 
-                totalLength = argumentNamesLength;
+                totalLength = argumentsLength;
 
-                return (totalLength != 0) ? argumentNames : Enumerable<string>.EmptyArray;
+                return (totalLength != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
             }
 
             private static void RemoveSuppliedGenericTypeParameters(
@@ -267,16 +269,16 @@
 
             private void WriteGenericArgumentNamesIfNecessary(TranslationBuffer buffer)
             {
-                if (_explicitGenericArgumentNames.Length == 0)
+                if (_explicitGenericArguments.Length == 0)
                 {
                     return;
                 }
 
                 buffer.WriteToTranslation('<');
 
-                for (int i = 0, l = _explicitGenericArgumentNames.Length - 1; ; ++i)
+                for (int i = 0, l = _explicitGenericArguments.Length; ;)
                 {
-                    buffer.WriteToTranslation(_explicitGenericArgumentNames[i]);
+                    _explicitGenericArguments[i++].WriteTo(buffer);
 
                     if (i == l)
                     {
