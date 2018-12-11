@@ -10,7 +10,8 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     {
         private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>
         {
-            [2017] = "15.0"
+            [2017] = "15.0",
+            [2019] = "16.0"
         };
 
         public VsPost2017Data(RegistryKey post2015Key)

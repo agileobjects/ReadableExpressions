@@ -71,6 +71,7 @@
     <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs15.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.dll</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="AgileObjects.ReadableExpressions.Visualizers.Vs16.dll" />
     <Content Include="CustomAction.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using AgileObjects.ReadableExpressions.Visualizers;
 
-[assembly: AssemblyDescription("A Debugger Visualizer providing a readable string representation of an Expression for Visual Studio 14")]
+[assembly: AssemblyDescription("A Debugger Visualizer providing a readable string representation of an Expression for Visual Studio 15")]
 
 [assembly: DebuggerVisualizer(typeof(Vs15ExpressionVisualizer), typeof(Vs15ExpressionVisualizerObjectSource), Target = typeof(Expression), Description = "ReadableExpressions Visualizer")]
 [assembly: DebuggerVisualizer(typeof(Vs15ExpressionVisualizer), typeof(Vs15ExpressionVisualizerObjectSource), Target = typeof(BinaryExpression), Description = "ReadableExpressions Visualizer")]
