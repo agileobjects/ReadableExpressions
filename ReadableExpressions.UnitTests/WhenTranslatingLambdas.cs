@@ -140,6 +140,20 @@ i => (double)i";
             translated.ShouldBe(EXPECTED);
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/31
+        [Fact]
+        public void ShouldTranslateUnnamedLambdaParameters()
+        {
+            var stringsParameter = Expression.Parameter(typeof(string[]));
+            var linqSelect = CreateLambda((string[] ints) => ints.Select(int.Parse));
+            var linqSelectWithUnnamed = Expression.Lambda(linqSelect.Body, stringsParameter);
+            var quoted = Expression.Quote(linqSelectWithUnnamed);
+
+            var translated = ToReadableString(quoted);
+
+            translated.ShouldBe("stringArray => ints.Select(int.Parse)");
+        }
+
         [Fact]
         public void ShouldTranslateRuntimeVariables()
         {

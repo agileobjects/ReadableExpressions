@@ -196,8 +196,8 @@
                         continue;
 
                     case ExpressionType.Lambda:
-                        expression = ((LambdaExpression)expression).Body;
-                        continue;
+                        Visit((LambdaExpression)expression);
+                        return;
 
                     case ExpressionType.ListInit:
                         Visit((ListInitExpression)expression);
@@ -379,6 +379,12 @@
         {
             Visit(invocation.Arguments);
             Visit(invocation.Expression);
+        }
+
+        private void Visit(LambdaExpression lambda)
+        {
+            Visit(lambda.Parameters);
+            Visit(lambda.Body);
         }
 
         private void Visit(ListInitExpression init)
