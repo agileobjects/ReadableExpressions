@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>An extension method for the Linq and DLR Expression classes and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
-    <Copyright>2018 Steve Wilkes</Copyright>
+    <Copyright>2019 Steve Wilkes</Copyright>
     <AssemblyTitle>ReadableExpressions</AssemblyTitle>
     <Authors>Steve Wilkes</Authors>
     <TargetFrameworks>netstandard1.0;net35;net40</TargetFrameworks>
@@ -15,7 +15,6 @@
     <Title>ReadableExpressions</Title>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageLicense>https://github.com/agileobjects/ReadableExpressions/blob/master/LICENSE.md</PackageLicense>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
@@ -23,14 +22,12 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-    <VersionPrefix>2.1.0</VersionPrefix>
-    <Version>2.1.0</Version>
+    <AssemblyVersion>2.1.1.0</AssemblyVersion>
+    <FileVersion>2.1.1.0</FileVersion>
+    <VersionPrefix>2.1.1</VersionPrefix>
+    <Version>2.1.1</Version>
     <Company>AgileObjects Ltd</Company>
-    <PackageLicenseUrl>https://github.com/agileobjects/ReadableExpressions/blob/master/LICENSE.md</PackageLicenseUrl>
-    <PackageReleaseNotes>- Fixing params array argument translation bug
-- Performance improvements</PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixing unnamed lambda parameter translation bug</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
