@@ -78,10 +78,10 @@
 
         public string VsInstallDirectory { get; private set; }
 
-        public void SetInstallPath(string pathToVisualizers) 
+        public void SetInstallPath(string pathToVisualizers)
             => _installPath = Path.Combine(pathToVisualizers, GetResourceFileName());
 
-        public void SetVsixManifestPath(string pathToExtensions) 
+        public void SetVsixManifestPath(string pathToExtensions)
             => _vsixManifestPath = Path.Combine(pathToExtensions, "extension.vsixmanifest");
 
         public void Install()
@@ -200,12 +200,25 @@
             _vsSetupArgument = _registryKey?.GetValue("SetupCommandLine") as string ?? "/setup";
         }
 
+        public Visualizer WithInstallPath(string pathToVisualizers)
+        {
+            var visualizer = With(_registryKey, VsInstallDirectory);
+
+            visualizer.SetInstallPath(pathToVisualizers);
+
+            return visualizer;
+        }
+
         public Visualizer With(RegistryKey registryKey, string vsInstallPath)
         {
             return new Visualizer(_logger, _version, _vsixManifest, ResourceName, VsVersionNumber)
             {
                 _registryKey = registryKey,
-                VsInstallDirectory = vsInstallPath
+                VsInstallDirectory = vsInstallPath,
+                _vsExePath = _vsExePath,
+                _vsSetupArgument = _vsSetupArgument,
+                _installPath = _installPath,
+                _vsixManifestPath = _vsixManifestPath
             };
         }
 

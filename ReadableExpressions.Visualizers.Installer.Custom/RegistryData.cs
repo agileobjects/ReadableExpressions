@@ -86,9 +86,9 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
                     foreach (var netStandardSubDirectory in netStandardSubDirectories)
                     {
-                        targetVisualizer.SetInstallPath(netStandardSubDirectory.FullName);
+                        var netStandardVisualizer = targetVisualizer.WithInstallPath(netStandardSubDirectory.FullName);
 
-                        yield return targetVisualizer;
+                        yield return netStandardVisualizer;
                     }
                 }
             }
