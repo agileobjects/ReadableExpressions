@@ -10,22 +10,26 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     internal class RegistryData : IDisposable
     {
         private readonly FileVersionInfo _thisAssemblyVersion;
+        private readonly RegistryKey _msMachineKey;
+        private readonly RegistryKey _vsPre2017MachineKey;
+        private readonly string[] _vsPre2017KeyNames;
+        private readonly VsPost2015Data[] _vsPost2015Data;
 
         public RegistryData(FileVersionInfo thisAssemblyVersion)
         {
             _thisAssemblyVersion = thisAssemblyVersion;
             const string REGISTRY_KEY = @"SOFTWARE\Microsoft";
 
-            MsMachineKey = Registry.LocalMachine.OpenSubKey(REGISTRY_KEY);
+            _msMachineKey = Registry.LocalMachine.OpenSubKey(REGISTRY_KEY);
 
-            if (MsMachineKey == null)
+            if (_msMachineKey == null)
             {
                 ErrorMessage = $"Unable to open the '{REGISTRY_KEY}' registry key";
                 NoVisualStudio = true;
                 return;
             }
 
-            var vsKeyNames = MsMachineKey
+            var vsKeyNames = _msMachineKey
                 .GetSubKeyNames()
                 .Where(sk => sk.StartsWith("VisualStudio", StringComparison.Ordinal))
                 .ToArray();
@@ -37,28 +41,20 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return;
             }
 
-            VsPre2017MachineKey = MsMachineKey.OpenSubKey("VisualStudio");
-            VsPre2017KeyNames = VsPre2017MachineKey?.GetSubKeyNames() ?? new string[0];
+            _vsPre2017MachineKey = _msMachineKey.OpenSubKey("VisualStudio");
+            _vsPre2017KeyNames = _vsPre2017MachineKey?.GetSubKeyNames() ?? new string[0];
 
-            VsPost2015Data = vsKeyNames
+            _vsPost2015Data = vsKeyNames
                 .Where(kn => kn.StartsWith("VisualStudio_"))
-                .Select(kn => new VsPost2017Data(MsMachineKey.OpenSubKey(kn)))
+                .Select(kn => new VsPost2015Data(_msMachineKey.OpenSubKey(kn)))
                 .GroupBy(d => d.InstallPath)
                 .Select(grp => grp.First())
                 .ToArray();
         }
 
-        public RegistryKey MsMachineKey { get; }
-
-        public RegistryKey VsPre2017MachineKey { get; }
-
-        public string[] VsPre2017KeyNames { get; }
-
-        public VsPost2017Data[] VsPost2015Data { get; }
-
         public bool NoVisualStudio { get; }
 
-        public string ErrorMessage { get; private set; }
+        public string ErrorMessage { get; }
 
         public IEnumerable<Visualizer> GetInstallableVisualizersFor(Visualizer visualizer)
         {
@@ -82,6 +78,18 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                     targetVisualizer.PopulateVsSetupData();
 
                     yield return targetVisualizer;
+
+                    var netStandardSubDirectories = Directory
+                        .EnumerateDirectories(pathToVisualizers)
+                        .Select(path => new DirectoryInfo(path))
+                        .Where(dir => dir.Name.StartsWith("netstandard", StringComparison.OrdinalIgnoreCase));
+
+                    foreach (var netStandardSubDirectory in netStandardSubDirectories)
+                    {
+                        targetVisualizer.SetInstallPath(netStandardSubDirectory.FullName);
+
+                        yield return targetVisualizer;
+                    }
                 }
             }
         }
@@ -102,7 +110,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             Visualizer visualizer,
             ICollection<Visualizer> targetVisualizers)
         {
-            var pre2017Key = VsPre2017KeyNames
+            var pre2017Key = _vsPre2017KeyNames
                 .FirstOrDefault(name => name == visualizer.VsFullVersionNumber);
 
             if (pre2017Key == null)
@@ -110,7 +118,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return;
             }
 
-            var vsSubKey = VsPre2017MachineKey.OpenSubKey(pre2017Key);
+            var vsSubKey = _vsPre2017MachineKey.OpenSubKey(pre2017Key);
             var installPath = vsSubKey?.GetValue("InstallDir") as string;
 
             if (string.IsNullOrWhiteSpace(installPath) || !Directory.Exists(installPath))
@@ -125,7 +133,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             Visualizer visualizer,
             ICollection<Visualizer> targetVisualizers)
         {
-            var relevantDataItems = VsPost2015Data
+            var relevantDataItems = _vsPost2015Data
                 .Where(d => d.IsValid && (d.VsFullVersionNumber == visualizer.VsFullVersionNumber));
 
             foreach (var dataItem in relevantDataItems)
@@ -146,10 +154,10 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
         public void Dispose()
         {
-            MsMachineKey?.Dispose();
-            VsPre2017MachineKey?.Dispose();
+            _msMachineKey?.Dispose();
+            _vsPre2017MachineKey?.Dispose();
 
-            foreach (var vsPost2015DataItem in VsPost2015Data)
+            foreach (var vsPost2015DataItem in _vsPost2015Data)
             {
                 vsPost2015DataItem.Dispose();
             }

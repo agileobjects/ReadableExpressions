@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System.Linq;
     using Microsoft.Win32;
 
-    internal class VsPost2017Data : IDisposable
+    internal class VsPost2015Data : IDisposable
     {
         private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>
         {
@@ -14,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             [2019] = "16.0"
         };
 
-        public VsPost2017Data(RegistryKey post2015Key)
+        public VsPost2015Data(RegistryKey post2015Key)
         {
             RegistryKey = post2015Key;
 
