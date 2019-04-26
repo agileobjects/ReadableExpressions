@@ -22,12 +22,13 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>2.1.2.0</AssemblyVersion>
-    <FileVersion>2.1.2.0</FileVersion>
-    <VersionPrefix>2.1.2</VersionPrefix>
-    <Version>2.1.2</Version>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <FileVersion>2.2.0.0</FileVersion>
+    <VersionPrefix>2.2.0</VersionPrefix>
+    <Version>2.2.0</Version>
     <Company>AgileObjects Ltd</Company>
-    <PackageReleaseNotes>- Updating installer to install NetStandard visualizers for VS2019</PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixing use of NameAnonymousTypeUsing, re: #33
+- Adding install path checks to visualizers installer, re: #34</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
