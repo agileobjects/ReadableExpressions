@@ -1,0 +1,8 @@
+targetObjects.Add(
+    {
+        var sourceObject = sourceObjectArray[i];
+
+        return (sourceObject != null)
+            ? sourceObject.GetType().IsSimple() ? sourceObject : oaToOsData.Map(sourceObject, null, i)
+            : null;
+    });
