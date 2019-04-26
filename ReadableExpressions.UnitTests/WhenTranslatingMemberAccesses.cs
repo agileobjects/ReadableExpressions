@@ -163,13 +163,13 @@
         public void ShouldTranslateMultiParameterCallParamsArrayArgument()
         {
             var stringJoinMethod = typeof(string)
-                .GetPublicStaticMethods("Join")
+                .GetPublicStaticMethods(nameof(string.Join))
                 .First(m =>
                     (m.GetParameters().Length == 2) &&
                     (m.GetParameters()[0].ParameterType == typeof(string)) &&
                     (m.GetParameters()[1].ParameterType == typeof(string[])));
 
-            var stringEmpty = Expression.Field(null, typeof(string).GetPublicStaticField("Empty"));
+            var stringEmpty = Expression.Field(null, typeof(string).GetPublicStaticField(nameof(string.Empty)));
             var expressions = new Expression[] { Expression.Constant("Value["), Expression.Constant("0"), Expression.Constant("]") };
             var newStringArray = Expression.NewArrayInit(typeof(string), expressions);
 

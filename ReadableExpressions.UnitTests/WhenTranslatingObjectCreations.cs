@@ -376,6 +376,21 @@ new StringBuilder(
             translated.ShouldBe("new { ValueString = \"How much?!\", ValueInt = 100 }");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/33
+        [Fact]
+        public void ShouldTranslateAnAnonymousTypeCreationWithACustomFactory()
+        {
+            var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = Expression.New(constructor, Expression.Constant("How much?"), Expression.Constant(10));
+
+            var translated = ToReadableString(creation, cfg => cfg.NameAnonymousTypesUsing(t => "MyMagicObject"));
+
+            translated.ShouldBe("new MyMagicObject { ValueString = \"How much?\", ValueInt = 10 }");
+        }
+
         [Fact]
         public void ShouldTranslateAFullyQualfiedAnonymousTypeCreation()
         {

@@ -40,19 +40,22 @@
 
         private class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
         {
+            private readonly string _typeName;
             private readonly ParameterInfo[] _ctorParameters;
 
             public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
                 : base(newing, context)
             {
                 Type = newing.Type;
+                _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(Type) ?? string.Empty;
                 _ctorParameters = newing.Constructor.GetParameters();
                 EstimatedSize = GetEstimatedSize();
             }
 
             private int GetEstimatedSize()
             {
-                return _ctorParameters.Sum(p => p.Name.Length) +
+                return _typeName.Length +
+                       _ctorParameters.Sum(p => p.Name.Length) +
                        (3 * _ctorParameters.Length) + // <- for ' = '
                         Parameters.EstimatedSize +
                        "new {  }".Length;
@@ -64,7 +67,15 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("new { ");
+                buffer.WriteToTranslation("new ");
+
+                if (_typeName.Length != 0)
+                {
+                    buffer.WriteToTranslation(_typeName);
+                    buffer.WriteSpaceToTranslation();
+                }
+
+                buffer.WriteToTranslation("{ ");
 
                 if (_ctorParameters.Length != 0)
                 {
