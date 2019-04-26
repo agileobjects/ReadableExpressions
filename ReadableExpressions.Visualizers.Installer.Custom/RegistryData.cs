@@ -79,6 +79,12 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
                     yield return targetVisualizer;
 
+                    if (!Directory.Exists(pathToVisualizers))
+                    {
+                        // This will be filtered out and logged later:
+                        continue;
+                    }
+
                     var netStandardSubDirectories = Directory
                         .EnumerateDirectories(pathToVisualizers)
                         .Select(path => new DirectoryInfo(path))
