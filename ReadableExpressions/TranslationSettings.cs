@@ -71,5 +71,19 @@
         }
 
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
+				
+		/// <summary>
+		/// Also convert calls to property accessors (get_Name(), set_Name()) to normal property syntax.
+		/// </summary>
+		public TranslationSettings ConvertPropertyMethods
+		{
+			get
+			{
+				ConvertPropertyMethodsToSimpleSyntax = true;
+				return this;
+			}
+		}
+
+        internal bool ConvertPropertyMethodsToSimpleSyntax { get; set; }
     }
 }
