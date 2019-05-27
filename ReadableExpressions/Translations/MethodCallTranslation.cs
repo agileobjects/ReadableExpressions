@@ -13,6 +13,7 @@
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
+    using System.Reflection;
 
     internal static class MethodCallTranslation
     {
@@ -36,6 +37,24 @@
         {
             var method = new BclMethodWrapper(methodCall.Method);
             var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
+
+            if (context.Settings.ConvertPropertyMethodsToSimpleSyntax && IsDirectPropertyMethodCall(methodCall, out var propertyInfo))
+            {
+                
+                var objTranslation = context.GetTranslationFor(methodCall.Object);
+                var propertyAccess = new MemberAccessTranslation(objTranslation, propertyInfo.Name, propertyInfo.PropertyType);
+
+                var isAssignment = methodCall.Method.ReturnType == typeof(void);
+                if(isAssignment)
+                {
+                    var valueExpr = methodCall.Arguments.First();
+                    return new AssignmentTranslation(Assign, propertyAccess, valueExpr, context);
+                }
+                else
+                {
+                    return propertyAccess;
+                }
+            }
 
             if (IsStringConcatCall(methodCall))
             {
@@ -71,6 +90,37 @@
             }
 
             return methodCallTranslation;
+        }
+
+        private static bool IsDirectPropertyMethodCall(MethodCallExpression methodCall, out PropertyInfo propertyInfo)
+        {
+            var m = methodCall.Method;
+            if (m.HasAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>())
+            {
+                // Find declaring property
+                propertyInfo = GetProperty(m);
+                if (propertyInfo != null)
+                    return true;
+            }
+
+            propertyInfo = null;
+            return false;
+        }
+
+        private static PropertyInfo GetProperty(MethodInfo method)
+        {
+            bool takesArg = method.GetParameters().Length == 1;
+            bool hasReturn = method.ReturnType != typeof(void);
+            if (takesArg == hasReturn)
+                return null;
+
+            var type = method.DeclaringType;
+            var allProps = type.GetNonPublicInstanceProperties()
+                .Concat(type.GetNonPublicStaticProperties())
+                .Concat(type.GetPublicInstanceProperties())
+                .Concat(type.GetPublicStaticProperties());
+
+            return allProps.Where(prop => prop.GetAccessors(true).Any(a => a == method)).FirstOrDefault();
         }
 
         private static bool IsStringConcatCall(MethodCallExpression methodCall)

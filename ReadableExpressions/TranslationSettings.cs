@@ -1,6 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
+
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
@@ -71,5 +77,32 @@
         }
 
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
+				
+		/// <summary>
+		/// Also convert calls to property accessors (get_Name(), set_Name()) to normal property syntax.
+		/// </summary>
+		public TranslationSettings ConvertPropertyMethods
+		{
+			get
+			{
+				ConvertPropertyMethodsToSimpleSyntax = true;
+				return this;
+			}
+		}
+
+        internal bool ConvertPropertyMethodsToSimpleSyntax { get; set; }
+
+
+		/// <summary>
+        /// Name constant expressions using the given <paramref name="nameFactory"/> instead of the default method.
+        /// </summary>
+        /// <param name="nameFactory">The factory method to execute to retrieve the name for the constant.</param>
+        public TranslationSettings NameConstantsUsing(Func<ConstantExpression, string> nameFactory)
+        {
+            ConstantExpressionNameFactory = nameFactory;
+            return this;
+        }
+
+        internal Func<ConstantExpression, string> ConstantExpressionNameFactory { get; private set; }
     }
 }

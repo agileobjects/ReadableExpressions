@@ -19,6 +19,13 @@
     {
         public static ITranslation For(ConstantExpression constant, ITranslationContext context)
         {
+            if(context.Settings.ConstantExpressionNameFactory != null)
+            {
+                var userGivenName = context.Settings.ConstantExpressionNameFactory(constant);
+                if(userGivenName != null)
+                    return FixedValueTranslation(userGivenName, constant.Type);
+            }
+
             if (constant.Value == null)
             {
                 return FixedValueTranslation("null", constant.Type);
