@@ -140,6 +140,40 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnInstancePropertyGetterCall()
+        {
+            var publicInstanceGetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetGetter();
+
+            publicInstanceGetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var getterAccess = Expression.Call(variable, publicInstanceGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("helper.PublicInstance");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInstancePropertySetterCall()
+        {
+            var publicInstanceSetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetSetter();
+
+            publicInstanceSetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var setterCall = Expression.Call(variable, publicInstanceSetter, Expression.Constant(123));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("helper.PublicInstance = 123");
+        }
+
+        [Fact]
         public void ShouldTranslateAParamsArrayArgument()
         {
             var splitString = CreateLambda((string str) => str.Split('x', 'y', 'z'));
@@ -461,6 +495,11 @@ new CustomAdder
     }
 
     #region Helper Classes
+
+    internal class PropertiesHelper
+    {
+        public int PublicInstance { get; set; }
+    }
 
     internal class IndexedProperty
     {

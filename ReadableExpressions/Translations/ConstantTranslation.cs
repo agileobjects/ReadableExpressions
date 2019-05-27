@@ -19,11 +19,11 @@
     {
         public static ITranslation For(ConstantExpression constant, ITranslationContext context)
         {
-            if(context.Settings.ConstantExpressionNameFactory != null)
+            if (context.Settings.ConstantExpressionValueFactory != null)
             {
-                var userGivenName = context.Settings.ConstantExpressionNameFactory(constant);
-                if(userGivenName != null)
-                    return FixedValueTranslation(userGivenName, constant.Type);
+                var userTranslation = context.Settings.ConstantExpressionValueFactory(constant);
+
+                return FixedValueTranslation(userTranslation ?? "null", constant.Type);
             }
 
             if (constant.Value == null)
@@ -568,7 +568,7 @@
                     buffer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
-                EndTranslation:
+            EndTranslation:
                 buffer.WriteToTranslation(')');
             }
 

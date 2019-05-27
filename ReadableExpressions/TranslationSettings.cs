@@ -69,7 +69,9 @@
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
         /// default method.
         /// </summary>
-        /// <param name="nameFactory">The factory method to execute to retrieve the name for an anonymous type.</param>
+        /// <param name="nameFactory">
+        /// The factory method to execute to retrieve the name for an anonymous type.
+        /// </param>
         public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
@@ -77,32 +79,20 @@
         }
 
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
-				
-		/// <summary>
-		/// Also convert calls to property accessors (get_Name(), set_Name()) to normal property syntax.
-		/// </summary>
-		public TranslationSettings ConvertPropertyMethods
-		{
-			get
-			{
-				ConvertPropertyMethodsToSimpleSyntax = true;
-				return this;
-			}
-		}
 
-        internal bool ConvertPropertyMethodsToSimpleSyntax { get; set; }
-
-
-		/// <summary>
-        /// Name constant expressions using the given <paramref name="nameFactory"/> instead of the default method.
+        /// <summary>
+        /// Translate ConstantExpressions using the given <paramref name="valueFactory"/> instead of
+        /// the default method.
         /// </summary>
-        /// <param name="nameFactory">The factory method to execute to retrieve the name for the constant.</param>
-        public TranslationSettings NameConstantsUsing(Func<ConstantExpression, string> nameFactory)
+        /// <param name="valueFactory">
+        /// The factory method to execute to retrieve the ConstantExpression's translated value.
+        /// </param>
+        public TranslationSettings TranslateConstantsUsing(Func<ConstantExpression, string> valueFactory)
         {
-            ConstantExpressionNameFactory = nameFactory;
+            ConstantExpressionValueFactory = valueFactory;
             return this;
         }
 
-        internal Func<ConstantExpression, string> ConstantExpressionNameFactory { get; private set; }
+        internal Func<ConstantExpression, string> ConstantExpressionValueFactory { get; private set; }
     }
 }
