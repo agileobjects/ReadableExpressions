@@ -174,6 +174,38 @@
         }
 
         [Fact]
+        public void ShouldTranslateAStaticPropertyGetterCall()
+        {
+            var publicStaticGetter = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic))
+                .GetGetter();
+
+            publicStaticGetter.ShouldNotBeNull();
+
+            var getterAccess = Expression.Call(publicStaticGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("PropertiesHelper.PublicStatic");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticPropertySetterCall()
+        {
+            var publicStaticSetter = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic))
+                .GetSetter();
+
+            publicStaticSetter.ShouldNotBeNull();
+
+            var setterCall = Expression.Call(publicStaticSetter, Expression.Constant(456));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("PropertiesHelper.PublicStatic = 456");
+        }
+
+        [Fact]
         public void ShouldTranslateAParamsArrayArgument()
         {
             var splitString = CreateLambda((string str) => str.Split('x', 'y', 'z'));
@@ -498,6 +530,8 @@ new CustomAdder
 
     internal class PropertiesHelper
     {
+        public static int PublicStatic { get; set; }
+        
         public int PublicInstance { get; set; }
     }
 

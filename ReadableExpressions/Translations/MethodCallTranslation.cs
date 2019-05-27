@@ -187,7 +187,10 @@
                 MethodCallExpression getterCall,
                 PropertyInfo property,
                 ITranslationContext context)
-                : base(context.GetTranslationFor(getterCall.Object), property.Name, property.PropertyType)
+                : base(
+                    GetSubjectOrNull(getterCall.Object, property, context),
+                    property.Name,
+                    property.PropertyType)
             {
             }
         }
