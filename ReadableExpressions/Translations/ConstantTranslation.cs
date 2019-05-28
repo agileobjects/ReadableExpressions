@@ -21,7 +21,7 @@
         {
             if (context.Settings.ConstantExpressionValueFactory != null)
             {
-                var userTranslation = context.Settings.ConstantExpressionValueFactory(constant);
+                var userTranslation = context.Settings.ConstantExpressionValueFactory(constant.Type, constant.Value);
 
                 return FixedValueTranslation(userTranslation ?? "null", constant.Type);
             }

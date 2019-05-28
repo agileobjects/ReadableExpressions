@@ -429,6 +429,31 @@
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/35
+        [Fact]
+        public void ShouldUseAUserDefinedConstantTranslator()
+        {
+            var stringConstant = Expression.Constant("hello!", typeof(string));
+
+            var translated = ToReadableString(
+                stringConstant, 
+                settings => settings.TranslateConstantsUsing((t, v) => "custom!"));
+
+            translated.ShouldBe("custom!");
+        }
+        
+        [Fact]
+        public void ShouldUseADefaultValueIfUserDefinedConstantTranslatorReturnsNull()
+        {
+            var stringConstant = Expression.Constant("hello!", typeof(string));
+
+            var translated = ToReadableString(
+                stringConstant, 
+                settings => settings.TranslateConstantsUsing((t, v) => null));
+
+            translated.ShouldBe("null");
+        }
     }
 
     // ReSharper disable UnusedTypeParameter

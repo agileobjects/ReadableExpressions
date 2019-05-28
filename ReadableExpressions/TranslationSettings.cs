@@ -1,12 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
-
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
@@ -87,12 +81,12 @@
         /// <param name="valueFactory">
         /// The factory method to execute to retrieve the ConstantExpression's translated value.
         /// </param>
-        public TranslationSettings TranslateConstantsUsing(Func<ConstantExpression, string> valueFactory)
+        public TranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory)
         {
             ConstantExpressionValueFactory = valueFactory;
             return this;
         }
 
-        internal Func<ConstantExpression, string> ConstantExpressionValueFactory { get; private set; }
+        internal Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
     }
 }

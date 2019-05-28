@@ -139,6 +139,7 @@
             translated.ShouldBe("IndexedProperty.Default");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/35
         [Fact]
         public void ShouldTranslateAnInstancePropertyGetterCall()
         {
