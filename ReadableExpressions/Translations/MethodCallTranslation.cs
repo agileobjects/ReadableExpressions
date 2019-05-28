@@ -13,6 +13,8 @@
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
 
     internal static class MethodCallTranslation
     {
@@ -34,13 +36,25 @@
 
         public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
-            var method = new BclMethodWrapper(methodCall.Method);
-            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
+            if (IsPropertyGetterOrSetterCall(methodCall, out var property))
+            {
+                var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
+
+                if (methodCall.Method.ReturnType != typeof(void))
+                {
+                    return getterTranslation;
+                }
+
+                return new PropertySetterTranslation(methodCall, getterTranslation, context);
+            }
 
             if (IsStringConcatCall(methodCall))
             {
                 return new StringConcatenationTranslation(Call, methodCall.Arguments, context);
             }
+
+            var method = new BclMethodWrapper(methodCall.Method);
+            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
             {
@@ -73,11 +87,53 @@
             return methodCallTranslation;
         }
 
+        private static bool IsPropertyGetterOrSetterCall(MethodCallExpression methodCall, out PropertyInfo property)
+        {
+            if (methodCall.Method.HasAttribute<CompilerGeneratedAttribute>())
+            {
+                // Find declaring property
+                property = GetPropertyOrNull(methodCall.Method);
+
+                if (property != null)
+                {
+                    return true;
+                }
+            }
+
+            property = null;
+            return false;
+        }
+
+        private static PropertyInfo GetPropertyOrNull(MethodInfo method)
+        {
+            var hasSingleArgument = method.GetParameters().Length == 1;
+            var hasReturnType = method.ReturnType != typeof(void);
+
+            if (hasSingleArgument == hasReturnType)
+            {
+                return null;
+            }
+
+            var type = method.DeclaringType;
+
+            var allProperties =
+                        type.GetPublicInstanceProperties()
+                .Concat(type.GetNonPublicInstanceProperties())
+                .Concat(type.GetPublicStaticProperties())
+                .Concat(type.GetNonPublicStaticProperties());
+
+            return allProperties.FirstOrDefault(property => Equals(
+                hasReturnType
+                    ? property.GetGetter(nonPublic: true)
+                    : property.GetSetter(nonPublic: true),
+                method));
+        }
+
         private static bool IsStringConcatCall(MethodCallExpression methodCall)
         {
             return methodCall.Method.IsStatic &&
-                   (methodCall.Method.DeclaringType == typeof(string)) &&
-                   (methodCall.Method.Name == "Concat");
+                  (methodCall.Method.DeclaringType == typeof(string)) &&
+                  (methodCall.Method.Name == nameof(string.Concat));
         }
 
         public static ITranslation GetSubjectTranslation(MethodCallExpression methodCall, ITranslationContext context)
@@ -123,6 +179,31 @@
                 method,
                 new ParameterSetTranslation(arguments, context).WithParentheses(),
                 context);
+        }
+
+        private class PropertyGetterTranslation : MemberAccessTranslation
+        {
+            public PropertyGetterTranslation(
+                MethodCallExpression getterCall,
+                PropertyInfo property,
+                ITranslationContext context)
+                : base(
+                    GetSubjectOrNull(getterCall.Object, property, context),
+                    property.Name,
+                    property.PropertyType)
+            {
+            }
+        }
+
+        private class PropertySetterTranslation : AssignmentTranslation
+        {
+            public PropertySetterTranslation(
+                MethodCallExpression setterCall,
+                ITranslation getterTranslation,
+                ITranslationContext context)
+                : base(Assign, getterTranslation, setterCall.Arguments.First(), context)
+            {
+            }
         }
 
         private class StandardMethodCallTranslation : ITranslation

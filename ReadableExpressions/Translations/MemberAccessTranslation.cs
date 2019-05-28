@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -22,30 +23,36 @@
         }
 
         private static ITranslation GetSubjectOrNull(MemberExpression memberAccess, ITranslationContext context)
+            => GetSubjectOrNull(memberAccess.Expression, memberAccess.Member, context);
+
+        protected static ITranslation GetSubjectOrNull(
+            Expression subject,
+            MemberInfo member,
+            ITranslationContext context)
         {
-            if (memberAccess.Expression == null)
+            if (subject == null)
             {
-                return context.GetTranslationFor(memberAccess.Member.DeclaringType);
+                return context.GetTranslationFor(member.DeclaringType);
             }
 
-            if (SubjectIsCapturedInstance(memberAccess))
+            if (SubjectIsCapturedInstance(subject, member))
             {
                 return null;
             }
 
-            return context.GetTranslationFor(memberAccess.Expression);
+            return context.GetTranslationFor(subject);
         }
 
-        private static bool SubjectIsCapturedInstance(MemberExpression memberAccess)
+        private static bool SubjectIsCapturedInstance(Expression subject, MemberInfo member)
         {
-            if (memberAccess.Expression.NodeType != ExpressionType.Constant)
+            if (subject.NodeType != ExpressionType.Constant)
             {
                 return false;
             }
 
-            var subjectType = ((ConstantExpression)memberAccess.Expression).Type;
+            var subjectType = ((ConstantExpression)subject).Type;
 
-            return subjectType == memberAccess.Member.DeclaringType;
+            return subjectType == member.DeclaringType;
         }
 
         public MemberAccessTranslation(ITranslation subject, string memberName, Type memberType)
@@ -69,7 +76,7 @@
         }
 
         public ExpressionType NodeType => ExpressionType.MemberAccess;
-        
+
         public Type Type { get; }
 
         public int EstimatedSize { get; }

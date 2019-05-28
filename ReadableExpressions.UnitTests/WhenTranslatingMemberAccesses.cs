@@ -139,6 +139,139 @@
             translated.ShouldBe("IndexedProperty.Default");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/35
+        [Fact]
+        public void ShouldTranslateAnInstancePropertyGetterCall()
+        {
+            var publicInstanceGetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetGetter();
+
+            publicInstanceGetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var getterAccess = Expression.Call(variable, publicInstanceGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("helper.PublicInstance");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInstancePropertySetterCall()
+        {
+            var publicInstanceSetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetSetter();
+
+            publicInstanceSetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var setterCall = Expression.Call(variable, publicInstanceSetter, Expression.Constant(123));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("helper.PublicInstance = 123");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticPropertyGetterCall()
+        {
+            var publicStaticGetter = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic))
+                .GetGetter();
+
+            publicStaticGetter.ShouldNotBeNull();
+
+            var getterAccess = Expression.Call(publicStaticGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("PropertiesHelper.PublicStatic");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticPropertySetterCall()
+        {
+            var publicStaticSetter = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic))
+                .GetSetter();
+
+            publicStaticSetter.ShouldNotBeNull();
+
+            var setterCall = Expression.Call(publicStaticSetter, Expression.Constant(456));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("PropertiesHelper.PublicStatic = 456");
+        }
+
+        [Fact]
+        public void ShouldTranslateANonPublicInstancePropertyGetterCall()
+        {
+            var publicInstanceGetter = typeof(PropertiesHelper)
+                .GetNonPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstance))
+                .GetGetter(nonPublic: true);
+
+            publicInstanceGetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var getterAccess = Expression.Call(variable, publicInstanceGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("helper.NonPublicInstance");
+        }
+
+        [Fact]
+        public void ShouldTranslateANonPublicInstancePropertySetterCall()
+        {
+            var nonPublicInstanceSetter = typeof(PropertiesHelper)
+                .GetNonPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstance))
+                .GetSetter(nonPublic: true);
+
+            nonPublicInstanceSetter.ShouldNotBeNull();
+
+            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
+            var setterCall = Expression.Call(variable, nonPublicInstanceSetter, Expression.Constant(123));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("helper.NonPublicInstance = 123");
+        }
+
+        [Fact]
+        public void ShouldTranslateANonPublicStaticPropertyGetterCall()
+        {
+            var nonPublicStaticGetter = typeof(PropertiesHelper)
+                .GetNonPublicStaticProperty(nameof(PropertiesHelper.NonPublicStatic))
+                .GetGetter(nonPublic: true);
+
+            nonPublicStaticGetter.ShouldNotBeNull();
+
+            var getterAccess = Expression.Call(nonPublicStaticGetter);
+
+            var translated = ToReadableString(getterAccess);
+
+            translated.ShouldBe("PropertiesHelper.NonPublicStatic");
+        }
+
+        [Fact]
+        public void ShouldTranslateANonPublicStaticPropertySetterCall()
+        {
+            var nonPublicStaticSetter = typeof(PropertiesHelper)
+                .GetNonPublicStaticProperty(nameof(PropertiesHelper.NonPublicStatic))
+                .GetSetter(nonPublic: true);
+
+            nonPublicStaticSetter.ShouldNotBeNull();
+
+            var setterCall = Expression.Call(nonPublicStaticSetter, Expression.Constant(456));
+
+            var translated = ToReadableString(setterCall);
+
+            translated.ShouldBe("PropertiesHelper.NonPublicStatic = 456");
+        }
+
         [Fact]
         public void ShouldTranslateAParamsArrayArgument()
         {
@@ -461,6 +594,17 @@ new CustomAdder
     }
 
     #region Helper Classes
+
+    internal class PropertiesHelper
+    {
+        public static int PublicStatic { get; set; }
+        
+        public int PublicInstance { get; set; }
+
+        internal static int NonPublicStatic { get; set; }
+        
+        internal int NonPublicInstance { get; set; }
+    }
 
     internal class IndexedProperty
     {
