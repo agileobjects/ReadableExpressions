@@ -5,6 +5,6 @@ using System.Reflection;
 [assembly: AssemblyTitle("AgileObjects.ReadableExpressions.Visualizers")]
 [assembly: AssemblyCompany("AgileObjects")]
 [assembly: AssemblyProduct("ReadableExpressions.Visualizers")]
-[assembly: AssemblyCopyright("Copyright © 2018")]
+[assembly: AssemblyCopyright("Copyright © 2019")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: CLSCompliant(true)]
