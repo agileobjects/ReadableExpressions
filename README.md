@@ -26,7 +26,14 @@ To include namespaces when outputting Type names, use:
 To define a custom factory for naming anonymous types, use:
 
     string readable = myExpression
-        .ToReadableString(c => c.NameAnonymousTypesUsing(anonType => GetAnonTypeName(anonType)));
+        .ToReadableString(c => c.NameAnonymousTypesUsing(
+            anonType => GetAnonTypeName(anonType)));
+
+To define a custom factory for translating ConstantExpression values, use:
+
+    string readable = myExpression
+        .ToReadableString(c => c.TranslateConstantsUsing(
+            (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
 
 To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
 

@@ -2,11 +2,11 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -25,11 +25,11 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateACheckedAdditionExpression()
         {
-            var intParameter1 = Expression.Parameter(typeof(int), "a");
-            var intParameter2 = Expression.Parameter(typeof(int), "b");
-            var checkedAddition = Expression.AddChecked(intParameter1, intParameter2);
+            var intParameter1 = Parameter(typeof(int), "a");
+            var intParameter2 = Parameter(typeof(int), "b");
+            var checkedAddition = AddChecked(intParameter1, intParameter2);
 
-            var checkedAdditionLambda = Expression.Lambda<Func<int, int, int>>(
+            var checkedAdditionLambda = Lambda<Func<int, int, int>>(
                 checkedAddition,
                 intParameter1,
                 intParameter2);
@@ -52,11 +52,11 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateACheckedSubtractionExpression()
         {
-            var intParameter1 = Expression.Parameter(typeof(int), "a");
-            var intParameter2 = Expression.Parameter(typeof(int), "b");
-            var checkedSubtraction = Expression.SubtractChecked(intParameter1, intParameter2);
+            var intParameter1 = Parameter(typeof(int), "a");
+            var intParameter2 = Parameter(typeof(int), "b");
+            var checkedSubtraction = SubtractChecked(intParameter1, intParameter2);
 
-            var checkedSubtractionLambda = Expression.Lambda<Func<int, int, int>>(
+            var checkedSubtractionLambda = Lambda<Func<int, int, int>>(
                 checkedSubtraction,
                 intParameter1,
                 intParameter2);
@@ -79,9 +79,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateACheckedNegationExpression()
         {
-            var intParameter = Expression.Parameter(typeof(int), "i");
-            var checkedNegation = Expression.NegateChecked(intParameter);
-            var checkedNegationLambda = Expression.Lambda<Func<int, int>>(checkedNegation, intParameter);
+            var intParameter = Parameter(typeof(int), "i");
+            var checkedNegation = NegateChecked(intParameter);
+            var checkedNegationLambda = Lambda<Func<int, int>>(checkedNegation, intParameter);
 
             var translated = ToReadableString(checkedNegationLambda);
 
@@ -103,22 +103,22 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var variableOne = Expression.Variable(typeof(int), "one");
-            var variableTwo = Expression.Variable(typeof(int), "two");
+            var variableOne = Variable(typeof(int), "one");
+            var variableTwo = Variable(typeof(int), "two");
 
-            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
-            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+            var variableOneAssignment = Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Assign(variableTwo, consoleRead.Body);
 
-            var variableOnePlusTwo = Expression.Add(variableOne, variableTwo);
+            var variableOnePlusTwo = Add(variableOne, variableTwo);
 
-            var valueOneBlock = Expression.Block(
+            var valueOneBlock = Block(
                 new[] { variableOne, variableTwo },
                 variableOneAssignment,
                 variableTwoAssignment,
                 variableOnePlusTwo);
 
-            var intVariable = Expression.Parameter(typeof(int), "i");
-            var checkedMultiplication = Expression.MultiplyChecked(valueOneBlock, intVariable);
+            var intVariable = Parameter(typeof(int), "i");
+            var checkedMultiplication = MultiplyChecked(valueOneBlock, intVariable);
 
             var translated = ToReadableString(checkedMultiplication);
 
@@ -139,9 +139,9 @@ checked
         [Fact]
         public void ShouldTranslateAMultiplicationPowerExpression()
         {
-            var variableOne = Expression.Variable(typeof(double), "d1");
-            var variableTwo = Expression.Variable(typeof(double), "d2");
-            var varOneToThePowerOfVarTwo = Expression.Power(variableOne, variableTwo);
+            var variableOne = Variable(typeof(double), "d1");
+            var variableTwo = Variable(typeof(double), "d2");
+            var varOneToThePowerOfVarTwo = Power(variableOne, variableTwo);
 
             var translated = ToReadableString(varOneToThePowerOfVarTwo);
 
@@ -181,8 +181,8 @@ checked
         [Fact]
         public void ShouldTranslateAnIncrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var increment = Expression.Increment(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var increment = Increment(intVariable);
 
             var translated = ToReadableString(increment);
 
@@ -192,8 +192,8 @@ checked
         [Fact]
         public void ShouldTranslateAPreIncrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var preIncrement = Expression.PreIncrementAssign(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var preIncrement = PreIncrementAssign(intVariable);
 
             var translated = ToReadableString(preIncrement);
 
@@ -203,8 +203,8 @@ checked
         [Fact]
         public void ShouldTranslateAPostIncrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var postIncrement = Expression.PostIncrementAssign(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var postIncrement = PostIncrementAssign(intVariable);
 
             var translated = ToReadableString(postIncrement);
 
@@ -214,8 +214,8 @@ checked
         [Fact]
         public void ShouldTranslateADecrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var decrement = Expression.Decrement(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var decrement = Decrement(intVariable);
 
             var translated = ToReadableString(decrement);
 
@@ -225,8 +225,8 @@ checked
         [Fact]
         public void ShouldTranslateAPreDecrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var preDecrement = Expression.PreDecrementAssign(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var preDecrement = PreDecrementAssign(intVariable);
 
             var translated = ToReadableString(preDecrement);
 
@@ -236,8 +236,8 @@ checked
         [Fact]
         public void ShouldTranslateAPostDecrementExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var postDecrement = Expression.PostDecrementAssign(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var postDecrement = PostDecrementAssign(intVariable);
 
             var translated = ToReadableString(postDecrement);
 

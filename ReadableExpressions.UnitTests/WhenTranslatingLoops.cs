@@ -2,11 +2,11 @@
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -16,7 +16,7 @@
         public void ShouldTranslateAnInfiniteLoop()
         {
             var writeLine = CreateLambda(() => Console.WriteLine());
-            var loop = Expression.Loop(writeLine.Body);
+            var loop = Loop(writeLine.Body);
 
             var translated = ToReadableString(loop);
 
@@ -31,14 +31,14 @@ while (true)
         [Fact]
         public void ShouldTranslateALoopWithABreakStatement()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intGreaterThanTwo = Expression.GreaterThan(intVariable, Expression.Constant(2));
-            var breakLoop = Expression.Break(Expression.Label());
-            var ifGreaterThanTwoBreak = Expression.IfThen(intGreaterThanTwo, breakLoop);
+            var intVariable = Variable(typeof(int), "i");
+            var intGreaterThanTwo = GreaterThan(intVariable, Constant(2));
+            var breakLoop = Break(Label());
+            var ifGreaterThanTwoBreak = IfThen(intGreaterThanTwo, breakLoop);
             var writeLine = CreateLambda(() => Console.WriteLine());
-            var incrementVariable = Expression.Increment(intVariable);
-            var loopBody = Expression.Block(ifGreaterThanTwoBreak, writeLine.Body, incrementVariable);
-            var loop = Expression.Loop(loopBody, breakLoop.Target);
+            var incrementVariable = Increment(intVariable);
+            var loopBody = Block(ifGreaterThanTwoBreak, writeLine.Body, incrementVariable);
+            var loop = Loop(loopBody, breakLoop.Target);
 
             var translated = ToReadableString(loop);
 
@@ -59,16 +59,16 @@ while (true)
         [Fact]
         public void ShouldTranslateALoopWithAContinueStatement()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intLessThanThree = Expression.LessThan(intVariable, Expression.Constant(3));
-            var incrementVariable = Expression.Increment(intVariable);
-            var continueLoop = Expression.Continue(Expression.Label());
-            var incrementAndContinue = Expression.Block(incrementVariable, continueLoop);
-            var ifLessThanThreeContinue = Expression.IfThen(intLessThanThree, incrementAndContinue);
+            var intVariable = Variable(typeof(int), "i");
+            var intLessThanThree = LessThan(intVariable, Constant(3));
+            var incrementVariable = Increment(intVariable);
+            var continueLoop = Continue(Label());
+            var incrementAndContinue = Block(incrementVariable, continueLoop);
+            var ifLessThanThreeContinue = IfThen(intLessThanThree, incrementAndContinue);
             var writeFinished = CreateLambda(() => Console.Write("Finished!"));
-            var returnFromLoop = Expression.Return(Expression.Label());
-            var loopBody = Expression.Block(ifLessThanThreeContinue, writeFinished.Body, returnFromLoop);
-            var loop = Expression.Loop(loopBody, returnFromLoop.Target, continueLoop.Target);
+            var returnFromLoop = Return(Label());
+            var loopBody = Block(ifLessThanThreeContinue, writeFinished.Body, returnFromLoop);
+            var loop = Loop(loopBody, returnFromLoop.Target, continueLoop.Target);
 
             var translated = ToReadableString(loop);
 

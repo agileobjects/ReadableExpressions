@@ -7,6 +7,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.Security.Policy;
     using Microsoft.CSharp.RuntimeBinder;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 
     public class WhenUsingPartialTrust
     {
@@ -87,8 +88,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     {
         public void TestSimpleAssignmentTranslation()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var assignment = Expression.Assign(intVariable, Expression.Constant(0));
+            var intVariable = Variable(typeof(int), "i");
+            var assignment = Assign(intVariable, Constant(0));
             var translated = TestClassBase.ToReadableString(assignment);
 
             translated.ShouldBe("i = 0");
@@ -102,15 +103,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 typeof(WhenTranslatingDynamicOperations),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+            var dynamicParameter = Parameter(typeof(object), "obj");
 
-            var dynamicLengthGetter = Expression.Dynamic(
+            var dynamicLengthGetter = Dynamic(
                 lengthGetterSiteBinder,
                 typeof(object),
                 dynamicParameter);
 
-            var dynamicLengthLambda = Expression
-                .Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
+            var dynamicLengthLambda = Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
 
             dynamicLengthLambda.Compile();
 
@@ -121,8 +121,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
         public void TestIntTypeEqualExpressionTranslation()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
+            var intVariable = Variable(typeof(int), "i");
+            var intIsLong = TypeEqual(intVariable, typeof(long));
             var translated = TestClassBase.ToReadableString(intIsLong);
 
             translated.ShouldBe("i TypeOf typeof(long)");
@@ -130,8 +130,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
         public void TestObjectTypeEqualExpressionTranslation()
         {
-            var objectVariable = Expression.Variable(typeof(object), "o");
-            var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
+            var objectVariable = Variable(typeof(object), "o");
+            var objectIsString = TypeEqual(objectVariable, typeof(string));
             var translated = TestClassBase.ToReadableString(objectIsString);
 
             translated.ShouldBe("o is string");

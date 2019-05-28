@@ -3,9 +3,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Globalization;
-    using System.Linq.Expressions;
     using Microsoft.CSharp.RuntimeBinder;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 
     public class WhenTranslatingDynamicOperations : TestClassBase
     {
@@ -18,15 +18,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 typeof(WhenTranslatingDynamicOperations),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+            var dynamicParameter = Parameter(typeof(object), "obj");
 
-            var dynamicLengthGetter = Expression.Dynamic(
+            var dynamicLengthGetter = Dynamic(
                 lengthGetterSiteBinder,
                 typeof(object),
                 dynamicParameter);
 
-            var dynamicLengthLambda = Expression
-                .Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
+            var dynamicLengthLambda = Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
 
             dynamicLengthLambda.Compile();
 
@@ -44,16 +43,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 typeof(WhenTranslatingDynamicOperations),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
-            var positionParameter = Expression.Parameter(typeof(long), "position");
+            var dynamicParameter = Parameter(typeof(object), "obj");
+            var positionParameter = Parameter(typeof(long), "position");
 
-            var dynamicPositionSetter = Expression.Dynamic(
+            var dynamicPositionSetter = Dynamic(
                 positionSetterSiteBinder,
                 typeof(object),
                 dynamicParameter,
                 positionParameter);
 
-            var dynamicPositionLambda = Expression.Lambda<Action<object, long>>(
+            var dynamicPositionLambda = Lambda<Action<object, long>>(
                 dynamicPositionSetter,
                 dynamicParameter,
                 positionParameter);
@@ -75,15 +74,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 typeof(WhenTranslatingDynamicOperations),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+            var dynamicParameter = Parameter(typeof(object), "obj");
 
-            var dynamicToStringCall = Expression.Dynamic(
+            var dynamicToStringCall = Dynamic(
                 objectToStringCallSiteBinder,
                 typeof(object),
                 dynamicParameter);
 
-            var dynamicToStringLambda = Expression
-                .Lambda<Func<object, object>>(dynamicToStringCall, dynamicParameter);
+            var dynamicToStringLambda = Lambda<Func<object, object>>(dynamicToStringCall, dynamicParameter);
 
             dynamicToStringLambda.Compile();
 
@@ -106,15 +104,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 typeof(WhenTranslatingDynamicOperations),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
+            var dynamicParameter = Parameter(typeof(object), "obj");
 
-            var dynamicYellHurrahCall = Expression.Dynamic(
+            var dynamicYellHurrahCall = Dynamic(
                 objectYellHurrahCallSiteBinder,
                 typeof(object),
                 dynamicParameter);
 
-            var dynamicYellHurrahLambda = Expression
-                .Lambda<Func<object, object>>(dynamicYellHurrahCall, dynamicParameter);
+            var dynamicYellHurrahLambda = Lambda<Func<object, object>>(dynamicYellHurrahCall, dynamicParameter);
 
             dynamicYellHurrahLambda.Compile();
 
@@ -137,16 +134,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                     CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
                 });
 
-            var dynamicParameter = Expression.Parameter(typeof(object), "obj");
-            var cultureInfoParameter = Expression.Parameter(typeof(CultureInfo), "ci");
+            var dynamicParameter = Parameter(typeof(object), "obj");
+            var cultureInfoParameter = Parameter(typeof(CultureInfo), "ci");
 
-            var dynamicToStringCall = Expression.Dynamic(
+            var dynamicToStringCall = Dynamic(
                 objectToStringCallSiteBinder,
                 typeof(object),
                 dynamicParameter,
                 cultureInfoParameter);
 
-            var dynamicToStringLambda = Expression.Lambda<Func<object, CultureInfo, object>>(
+            var dynamicToStringLambda = Lambda<Func<object, CultureInfo, object>>(
                 dynamicToStringCall,
                 dynamicParameter,
                 cultureInfoParameter);
@@ -172,16 +169,16 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                     CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
                 });
 
-            var dynamicParameter = Expression.Parameter(typeof(ValueConverter), "valueConverter");
-            var valueParameter = Expression.Parameter(typeof(string), "value");
+            var dynamicParameter = Parameter(typeof(ValueConverter), "valueConverter");
+            var valueParameter = Parameter(typeof(string), "value");
 
-            var dynamicConvertCall = Expression.Dynamic(
+            var dynamicConvertCall = Dynamic(
                 valueConverterConvertCallSiteBinder,
                 typeof(int),
                 dynamicParameter,
                 valueParameter);
 
-            var dynamicConvertLambda = Expression.Lambda<Func<ValueConverter, string, int>>(
+            var dynamicConvertLambda = Lambda<Func<ValueConverter, string, int>>(
                 dynamicConvertCall,
                 dynamicParameter,
                 valueParameter);
@@ -207,14 +204,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                     CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
                 });
 
-            var dynamicParameter = Expression.Parameter(typeof(ValueConverter), "valueConverter");
+            var dynamicParameter = Parameter(typeof(ValueConverter), "valueConverter");
 
-            var dynamicConvertCall = Expression.Dynamic(
+            var dynamicConvertCall = Dynamic(
                 valueConverterConvertCallSiteBinder,
                 typeof(string),
                 dynamicParameter);
 
-            var dynamicConvertLambda = Expression.Lambda<Func<ValueConverter, string>>(
+            var dynamicConvertLambda = Lambda<Func<ValueConverter, string>>(
                 dynamicConvertCall,
                 dynamicParameter);
 
@@ -240,14 +237,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                     CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null)
                 });
 
-            var dynamicParameter = Expression.Parameter(typeof(TypePrinter), "typePrinter");
+            var dynamicParameter = Parameter(typeof(TypePrinter), "typePrinter");
 
-            var dynamicPrintCall = Expression.Dynamic(
+            var dynamicPrintCall = Dynamic(
                 typePrinterPrintCallSiteBinder,
                 typeof(void),
                 dynamicParameter);
 
-            var dynamicPrintLambda = Expression.Lambda<Action<TypePrinter>>(
+            var dynamicPrintLambda = Lambda<Action<TypePrinter>>(
                 dynamicPrintCall,
                 dynamicParameter);
 

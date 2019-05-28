@@ -63,7 +63,9 @@
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
         /// default method.
         /// </summary>
-        /// <param name="nameFactory">The factory method to execute to retrieve the name for an anonymous type.</param>
+        /// <param name="nameFactory">
+        /// The factory method to execute to retrieve the name for an anonymous type.
+        /// </param>
         public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
@@ -71,5 +73,20 @@
         }
 
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
+
+        /// <summary>
+        /// Translate ConstantExpressions using the given <paramref name="valueFactory"/> instead of
+        /// the default method.
+        /// </summary>
+        /// <param name="valueFactory">
+        /// The factory method to execute to retrieve the ConstantExpression's translated value.
+        /// </param>
+        public TranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory)
+        {
+            ConstantExpressionValueFactory = valueFactory;
+            return this;
+        }
+
+        internal Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
     }
 }

@@ -1,11 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -15,8 +15,8 @@
         [Fact]
         public void ShouldNameAnUnnamedVariable()
         {
-            var intVariable = Expression.Variable(typeof(int));
-            var assignDefaultToInt = Expression.Assign(intVariable, Expression.Default(typeof(int)));
+            var intVariable = Variable(typeof(int));
+            var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
 
             var translated = ToReadableString(assignDefaultToInt);
 
@@ -26,9 +26,9 @@
         [Fact]
         public void ShouldNameAnUnnamedParameter()
         {
-            var stringParameter = Expression.Parameter(typeof(string), string.Empty);
-            var stringVariable = Expression.Variable(typeof(string), "  ");
-            var assignVariableToParameter = Expression.Assign(stringVariable, stringParameter);
+            var stringParameter = Parameter(typeof(string), string.Empty);
+            var stringVariable = Variable(typeof(string), "  ");
+            var assignVariableToParameter = Assign(stringVariable, stringParameter);
 
             var translated = ToReadableString(assignVariableToParameter);
 
