@@ -8,9 +8,11 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -19,8 +21,8 @@
         [Fact]
         public void ShouldTranslateAnAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var assignDefaultToInt = Expression.Assign(intVariable, Expression.Default(typeof(int)));
+            var intVariable = Variable(typeof(int), "i");
+            var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
 
             var translated = ToReadableString(assignDefaultToInt);
 
@@ -30,8 +32,8 @@
         [Fact]
         public void ShouldTranslateAnAdditionAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var addOneAndAssign = Expression.AddAssign(intVariable, Expression.Constant(1));
+            var intVariable = Variable(typeof(int), "i");
+            var addOneAndAssign = AddAssign(intVariable, Constant(1));
 
             var translated = ToReadableString(addOneAndAssign);
 
@@ -41,8 +43,8 @@
         [Fact]
         public void ShouldTranslateACheckedAdditionAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var addTenAndAssign = Expression.AddAssignChecked(intVariable, Expression.Constant(10));
+            var intVariable = Variable(typeof(int), "i");
+            var addTenAndAssign = AddAssignChecked(intVariable, Constant(10));
 
             var translated = ToReadableString(addTenAndAssign);
 
@@ -52,8 +54,8 @@
         [Fact]
         public void ShouldTranslateASubtractionAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var substractTenAndAssign = Expression.SubtractAssign(intVariable, Expression.Constant(10));
+            var intVariable = Variable(typeof(int), "i");
+            var substractTenAndAssign = SubtractAssign(intVariable, Constant(10));
 
             var translated = ToReadableString(substractTenAndAssign);
 
@@ -63,25 +65,25 @@
         [Fact]
         public void ShouldTranslateAMultiLineCheckedSubtractionAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariable = Variable(typeof(int), "i");
 
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var variableOne = Expression.Variable(typeof(int), "one");
-            var variableTwo = Expression.Variable(typeof(int), "two");
+            var variableOne = Variable(typeof(int), "one");
+            var variableTwo = Variable(typeof(int), "two");
 
-            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
-            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+            var variableOneAssignment = Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Assign(variableTwo, consoleRead.Body);
 
-            var variableOnePlusTwo = Expression.Add(variableOne, variableTwo);
+            var variableOnePlusTwo = Add(variableOne, variableTwo);
 
-            var valueBlock = Expression.Block(
+            var valueBlock = Block(
                 new[] { variableOne, variableTwo },
                 variableOneAssignment,
                 variableTwoAssignment,
                 variableOnePlusTwo);
 
-            var substractOneAndAssign = Expression.SubtractAssignChecked(intVariable, valueBlock);
+            var substractOneAndAssign = SubtractAssignChecked(intVariable, valueBlock);
 
             var translated = ToReadableString(substractOneAndAssign);
 
@@ -103,8 +105,8 @@ checked
         [Fact]
         public void ShouldTranslateAMultiplicationAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var tripleAndAssign = Expression.MultiplyAssign(intVariable, Expression.Constant(3));
+            var intVariable = Variable(typeof(int), "i");
+            var tripleAndAssign = MultiplyAssign(intVariable, Constant(3));
 
             var translated = ToReadableString(tripleAndAssign);
 
@@ -114,8 +116,8 @@ checked
         [Fact]
         public void ShouldTranslateACheckedMultiplicationAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var doubleAndAssign = Expression.MultiplyAssignChecked(intVariable, Expression.Constant(2));
+            var intVariable = Variable(typeof(int), "i");
+            var doubleAndAssign = MultiplyAssignChecked(intVariable, Constant(2));
 
             var translated = ToReadableString(doubleAndAssign);
 
@@ -125,8 +127,8 @@ checked
         [Fact]
         public void ShouldTranslateADivisionAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var halveAndAssign = Expression.DivideAssign(intVariable, Expression.Constant(2));
+            var intVariable = Variable(typeof(int), "i");
+            var halveAndAssign = DivideAssign(intVariable, Constant(2));
 
             var translated = ToReadableString(halveAndAssign);
 
@@ -136,8 +138,8 @@ checked
         [Fact]
         public void ShouldTranslateAModuloAssignment()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var moduloTwoAndAssign = Expression.ModuloAssign(intVariable, Expression.Constant(2));
+            var intVariable = Variable(typeof(int), "i");
+            var moduloTwoAndAssign = ModuloAssign(intVariable, Constant(2));
 
             var translated = ToReadableString(moduloTwoAndAssign);
 
@@ -147,9 +149,9 @@ checked
         [Fact]
         public void ShouldTranslateAPowerAssignment()
         {
-            var doubleVariable = Expression.Variable(typeof(double), "d");
-            var doubleTwo = Expression.Constant(2.0, typeof(double));
-            var powerTwoAssign = Expression.PowerAssign(doubleVariable, doubleTwo);
+            var doubleVariable = Variable(typeof(double), "d");
+            var doubleTwo = Constant(2.0, typeof(double));
+            var powerTwoAssign = PowerAssign(doubleVariable, doubleTwo);
 
             var translated = ToReadableString(powerTwoAssign);
 
@@ -159,9 +161,9 @@ checked
         [Fact]
         public void ShouldTranslateABitwiseAndAssignment()
         {
-            var intVariableOne = Expression.Variable(typeof(int), "i1");
-            var intVariableTwo = Expression.Variable(typeof(int), "i2");
-            var bitwiseAndAssign = Expression.AndAssign(intVariableOne, intVariableTwo);
+            var intVariableOne = Variable(typeof(int), "i1");
+            var intVariableTwo = Variable(typeof(int), "i2");
+            var bitwiseAndAssign = AndAssign(intVariableOne, intVariableTwo);
 
             var translated = ToReadableString(bitwiseAndAssign);
 
@@ -171,9 +173,9 @@ checked
         [Fact]
         public void ShouldTranslateABitwiseOrAssignment()
         {
-            var intVariableOne = Expression.Variable(typeof(int), "i1");
-            var intVariableTwo = Expression.Variable(typeof(int), "i2");
-            var bitwiseOrAssign = Expression.OrAssign(intVariableOne, intVariableTwo);
+            var intVariableOne = Variable(typeof(int), "i1");
+            var intVariableTwo = Variable(typeof(int), "i2");
+            var bitwiseOrAssign = OrAssign(intVariableOne, intVariableTwo);
 
             var translated = ToReadableString(bitwiseOrAssign);
 
@@ -183,9 +185,9 @@ checked
         [Fact]
         public void ShouldTranslateABitwiseExclusiveOrAssignment()
         {
-            var intVariableOne = Expression.Variable(typeof(int), "i1");
-            var intVariableTwo = Expression.Variable(typeof(int), "i2");
-            var bitwiseExclusiveOrAssign = Expression.ExclusiveOrAssign(intVariableOne, intVariableTwo);
+            var intVariableOne = Variable(typeof(int), "i1");
+            var intVariableTwo = Variable(typeof(int), "i2");
+            var bitwiseExclusiveOrAssign = ExclusiveOrAssign(intVariableOne, intVariableTwo);
 
             var translated = ToReadableString(bitwiseExclusiveOrAssign);
 
@@ -195,9 +197,9 @@ checked
         [Fact]
         public void ShouldTranslateALeftShiftAssignment()
         {
-            var intVariableOne = Expression.Variable(typeof(int), "i1");
-            var intVariableTwo = Expression.Variable(typeof(int), "i2");
-            var leftShiftAndAssign = Expression.LeftShiftAssign(intVariableOne, intVariableTwo);
+            var intVariableOne = Variable(typeof(int), "i1");
+            var intVariableTwo = Variable(typeof(int), "i2");
+            var leftShiftAndAssign = LeftShiftAssign(intVariableOne, intVariableTwo);
 
             var translated = ToReadableString(leftShiftAndAssign);
 
@@ -207,9 +209,9 @@ checked
         [Fact]
         public void ShouldTranslateARightShiftAssignment()
         {
-            var intVariableOne = Expression.Variable(typeof(int), "i1");
-            var intVariableTwo = Expression.Variable(typeof(int), "i2");
-            var rightShiftAndAssign = Expression.RightShiftAssign(intVariableOne, intVariableTwo);
+            var intVariableOne = Variable(typeof(int), "i1");
+            var intVariableTwo = Variable(typeof(int), "i2");
+            var rightShiftAndAssign = RightShiftAssign(intVariableOne, intVariableTwo);
 
             var translated = ToReadableString(rightShiftAndAssign);
 
@@ -219,9 +221,9 @@ checked
         [Fact]
         public void ShouldNotWrapAnAssignmentValueInParentheses()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var oneMultipliedByTwo = Expression.Multiply(Expression.Constant(1), Expression.Constant(2));
-            var assignment = Expression.Assign(intVariable, oneMultipliedByTwo);
+            var intVariable = Variable(typeof(int), "i");
+            var oneMultipliedByTwo = Multiply(Constant(1), Constant(2));
+            var assignment = Assign(intVariable, oneMultipliedByTwo);
 
             var translated = ToReadableString(assignment);
 
@@ -231,10 +233,10 @@ checked
         [Fact]
         public void ShouldTranslateANegatedBooleanAssignment()
         {
-            var boolVariable1 = Expression.Variable(typeof(bool), "isItNot");
-            var boolVariable2 = Expression.Variable(typeof(bool), "isIt");
-            var assignBool = Expression.Assign(boolVariable1, Expression.IsFalse(boolVariable2));
-            var negated = Expression.Not(assignBool);
+            var boolVariable1 = Variable(typeof(bool), "isItNot");
+            var boolVariable2 = Variable(typeof(bool), "isIt");
+            var assignBool = Assign(boolVariable1, IsFalse(boolVariable2));
+            var negated = Not(assignBool);
 
             var translated = ToReadableString(negated);
 
@@ -244,17 +246,17 @@ checked
         [Fact]
         public void ShouldWrapAnAssignmentTernaryTestInParentheses()
         {
-            var intVariable1 = Expression.Variable(typeof(int), "i");
-            var intVariable2 = Expression.Variable(typeof(int), "j");
+            var intVariable1 = Variable(typeof(int), "i");
+            var intVariable2 = Variable(typeof(int), "j");
 
-            var intVariable2GreaterThanOne = Expression.GreaterThan(intVariable2, Expression.Constant(1));
+            var intVariable2GreaterThanOne = GreaterThan(intVariable2, Constant(1));
 
-            var threeOrDefault = Expression.Condition(
+            var threeOrDefault = Condition(
                 intVariable2GreaterThanOne,
-                Expression.Constant(3),
-                Expression.Default(typeof(int)));
+                Constant(3),
+                Default(typeof(int)));
 
-            var assignment = Expression.Assign(intVariable1, threeOrDefault);
+            var assignment = Assign(intVariable1, threeOrDefault);
 
             var translated = ToReadableString(assignment);
 
@@ -264,10 +266,10 @@ checked
         [Fact]
         public void ShouldTranslateAnAssignmentResultAssignment()
         {
-            var intVariable1 = Expression.Variable(typeof(int), "i");
-            var intVariable2 = Expression.Variable(typeof(int), "j");
-            var assignVariable2 = Expression.Assign(intVariable2, Expression.Constant(1));
-            var setVariableOneToAssignmentResult = Expression.Assign(intVariable1, assignVariable2);
+            var intVariable1 = Variable(typeof(int), "i");
+            var intVariable2 = Variable(typeof(int), "j");
+            var assignVariable2 = Assign(intVariable2, Constant(1));
+            var setVariableOneToAssignmentResult = Assign(intVariable1, assignVariable2);
 
             var translated = ToReadableString(setVariableOneToAssignmentResult);
 
@@ -277,14 +279,14 @@ checked
         [Fact]
         public void ShouldTranslateABlockAssignmentResultAssignment()
         {
-            var longVariable = Expression.Variable(typeof(long), "i");
-            var intVariable = Expression.Variable(typeof(int), "j");
-            var assignInt = Expression.Assign(intVariable, Expression.Constant(10));
-            var castAssignmentResult = Expression.Convert(assignInt, typeof(long));
-            var assignIntBlock = Expression.Block(castAssignmentResult);
-            var setLongVariableToAssignmentResult = Expression.Assign(longVariable, assignIntBlock);
+            var longVariable = Variable(typeof(long), "i");
+            var intVariable = Variable(typeof(int), "j");
+            var assignInt = Assign(intVariable, Constant(10));
+            var castAssignmentResult = Convert(assignInt, typeof(long));
+            var assignIntBlock = Block(castAssignmentResult);
+            var setLongVariableToAssignmentResult = Assign(longVariable, assignIntBlock);
 
-            var assignmentBlock = Expression.Block(
+            var assignmentBlock = Block(
                 new[] { longVariable, intVariable },
                 setLongVariableToAssignmentResult);
 
@@ -300,18 +302,18 @@ var i = (long)(j = 10);";
         [Fact]
         public void ShouldAssignTheResultOfATryCatch()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariable = Variable(typeof(int), "i");
 
-            var assignIntToZero = Expression.Assign(intVariable, Expression.Constant(0));
+            var assignIntToZero = Assign(intVariable, Constant(0));
 
             var read = CreateLambda(() => Console.Read());
 
-            var returnDefault = Expression.Catch(typeof(IOException), Expression.Default(typeof(int)));
-            var readOrDefault = Expression.TryCatch(read.Body, returnDefault);
+            var returnDefault = Catch(typeof(IOException), Default(typeof(int)));
+            var readOrDefault = TryCatch(read.Body, returnDefault);
 
-            var assignReadOrDefault = Expression.Assign(intVariable, readOrDefault);
+            var assignReadOrDefault = Assign(intVariable, readOrDefault);
 
-            var assignmentBlock = Expression.Block(new[] { intVariable }, assignIntToZero, assignReadOrDefault);
+            var assignmentBlock = Block(new[] { intVariable }, assignIntToZero, assignReadOrDefault);
 
             var translated = ToReadableString(assignmentBlock);
 
@@ -335,10 +337,10 @@ i =
         [Fact]
         public void ShouldAssignAVariableInAConditionalTest()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var assignVariable = Expression.Assign(intVariable, Expression.Constant(10));
-            var isAssignmentFive = Expression.Equal(assignVariable, Expression.Constant(5));
-            var ifFiveDoNothing = Expression.IfThen(isAssignmentFive, Expression.Empty());
+            var intVariable = Variable(typeof(int), "i");
+            var assignVariable = Assign(intVariable, Constant(10));
+            var isAssignmentFive = Equal(assignVariable, Constant(5));
+            var ifFiveDoNothing = IfThen(isAssignmentFive, Empty());
 
             var translated = ToReadableString(ifFiveDoNothing);
 
@@ -353,10 +355,10 @@ if ((i = 10) == 5)
         [Fact]
         public void ShouldAssignAVariableInAMethodCallArgument()
         {
-            var stringVariable = Expression.Variable(typeof(string), "value");
-            var setStringVariableToNull = Expression.Assign(stringVariable, Expression.Default(typeof(string)));
+            var stringVariable = Variable(typeof(string), "value");
+            var setStringVariableToNull = Assign(stringVariable, Default(typeof(string)));
 
-            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariable = Variable(typeof(int), "i");
 
             var intToStringMethod = typeof(int)
                 .GetMethods()
@@ -364,7 +366,7 @@ if ((i = 10) == 5)
                     (m.Name == "ToString") &&
                     (m.GetParameters().FirstOrDefault()?.ParameterType == typeof(string)));
 
-            var intToString = Expression.Call(intVariable, intToStringMethod, setStringVariableToNull);
+            var intToString = Call(intVariable, intToStringMethod, setStringVariableToNull);
 
             var translated = ToReadableString(intToString);
 
@@ -376,8 +378,8 @@ if ((i = 10) == 5)
         {
             var timesThreeToString = CreateLambda((int i) => (i * 3).ToString());
 
-            var stringVariable = Expression.Variable(typeof(string), "value");
-            var stringAssignment = Expression.Assign(stringVariable, timesThreeToString.Body);
+            var stringVariable = Variable(typeof(string), "value");
+            var stringAssignment = Assign(stringVariable, timesThreeToString.Body);
 
             var translated = ToReadableString(stringAssignment);
 
@@ -389,49 +391,49 @@ if ((i = 10) == 5)
         {
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var variableOne = Expression.Variable(typeof(int), "one");
-            var variableTwo = Expression.Variable(typeof(int), "two");
-            var resultVariableOne = Expression.Variable(typeof(int), "resultOne");
+            var variableOne = Variable(typeof(int), "one");
+            var variableTwo = Variable(typeof(int), "two");
+            var resultVariableOne = Variable(typeof(int), "resultOne");
 
-            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
-            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+            var variableOneAssignment = Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Assign(variableTwo, consoleRead.Body);
 
-            var variableOneTimesTwo = Expression.Multiply(variableOne, variableTwo);
-            var resultOneAssignment = Expression.Assign(resultVariableOne, variableOneTimesTwo);
+            var variableOneTimesTwo = Multiply(variableOne, variableTwo);
+            var resultOneAssignment = Assign(resultVariableOne, variableOneTimesTwo);
 
-            var ifTrueBlock = Expression.Block(
+            var ifTrueBlock = Block(
                 new[] { variableOne, variableTwo, resultVariableOne },
                 variableOneAssignment,
                 variableTwoAssignment,
                 resultOneAssignment,
                 resultVariableOne);
 
-            var variableThree = Expression.Variable(typeof(int), "three");
-            var variableFour = Expression.Variable(typeof(int), "four");
-            var resultVariableTwo = Expression.Variable(typeof(int), "resultTwo");
+            var variableThree = Variable(typeof(int), "three");
+            var variableFour = Variable(typeof(int), "four");
+            var resultVariableTwo = Variable(typeof(int), "resultTwo");
 
-            var variableThreeAssignment = Expression.Assign(variableThree, consoleRead.Body);
-            var variableFourAssignment = Expression.Assign(variableFour, consoleRead.Body);
+            var variableThreeAssignment = Assign(variableThree, consoleRead.Body);
+            var variableFourAssignment = Assign(variableFour, consoleRead.Body);
 
-            var variableThreeDivideFour = Expression.Divide(variableThree, variableFour);
-            var resultTwoAssignment = Expression.Assign(resultVariableTwo, variableThreeDivideFour);
+            var variableThreeDivideFour = Divide(variableThree, variableFour);
+            var resultTwoAssignment = Assign(resultVariableTwo, variableThreeDivideFour);
 
-            var ifFalseBlock = Expression.Block(
+            var ifFalseBlock = Block(
                 new[] { variableThree, variableFour, resultVariableTwo },
                 variableThreeAssignment,
                 variableFourAssignment,
                 resultTwoAssignment,
                 resultVariableTwo);
 
-            var dateTimeNow = Expression.Property(null, typeof(DateTime), "Now");
-            var nowHour = Expression.Property(dateTimeNow, "Hour");
-            var nowHourModuloTwo = Expression.Modulo(nowHour, Expression.Constant(2));
-            var nowHourIsEven = Expression.Equal(nowHourModuloTwo, Expression.Constant(0));
+            var dateTimeNow = Property(null, typeof(DateTime), "Now");
+            var nowHour = Property(dateTimeNow, "Hour");
+            var nowHourModuloTwo = Modulo(nowHour, Constant(2));
+            var nowHourIsEven = Equal(nowHourModuloTwo, Constant(0));
 
-            var conditional = Expression.Condition(nowHourIsEven, ifTrueBlock, ifFalseBlock);
+            var conditional = Condition(nowHourIsEven, ifTrueBlock, ifFalseBlock);
 
-            var resultVariable = Expression.Variable(typeof(int), "result");
-            var resultAssignment = Expression.Assign(resultVariable, conditional);
+            var resultVariable = Variable(typeof(int), "result");
+            var resultAssignment = Assign(resultVariable, conditional);
 
             var translated = ToReadableString(resultAssignment);
 
@@ -469,19 +471,19 @@ result = ((DateTime.Now.Hour % 2) == 0)
             var intVariable = intTryParse.Parameters[1];
             var tryParseTernary = intTryParse.Body;
 
-            var tryParseBlock = Expression.Block(new[] { intVariable }, tryParseTernary);
-            var tryParseLambda = Expression.Lambda<Func<string, int>>(tryParseBlock, stringParameter);
+            var tryParseBlock = Block(new[] { intVariable }, tryParseTernary);
+            var tryParseLambda = Lambda<Func<string, int>>(tryParseBlock, stringParameter);
 
-            var selectCall = Expression.Call(selectMethod, stringArray, tryParseLambda);
+            var selectCall = Call(selectMethod, stringArray, tryParseLambda);
 
             var linqToArray = CreateLambda((IEnumerable<int> ints) => ints.ToArray());
             var toArrayMethod = ((MethodCallExpression)linqToArray.Body).Method;
 
-            var toArrayCall = Expression.Call(toArrayMethod, selectCall);
+            var toArrayCall = Call(toArrayMethod, selectCall);
 
-            var resultVariable = Expression.Variable(typeof(IList<int>), "result");
-            var assignment = Expression.Assign(resultVariable, toArrayCall);
-            var assignmentBlock = Expression.Block(assignment);
+            var resultVariable = Variable(typeof(IList<int>), "result");
+            var assignment = Assign(resultVariable, toArrayCall);
+            var assignmentBlock = Block(assignment);
 
             var translation = ToReadableString(assignmentBlock);
 
@@ -503,24 +505,24 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
         {
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var variableOne = Expression.Variable(typeof(int), "one");
-            var variableTwo = Expression.Variable(typeof(int), "two");
+            var variableOne = Variable(typeof(int), "one");
+            var variableTwo = Variable(typeof(int), "two");
 
-            var variableOneAssignment = Expression.Assign(variableOne, consoleRead.Body);
-            var variableTwoAssignment = Expression.Assign(variableTwo, consoleRead.Body);
+            var variableOneAssignment = Assign(variableOne, consoleRead.Body);
+            var variableTwoAssignment = Assign(variableTwo, consoleRead.Body);
 
-            var variableOneMinusTwo = Expression.Subtract(variableOne, variableTwo);
+            var variableOneMinusTwo = Subtract(variableOne, variableTwo);
 
-            var valueBlock = Expression.Block(
+            var valueBlock = Block(
                 new[] { variableOne, variableTwo },
                 variableOneAssignment,
                 variableTwoAssignment,
                 variableOneMinusTwo);
 
-            var wrappingBlock = Expression.Block(valueBlock);
+            var wrappingBlock = Block(valueBlock);
 
-            var resultVariable = Expression.Variable(typeof(int), "result");
-            var resultOneAssignment = Expression.Assign(resultVariable, wrappingBlock);
+            var resultVariable = Variable(typeof(int), "result");
+            var resultOneAssignment = Assign(resultVariable, wrappingBlock);
 
             var translated = ToReadableString(resultOneAssignment);
 
@@ -543,13 +545,13 @@ result =
 
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var multiStatementValueBlock = Expression.Block(
+            var multiStatementValueBlock = Block(
                 new[] { existingInts },
                 consoleRead.Body,
                 valueConditional);
 
-            var resultVariable = Expression.Variable(multiStatementValueBlock.Type, "result");
-            var resultOneAssignment = Expression.Assign(resultVariable, multiStatementValueBlock);
+            var resultVariable = Variable(multiStatementValueBlock.Type, "result");
+            var resultOneAssignment = Assign(resultVariable, multiStatementValueBlock);
 
             var translated = ToReadableString(resultOneAssignment);
 
@@ -588,12 +590,12 @@ result =
         {
             var valueConditional = GetReturnStatementBlock(out var existingInts);
 
-            var singleStatementValueBlock = Expression.Block(
+            var singleStatementValueBlock = Block(
                 new[] { existingInts },
                 valueConditional);
 
-            var resultVariable = Expression.Variable(singleStatementValueBlock.Type, "result");
-            var resultOneAssignment = Expression.Assign(resultVariable, singleStatementValueBlock);
+            var resultVariable = Variable(singleStatementValueBlock.Type, "result");
+            var resultOneAssignment = Assign(resultVariable, singleStatementValueBlock);
 
             var translated = ToReadableString(resultOneAssignment);
 
@@ -627,32 +629,32 @@ result =
         [Fact]
         public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithATernaryReturnValue()
         {
-            var objectVariable = Expression.Variable(typeof(object), "id");
-            var objectValue = Expression.Variable(typeof(object), "value");
-            var intVariable = Expression.Variable(typeof(int), "num");
-            var intValue = Expression.Variable(typeof(int), "numValue");
+            var objectVariable = Variable(typeof(object), "id");
+            var objectValue = Variable(typeof(object), "value");
+            var intVariable = Variable(typeof(int), "num");
+            var intValue = Variable(typeof(int), "numValue");
 
-            var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultInt = Expression.Default(typeof(int));
+            var objectNotNull = NotEqual(objectVariable, Default(typeof(object)));
+            var defaultInt = Default(typeof(int));
 
-            var intTryParse = Expression.Call(
+            var intTryParse = Call(
                 typeof(int).GetPublicStaticMethod("TryParse", parameterCount: 2),
-                Expression.Condition(
+                Condition(
                     objectNotNull,
-                    Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
-                    Expression.Default(typeof(string))),
+                    Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
+                    Default(typeof(string))),
                 intValue);
 
-            var objectAsIntOrDefault = Expression.Condition(intTryParse, intValue, defaultInt);
+            var objectAsIntOrDefault = Condition(intTryParse, intValue, defaultInt);
 
-            var intParseInnerBlock = Expression.Block(new[] { intValue }, objectAsIntOrDefault);
+            var intParseInnerBlock = Block(new[] { intValue }, objectAsIntOrDefault);
 
-            var intParseOuterBlock = Expression.Block(
+            var intParseOuterBlock = Block(
                 new[] { objectVariable },
-                Expression.Assign(objectVariable, objectValue),
+                Assign(objectVariable, objectValue),
                 intParseInnerBlock);
 
-            var intAssignment = Expression.Assign(intVariable, intParseOuterBlock);
+            var intAssignment = Assign(intVariable, intParseOuterBlock);
 
             var translated = ToReadableString(intAssignment);
 
@@ -670,33 +672,33 @@ num =
         [Fact]
         public void ShouldTranslateAssignmentsOfNestedVariableBlocksWithANestedTernaryReturnValue()
         {
-            var objectVariable = Expression.Variable(typeof(object), "id");
-            var objectValue = Expression.Variable(typeof(object), "value");
-            var longVariable = Expression.Variable(typeof(long), "number");
-            var longValue = Expression.Variable(typeof(long), "numberValue");
+            var objectVariable = Variable(typeof(object), "id");
+            var objectValue = Variable(typeof(object), "value");
+            var longVariable = Variable(typeof(long), "number");
+            var longValue = Variable(typeof(long), "numberValue");
 
-            var longTryParse = Expression.Call(
+            var longTryParse = Call(
                 null,
                 typeof(long).GetPublicStaticMethod("TryParse", parameterCount: 2),
-                Expression.Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
+                Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                 longValue);
 
-            var objectNotNull = Expression.NotEqual(objectVariable, Expression.Default(typeof(object)));
-            var defaultlong = Expression.Default(typeof(long));
+            var objectNotNull = NotEqual(objectVariable, Default(typeof(object)));
+            var defaultlong = Default(typeof(long));
 
-            var objectAslongOrDefault = Expression.Condition(
+            var objectAslongOrDefault = Condition(
                 objectNotNull,
-                Expression.Condition(longTryParse, longValue, defaultlong),
+                Condition(longTryParse, longValue, defaultlong),
                 defaultlong);
 
-            var longParseInnerBlock = Expression.Block(new[] { longValue }, objectAslongOrDefault);
+            var longParseInnerBlock = Block(new[] { longValue }, objectAslongOrDefault);
 
-            var longParseOuterBlock = Expression.Block(
+            var longParseOuterBlock = Block(
                 new[] { objectVariable },
-                Expression.Assign(objectVariable, objectValue),
+                Assign(objectVariable, objectValue),
                 longParseInnerBlock);
 
-            var longAssignment = Expression.Assign(longVariable, longParseOuterBlock);
+            var longAssignment = Assign(longVariable, longParseOuterBlock);
 
             var translated = ToReadableString(longAssignment);
 
@@ -717,8 +719,8 @@ number =
         public void ShouldTranslateAnExtensionAssignment()
         {
             var value = new ExtensionExpression(typeof(int));
-            var extensionVariable = Expression.Variable(value.Type, "ext");
-            var assignment = Expression.Assign(extensionVariable, value);
+            var extensionVariable = Variable(value.Type, "ext");
+            var assignment = Assign(extensionVariable, value);
 
             var translated = ToReadableString(assignment);
 
@@ -727,49 +729,49 @@ number =
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
         {
-            existingInts = Expression.Variable(typeof(List<int>), "ints");
+            existingInts = Variable(typeof(List<int>), "ints");
 
-            var existingIntsEnumerator = Expression.Variable(typeof(List<int>.Enumerator), "enumerator");
+            var existingIntsEnumerator = Variable(typeof(List<int>.Enumerator), "enumerator");
             var getEnumeratorMethod = existingInts.Type.GetPublicInstanceMethod("GetEnumerator");
-            var getEnumeratorCall = Expression.Call(existingInts, getEnumeratorMethod);
-            var enumeratorAssignment = Expression.Assign(existingIntsEnumerator, getEnumeratorCall);
+            var getEnumeratorCall = Call(existingInts, getEnumeratorMethod);
+            var enumeratorAssignment = Assign(existingIntsEnumerator, getEnumeratorCall);
 
             var enumeratorMoveNextMethod = existingIntsEnumerator.Type.GetPublicInstanceMethod("MoveNext");
-            var enumeratorMoveNextCall = Expression.Call(existingIntsEnumerator, enumeratorMoveNextMethod);
+            var enumeratorMoveNextCall = Call(existingIntsEnumerator, enumeratorMoveNextMethod);
 
-            var enumeratorItem = Expression.Variable(typeof(int), "item");
-            var enumeratorCurrent = Expression.Property(existingIntsEnumerator, "Current");
-            var itemAssignment = Expression.Assign(enumeratorItem, enumeratorCurrent);
+            var enumeratorItem = Variable(typeof(int), "item");
+            var enumeratorCurrent = Property(existingIntsEnumerator, "Current");
+            var itemAssignment = Assign(enumeratorItem, enumeratorCurrent);
 
             var intsAddMethod = existingInts.Type.GetPublicInstanceMethod("Add");
-            var intsAddCall = Expression.Call(existingInts, intsAddMethod, enumeratorItem);
+            var intsAddCall = Call(existingInts, intsAddMethod, enumeratorItem);
 
-            var addItemBlock = Expression.Block(
+            var addItemBlock = Block(
                 new[] { enumeratorItem },
                 itemAssignment,
                 intsAddCall);
 
-            var loopBreakTarget = Expression.Label(typeof(void), "LoopBreak");
+            var loopBreakTarget = Label(typeof(void), "LoopBreak");
 
-            var conditionallyAddItems = Expression.Condition(
-                Expression.IsTrue(enumeratorMoveNextCall),
+            var conditionallyAddItems = Condition(
+                IsTrue(enumeratorMoveNextCall),
                 addItemBlock,
-                Expression.Break(loopBreakTarget));
+                Break(loopBreakTarget));
 
-            var addItemsLoop = Expression.Loop(conditionallyAddItems, loopBreakTarget);
+            var addItemsLoop = Loop(conditionallyAddItems, loopBreakTarget);
 
-            var populateExistingInts = Expression.Block(
+            var populateExistingInts = Block(
                 new[] { existingIntsEnumerator },
                 enumeratorAssignment,
                 addItemsLoop);
 
-            var conditionFalseBlock = Expression.Block(
+            var conditionFalseBlock = Block(
                 populateExistingInts,
                 existingInts);
 
-            var valueConditional = Expression.Condition(
-                Expression.Equal(existingInts, Expression.Default(existingInts.Type)),
-                Expression.New(conditionFalseBlock.Type),
+            var valueConditional = Condition(
+                Equal(existingInts, Default(existingInts.Type)),
+                New(conditionFalseBlock.Type),
                 conditionFalseBlock);
 
             return valueConditional;

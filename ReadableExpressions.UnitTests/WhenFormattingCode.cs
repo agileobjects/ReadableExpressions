@@ -8,9 +8,11 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -19,13 +21,13 @@
         [Fact]
         public void ShouldSplitLongConstructorArgumentListsOntoMultipleLines()
         {
-            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
+            var helperVariable = Variable(typeof(HelperClass), "helper");
             var helperConstructor = helperVariable.Type.GetConstructors().First();
-            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var newHelper = Expression.New(helperConstructor, longVariable, longVariable, longVariable);
-            var helperAssignment = Expression.Assign(helperVariable, newHelper);
+            var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var newHelper = New(helperConstructor, longVariable, longVariable, longVariable);
+            var helperAssignment = Assign(helperVariable, newHelper);
 
-            var longArgumentListBlock = Expression.Block(new[] { helperVariable }, helperAssignment);
+            var longArgumentListBlock = Block(new[] { helperVariable }, helperAssignment);
 
             var translated = ToReadableString(longArgumentListBlock);
 
@@ -44,10 +46,10 @@ var helper = new HelperClass(
             var intsMethod = typeof(HelperClass)
                 .GetPublicInstanceMethod("GiveMeFourInts");
 
-            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
-            var intVariable = Expression.Variable(typeof(int), "intVariable");
+            var helperVariable = Variable(typeof(HelperClass), "helper");
+            var intVariable = Variable(typeof(int), "intVariable");
 
-            var intsMethodCall = Expression.Call(
+            var intsMethodCall = Call(
                 helperVariable,
                 intsMethod,
                 intVariable,
@@ -73,9 +75,9 @@ helper.GiveMeFourInts(
             var intsMethod = typeof(HelperClass)
                 .GetPublicInstanceMethod("GiveMeSomeInts");
 
-            var helperVariable = Expression.Variable(typeof(HelperClass), "helper");
-            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var intsMethodCall = Expression.Call(helperVariable, intsMethod, longVariable, longVariable, longVariable);
+            var helperVariable = Variable(typeof(HelperClass), "helper");
+            var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var intsMethodCall = Call(helperVariable, intsMethod, longVariable, longVariable, longVariable);
 
             var translated = ToReadableString(intsMethodCall);
 
@@ -91,11 +93,11 @@ helper.GiveMeSomeInts(
         [Fact]
         public void ShouldSplitLongInvokeArgumentListsOntoMultipleLines()
         {
-            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var threeIntsAction = Expression.Variable(typeof(Action<int, int, int>), "threeIntsAction");
-            var threeIntsCall = Expression.Invoke(threeIntsAction, longVariable, longVariable, longVariable);
+            var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var threeIntsAction = Variable(typeof(Action<int, int, int>), "threeIntsAction");
+            var threeIntsCall = Invoke(threeIntsAction, longVariable, longVariable, longVariable);
 
-            var longArgumentListBlock = Expression.Block(new[] { longVariable, threeIntsAction }, threeIntsCall);
+            var longArgumentListBlock = Block(new[] { longVariable, threeIntsAction }, threeIntsCall);
 
             var translated = ToReadableString(longArgumentListBlock);
 
@@ -153,15 +155,15 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         [Fact]
         public void ShouldSplitLongTernaryOptionsOntoMultipleLines()
         {
-            var oneEqualsTwo = Expression.Equal(Expression.Constant(1), Expression.Constant(2));
+            var oneEqualsTwo = Equal(Constant(1), Constant(2));
 
-            var defaultInt = Expression.Default(typeof(int));
+            var defaultInt = Default(typeof(int));
 
-            var threeIntsFunc = Expression.Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
-            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var threeIntsCall = Expression.Invoke(threeIntsFunc, longVariable, longVariable, longVariable);
+            var threeIntsFunc = Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
+            var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var threeIntsCall = Invoke(threeIntsFunc, longVariable, longVariable, longVariable);
 
-            var ternary = Expression.Condition(oneEqualsTwo, defaultInt, threeIntsCall);
+            var ternary = Condition(oneEqualsTwo, defaultInt, threeIntsCall);
 
             var translated = ToReadableString(ternary);
 
@@ -179,13 +181,13 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
         [Fact]
         public void ShouldSplitLongAssignmentsOntoMultipleLines()
         {
-            var intVariable = Expression.Variable(typeof(int), "value");
-            var threeIntsFunc = Expression.Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
-            var longVariable = Expression.Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
-            var threeIntsSubCall = Expression.Invoke(threeIntsFunc, Expression.Constant(10), Expression.Constant(1), longVariable);
-            var threeIntsCall = Expression.Invoke(threeIntsFunc, longVariable, threeIntsSubCall, longVariable);
+            var intVariable = Variable(typeof(int), "value");
+            var threeIntsFunc = Variable(typeof(Func<int, int, int, int>), "threeIntsFunc");
+            var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
+            var threeIntsSubCall = Invoke(threeIntsFunc, Constant(10), Constant(1), longVariable);
+            var threeIntsCall = Invoke(threeIntsFunc, longVariable, threeIntsSubCall, longVariable);
 
-            var assignment = Expression.Assign(intVariable, threeIntsCall);
+            var assignment = Assign(intVariable, threeIntsCall);
 
             var translated = ToReadableString(assignment);
 
@@ -201,14 +203,14 @@ value = threeIntsFunc.Invoke(
         [Fact]
         public void ShouldDeclareAVariableIfUsedBeforeInitialisation()
         {
-            var nameVariable = Expression.Variable(typeof(string), "name");
-            var getNameVariable = Expression.Variable(typeof(Func<string>), "getName");
-            var getNameLambda = Expression.Lambda(nameVariable);
-            var getNameAssignment = Expression.Assign(getNameVariable, getNameLambda);
-            var nameAssignment = Expression.Assign(nameVariable, Expression.Constant("Fred"));
-            var getNameCall = Expression.Invoke(getNameVariable);
+            var nameVariable = Variable(typeof(string), "name");
+            var getNameVariable = Variable(typeof(Func<string>), "getName");
+            var getNameLambda = Lambda(nameVariable);
+            var getNameAssignment = Assign(getNameVariable, getNameLambda);
+            var nameAssignment = Assign(nameVariable, Constant("Fred"));
+            var getNameCall = Invoke(getNameVariable);
 
-            var block = Expression.Block(
+            var block = Block(
                 new[] { nameVariable, getNameVariable },
                 getNameAssignment,
                 nameAssignment,
@@ -229,11 +231,11 @@ return getName.Invoke();";
         [Fact]
         public void ShouldNotVarAssignAVariableOfNonImpliedType()
         {
-            var intsVariable = Expression.Variable(typeof(IEnumerable<int>), "ints");
-            var newArray = Expression.NewArrayBounds(typeof(int), Expression.Constant(2));
-            var assignment = Expression.Assign(intsVariable, newArray);
+            var intsVariable = Variable(typeof(IEnumerable<int>), "ints");
+            var newArray = NewArrayBounds(typeof(int), Constant(2));
+            var assignment = Assign(intsVariable, newArray);
 
-            var block = Expression.Block(new[] { intsVariable }, assignment);
+            var block = Block(new[] { intsVariable }, assignment);
 
             var translated = ToReadableString(block);
 
@@ -243,20 +245,20 @@ return getName.Invoke();";
         [Fact]
         public void ShouldNotVarAssignATernaryValueWithDifferingTypeBranches()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intVariableEqualsOne = Expression.Equal(intVariable, Expression.Constant(1));
-            var newArray = Expression.NewArrayBounds(typeof(int?), Expression.Constant(0));
-            var newList = Expression.New(typeof(List<int?>));
+            var intVariable = Variable(typeof(int), "i");
+            var intVariableEqualsOne = Equal(intVariable, Constant(1));
+            var newArray = NewArrayBounds(typeof(int?), Constant(0));
+            var newList = New(typeof(List<int?>));
 
-            var newArrayOrList = Expression.Condition(
+            var newArrayOrList = Condition(
                 intVariableEqualsOne,
                 newArray,
                 newList,
                 typeof(ICollection<int?>));
 
-            var resultVariable = Expression.Variable(typeof(ICollection<int?>), "result");
-            var assignResult = Expression.Assign(resultVariable, newArrayOrList);
-            var assignBlock = Expression.Block(new[] { resultVariable }, assignResult);
+            var resultVariable = Variable(typeof(ICollection<int?>), "result");
+            var assignResult = Assign(resultVariable, newArrayOrList);
+            var assignBlock = Block(new[] { resultVariable }, assignResult);
 
             var translated = ToReadableString(assignBlock);
 
@@ -266,21 +268,21 @@ return getName.Invoke();";
         [Fact]
         public void ShouldNotVarAssignAnOuterBlockDeclaredVariable()
         {
-            var nameVariable = Expression.Variable(typeof(string), "name");
-            var writeNameTwiceVariable = Expression.Variable(typeof(Action), "writeNameTwice");
+            var nameVariable = Variable(typeof(string), "name");
+            var writeNameTwiceVariable = Variable(typeof(Action), "writeNameTwice");
             var writeLine = CreateLambda(() => Console.WriteLine(default(string)));
             var writeLineMethod = ((MethodCallExpression)writeLine.Body).Method;
-            var writeLineCall = Expression.Call(writeLineMethod, nameVariable);
-            var writeNameTwice = Expression.Block(writeLineCall, writeLineCall);
-            var writeNameTwiceLambda = Expression.Lambda(writeNameTwice);
-            var writeNameTwiceAssignment = Expression.Assign(writeNameTwiceVariable, writeNameTwiceLambda);
-            var nameAssignment = Expression.Assign(nameVariable, Expression.Constant("Alice"));
-            var writeNameTwiceCall = Expression.Invoke(writeNameTwiceVariable);
+            var writeLineCall = Call(writeLineMethod, nameVariable);
+            var writeNameTwice = Block(writeLineCall, writeLineCall);
+            var writeNameTwiceLambda = Lambda(writeNameTwice);
+            var writeNameTwiceAssignment = Assign(writeNameTwiceVariable, writeNameTwiceLambda);
+            var nameAssignment = Assign(nameVariable, Constant("Alice"));
+            var writeNameTwiceCall = Invoke(writeNameTwiceVariable);
 
-            var block = Expression.Block(
+            var block = Block(
                 new[] { nameVariable, writeNameTwiceVariable },
-                Expression.Block(writeNameTwiceAssignment),
-                Expression.Block(nameAssignment, writeNameTwiceCall));
+                Block(writeNameTwiceAssignment),
+                Block(nameAssignment, writeNameTwiceCall));
 
             var translated = ToReadableString(block);
 
@@ -301,16 +303,16 @@ writeNameTwice.Invoke();";
         [Fact]
         public void ShouldVarAssignVariablesInSiblingBlocks()
         {
-            var intVariable1 = Expression.Variable(typeof(int), "i");
-            var assignVariable1 = Expression.Assign(intVariable1, Expression.Constant(1));
-            var variable1Block = Expression.Block(new[] { intVariable1 }, assignVariable1);
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+            var variable1Block = Block(new[] { intVariable1 }, assignVariable1);
 
-            var intVariable2 = Expression.Variable(typeof(int), "j");
-            var assignVariable2 = Expression.Assign(intVariable2, Expression.Constant(2));
-            var variable2Block = Expression.Block(new[] { intVariable2 }, assignVariable2);
+            var intVariable2 = Variable(typeof(int), "j");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+            var variable2Block = Block(new[] { intVariable2 }, assignVariable2);
 
-            var assign1Or2 = Expression.IfThenElse(
-                Expression.Constant(true),
+            var assign1Or2 = IfThenElse(
+                Constant(true),
                 variable1Block,
                 variable2Block);
 
@@ -335,12 +337,12 @@ else
             var intVariable = exceptionFactory.Parameters.First();
             var newException = exceptionFactory.Body;
 
-            var assignment = Expression.Assign(intVariable, Expression.Constant(10));
-            var assignmentBlock = Expression.Block(assignment, Expression.Default(typeof(void)));
+            var assignment = Assign(intVariable, Constant(10));
+            var assignmentBlock = Block(assignment, Default(typeof(void)));
 
-            var catchBlock = Expression.Catch(typeof(Exception), Expression.Throw(newException));
-            var tryCatch = Expression.TryCatch(assignmentBlock, catchBlock);
-            var tryCatchBlock = Expression.Block(new[] { intVariable }, tryCatch);
+            var catchBlock = Catch(typeof(Exception), Throw(newException));
+            var tryCatch = TryCatch(assignmentBlock, catchBlock);
+            var tryCatchBlock = Block(new[] { intVariable }, tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 
@@ -360,53 +362,53 @@ catch
         [Fact]
         public void ShouldVarAssignAVariableUsedInNestedConstructs()
         {
-            var returnLabel = Expression.Label(typeof(long), "Return");
-            var streamVariable = Expression.Variable(typeof(Stream), "stream");
+            var returnLabel = Label(typeof(long), "Return");
+            var streamVariable = Variable(typeof(Stream), "stream");
 
-            var memoryStreamVariable = Expression.Variable(typeof(MemoryStream), "memoryStream");
-            var streamAsMemoryStream = Expression.TypeAs(streamVariable, typeof(MemoryStream));
-            var memoryStreamAssignment = Expression.Assign(memoryStreamVariable, streamAsMemoryStream);
-            var nullMemoryStream = Expression.Default(memoryStreamVariable.Type);
-            var memoryStreamNotNull = Expression.NotEqual(memoryStreamVariable, nullMemoryStream);
-            var msLengthVariable = Expression.Variable(typeof(long), "msLength");
-            var memoryStreamLength = Expression.Property(memoryStreamVariable, "Length");
-            var msLengthAssignment = Expression.Assign(msLengthVariable, memoryStreamLength);
+            var memoryStreamVariable = Variable(typeof(MemoryStream), "memoryStream");
+            var streamAsMemoryStream = TypeAs(streamVariable, typeof(MemoryStream));
+            var memoryStreamAssignment = Assign(memoryStreamVariable, streamAsMemoryStream);
+            var nullMemoryStream = Default(memoryStreamVariable.Type);
+            var memoryStreamNotNull = NotEqual(memoryStreamVariable, nullMemoryStream);
+            var msLengthVariable = Variable(typeof(long), "msLength");
+            var memoryStreamLength = Property(memoryStreamVariable, "Length");
+            var msLengthAssignment = Assign(msLengthVariable, memoryStreamLength);
 
-            var msTryBlock = Expression.Block(new[] { msLengthVariable }, msLengthAssignment, msLengthVariable);
-            var newNotSupportedException = Expression.New(typeof(NotSupportedException));
-            var throwMsException = Expression.Throw(newNotSupportedException, typeof(long));
-            var msCatchBlock = Expression.Catch(typeof(Exception), throwMsException);
-            var memoryStreamTryCatch = Expression.TryCatch(msTryBlock, msCatchBlock);
-            var returnMemoryStreamResult = Expression.Return(returnLabel, memoryStreamTryCatch);
-            var ifMemoryStreamTryCatch = Expression.IfThen(memoryStreamNotNull, returnMemoryStreamResult);
+            var msTryBlock = Block(new[] { msLengthVariable }, msLengthAssignment, msLengthVariable);
+            var newNotSupportedException = New(typeof(NotSupportedException));
+            var throwMsException = Throw(newNotSupportedException, typeof(long));
+            var msCatchBlock = Catch(typeof(Exception), throwMsException);
+            var memoryStreamTryCatch = TryCatch(msTryBlock, msCatchBlock);
+            var returnMemoryStreamResult = Return(returnLabel, memoryStreamTryCatch);
+            var ifMemoryStreamTryCatch = IfThen(memoryStreamNotNull, returnMemoryStreamResult);
 
-            var fileStreamVariable = Expression.Variable(typeof(FileStream), "fileStream");
-            var streamAsFileStream = Expression.TypeAs(streamVariable, typeof(FileStream));
-            var fileStreamAssignment = Expression.Assign(fileStreamVariable, streamAsFileStream);
-            var nullFileStream = Expression.Default(fileStreamVariable.Type);
-            var fileStreamNotNull = Expression.NotEqual(fileStreamVariable, nullFileStream);
-            var fsLengthVariable = Expression.Variable(typeof(long), "fsLength");
-            var fileStreamLength = Expression.Property(fileStreamVariable, "Length");
-            var fsLengthAssignment = Expression.Assign(fsLengthVariable, fileStreamLength);
+            var fileStreamVariable = Variable(typeof(FileStream), "fileStream");
+            var streamAsFileStream = TypeAs(streamVariable, typeof(FileStream));
+            var fileStreamAssignment = Assign(fileStreamVariable, streamAsFileStream);
+            var nullFileStream = Default(fileStreamVariable.Type);
+            var fileStreamNotNull = NotEqual(fileStreamVariable, nullFileStream);
+            var fsLengthVariable = Variable(typeof(long), "fsLength");
+            var fileStreamLength = Property(fileStreamVariable, "Length");
+            var fsLengthAssignment = Assign(fsLengthVariable, fileStreamLength);
 
-            var fsTryBlock = Expression.Block(new[] { fsLengthVariable }, fsLengthAssignment, fsLengthVariable);
-            var newIoException = Expression.New(typeof(IOException));
-            var throwIoException = Expression.Throw(newIoException, typeof(long));
-            var fsCatchBlock = Expression.Catch(typeof(Exception), throwIoException);
-            var fileStreamTryCatch = Expression.TryCatch(fsTryBlock, fsCatchBlock);
-            var returnFileStreamResult = Expression.Return(returnLabel, fileStreamTryCatch);
-            var ifFileStreamTryCatch = Expression.IfThen(fileStreamNotNull, returnFileStreamResult);
+            var fsTryBlock = Block(new[] { fsLengthVariable }, fsLengthAssignment, fsLengthVariable);
+            var newIoException = New(typeof(IOException));
+            var throwIoException = Throw(newIoException, typeof(long));
+            var fsCatchBlock = Catch(typeof(Exception), throwIoException);
+            var fileStreamTryCatch = TryCatch(fsTryBlock, fsCatchBlock);
+            var returnFileStreamResult = Return(returnLabel, fileStreamTryCatch);
+            var ifFileStreamTryCatch = IfThen(fileStreamNotNull, returnFileStreamResult);
 
-            var overallBlock = Expression.Block(
+            var overallBlock = Block(
                 new[] { memoryStreamVariable, fileStreamVariable },
                 memoryStreamAssignment,
                 ifMemoryStreamTryCatch,
                 fileStreamAssignment,
                 ifFileStreamTryCatch,
-                Expression.Label(returnLabel, Expression.Constant(0L)));
+                Label(returnLabel, Constant(0L)));
 
-            var overallCatchBlock = Expression.Catch(typeof(Exception), Expression.Constant(-1L));
-            var overallTryCatch = Expression.TryCatch(overallBlock, overallCatchBlock);
+            var overallCatchBlock = Catch(typeof(Exception), Constant(-1L));
+            var overallTryCatch = TryCatch(overallBlock, overallCatchBlock);
 
             const string EXPECTED = @"
 try
@@ -491,8 +493,8 @@ WhenFormattingCode.JoinStrings(
             var stringTest = CreateLambda(() =>
                 JoinStrings(",", "[", "i", "]", "[", "j", "]", "[", "k", "]") != string.Empty);
 
-            var doNothing = Expression.Default(typeof(void));
-            var ifTestDoNothing = Expression.IfThen(stringTest.Body, doNothing);
+            var doNothing = Default(typeof(void));
+            var ifTestDoNothing = IfThen(stringTest.Body, doNothing);
 
             const string EXPECTED = @"
 if (WhenFormattingCode.JoinStrings(
@@ -534,17 +536,17 @@ if (WhenFormattingCode.JoinStrings(
         [Fact]
         public void ShouldOnlyRemoveParenthesesIfNecessary()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intVariableIsOne = Expression.Equal(intVariable, Expression.Constant(1));
+            var intVariable = Variable(typeof(int), "i");
+            var intVariableIsOne = Equal(intVariable, Constant(1));
 
-            var objectVariable = Expression.Variable(typeof(object), "o");
-            var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
+            var objectVariable = Variable(typeof(object), "o");
+            var objectCastToInt = Convert(objectVariable, typeof(int));
             var intToStringMethod = typeof(object).GetPublicInstanceMethod("ToString");
-            var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
+            var intToStringCall = Call(objectCastToInt, intToStringMethod);
 
             var emptyString = CreateLambda(() => string.Empty);
 
-            var toStringOrEmptyString = Expression.Condition(
+            var toStringOrEmptyString = Condition(
                 intVariableIsOne,
                 emptyString.Body,
                 intToStringCall);
@@ -560,8 +562,8 @@ if (WhenFormattingCode.JoinStrings(
             var intArrayConverter = CreateLambda(
                 (IList<int> ints) => ((int[])ints).ToString().Split(','));
 
-            var stringArrayVariable = Expression.Variable(typeof(string[]), "strings");
-            var assignment = Expression.Assign(stringArrayVariable, intArrayConverter.Body);
+            var stringArrayVariable = Variable(typeof(string[]), "strings");
+            var assignment = Assign(stringArrayVariable, intArrayConverter.Body);
 
             var translated = ToReadableString(assignment);
 
@@ -591,11 +593,11 @@ if (WhenFormattingCode.JoinStrings(
         public void ShouldNotRemoveParenthesesFromALambdaInvokeResultAssignment()
         {
             var intsAdder = CreateLambda((int a, int b) => a + b);
-            var one = Expression.Constant(1);
-            var two = Expression.Constant(2);
-            var lambdaInvocation = Expression.Invoke(intsAdder, one, two);
-            var result = Expression.Variable(typeof(int), "result");
-            var assignInvokeResult = Expression.Assign(result, lambdaInvocation);
+            var one = Constant(1);
+            var two = Constant(2);
+            var lambdaInvocation = Invoke(intsAdder, one, two);
+            var result = Variable(typeof(int), "result");
+            var assignInvokeResult = Assign(result, lambdaInvocation);
 
             const string EXPECTED = "result = ((a, b) => a + b).Invoke(1, 2)";
             var translated = ToReadableString(assignInvokeResult);
@@ -606,19 +608,19 @@ if (WhenFormattingCode.JoinStrings(
         [Fact]
         public void ShouldPlaceSingleArgumentLambdaParametersOnMethodNameLine()
         {
-            var stringParam1 = Expression.Parameter(typeof(string), "string1");
-            var stringParam2 = Expression.Parameter(typeof(string), "string2");
+            var stringParam1 = Parameter(typeof(string), "string1");
+            var stringParam2 = Parameter(typeof(string), "string2");
 
             var writeString = CreateLambda(() => Console.WriteLine("String!")).Body;
-            var writeStringsBlock = Expression.Block(writeString, writeString, writeString);
+            var writeStringsBlock = Block(writeString, writeString, writeString);
 
-            var stringLambda = Expression.Lambda<Action<string, string>>(
+            var stringLambda = Lambda<Action<string, string>>(
                 writeStringsBlock,
                 stringParam1,
                 stringParam2);
 
             var lambdaMethod = typeof(HelperClass).GetPublicStaticMethod("GiveMeALambda");
-            var lambdaMethodCall = Expression.Call(lambdaMethod, stringLambda);
+            var lambdaMethodCall = Call(lambdaMethod, stringLambda);
 
             const string EXPECTED = @"
 HelperClass.GiveMeALambda((string1, string2) =>
@@ -742,9 +744,9 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var longMethodChain = CreateLambda(() =>
                 Enumerable
                     .Range(1, 10)
-                    .Select(Convert.ToInt64)
+                    .Select(System.Convert.ToInt64)
                     .ToArray()
-                    .Select(Convert.ToInt32)
+                    .Select(System.Convert.ToInt32)
                     .OrderByDescending(i => i)
                     .ToList());
 
@@ -765,20 +767,20 @@ Enumerable
         [Fact]
         public void ShouldTranslateAComplexMethodArgument()
         {
-            var intVariable = Expression.Variable(typeof(int), "intValue");
-            var dictionaryVariable = Expression.Variable(typeof(Dictionary<string, int>), "dictionary_String_IntValues");
+            var intVariable = Variable(typeof(int), "intValue");
+            var dictionaryVariable = Variable(typeof(Dictionary<string, int>), "dictionary_String_IntValues");
             var tryGetValueMethod = dictionaryVariable.Type.GetPublicInstanceMethod("TryGetValue", 2);
-            var key = Expression.Constant("NumberThatIWantToGet");
-            var tryGetValueCall = Expression.Call(dictionaryVariable, tryGetValueMethod, key, intVariable);
+            var key = Constant("NumberThatIWantToGet");
+            var tryGetValueCall = Call(dictionaryVariable, tryGetValueMethod, key, intVariable);
 
-            var defaultInt = Expression.Default(typeof(int));
-            var valueOrDefault = Expression.Condition(tryGetValueCall, intVariable, defaultInt);
-            var valueOrDefaultBlock = Expression.Block(new[] { intVariable }, valueOrDefault);
+            var defaultInt = Default(typeof(int));
+            var valueOrDefault = Condition(tryGetValueCall, intVariable, defaultInt);
+            var valueOrDefaultBlock = Block(new[] { intVariable }, valueOrDefault);
 
             var helperCtor = typeof(HelperClass).GetPublicInstanceConstructors().First();
-            var helper = Expression.New(helperCtor, defaultInt, defaultInt, defaultInt);
+            var helper = New(helperCtor, defaultInt, defaultInt, defaultInt);
             var intsMethod = helper.Type.GetPublicInstanceMethod(nameof(HelperClass.GiveMeSomeInts));
-            var methodCall = Expression.Call(helper, intsMethod, defaultInt, valueOrDefaultBlock, defaultInt);
+            var methodCall = Call(helper, intsMethod, defaultInt, valueOrDefaultBlock, defaultInt);
 
             var translated = ToReadableString(methodCall);
 
@@ -813,7 +815,7 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
                 .Select(i => i * 4)
                 .ToArray());
 
-            var longChainblock = Expression.Block(longCallChain.Body, longCallChain.Body);
+            var longChainblock = Block(longCallChain.Body, longCallChain.Body);
 
             const string EXPECTED = @"
 list
@@ -836,13 +838,13 @@ return list
         [Fact]
         public void ShouldLeaveABlankLineBeforeAnIfStatement()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var zero = Expression.Constant(0);
-            var intVariableEqualsZero = Expression.Equal(intVariable, zero);
-            var doNothing = Expression.Default(typeof(void));
-            var ifIntEqualsZeroDoNothing = Expression.IfThen(intVariableEqualsZero, doNothing);
+            var intVariable = Variable(typeof(int), "i");
+            var zero = Constant(0);
+            var intVariableEqualsZero = Equal(intVariable, zero);
+            var doNothing = Default(typeof(void));
+            var ifIntEqualsZeroDoNothing = IfThen(intVariableEqualsZero, doNothing);
 
-            var block = Expression.Block(new[] { intVariable }, ifIntEqualsZeroDoNothing);
+            var block = Block(new[] { intVariable }, ifIntEqualsZeroDoNothing);
 
             const string EXPECTED = @"
 int i;
@@ -859,13 +861,13 @@ if (i == 0)
         [Fact]
         public void ShouldNotLeaveDoubleBlankLinesBetweenIfStatements()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var one = Expression.Constant(1);
-            var intVariableEqualsOne = Expression.Equal(intVariable, one);
-            var doNothing = Expression.Default(typeof(void));
-            var ifIntEqualsOneDoNothing = Expression.IfThen(intVariableEqualsOne, doNothing);
+            var intVariable = Variable(typeof(int), "i");
+            var one = Constant(1);
+            var intVariableEqualsOne = Equal(intVariable, one);
+            var doNothing = Default(typeof(void));
+            var ifIntEqualsOneDoNothing = IfThen(intVariableEqualsOne, doNothing);
 
-            var block = Expression.Block(
+            var block = Block(
                 new[] { intVariable },
                 ifIntEqualsOneDoNothing,
                 ifIntEqualsOneDoNothing);
@@ -892,20 +894,20 @@ if (i == 1)
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
             var read = CreateLambda<long>(() => Console.Read());
 
-            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var newMemoryStream = New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");
-            var valueBlock = Expression.Block(writeWat.Body, read.Body);
+            var valueBlock = Block(writeWat.Body, read.Body);
             // ReSharper disable once AssignNullToNotNullAttribute
-            var positionInit = Expression.Bind(positionProperty, valueBlock);
-            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+            var positionInit = Bind(positionProperty, valueBlock);
+            var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var one = Expression.Constant(1);
-            var intVariableEqualsOne = Expression.Equal(intVariable, one);
-            var doNothing = Expression.Default(typeof(void));
-            var ifIntEqualsOneDoNothing = Expression.IfThen(intVariableEqualsOne, doNothing);
+            var intVariable = Variable(typeof(int), "i");
+            var one = Constant(1);
+            var intVariableEqualsOne = Equal(intVariable, one);
+            var doNothing = Default(typeof(void));
+            var ifIntEqualsOneDoNothing = IfThen(intVariableEqualsOne, doNothing);
 
-            var block = Expression.Block(memoryStreamInit, ifIntEqualsOneDoNothing);
+            var block = Block(memoryStreamInit, ifIntEqualsOneDoNothing);
 
             const string EXPECTED = @"
 new MemoryStream
@@ -930,29 +932,29 @@ if (i == 1)
         [Fact]
         public void ShouldTranslateMultilineBlockSingleMethodArguments()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var variableInit = Expression.Assign(intVariable, Expression.Constant(3));
-            var variableMultiplyFive = Expression.Multiply(intVariable, Expression.Constant(5));
-            var variableAdditionOne = Expression.Assign(intVariable, variableMultiplyFive);
-            var variableDivideThree = Expression.Divide(intVariable, Expression.Constant(3));
-            var variableAdditionTwo = Expression.Assign(intVariable, variableDivideThree);
+            var intVariable = Variable(typeof(int), "i");
+            var variableInit = Assign(intVariable, Constant(3));
+            var variableMultiplyFive = Multiply(intVariable, Constant(5));
+            var variableAdditionOne = Assign(intVariable, variableMultiplyFive);
+            var variableDivideThree = Divide(intVariable, Constant(3));
+            var variableAdditionTwo = Assign(intVariable, variableDivideThree);
 
-            var argumentBlock = Expression.Block(
+            var argumentBlock = Block(
                 new[] { intVariable },
                 variableInit,
                 variableAdditionOne,
                 variableAdditionTwo,
                 intVariable);
 
-            var catchBlock = Expression.Catch(
+            var catchBlock = Catch(
                 typeof(Exception),
-                Expression.Block(ReadableExpression.Comment("So what!"), Expression.Constant(0)));
+                Block(ReadableExpression.Comment("So what!"), Constant(0)));
 
-            var tryCatch = Expression.TryCatch(argumentBlock, catchBlock);
+            var tryCatch = TryCatch(argumentBlock, catchBlock);
 
-            var collectionVariable = Expression.Variable(typeof(ICollection<int>), "ints");
+            var collectionVariable = Variable(typeof(ICollection<int>), "ints");
             var addMethod = collectionVariable.Type.GetPublicInstanceMethod("Add");
-            var addMethodCall = Expression.Call(collectionVariable, addMethod, tryCatch);
+            var addMethodCall = Call(collectionVariable, addMethod, tryCatch);
 
             const string EXPECTED = @"
 ints.Add(

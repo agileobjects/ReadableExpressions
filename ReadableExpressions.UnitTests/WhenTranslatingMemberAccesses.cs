@@ -10,9 +10,11 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -149,8 +151,8 @@
 
             publicInstanceGetter.ShouldNotBeNull();
 
-            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
-            var getterAccess = Expression.Call(variable, publicInstanceGetter);
+            var variable = Variable(typeof(PropertiesHelper), "helper");
+            var getterAccess = Call(variable, publicInstanceGetter);
 
             var translated = ToReadableString(getterAccess);
 
@@ -166,8 +168,8 @@
 
             publicInstanceSetter.ShouldNotBeNull();
 
-            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
-            var setterCall = Expression.Call(variable, publicInstanceSetter, Expression.Constant(123));
+            var variable = Variable(typeof(PropertiesHelper), "helper");
+            var setterCall = Call(variable, publicInstanceSetter, Constant(123));
 
             var translated = ToReadableString(setterCall);
 
@@ -183,7 +185,7 @@
 
             publicStaticGetter.ShouldNotBeNull();
 
-            var getterAccess = Expression.Call(publicStaticGetter);
+            var getterAccess = Call(publicStaticGetter);
 
             var translated = ToReadableString(getterAccess);
 
@@ -199,7 +201,7 @@
 
             publicStaticSetter.ShouldNotBeNull();
 
-            var setterCall = Expression.Call(publicStaticSetter, Expression.Constant(456));
+            var setterCall = Call(publicStaticSetter, Constant(456));
 
             var translated = ToReadableString(setterCall);
 
@@ -215,8 +217,8 @@
 
             publicInstanceGetter.ShouldNotBeNull();
 
-            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
-            var getterAccess = Expression.Call(variable, publicInstanceGetter);
+            var variable = Variable(typeof(PropertiesHelper), "helper");
+            var getterAccess = Call(variable, publicInstanceGetter);
 
             var translated = ToReadableString(getterAccess);
 
@@ -232,8 +234,8 @@
 
             nonPublicInstanceSetter.ShouldNotBeNull();
 
-            var variable = Expression.Variable(typeof(PropertiesHelper), "helper");
-            var setterCall = Expression.Call(variable, nonPublicInstanceSetter, Expression.Constant(123));
+            var variable = Variable(typeof(PropertiesHelper), "helper");
+            var setterCall = Call(variable, nonPublicInstanceSetter, Constant(123));
 
             var translated = ToReadableString(setterCall);
 
@@ -249,7 +251,7 @@
 
             nonPublicStaticGetter.ShouldNotBeNull();
 
-            var getterAccess = Expression.Call(nonPublicStaticGetter);
+            var getterAccess = Call(nonPublicStaticGetter);
 
             var translated = ToReadableString(getterAccess);
 
@@ -265,7 +267,7 @@
 
             nonPublicStaticSetter.ShouldNotBeNull();
 
-            var setterCall = Expression.Call(nonPublicStaticSetter, Expression.Constant(456));
+            var setterCall = Call(nonPublicStaticSetter, Constant(456));
 
             var translated = ToReadableString(setterCall);
 
@@ -302,11 +304,11 @@
                     (m.GetParameters()[0].ParameterType == typeof(string)) &&
                     (m.GetParameters()[1].ParameterType == typeof(string[])));
 
-            var stringEmpty = Expression.Field(null, typeof(string).GetPublicStaticField(nameof(string.Empty)));
-            var expressions = new Expression[] { Expression.Constant("Value["), Expression.Constant("0"), Expression.Constant("]") };
-            var newStringArray = Expression.NewArrayInit(typeof(string), expressions);
+            var stringEmpty = Field(null, typeof(string).GetPublicStaticField(nameof(string.Empty)));
+            var expressions = new Expression[] { Constant("Value["), Constant("0"), Constant("]") };
+            var newStringArray = NewArrayInit(typeof(string), expressions);
 
-            var stringJoinCall = Expression.Call(stringJoinMethod, stringEmpty, newStringArray);
+            var stringJoinCall = Call(stringJoinMethod, stringEmpty, newStringArray);
 
             var translated = stringJoinCall.ToReadableString();
 
@@ -340,11 +342,11 @@ string.Join(
         [Fact]
         public void ShouldTranslateAManualIndexedPropertyAccessExpression()
         {
-            var indexedProperty = Expression.Variable(typeof(IndexedProperty), "p");
+            var indexedProperty = Variable(typeof(IndexedProperty), "p");
             var property = indexedProperty.Type.GetProperties().First();
-            var firstElement = Expression.Constant(1, typeof(int));
+            var firstElement = Constant(1, typeof(int));
 
-            var indexerAccess = Expression.MakeIndex(indexedProperty, property, new[] { firstElement });
+            var indexerAccess = MakeIndex(indexedProperty, property, new[] { firstElement });
 
             var translated = ToReadableString(indexerAccess);
 
@@ -496,11 +498,11 @@ string.Join(
         [Fact]
         public void ShouldIncludeOutParameterKeywords()
         {
-            var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
-            var one = Expression.Constant(1);
-            var valueVariable = Expression.Variable(typeof(object), "value");
+            var helperVariable = Variable(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
             var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
-            var tryGetCall = Expression.Call(helperVariable, tryGetMethod, one, valueVariable);
+            var tryGetCall = Call(helperVariable, tryGetMethod, one, valueVariable);
 
             var translated = ToReadableString(tryGetCall);
 
@@ -510,11 +512,11 @@ string.Join(
         [Fact]
         public void ShouldIncludeRefParameterKeywords()
         {
-            var helperVariable = Expression.Variable(typeof(IndexedProperty), "ip");
-            var three = Expression.Constant(3);
-            var valueVariable = Expression.Variable(typeof(object), "value");
+            var helperVariable = Variable(typeof(IndexedProperty), "ip");
+            var three = Constant(3);
+            var valueVariable = Variable(typeof(object), "value");
             var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("RefGet");
-            var tryGetCall = Expression.Call(helperVariable, tryGetMethod, three, valueVariable);
+            var tryGetCall = Call(helperVariable, tryGetMethod, three, valueVariable);
 
             var translated = ToReadableString(tryGetCall);
 
@@ -543,8 +545,8 @@ new CustomAdder
         {
             var adderToString = CreateLambda<string>(() => new CustomAdder());
 
-            var stringVariable = Expression.Variable(typeof(string), "str");
-            var assignment = Expression.Assign(stringVariable, adderToString.Body);
+            var stringVariable = Variable(typeof(string), "str");
+            var assignment = Assign(stringVariable, adderToString.Body);
 
             var translated = ToReadableString(assignment);
 
@@ -554,11 +556,11 @@ new CustomAdder
         [Fact]
         public void ShouldTranslateImplicitMethodOperatorUse()
         {
-            var stringVariable = Expression.Variable(typeof(string), "str");
+            var stringVariable = Variable(typeof(string), "str");
             var stringOperator = typeof(CustomAdder).GetImplicitOperator(o => o.To<string>());
-            var adderInstance = Expression.New(typeof(CustomAdder).GetPublicInstanceConstructor());
-            var operatorCall = Expression.Call(stringOperator, adderInstance);
-            var assignment = Expression.Assign(stringVariable, operatorCall);
+            var adderInstance = New(typeof(CustomAdder).GetPublicInstanceConstructor());
+            var operatorCall = Call(stringOperator, adderInstance);
+            var assignment = Assign(stringVariable, operatorCall);
 
             var translated = ToReadableString(assignment);
 
@@ -570,8 +572,8 @@ new CustomAdder
         {
             var adderToString = CreateLambda(() => (int)new CustomAdder());
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var assignment = Expression.Assign(intVariable, adderToString.Body);
+            var intVariable = Variable(typeof(int), "i");
+            var assignment = Assign(intVariable, adderToString.Body);
 
             var translated = ToReadableString(assignment);
 
@@ -581,11 +583,11 @@ new CustomAdder
         [Fact]
         public void ShouldTranslateExplicitMethodOperatorUse()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
+            var intVariable = Variable(typeof(int), "i");
             var intOperator = typeof(CustomAdder).GetExplicitOperator(o => o.To<int>());
-            var adderInstance = Expression.New(typeof(CustomAdder).GetPublicInstanceConstructor());
-            var operatorCall = Expression.Call(intOperator, adderInstance);
-            var assignment = Expression.Assign(intVariable, operatorCall);
+            var adderInstance = New(typeof(CustomAdder).GetPublicInstanceConstructor());
+            var operatorCall = Call(intOperator, adderInstance);
+            var assignment = Assign(intVariable, operatorCall);
 
             var translated = ToReadableString(assignment);
 

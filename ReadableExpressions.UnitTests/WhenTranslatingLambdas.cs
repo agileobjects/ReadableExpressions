@@ -5,11 +5,11 @@
 #if !NET35
     using System.ComponentModel.DataAnnotations;
     using System.Data.Entity;
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -49,7 +49,7 @@
         public void ShouldTranslateALambdaInvocation()
         {
             var writeLine = CreateLambda(() => Console.WriteLine());
-            var writeLineInvocation = Expression.Invoke(writeLine);
+            var writeLineInvocation = Invoke(writeLine);
 
             var translated = ToReadableString(writeLineInvocation);
 
@@ -62,7 +62,7 @@
         {
             var intToDouble = CreateLambda((int i) => (double)i);
 
-            var quotedLambda = Expression.Quote(intToDouble);
+            var quotedLambda = Quote(intToDouble);
 
             var translated = ToReadableString(quotedLambda);
 
@@ -112,12 +112,12 @@ ObjectQuery<WhenTranslatingLambdas.Product>
         [Fact]
         public void ShouldTranslateANestedQuotedLambda()
         {
-            var intA = Expression.Parameter(typeof(int), "a");
-            var intB = Expression.Parameter(typeof(int), "b");
-            var addition = Expression.Add(intA, intB);
-            var additionInnerLambda = Expression.Lambda(addition, intB);
-            var quotedInnerLambda = Expression.Quote(additionInnerLambda);
-            var additionOuterLambda = Expression.Lambda(quotedInnerLambda, intA);
+            var intA = Parameter(typeof(int), "a");
+            var intB = Parameter(typeof(int), "b");
+            var addition = Add(intA, intB);
+            var additionInnerLambda = Lambda(addition, intB);
+            var quotedInnerLambda = Quote(additionInnerLambda);
+            var additionOuterLambda = Lambda(quotedInnerLambda, intA);
 
             var translated = ToReadableString(additionOuterLambda);
 
@@ -129,7 +129,7 @@ ObjectQuery<WhenTranslatingLambdas.Product>
         {
             var intToDouble = CreateLambda((int i) => (double)i);
 
-            var quotedLambda = Expression.Quote(intToDouble);
+            var quotedLambda = Quote(intToDouble);
 
             var translated = ToReadableString(quotedLambda, o => o.ShowQuotedLambdaComments);
 
@@ -144,10 +144,10 @@ i => (double)i";
         [Fact]
         public void ShouldTranslateUnnamedLambdaParameters()
         {
-            var stringsParameter = Expression.Parameter(typeof(string[]));
+            var stringsParameter = Parameter(typeof(string[]));
             var linqSelect = CreateLambda((string[] ints) => ints.Select(int.Parse));
-            var linqSelectWithUnnamed = Expression.Lambda(linqSelect.Body, stringsParameter);
-            var quoted = Expression.Quote(linqSelectWithUnnamed);
+            var linqSelectWithUnnamed = Lambda(linqSelect.Body, stringsParameter);
+            var quoted = Quote(linqSelectWithUnnamed);
 
             var translated = ToReadableString(quoted);
 
@@ -157,9 +157,9 @@ i => (double)i";
         [Fact]
         public void ShouldTranslateRuntimeVariables()
         {
-            var intVariable1 = Expression.Variable(typeof(int), "i1");
-            var intVariable2 = Expression.Variable(typeof(int), "i2");
-            var runtimeVariables = Expression.RuntimeVariables(intVariable1, intVariable2);
+            var intVariable1 = Variable(typeof(int), "i1");
+            var intVariable2 = Variable(typeof(int), "i2");
+            var runtimeVariables = RuntimeVariables(intVariable1, intVariable2);
 
             var translated = ToReadableString(runtimeVariables);
 

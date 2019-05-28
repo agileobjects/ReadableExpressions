@@ -4,11 +4,11 @@
     using System.IO;
     using NetStandardPolyfills;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -27,10 +27,10 @@
         [Fact]
         public void ShouldTranslateACheckedCastExpression()
         {
-            var intParameter = Expression.Parameter(typeof(int), "i");
-            var checkedCast = Expression.ConvertChecked(intParameter, typeof(short));
+            var intParameter = Parameter(typeof(int), "i");
+            var checkedCast = ConvertChecked(intParameter, typeof(short));
 
-            var checkedCastLambda = Expression.Lambda<Func<int, short>>(checkedCast, intParameter);
+            var checkedCastLambda = Lambda<Func<int, short>>(checkedCast, intParameter);
 
             var translated = ToReadableString(checkedCastLambda);
 
@@ -80,8 +80,8 @@
         [Fact]
         public void ShouldTranslateAnUnboxExpression()
         {
-            var objectVariable = Expression.Variable(typeof(object), "o");
-            var unboxObjectToInt = Expression.Unbox(objectVariable, typeof(int));
+            var objectVariable = Variable(typeof(object), "o");
+            var unboxObjectToInt = Unbox(objectVariable, typeof(int));
 
             var translated = ToReadableString(unboxObjectToInt);
 
@@ -92,15 +92,15 @@
         [Fact]
         public void ShouldTranslateConversionWithCustomStaticMethod()
         {
-            var stringParameter = Expression.Parameter(typeof(string), "str");
+            var stringParameter = Parameter(typeof(string), "str");
             var targetType = typeof(int);
 
-            var body = Expression.Convert(
+            var body = Convert(
                 stringParameter,
                 targetType,
                 targetType.GetPublicStaticMethod(nameof(int.Parse), stringParameter.Type));
 
-            var stringToIntParseLambda = Expression.Lambda<Func<string, int>>(body, stringParameter);
+            var stringToIntParseLambda = Lambda<Func<string, int>>(body, stringParameter);
 
             var translated = ToReadableString(stringToIntParseLambda.Body);
 

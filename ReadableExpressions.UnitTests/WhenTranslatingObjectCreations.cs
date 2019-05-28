@@ -8,9 +8,11 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -69,8 +71,8 @@
         [Fact]
         public void ShouldTranslateAnEmptyObjectInitialisation()
         {
-            var newMemoryStream = Expression.New(typeof(MemoryStream));
-            var emptyInit = Expression.MemberInit(newMemoryStream, new List<MemberBinding>(0));
+            var newMemoryStream = New(typeof(MemoryStream));
+            var emptyInit = MemberInit(newMemoryStream, new List<MemberBinding>(0));
 
             var translated = ToReadableString(emptyInit);
 
@@ -103,11 +105,11 @@
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
             var read = CreateLambda<long>(() => Console.Read());
 
-            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var newMemoryStream = New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetPublicInstanceProperty(nameof(MemoryStream.Position));
-            var valueBlock = Expression.Block(writeWat.Body, writeWat.Body, read.Body);
-            var positionInit = Expression.Bind(positionProperty, valueBlock);
-            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+            var valueBlock = Block(writeWat.Body, writeWat.Body, read.Body);
+            var positionInit = Bind(positionProperty, valueBlock);
+            var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
             var translated = ToReadableString(memoryStreamInit);
 
@@ -272,7 +274,7 @@ new IDisposable[]
         [Fact]
         public void ShouldTranslateAnEmptyNewArrayExpression()
         {
-            var newArray = Expression.NewArrayInit(typeof(int), new List<Expression>(0));
+            var newArray = NewArrayInit(typeof(int), new List<Expression>(0));
 
             var translated = ToReadableString(newArray);
 
@@ -326,10 +328,10 @@ new IDisposable[]
         {
             var consoleRead = CreateLambda(() => Console.Read());
 
-            var catchAll = Expression.Catch(typeof(Exception), Expression.Default(typeof(int)));
-            var tryReadInt = Expression.TryCatch(consoleRead.Body, catchAll);
+            var catchAll = Catch(typeof(Exception), Default(typeof(int)));
+            var tryReadInt = TryCatch(consoleRead.Body, catchAll);
 
-            var createStringBuilder = Expression.New(
+            var createStringBuilder = New(
                 typeof(StringBuilder).GetPublicInstanceConstructor(typeof(int), typeof(int)),
                 tryReadInt,
                 tryReadInt);
@@ -369,7 +371,7 @@ new StringBuilder(
             var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = Expression.New(constructor, Expression.Constant("How much?!"), Expression.Constant(100));
+            var creation = New(constructor, Constant("How much?!"), Constant(100));
 
             var translated = ToReadableString(creation);
 
@@ -384,7 +386,7 @@ new StringBuilder(
             var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = Expression.New(constructor, Expression.Constant("How much?"), Expression.Constant(10));
+            var creation = New(constructor, Constant("How much?"), Constant(10));
 
             var translated = ToReadableString(creation, cfg => cfg.NameAnonymousTypesUsing(t => "MyMagicObject"));
 
@@ -398,7 +400,7 @@ new StringBuilder(
             var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(TimeSpan));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = Expression.New(constructor, Expression.Constant("How much?!"), Expression.Default(typeof(TimeSpan)));
+            var creation = New(constructor, Constant("How much?!"), Default(typeof(TimeSpan)));
 
             var translated = ToReadableString(creation, s => s.UseFullyQualifiedTypeNames);
 

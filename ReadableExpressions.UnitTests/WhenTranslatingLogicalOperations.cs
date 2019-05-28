@@ -2,10 +2,10 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.Expression;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -85,8 +85,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAUnaryPlusOperation()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var unaryPlus = Expression.UnaryPlus(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var unaryPlus = UnaryPlus(intVariable);
 
             var translated = ToReadableString(unaryPlus);
 
@@ -96,8 +96,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAOnesComplementOperation()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var onesComplement = Expression.OnesComplement(intVariable);
+            var intVariable = Variable(typeof(int), "i");
+            var onesComplement = OnesComplement(intVariable);
 
             var translated = ToReadableString(onesComplement);
 
@@ -137,8 +137,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAValueTypeTypeEqualExpression()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intIsLong = Expression.TypeEqual(intVariable, typeof(long));
+            var intVariable = Variable(typeof(int), "i");
+            var intIsLong = TypeEqual(intVariable, typeof(long));
 
             var translated = ToReadableString(intIsLong);
 
@@ -148,8 +148,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateANullableValueTypeTypeEqualExpression()
         {
-            var nullableLongVariable = Expression.Variable(typeof(long?), "l");
-            var nullableLongIsNullableLong = Expression.TypeEqual(nullableLongVariable, typeof(long?));
+            var nullableLongVariable = Variable(typeof(long?), "l");
+            var nullableLongIsNullableLong = TypeEqual(nullableLongVariable, typeof(long?));
 
             var translated = ToReadableString(nullableLongIsNullableLong);
 
@@ -159,8 +159,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAConstantTypeEqualExpression()
         {
-            var intConstant = Expression.Constant(123, typeof(int));
-            var intConstantIsInt = Expression.TypeEqual(intConstant, typeof(int));
+            var intConstant = Constant(123, typeof(int));
+            var intConstantIsInt = TypeEqual(intConstant, typeof(int));
 
             var translated = ToReadableString(intConstantIsInt);
 
@@ -170,8 +170,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAnObjectTypeEqualExpression()
         {
-            var objectVariable = Expression.Variable(typeof(object), "o");
-            var objectIsString = Expression.TypeEqual(objectVariable, typeof(string));
+            var objectVariable = Variable(typeof(object), "o");
+            var objectIsString = TypeEqual(objectVariable, typeof(string));
 
             var translated = ToReadableString(objectIsString);
 
@@ -181,8 +181,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAnIsTrueExpression()
         {
-            var boolVariable = Expression.Variable(typeof(bool), "b");
-            var boolIsTrue = Expression.IsTrue(boolVariable);
+            var boolVariable = Variable(typeof(bool), "b");
+            var boolIsTrue = IsTrue(boolVariable);
 
             var translated = ToReadableString(boolIsTrue);
 
@@ -192,8 +192,8 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         [Fact]
         public void ShouldTranslateAnIsFalseExpression()
         {
-            var boolVariable = Expression.Variable(typeof(bool), "b");
-            var boolIsFalse = Expression.IsFalse(boolVariable);
+            var boolVariable = Variable(typeof(bool), "b");
+            var boolIsFalse = IsFalse(boolVariable);
 
             var translated = ToReadableString(boolIsFalse);
 

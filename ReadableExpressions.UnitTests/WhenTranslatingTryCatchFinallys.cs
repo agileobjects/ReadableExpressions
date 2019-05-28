@@ -3,11 +3,11 @@
     using System;
     using System.Linq;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -17,9 +17,9 @@
         public void ShouldTranslateATryWithATopLevelGlobalCatch()
         {
             var writeHello = CreateLambda(() => Console.Write("Hello"));
-            var exception = Expression.Variable(typeof(Exception), "ex");
-            var globalCatch = Expression.Catch(exception, Expression.Empty());
-            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatch);
+            var exception = Variable(typeof(Exception), "ex");
+            var globalCatch = Catch(exception, Empty());
+            var tryCatch = TryCatch(writeHello.Body, globalCatch);
 
             var translated = ToReadableString(tryCatch);
 
@@ -38,9 +38,9 @@ catch
         public void ShouldTranslateATryCatch()
         {
             var writeHello = CreateLambda(() => Console.Write("Hello"));
-            var exception = Expression.Variable(typeof(TimeoutException), "timeoutEx");
-            var timeoutCatch = Expression.Catch(exception, Expression.Empty());
-            var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
+            var exception = Variable(typeof(TimeoutException), "timeoutEx");
+            var timeoutCatch = Catch(exception, Empty());
+            var tryCatch = TryCatch(writeHello.Body, timeoutCatch);
 
             var translated = ToReadableString(tryCatch);
 
@@ -61,8 +61,8 @@ catch (TimeoutException)
             var writeHello = CreateLambda(() => Console.Write("Hello"));
             var filter = CreateLambda((TimeoutException timeoutEx) => timeoutEx.Data != null);
             var exception = filter.Parameters.First();
-            var timeoutCatch = Expression.Catch(exception, Expression.Empty(), filter.Body);
-            var tryCatch = Expression.TryCatch(writeHello.Body, timeoutCatch);
+            var timeoutCatch = Catch(exception, Empty(), filter.Body);
+            var tryCatch = TryCatch(writeHello.Body, timeoutCatch);
 
             var translated = ToReadableString(tryCatch);
 
@@ -80,11 +80,11 @@ catch (TimeoutException timeoutEx) when timeoutEx.Data != null
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAnExplicitExceptionRethrow()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
+            var exception = Variable(typeof(Exception), "ex");
             var writeHello = CreateLambda(() => Console.Write("Hello"));
-            var rethrow = Expression.Throw(exception);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
+            var rethrow = Throw(exception);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(writeHello.Body, globalCatchAndRethrow);
 
             var translated = ToReadableString(tryCatch);
 
@@ -104,11 +104,11 @@ catch
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAnImplicitExceptionRethrow()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
+            var exception = Variable(typeof(Exception), "ex");
             var writeHello = CreateLambda(() => Console.WriteLine("Goodbye"));
-            var rethrow = Expression.Rethrow();
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatchAndRethrow);
+            var rethrow = Rethrow();
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(writeHello.Body, globalCatchAndRethrow);
 
             var translated = ToReadableString(tryCatch);
 
@@ -130,10 +130,10 @@ catch
             var writeException = CreateLambda((Exception ex) => Console.Write(ex));
             var exception = writeException.Parameters.First();
             var writeHello = CreateLambda(() => Console.Write("Hello"));
-            var rethrow = Expression.Throw(exception);
-            var writeExceptionAndRethrow = Expression.Block(writeException.Body, rethrow);
-            var globalCatch = Expression.Catch(exception, writeExceptionAndRethrow);
-            var tryCatch = Expression.TryCatch(writeHello.Body, globalCatch);
+            var rethrow = Throw(exception);
+            var writeExceptionAndRethrow = Block(writeException.Body, rethrow);
+            var globalCatch = Catch(exception, writeExceptionAndRethrow);
+            var tryCatch = TryCatch(writeHello.Body, globalCatch);
 
             var translated = ToReadableString(tryCatch);
 
@@ -153,18 +153,18 @@ catch (Exception ex)
         [Fact]
         public void ShouldTranslateATryWithATopLevelCatchWithAWrappedExceptionThrow()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
+            var exception = Variable(typeof(Exception), "ex");
             var writeBoom = CreateLambda(() => Console.Write("BOOM?"));
 
-            var wrappedException = Expression.New(
+            var wrappedException = New(
                 // ReSharper disable once AssignNullToNotNullAttribute
                 typeof(InvalidOperationException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
-                Expression.Constant("Wrapped!"),
+                Constant("Wrapped!"),
                 exception);
 
-            var throwWrapped = Expression.Throw(wrappedException);
-            var globalCatch = Expression.Catch(exception, throwWrapped);
-            var tryCatch = Expression.TryCatch(writeBoom.Body, globalCatch);
+            var throwWrapped = Throw(wrappedException);
+            var globalCatch = Catch(exception, throwWrapped);
+            var tryCatch = TryCatch(writeBoom.Body, globalCatch);
 
             var translated = ToReadableString(tryCatch);
 
@@ -185,7 +185,7 @@ catch (Exception ex)
         {
             var writeHello = CreateLambda(() => Console.Write("Hello"));
             var writeGoodbye = CreateLambda(() => Console.Write("Goodbye"));
-            var tryFinally = Expression.TryCatchFinally(writeHello.Body, writeGoodbye.Body);
+            var tryFinally = TryCatchFinally(writeHello.Body, writeGoodbye.Body);
 
             var translated = ToReadableString(tryFinally);
 
@@ -206,7 +206,7 @@ finally
         {
             var writeHello = CreateLambda(() => Console.Write("Hello"));
             var writeBoom = CreateLambda(() => Console.Write("Boom"));
-            var tryFault = Expression.TryFault(writeHello.Body, writeBoom.Body);
+            var tryFault = TryFault(writeHello.Body, writeBoom.Body);
 
             var translated = ToReadableString(tryFault);
 
@@ -227,15 +227,15 @@ fault
         {
             var writeHello = CreateLambda(() => Console.Write("Hello"));
             var writeNotSupported = CreateLambda((NotSupportedException ex) => Console.Write("NotSupported!"));
-            var notSupportedCatchBlock = Expression.Catch(writeNotSupported.Parameters.First(), writeNotSupported.Body);
+            var notSupportedCatchBlock = Catch(writeNotSupported.Parameters.First(), writeNotSupported.Body);
             var writeException = CreateLambda((Exception ex) => Console.Write(ex));
-            var topLevelCatchBlock = Expression.Catch(writeException.Parameters.First(), writeException.Body);
+            var topLevelCatchBlock = Catch(writeException.Parameters.First(), writeException.Body);
 
             var writeFinished = CreateLambda(() => Console.WriteLine("Finished!"));
             var writeGoodbye = CreateLambda(() => Console.Write("Goodbye"));
-            var finallyBlock = Expression.Block(writeFinished.Body, writeGoodbye.Body);
+            var finallyBlock = Block(writeFinished.Body, writeGoodbye.Body);
 
-            var tryCatchFinally = Expression.TryCatchFinally(writeHello.Body, finallyBlock, notSupportedCatchBlock, topLevelCatchBlock);
+            var tryCatchFinally = TryCatchFinally(writeHello.Body, finallyBlock, notSupportedCatchBlock, topLevelCatchBlock);
 
             var translated = ToReadableString(tryCatchFinally);
 

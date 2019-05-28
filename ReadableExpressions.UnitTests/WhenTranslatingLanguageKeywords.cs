@@ -2,10 +2,10 @@
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.Expression;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -15,7 +15,7 @@
         [Fact]
         public void ShouldTranslateADefaultExpression()
         {
-            var defaultInt = Expression.Default(typeof(uint));
+            var defaultInt = Default(typeof(uint));
             var translated = ToReadableString(defaultInt);
 
             translated.ShouldBe("default(uint)");
@@ -24,7 +24,7 @@
         [Fact]
         public void ShouldIgnoreADefaultVoidExpression()
         {
-            var defaultVoid = Expression.Default(typeof(void));
+            var defaultVoid = Default(typeof(void));
             var translated = ToReadableString(defaultVoid);
 
             translated.ShouldBeNull();
@@ -57,7 +57,7 @@
 
         private static void VerifyIsEscaped(string keyword)
         {
-            var variable = Expression.Variable(typeof(bool), keyword);
+            var variable = Variable(typeof(bool), keyword);
             var translated = ToReadableString(variable);
 
             translated.ShouldBe("@" + keyword);
@@ -66,9 +66,9 @@
         [Fact]
         public void ShouldTranslateADeclaredBlockVariableKeyword()
         {
-            var variable = Expression.Variable(typeof(string), "string");
+            var variable = Variable(typeof(string), "string");
             var writeLine = CreateLambda(() => Console.WriteLine("La la la"));
-            var block = Expression.Block(new[] { variable }, writeLine.Body);
+            var block = Block(new[] { variable }, writeLine.Body);
             var translated = ToReadableString(block);
 
             const string EXPECTED = @"

@@ -3,11 +3,11 @@
     using System;
     using System.IO;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -17,10 +17,10 @@
         public void ShouldTranslateDebugInfo()
         {
             var tempFileName = Path.GetTempFileName();
-            var debugInfoFile = Expression.SymbolDocument(tempFileName);
-            var debugInfo = Expression.DebugInfo(debugInfoFile, 1, 1, 2, 100);
+            var debugInfoFile = SymbolDocument(tempFileName);
+            var debugInfo = DebugInfo(debugInfoFile, 1, 1, 2, 100);
             var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var debuggedBlock = Expression.Block(debugInfo, writeHello.Body);
+            var debuggedBlock = Block(debugInfo, writeHello.Body);
 
             var translated = ToReadableString(debuggedBlock);
 
@@ -35,10 +35,10 @@ Console.WriteLine(""Hello"");";
         public void ShouldTranslateClearDebugInfo()
         {
             var tempFileName = Path.GetTempFileName();
-            var debugInfoFile = Expression.SymbolDocument(tempFileName);
-            var clearDebugInfo = Expression.ClearDebugInfo(debugInfoFile);
+            var debugInfoFile = SymbolDocument(tempFileName);
+            var clearDebugInfo = ClearDebugInfo(debugInfoFile);
             var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var debuggedBlock = Expression.Block(writeHello.Body, clearDebugInfo);
+            var debuggedBlock = Block(writeHello.Body, clearDebugInfo);
 
             var translated = ToReadableString(debuggedBlock);
 

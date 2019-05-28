@@ -2,11 +2,11 @@
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -44,7 +44,7 @@ but I will anyway");
             var comment = ReadableExpression.Comment("Anyone listening?");
             var beep = CreateLambda(() => Console.Beep());
 
-            var commentedBeep = Expression.Block(comment, beep.Body);
+            var commentedBeep = Block(comment, beep.Body);
 
             var translated = ToReadableString(commentedBeep);
 
@@ -59,9 +59,9 @@ Console.Beep();";
         public void ShouldTranslateAConditionalBranchWithAComment()
         {
             var comment = ReadableExpression.Comment("Maths works");
-            var one = Expression.Constant(1);
-            var oneEqualsOne = Expression.Equal(one, one);
-            var ifOneEqualsOneComment = Expression.IfThen(oneEqualsOne, comment);
+            var one = Constant(1);
+            var oneEqualsOne = Equal(one, one);
+            var ifOneEqualsOneComment = IfThen(oneEqualsOne, comment);
 
             var translated = ToReadableString(ifOneEqualsOneComment);
 

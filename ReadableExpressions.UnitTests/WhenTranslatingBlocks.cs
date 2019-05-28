@@ -8,9 +8,11 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -23,7 +25,7 @@
             var beep = CreateLambda(() => Console.Beep());
             var read = CreateLambda(() => Console.Read());
 
-            var consoleBlock = Expression.Block(writeLine.Body, read.Body, beep.Body);
+            var consoleBlock = Block(writeLine.Body, read.Body, beep.Body);
 
             var translated = ToReadableString(consoleBlock);
 
@@ -40,10 +42,10 @@ Console.Beep();";
         {
             var writeLine = CreateLambda(() => Console.WriteLine());
             var read = CreateLambda(() => Console.Read());
-            var returnReadResult = Expression.Return(Expression.Label(typeof(int)), read.Body, typeof(int));
+            var returnReadResult = Return(Label(typeof(int)), read.Body, typeof(int));
 
-            var consoleBlock = Expression.Block(writeLine.Body, returnReadResult);
-            var consoleLambda = Expression.Lambda<Func<int>>(consoleBlock);
+            var consoleBlock = Block(writeLine.Body, returnReadResult);
+            var consoleLambda = Lambda<Func<int>>(consoleBlock);
 
             var translated = ToReadableString(consoleLambda);
 
@@ -59,12 +61,12 @@ Console.Beep();";
         [Fact]
         public void ShouldTranslateAVariableBlockWithNoReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var assignZeroToCount = Expression.Assign(countVariable, Expression.Constant(0));
-            var incrementCount = Expression.Increment(countVariable);
-            var returnVoid = Expression.Default(typeof(void));
+            var countVariable = Variable(typeof(int), "count");
+            var assignZeroToCount = Assign(countVariable, Constant(0));
+            var incrementCount = Increment(countVariable);
+            var returnVoid = Default(typeof(void));
 
-            var countBlock = Expression.Block(
+            var countBlock = Block(
                 new[] { countVariable },
                 assignZeroToCount,
                 incrementCount,
@@ -82,16 +84,16 @@ var count = 0;
         [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithNoReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(short), "count");
-            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant((short)10));
-            var decrementCount = Expression.Decrement(countVariable);
+            var countVariable = Variable(typeof(short), "count");
+            var assignTenToCount = Assign(countVariable, Constant((short)10));
+            var decrementCount = Decrement(countVariable);
 
-            var countBlock = Expression.Block(
+            var countBlock = Block(
                 new[] { countVariable },
                 assignTenToCount,
                 decrementCount);
 
-            var countLambda = Expression.Lambda<Action>(countBlock);
+            var countLambda = Lambda<Action>(countBlock);
 
             var translated = ToReadableString(countLambda);
 
@@ -107,18 +109,18 @@ var count = 0;
         [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(ushort), "count");
-            var countEqualsZero = Expression.Assign(countVariable, Expression.Constant((ushort)0));
-            var incrementCount = Expression.Increment(countVariable);
+            var countVariable = Variable(typeof(ushort), "count");
+            var countEqualsZero = Assign(countVariable, Constant((ushort)0));
+            var incrementCount = Increment(countVariable);
             var returnCount = countVariable;
 
-            var countBlock = Expression.Block(
+            var countBlock = Block(
                 new[] { countVariable },
                 countEqualsZero,
                 incrementCount,
                 returnCount);
 
-            var countLambda = Expression.Lambda<Func<ushort>>(countBlock);
+            var countLambda = Lambda<Func<ushort>>(countBlock);
 
             var translated = ToReadableString(countLambda);
 
@@ -136,17 +138,17 @@ var count = 0;
         [Fact]
         public void ShouldTranslateAVariableBlockLambdaWithAReturnExpression()
         {
-            var listVariable = Expression.Variable(typeof(List<int>), "list");
+            var listVariable = Variable(typeof(List<int>), "list");
             var createList = CreateLambda(() => new List<int> { 1, 2, 3 });
 
-            var listAssignment = Expression.Assign(listVariable, createList.Body);
+            var listAssignment = Assign(listVariable, createList.Body);
 
             var toArrayMethod = typeof(Enumerable).GetPublicStaticMethod("ToArray");
             var typedToArrayMethod = toArrayMethod.MakeGenericMethod(typeof(int));
-            var listToArray = Expression.Call(typedToArrayMethod, listVariable);
+            var listToArray = Call(typedToArrayMethod, listVariable);
 
-            var listBlock = Expression.Block(new[] { listVariable }, listAssignment, listToArray);
-            var listLambda = Expression.Lambda<Func<int[]>>(listBlock);
+            var listBlock = Block(new[] { listVariable }, listAssignment, listToArray);
+            var listLambda = Lambda<Func<int[]>>(listBlock);
 
             var translated = ToReadableString(listLambda);
 
@@ -163,11 +165,11 @@ var count = 0;
         [Fact]
         public void ShouldTranslateAMultipleAccessVariableBlockWithNoReturnValue()
         {
-            var countVariable = Expression.Variable(typeof(ulong), "count");
-            var assignTenToCount = Expression.Assign(countVariable, Expression.Constant((ulong)10));
-            var addTwoToCount = Expression.AddAssign(countVariable, Expression.Constant((ulong)2));
+            var countVariable = Variable(typeof(ulong), "count");
+            var assignTenToCount = Assign(countVariable, Constant((ulong)10));
+            var addTwoToCount = AddAssign(countVariable, Constant((ulong)2));
 
-            var countBlock = Expression.Block(
+            var countBlock = Block(
                 new[] { countVariable },
                 assignTenToCount,
                 addTwoToCount);
@@ -184,16 +186,16 @@ count += 2;";
         [Fact]
         public void ShouldTranslateAMultipleVariableBlockWithNoReturnValue()
         {
-            var countOneVariable = Expression.Variable(typeof(int), "countOne");
-            var countTwoVariable = Expression.Variable(typeof(int), "countTwo");
-            var countThreeVariable = Expression.Variable(typeof(byte), "countThree");
-            var assignOneToCountOne = Expression.Assign(countOneVariable, Expression.Constant(1));
-            var assignTwoToCountTwo = Expression.Assign(countTwoVariable, Expression.Constant(2));
-            var sumCounts = Expression.Add(countOneVariable, countTwoVariable);
-            var castSumToBye = Expression.Convert(sumCounts, typeof(byte));
-            var assignSumToCountThree = Expression.Assign(countThreeVariable, castSumToBye);
+            var countOneVariable = Variable(typeof(int), "countOne");
+            var countTwoVariable = Variable(typeof(int), "countTwo");
+            var countThreeVariable = Variable(typeof(byte), "countThree");
+            var assignOneToCountOne = Assign(countOneVariable, Constant(1));
+            var assignTwoToCountTwo = Assign(countTwoVariable, Constant(2));
+            var sumCounts = Add(countOneVariable, countTwoVariable);
+            var castSumToBye = Convert(sumCounts, typeof(byte));
+            var assignSumToCountThree = Assign(countThreeVariable, castSumToBye);
 
-            var countBlock = Expression.Block(
+            var countBlock = Block(
                 new[] { countOneVariable, countTwoVariable, countThreeVariable },
                 assignOneToCountOne,
                 assignTwoToCountTwo,
@@ -212,13 +214,13 @@ var countThree = (byte)(countOne + countTwo);";
         [Fact]
         public void ShouldTranslateAVariableAssignmentWithinACondition()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var assignFiveToCount = Expression.Assign(countVariable, Expression.Constant(5));
-            var isResultLessThanTen = Expression.LessThan(assignFiveToCount, Expression.Constant(10));
-            var ifResultIsLessThanTenDoNothing = Expression.IfThen(isResultLessThanTen, Expression.Default(typeof(void)));
+            var countVariable = Variable(typeof(int), "count");
+            var assignFiveToCount = Assign(countVariable, Constant(5));
+            var isResultLessThanTen = LessThan(assignFiveToCount, Constant(10));
+            var ifResultIsLessThanTenDoNothing = IfThen(isResultLessThanTen, Default(typeof(void)));
 
-            var countBlock = Expression.Block(new[] { countVariable }, ifResultIsLessThanTenDoNothing);
-            var countLambda = Expression.Lambda<Action>(countBlock);
+            var countBlock = Block(new[] { countVariable }, ifResultIsLessThanTenDoNothing);
+            var countLambda = Lambda<Action>(countBlock);
 
             var translated = ToReadableString(countLambda);
 
@@ -240,8 +242,8 @@ var countThree = (byte)(countOne + countTwo);";
             var writeLine = CreateLambda(() => Console.WriteLine());
             var beep = CreateLambda(() => Console.Beep());
 
-            var innerBlock = Expression.Block(writeLine.Body, beep.Body);
-            var outerBlock = Expression.Block(innerBlock, writeLine.Body);
+            var innerBlock = Block(writeLine.Body, beep.Body);
+            var outerBlock = Block(innerBlock, writeLine.Body);
 
             var translated = ToReadableString(outerBlock);
 
@@ -256,12 +258,12 @@ Console.WriteLine();";
         [Fact]
         public void ShouldIgnoreAVariableOnlyBlockStatement()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var @false = Expression.Constant(false, typeof(bool));
+            var countVariable = Variable(typeof(int), "count");
+            var @false = Constant(false, typeof(bool));
 
-            var countBlock = Expression.Block(countVariable, @false);
+            var countBlock = Block(countVariable, @false);
 
-            var countLambda = Expression.Lambda<Action>(countBlock);
+            var countLambda = Lambda<Action>(countBlock);
 
             var translated = ToReadableString(countLambda);
 
@@ -273,14 +275,14 @@ Console.WriteLine();";
         [Fact]
         public void ShouldNotTerminateMethodCallArguments()
         {
-            var objectVariable = Expression.Variable(typeof(object), "o");
-            var objectCastToInt = Expression.Convert(objectVariable, typeof(int));
+            var objectVariable = Variable(typeof(object), "o");
+            var objectCastToInt = Convert(objectVariable, typeof(int));
             var intToStringMethod = typeof(int).GetPublicInstanceMethod("ToString", parameterCount: 0);
-            var intToStringCall = Expression.Call(objectCastToInt, intToStringMethod);
-            var intToStringBlock = Expression.Block(intToStringCall);
+            var intToStringCall = Call(objectCastToInt, intToStringMethod);
+            var intToStringBlock = Block(intToStringCall);
             var openTextFile = CreateLambda((string str) => File.OpenText(str));
             var openTextFileMethod = ((MethodCallExpression)openTextFile.Body).Method;
-            var openTextFileCall = Expression.Call(openTextFileMethod, intToStringBlock);
+            var openTextFileCall = Call(openTextFileMethod, intToStringBlock);
 
             var translated = ToReadableString(openTextFileCall);
 
@@ -293,20 +295,20 @@ Console.WriteLine();";
             var writeWat = CreateLambda(() => Console.WriteLine("Wat"));
             var read = CreateLambda<long>(() => Console.Read());
 
-            var newMemoryStream = Expression.New(typeof(MemoryStream));
+            var newMemoryStream = New(typeof(MemoryStream));
             var positionProperty = newMemoryStream.Type.GetProperty("Position");
-            var valueBlock = Expression.Block(writeWat.Body, read.Body);
+            var valueBlock = Block(writeWat.Body, read.Body);
             // ReSharper disable once AssignNullToNotNullAttribute
-            var positionInit = Expression.Bind(positionProperty, valueBlock);
-            var memoryStreamInit = Expression.MemberInit(newMemoryStream, positionInit);
+            var positionInit = Bind(positionProperty, valueBlock);
+            var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
-            var streamVariable = Expression.Variable(typeof(Stream), "stream");
+            var streamVariable = Variable(typeof(Stream), "stream");
 
-            var assignStream = Expression.Assign(streamVariable, memoryStreamInit);
+            var assignStream = Assign(streamVariable, memoryStreamInit);
 
-            var streamIsNull = Expression.Equal(streamVariable, Expression.Default(typeof(Stream)));
+            var streamIsNull = Equal(streamVariable, Default(typeof(Stream)));
 
-            var ifNullAssign = Expression.IfThen(streamIsNull, assignStream);
+            var ifNullAssign = IfThen(streamIsNull, assignStream);
 
             var translated = ToReadableString(ifNullAssign);
 
@@ -329,20 +331,20 @@ if (stream == null)
         [Fact]
         public void ShouldTranslateASwitchWithMultipleVariableAssignments()
         {
-            var countVariable = Expression.Variable(typeof(int), "count");
-            var intVariable = Expression.Variable(typeof(int), "i");
+            var countVariable = Variable(typeof(int), "count");
+            var intVariable = Variable(typeof(int), "i");
 
-            var switchStatement = Expression.Switch(
+            var switchStatement = Switch(
                 intVariable,
-                Expression.Assign(countVariable, Expression.Constant(0)),
+                Assign(countVariable, Constant(0)),
                 Enumerable
                     .Range(1, 2)
-                    .Select(i => Expression.SwitchCase(
-                        Expression.Assign(countVariable, Expression.Constant(i * 2)),
-                        Expression.Constant(i)))
+                    .Select(i => SwitchCase(
+                        Assign(countVariable, Constant(i * 2)),
+                        Constant(i)))
                     .ToArray());
 
-            var switchBlock = Expression.Block(new[] { countVariable }, switchStatement);
+            var switchBlock = Block(new[] { countVariable }, switchStatement);
 
             var translated = ToReadableString(switchBlock);
 
@@ -369,26 +371,26 @@ switch (i)
         [Fact]
         public void ShouldTranslateAMemberInitReturnValue()
         {
-            var company = Expression.Variable(typeof(Company), "c");
-            var ceo = Expression.Variable(typeof(Employee), "ceo");
-            var ceoAddress = Expression.Property(ceo, "Address");
+            var company = Variable(typeof(Company), "c");
+            var ceo = Variable(typeof(Employee), "ceo");
+            var ceoAddress = Property(ceo, "Address");
 
-            var assignCeo = Expression.Assign(ceo, Expression.Property(company, "Ceo"));
+            var assignCeo = Assign(ceo, Property(company, "Ceo"));
 
-            var newAddress = Expression.MemberInit(
-                Expression.New(typeof(Address).GetPublicInstanceConstructor()),
-                Expression.Bind(
+            var newAddress = MemberInit(
+                New(typeof(Address).GetPublicInstanceConstructor()),
+                Bind(
                     typeof(Address).GetPublicInstanceMember("Line1"),
-                    Expression.Property(ceoAddress, "Line1")));
+                    Property(ceoAddress, "Line1")));
 
-            var newEmployee = Expression.MemberInit(
-                Expression.New(typeof(Employee).GetPublicInstanceConstructor()),
-                Expression.Bind(
+            var newEmployee = MemberInit(
+                New(typeof(Employee).GetPublicInstanceConstructor()),
+                Bind(
                     typeof(Employee).GetPublicInstanceMember("Address"),
                     newAddress)
                 );
 
-            var block = Expression.Block(assignCeo, newEmployee);
+            var block = Block(assignCeo, newEmployee);
 
             var translated = ToReadableString(block);
 
@@ -408,15 +410,15 @@ return new WhenTranslatingBlocks.Employee
         [Fact]
         public void ShouldIgnoreABlankLabelTargetLine()
         {
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intAssignment = Expression.Assign(intVariable, Expression.Constant(0));
+            var intVariable = Variable(typeof(int), "i");
+            var intAssignment = Assign(intVariable, Constant(0));
 
-            var labelTarget = Expression.Label(typeof(void), "LabelTarget");
+            var labelTarget = Label(typeof(void), "LabelTarget");
 
-            var intAssignmentBlock = Expression.Block(
+            var intAssignmentBlock = Block(
                 new[] { intVariable },
                 intAssignment,
-                Expression.Label(labelTarget));
+                Label(labelTarget));
 
             var translated = ToReadableString(intAssignmentBlock);
 
@@ -426,14 +428,14 @@ return new WhenTranslatingBlocks.Employee
         [Fact]
         public void ShouldIncludeAReturnKeywordForACoalesce()
         {
-            var stringVariable1 = Expression.Variable(typeof(string), "myString");
-            var stringVariable2 = Expression.Variable(typeof(string), "yourString");
-            var assignStrings = Expression.Assign(stringVariable1, stringVariable2);
+            var stringVariable1 = Variable(typeof(string), "myString");
+            var stringVariable2 = Variable(typeof(string), "yourString");
+            var assignStrings = Assign(stringVariable1, stringVariable2);
 
-            var stringEmpty = Expression.Field(null, typeof(string), "Empty");
-            var variableOrNull = Expression.Coalesce(stringVariable1, stringEmpty);
+            var stringEmpty = Field(null, typeof(string), "Empty");
+            var variableOrNull = Coalesce(stringVariable1, stringEmpty);
 
-            var coalesceBlock = Expression.Block(assignStrings, variableOrNull);
+            var coalesceBlock = Block(assignStrings, variableOrNull);
 
             var translated = ToReadableString(coalesceBlock);
 
@@ -448,13 +450,13 @@ return myString ?? string.Empty;";
         [Fact]
         public void ShouldIncludeAReturnKeywordForANewObjectStatement()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
-            var newList = Expression.New(typeof(List<string>).GetConstructors().First());
-            var rethrow = Expression.Rethrow(newList.Type);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(newList, globalCatchAndRethrow);
+            var exception = Variable(typeof(Exception), "ex");
+            var newList = New(typeof(List<string>).GetConstructors().First());
+            var rethrow = Rethrow(newList.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(newList, globalCatchAndRethrow);
 
-            var tryCatchBlock = Expression.Block(tryCatch);
+            var tryCatchBlock = Block(tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 
@@ -473,17 +475,17 @@ catch
         [Fact]
         public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
-            var newAddress = Expression.New(typeof(Address).GetConstructors().First());
+            var exception = Variable(typeof(Exception), "ex");
+            var newAddress = New(typeof(Address).GetConstructors().First());
             var line1Property = newAddress.Type.GetMember("Line1").First();
-            var line1Value = Expression.Constant("Over here");
-            var line1Init = Expression.Bind(line1Property, line1Value);
-            var addressInit = Expression.MemberInit(newAddress, line1Init);
-            var rethrow = Expression.Rethrow(newAddress.Type);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(addressInit, globalCatchAndRethrow);
+            var line1Value = Constant("Over here");
+            var line1Init = Bind(line1Property, line1Value);
+            var addressInit = MemberInit(newAddress, line1Init);
+            var rethrow = Rethrow(newAddress.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(addressInit, globalCatchAndRethrow);
 
-            var tryCatchBlock = Expression.Block(tryCatch);
+            var tryCatchBlock = Block(tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 
@@ -505,17 +507,17 @@ catch
         [Fact]
         public void ShouldIncludeAReturnKeywordForANewListInitStatement()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
+            var exception = Variable(typeof(Exception), "ex");
             var listConstructor = typeof(List<int>).GetConstructor(new[] { typeof(int) });
-            var one = Expression.Constant(1);
+            var one = Constant(1);
             // ReSharper disable once AssignNullToNotNullAttribute
-            var newList = Expression.New(listConstructor, one);
-            var newListInit = Expression.ListInit(newList, one);
-            var rethrow = Expression.Rethrow(newListInit.Type);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(newListInit, globalCatchAndRethrow);
+            var newList = New(listConstructor, one);
+            var newListInit = ListInit(newList, one);
+            var rethrow = Rethrow(newListInit.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(newListInit, globalCatchAndRethrow);
 
-            var tryCatchBlock = Expression.Block(tryCatch);
+            var tryCatchBlock = Block(tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 
@@ -534,14 +536,14 @@ catch
         [Fact]
         public void ShouldIncludeAReturnKeywordForANewArrayStatement()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
-            var zero = Expression.Constant(0, typeof(int));
-            var newArray = Expression.NewArrayBounds(typeof(int), zero);
-            var rethrow = Expression.Rethrow(newArray.Type);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(newArray, globalCatchAndRethrow);
+            var exception = Variable(typeof(Exception), "ex");
+            var zero = Constant(0, typeof(int));
+            var newArray = NewArrayBounds(typeof(int), zero);
+            var rethrow = Rethrow(newArray.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(newArray, globalCatchAndRethrow);
 
-            var tryCatchBlock = Expression.Block(tryCatch);
+            var tryCatchBlock = Block(tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 
@@ -560,14 +562,14 @@ catch
         [Fact]
         public void ShouldIncludeAReturnKeywordForANewArrayInitStatement()
         {
-            var exception = Expression.Variable(typeof(Exception), "ex");
-            var zero = Expression.Constant(0, typeof(int));
-            var newArray = Expression.NewArrayInit(typeof(int), zero);
-            var rethrow = Expression.Rethrow(newArray.Type);
-            var globalCatchAndRethrow = Expression.Catch(exception, rethrow);
-            var tryCatch = Expression.TryCatch(newArray, globalCatchAndRethrow);
+            var exception = Variable(typeof(Exception), "ex");
+            var zero = Constant(0, typeof(int));
+            var newArray = NewArrayInit(typeof(int), zero);
+            var rethrow = Rethrow(newArray.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(newArray, globalCatchAndRethrow);
 
-            var tryCatchBlock = Expression.Block(tryCatch);
+            var tryCatchBlock = Block(tryCatch);
 
             var translated = ToReadableString(tryCatchBlock);
 

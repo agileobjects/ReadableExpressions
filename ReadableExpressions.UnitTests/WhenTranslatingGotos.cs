@@ -2,11 +2,11 @@
 {
     using System;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -15,27 +15,27 @@
         [Fact]
         public void ShouldTranslateGotoStatements()
         {
-            var labelTargetOne = Expression.Label(typeof(void), "One");
-            var labelOne = Expression.Label(labelTargetOne);
+            var labelTargetOne = Label(typeof(void), "One");
+            var labelOne = Label(labelTargetOne);
             var writeOne = CreateLambda(() => Console.Write("One"));
-            var gotoOne = Expression.Goto(labelTargetOne);
+            var gotoOne = Goto(labelTargetOne);
 
-            var labelTargetTwo = Expression.Label(typeof(void), "Two");
-            var labelTwo = Expression.Label(labelTargetTwo);
+            var labelTargetTwo = Label(typeof(void), "Two");
+            var labelTwo = Label(labelTargetTwo);
             var writeTwo = CreateLambda(() => Console.Write("Two"));
-            var gotoTwo = Expression.Goto(labelTargetTwo);
+            var gotoTwo = Goto(labelTargetTwo);
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var intEqualsOne = Expression.Equal(intVariable, Expression.Constant(1));
-            var intEqualsTwo = Expression.Equal(intVariable, Expression.Constant(2));
+            var intVariable = Variable(typeof(int), "i");
+            var intEqualsOne = Equal(intVariable, Constant(1));
+            var intEqualsTwo = Equal(intVariable, Constant(2));
 
-            var ifTwoGotoTwo = Expression.IfThen(intEqualsTwo, gotoTwo);
-            var gotoOneOrTwo = Expression.IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
+            var ifTwoGotoTwo = IfThen(intEqualsTwo, gotoTwo);
+            var gotoOneOrTwo = IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
 
             var writeNeither = CreateLambda(() => Console.Write("Neither"));
-            var returnFromBlock = Expression.Return(Expression.Label());
+            var returnFromBlock = Return(Label());
 
-            var block = Expression.Block(
+            var block = Block(
                 gotoOneOrTwo,
                 writeNeither.Body,
                 returnFromBlock,
@@ -71,17 +71,17 @@ Console.Write(""Two"");
         [Fact]
         public void ShouldFormatGotoTargetLabels()
         {
-            var labelTargetOne = Expression.Label(typeof(void), "One");
-            var labelOne = Expression.Label(labelTargetOne);
-            var gotoOne = Expression.Goto(labelTargetOne);
+            var labelTargetOne = Label(typeof(void), "One");
+            var labelOne = Label(labelTargetOne);
+            var gotoOne = Goto(labelTargetOne);
 
-            var labelTargetTwo = Expression.Label(typeof(void), "Two");
-            var labelTwo = Expression.Label(labelTargetTwo);
-            var gotoTwo = Expression.Goto(labelTargetTwo);
+            var labelTargetTwo = Label(typeof(void), "Two");
+            var labelTwo = Label(labelTargetTwo);
+            var gotoTwo = Goto(labelTargetTwo);
 
-            var gotoBlock = Expression.Block(labelOne, gotoTwo, labelTwo, gotoOne);
+            var gotoBlock = Block(labelOne, gotoTwo, labelTwo, gotoOne);
 
-            var ifTrueGoto = Expression.IfThen(Expression.Constant(true), gotoBlock);
+            var ifTrueGoto = IfThen(Constant(true), gotoBlock);
 
             var translated = ToReadableString(ifTrueGoto);
 
@@ -100,17 +100,17 @@ if (true)
         [Fact]
         public void ShouldTranslateAGotoReturnStatement()
         {
-            var returnTarget = Expression.Label(typeof(int), "Return");
+            var returnTarget = Label(typeof(int), "Return");
 
-            var numberParameter = Expression.Parameter(typeof(string), "i");
-            var numberEqualsOne = Expression.Equal(numberParameter, Expression.Constant("One"));
-            var returnOne = Expression.Goto(returnTarget, Expression.Constant(1));
-            var ifOneReturnOne = Expression.IfThen(numberEqualsOne, returnOne);
+            var numberParameter = Parameter(typeof(string), "i");
+            var numberEqualsOne = Equal(numberParameter, Constant("One"));
+            var returnOne = Goto(returnTarget, Constant(1));
+            var ifOneReturnOne = IfThen(numberEqualsOne, returnOne);
 
-            var returnLabel = Expression.Label(returnTarget, Expression.Constant(0));
-            var gotoBlock = Expression.Block(ifOneReturnOne, returnLabel);
+            var returnLabel = Label(returnTarget, Constant(0));
+            var gotoBlock = Block(ifOneReturnOne, returnLabel);
 
-            var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
+            var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
             var translated = ToReadableString(gotoLambda);
@@ -131,20 +131,20 @@ i =>
         [Fact]
         public void ShouldTranslateAReturnStatementWithAValue()
         {
-            var returnTarget = Expression.Label(typeof(int));
+            var returnTarget = Label(typeof(int));
 
-            var returnOne = Expression.Return(returnTarget, Expression.Constant(1));
-            var returnTwo = Expression.Return(returnTarget, Expression.Constant(2));
+            var returnOne = Return(returnTarget, Constant(1));
+            var returnTwo = Return(returnTarget, Constant(2));
 
-            var numberParameter = Expression.Parameter(typeof(string), "i");
-            var numberEqualsOne = Expression.Equal(numberParameter, Expression.Constant("One"));
+            var numberParameter = Parameter(typeof(string), "i");
+            var numberEqualsOne = Equal(numberParameter, Constant("One"));
 
-            var ifOneReturnOneElseTwo = Expression.IfThenElse(numberEqualsOne, returnOne, returnTwo);
+            var ifOneReturnOneElseTwo = IfThenElse(numberEqualsOne, returnOne, returnTwo);
 
-            var returnLabel = Expression.Label(returnTarget, Expression.Constant(0));
-            var gotoBlock = Expression.Block(ifOneReturnOneElseTwo, returnLabel);
+            var returnLabel = Label(returnTarget, Constant(0));
+            var gotoBlock = Block(ifOneReturnOneElseTwo, returnLabel);
 
-            var gotoLambda = Expression.Lambda<Func<string, int>>(gotoBlock, numberParameter);
+            var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
             var translated = ToReadableString(gotoLambda);
@@ -169,17 +169,17 @@ i =>
         [Fact]
         public void ShouldNotIncludeLabelNamesWithoutAGoto()
         {
-            var returnLabelTarget = Expression.Label(typeof(bool), "ReturnTarget");
+            var returnLabelTarget = Label(typeof(bool), "ReturnTarget");
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var variableLessThanOne = Expression.LessThan(intVariable, Expression.Constant(1));
-            var returnTrue = Expression.Return(returnLabelTarget, Expression.Constant(true));
+            var intVariable = Variable(typeof(int), "i");
+            var variableLessThanOne = LessThan(intVariable, Constant(1));
+            var returnTrue = Return(returnLabelTarget, Constant(true));
 
-            var ifLessThanOneReturnTrue = Expression.IfThen(variableLessThanOne, returnTrue);
+            var ifLessThanOneReturnTrue = IfThen(variableLessThanOne, returnTrue);
 
-            var testBlock = Expression.Block(
+            var testBlock = Block(
                 ifLessThanOneReturnTrue,
-                Expression.Label(returnLabelTarget, Expression.Constant(false)));
+                Label(returnLabelTarget, Constant(false)));
 
             var translated = ToReadableString(testBlock);
 
@@ -197,25 +197,25 @@ return false;";
         [Fact]
         public void ShouldTranslateAReturnStatementWithABlock()
         {
-            var returnLabelTarget = Expression.Label(typeof(int));
+            var returnLabelTarget = Label(typeof(int));
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var variableInit = Expression.Assign(intVariable, Expression.Constant(0));
-            var variablePlusOne = Expression.Add(intVariable, Expression.Constant(1));
-            var variableAdditionOne = Expression.Assign(intVariable, variablePlusOne);
-            var variablePlusTwo = Expression.Add(intVariable, Expression.Constant(2));
-            var variableAdditionTwo = Expression.Assign(intVariable, variablePlusTwo);
+            var intVariable = Variable(typeof(int), "i");
+            var variableInit = Assign(intVariable, Constant(0));
+            var variablePlusOne = Add(intVariable, Constant(1));
+            var variableAdditionOne = Assign(intVariable, variablePlusOne);
+            var variablePlusTwo = Add(intVariable, Constant(2));
+            var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
 
-            var variableBlock = Expression.Block(
+            var variableBlock = Block(
                 new[] { intVariable },
                 variableInit,
                 variableAdditionOne,
                 variableAdditionTwo,
                 intVariable);
 
-            var returnVariableBlock = Expression.Return(returnLabelTarget, variableBlock);
+            var returnVariableBlock = Return(returnLabelTarget, variableBlock);
 
-            var returnBlock = Expression.Block(returnVariableBlock);
+            var returnBlock = Block(returnVariableBlock);
 
             const string EXPECTED = @"
 return 
@@ -235,20 +235,20 @@ return
         [Fact]
         public void ShouldTranslateALabelWithABlockDefaultValue()
         {
-            var returnLabelTarget = Expression.Label(typeof(int), "Return");
+            var returnLabelTarget = Label(typeof(int), "Return");
 
-            var intVariable = Expression.Variable(typeof(int), "i");
-            var variableInit = Expression.Assign(intVariable, Expression.Constant(0));
-            var variablePlusOne = Expression.Add(intVariable, Expression.Constant(1));
-            var variableAdditionOne = Expression.Assign(intVariable, variablePlusOne);
-            var variablePlusTwo = Expression.Add(intVariable, Expression.Constant(2));
-            var variableAdditionTwo = Expression.Assign(intVariable, variablePlusTwo);
+            var intVariable = Variable(typeof(int), "i");
+            var variableInit = Assign(intVariable, Constant(0));
+            var variablePlusOne = Add(intVariable, Constant(1));
+            var variableAdditionOne = Assign(intVariable, variablePlusOne);
+            var variablePlusTwo = Add(intVariable, Constant(2));
+            var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
 
-            var variableBlock = Expression.Block(variableAdditionTwo, intVariable);
+            var variableBlock = Block(variableAdditionTwo, intVariable);
 
-            var returnVariableBlock = Expression.Label(returnLabelTarget, variableBlock);
+            var returnVariableBlock = Label(returnLabelTarget, variableBlock);
 
-            var returnBlock = Expression.Block(
+            var returnBlock = Block(
                 new[] { intVariable },
                 variableInit,
                 variableAdditionOne,
