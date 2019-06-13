@@ -310,8 +310,20 @@ namespace AgileObjects.ReadableExpressions.Translations
                     linqBinary.Method);
             }
 
-            private static Expression Convert(LinqExp.ConstantExpression linqConstant)
-                => Expression.Constant(linqConstant.Value, linqConstant.Type);
+            private Expression Convert(LinqExp.ConstantExpression linqConstant)
+            {
+                switch (linqConstant.Value)
+                {
+                    case Expression dlrExpression:
+                        return dlrExpression;
+                    
+                    case LinqExp.Expression linqExpression:
+                        return ConvertExp(linqExpression);
+                    
+                    default:
+                        return Expression.Constant(linqConstant.Value, linqConstant.Type);
+                }
+            }
 
             private Expression Convert(LinqExp.MethodCallExpression linqCall)
             {

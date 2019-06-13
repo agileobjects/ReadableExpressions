@@ -22,10 +22,10 @@
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>2.3.0.0</AssemblyVersion>
-    <FileVersion>2.3.0.0</FileVersion>
-    <VersionPrefix>2.3.0</VersionPrefix>
-    <Version>2.3.0</Version>
+    <AssemblyVersion>2.3.1.0</AssemblyVersion>
+    <FileVersion>2.3.1.0</FileVersion>
+    <VersionPrefix>2.3.1</VersionPrefix>
+    <Version>2.3.1</Version>
     <Company>AgileObjects Ltd</Company>
     <PackageReleaseNotes>- Adding TranslateConstantsUsing() setting, re: #35
 - Fixing property getter and setter call translation, re: #35</PackageReleaseNotes>

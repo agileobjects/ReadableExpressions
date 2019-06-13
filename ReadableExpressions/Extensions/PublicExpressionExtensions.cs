@@ -36,6 +36,12 @@
         {
             switch (expression.NodeType)
             {
+                case ExpressionType.ArrayIndex:
+                    return ((BinaryExpression)expression).Left;
+
+                case ExpressionType.Index:
+                    return ((IndexExpression)expression).Object;
+
                 case ExpressionType.Call:
                     return ((MethodCallExpression)expression).GetSubject();
 
