@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System.Collections.Generic;
     using System.Reflection;
     using System.Text;
     using Extensions;
@@ -32,26 +33,62 @@
 
             var parameters = method.GetParameters();
 
-            if (!parameters.Any())
+            if (method.IsGenericMethod)
             {
-                buffer.WriteToTranslation("()");
-                return buffer.GetContent();
+                WriteGenericArgumentsToTranslation(method, buffer);
             }
 
+            if (parameters.Any())
+            {
+                WriteParametersToTranslation(parameters, buffer);
+            }
+            else
+            {
+                buffer.WriteToTranslation("()");
+            }
+
+            return buffer.GetContent();
+        }
+
+        private static void WriteGenericArgumentsToTranslation(MethodBase method, TranslationBuffer buffer)
+        {
+            var genericArgumentTypes = method.GetGenericArguments();
+
+            buffer.WriteToTranslation('<');
+
+            for (var i = 0; ;)
+            {
+                var argumentType = genericArgumentTypes[i];
+
+                buffer.WriteFriendlyName(argumentType);
+
+                if (++i == genericArgumentTypes.Length)
+                {
+                    break;
+                }
+
+                buffer.WriteToTranslation(", ");
+            }
+
+            buffer.WriteToTranslation('>');
+        }
+
+        private static void WriteParametersToTranslation(IList<ParameterInfo> parameters, TranslationBuffer buffer)
+        {
             buffer.WriteNewLineToTranslation();
             buffer.WriteToTranslation('(');
             buffer.Indent();
 
-            for (var i = 0; i < parameters.Length;)
+            for (var i = 0; ;)
             {
                 var parameter = parameters[i];
-                
+
                 buffer.WriteNewLineToTranslation();
                 buffer.WriteFriendlyName(parameter.ParameterType);
                 buffer.WriteSpaceToTranslation();
                 buffer.WriteToTranslation(parameter.Name);
 
-                if (++i == parameters.Length)
+                if (++i == parameters.Count)
                 {
                     break;
                 }
@@ -61,8 +98,6 @@
 
             buffer.Unindent();
             buffer.WriteToTranslation(')');
-
-            return buffer.ToString();
         }
     }
 }

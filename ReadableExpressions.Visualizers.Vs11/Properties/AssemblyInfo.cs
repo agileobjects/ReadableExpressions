@@ -1,9 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using AgileObjects.ReadableExpressions.Visualizers;
 
-[assembly: AssemblyDescription("A Debugger Visualizer providing a readable string representation of an Expression for Visual Studio 11")]
+[assembly: AssemblyDescription("A Debugger Visualizer providing readable string representations of Expressions, Types and MethodInfos for Visual Studio 11")]
 
 [assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(Expression), Description = "ReadableExpressions Visualizer")]
 [assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(BinaryExpression), Description = "ReadableExpressions Visualizer")]
@@ -31,3 +32,6 @@ using AgileObjects.ReadableExpressions.Visualizers;
 [assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(TryExpression), Description = "ReadableExpressions Visualizer")]
 [assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(TypeBinaryExpression), Description = "ReadableExpressions Visualizer")]
 [assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(UnaryExpression), Description = "ReadableExpressions Visualizer")]
+
+[assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(Type), Description = "ReadableExpressions Visualizer")]
+[assembly: DebuggerVisualizer(typeof(Vs11ExpressionVisualizer), typeof(Vs11ExpressionVisualizerObjectSource), Target = typeof(MethodInfo), Description = "ReadableExpressions Visualizer")]
