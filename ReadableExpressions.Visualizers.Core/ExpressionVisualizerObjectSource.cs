@@ -3,6 +3,8 @@
     using System;
     using System.IO;
     using System.Linq.Expressions;
+    using System.Reflection;
+    using Extensions;
 
     public class ExpressionVisualizerObjectSource
     {
@@ -11,10 +13,27 @@
             Stream outgoingData,
             Action<Stream, string> serializer)
         {
-            var expression = (Expression)target;
-            var readableExpression = expression.ToReadableString();
+            string value;
 
-            serializer.Invoke(outgoingData, readableExpression ?? "default(void)");
+            switch (target)
+            {
+                case Expression expression:
+                    value = expression.ToReadableString() ?? "default(void)";
+                    break;
+
+                case Type type:
+                    value = type.GetFriendlyName();
+                    break;
+
+                case MethodInfo method:
+                    value = "";
+                    break;
+
+                default:
+                    return;
+            }
+
+            serializer.Invoke(outgoingData, value);
         }
     }
 }

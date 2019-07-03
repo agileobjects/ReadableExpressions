@@ -38,6 +38,9 @@ namespace AgileObjects.ReadableExpressions.Extensions
             return buffer.GetContent();
         }
 
+        internal static void WriteFriendlyName(this TranslationBuffer buffer, Type type)
+            => WriteFriendlyName(buffer, type, TranslationSettings.Default);
+
         internal static void WriteFriendlyName(
             this TranslationBuffer buffer,
             Type type,
@@ -202,7 +205,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
             typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
 
-            WriteName:
+        WriteName:
             buffer.WriteGenericTypeName(genericType, numberOfParameters, typeArguments, settings);
         }
 
