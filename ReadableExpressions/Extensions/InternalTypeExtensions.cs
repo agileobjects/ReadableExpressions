@@ -24,6 +24,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
             { typeof(ulong), "ulong" },
             { typeof(sbyte), "sbyte" },
             { typeof(ushort), "ushort" },
+            { typeof(void), "void" }
         };
 
         internal static ICollection<string> TypeNames => _typeNameSubstitutions.Values;

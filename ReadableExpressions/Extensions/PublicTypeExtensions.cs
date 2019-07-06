@@ -25,13 +25,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
         internal static string GetFriendlyName(this Type type, TranslationSettings translationSettings)
         {
-            if (type.FullName == null)
-            {
-                // An open generic parameter Type:
-                return null;
-            }
-
-            var buffer = new TranslationBuffer(type.FullName.Length);
+            var buffer = new TranslationBuffer((type.FullName ?? type.ToString()).Length);
 
             buffer.WriteFriendlyName(type, translationSettings);
 
@@ -48,7 +42,17 @@ namespace AgileObjects.ReadableExpressions.Extensions
         {
             if (type.FullName == null)
             {
-                // An open generic parameter Type:
+                if (type.IsGenericType())
+                {
+                    // A generic open generic parameter Type:
+                    buffer.WriteGenericTypeName(type, settings);
+                }
+                else
+                {
+                    // An open generic parameter Type:
+                    buffer.WriteToTranslation(type.Name);
+                }
+                
                 return;
             }
 

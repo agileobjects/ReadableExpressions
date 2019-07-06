@@ -1,10 +1,8 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.StaticTranslators
 {
     using System.Collections.Generic;
     using System.Reflection;
-    using System.Text;
     using Extensions;
-    using static Constants;
 
     /// <summary>
     /// Translates a MethodInfo object into a readable string. Used to provide MethodInfo visualization.
@@ -18,6 +16,11 @@
         /// <returns>A readable string version of the given <paramref name="method"/>.</returns>
         public static string Translate(MethodInfo method)
         {
+            if (method == null)
+            {
+                return "[Method not found]";
+            }
+
             var buffer = new TranslationBuffer(method.ToString().Length);
 
             buffer.WriteFriendlyName(method.ReturnType);
@@ -82,9 +85,22 @@
             for (var i = 0; ;)
             {
                 var parameter = parameters[i];
+                var parameterType = parameter.ParameterType;
 
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteFriendlyName(parameter.ParameterType);
+
+                if (parameter.IsOut)
+                {
+                    buffer.WriteToTranslation("out ");
+                    parameterType = parameterType.GetElementType();
+                }
+                else if (parameterType.IsByRef)
+                {
+                    buffer.WriteToTranslation("ref ");
+                    parameterType = parameterType.GetElementType();
+                }
+
+                buffer.WriteFriendlyName(parameterType);
                 buffer.WriteSpaceToTranslation();
                 buffer.WriteToTranslation(parameter.Name);
 
@@ -97,6 +113,7 @@
             }
 
             buffer.Unindent();
+            buffer.WriteNewLineToTranslation();
             buffer.WriteToTranslation(')');
         }
     }
