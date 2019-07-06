@@ -12,12 +12,12 @@
 
     [NUnit.Framework.TestFixture]
 #endif
-    public class WhenTranslatingMethodDefinitions
+    public class WhenTranslatingMethodInfos
     {
         [Fact]
         public void ShouldTranslateANullMethodInfo()
         {
-            var translated = MethodInfoTranslator.Translate(default(MethodInfo));
+            var translated = MethodDefinitionTranslator.Translate(default(MethodInfo));
 
             translated.ShouldBe("[Method not found]");
         }
@@ -28,10 +28,10 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterless));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-"string WhenTranslatingMethodDefinitions.Helper.InstanceParameterless()";
+"string WhenTranslatingMethodInfos.Helper.InstanceParameterless()";
 
             translated.ShouldBe(EXPECTED);
         }
@@ -42,10 +42,10 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceOneParameter));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-@"int WhenTranslatingMethodDefinitions.Helper.InstanceOneParameter
+@"int WhenTranslatingMethodInfos.Helper.InstanceOneParameter
 (
     int value
 )";
@@ -58,10 +58,10 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceTwoParameters));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-@"DateTime WhenTranslatingMethodDefinitions.Helper.InstanceTwoParameters
+@"DateTime WhenTranslatingMethodInfos.Helper.InstanceTwoParameters
 (
     DateTime date,
     int days
@@ -75,10 +75,10 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessSingleGeneric));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-"Type WhenTranslatingMethodDefinitions.Helper.InstanceParameterlessSingleGeneric<T>()";
+"Type WhenTranslatingMethodInfos.Helper.InstanceParameterlessSingleGeneric<T>()";
 
             translated.ShouldBe(EXPECTED);
         }
@@ -90,10 +90,10 @@
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessSingleGeneric))
                 .MakeGenericMethod(typeof(Dictionary<,>));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-"Type WhenTranslatingMethodDefinitions.Helper.InstanceParameterlessSingleGeneric<Dictionary<TKey, TValue>>()";
+"Type WhenTranslatingMethodInfos.Helper.InstanceParameterlessSingleGeneric<Dictionary<TKey, TValue>>()";
 
             translated.ShouldBe(EXPECTED);
         }
@@ -104,10 +104,10 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceThreeParametersTwoGenerics));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-@"void WhenTranslatingMethodDefinitions.Helper.InstanceThreeParametersTwoGenerics<T1, T2>
+@"void WhenTranslatingMethodInfos.Helper.InstanceThreeParametersTwoGenerics<T1, T2>
 (
     int value,
     Func<int, T1> func,
@@ -122,10 +122,10 @@
             var method = typeof(Helper)
                 .GetPublicStaticMethod(nameof(Helper.StaticOutParameter));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-                @"string WhenTranslatingMethodDefinitions.Helper.StaticOutParameter
+                @"string WhenTranslatingMethodInfos.Helper.StaticOutParameter
 (
     out int value
 )";
@@ -139,10 +139,10 @@
                 .GetPublicStaticMethod(nameof(Helper.StaticRefParameter))
                 .MakeGenericMethod(typeof(List<List<int>>));
 
-            var translated = MethodInfoTranslator.Translate(method);
+            var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-                @"void WhenTranslatingMethodDefinitions.Helper.StaticRefParameter<List<List<int>>>
+                @"void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
 (
     ref List<List<int>> value
 )";

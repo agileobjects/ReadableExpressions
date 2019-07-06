@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.StaticTranslators
 {
+    using System;
     using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
@@ -7,8 +8,34 @@
     /// <summary>
     /// Translates a MethodInfo object into a readable string. Used to provide MethodInfo visualization.
     /// </summary>
-    public static class MethodInfoTranslator
+    public static class MethodDefinitionTranslator
     {
+        /// <summary>
+        /// Translates the given <paramref name="ctor"/> into a readable string.
+        /// </summary>
+        /// <param name="ctor">The MethodInfo to translate.</param>
+        /// <returns>A readable string version of the given <paramref name="ctor"/>.</returns>
+        public static string Translate(ConstructorInfo ctor)
+        {
+            if (ctor == null)
+            {
+                return "[Constructor not found]";
+            }
+
+            var buffer = new TranslationBuffer(ctor.ToString().Length);
+
+            buffer.WriteFriendlyName(ctor.DeclaringType);
+
+            if (ctor.IsGenericMethod)
+            {
+                WriteGenericArgumentsToTranslation(ctor.GetGenericArguments(), buffer);
+            }
+
+            WriteParametersToTranslation(ctor, buffer);
+
+            return buffer.GetContent();
+        }
+
         /// <summary>
         /// Translates the given <paramref name="method"/> into a readable string.
         /// </summary>
@@ -34,28 +61,19 @@
 
             buffer.WriteToTranslation(method.Name);
 
-            var parameters = method.GetParameters();
-
             if (method.IsGenericMethod)
             {
-                WriteGenericArgumentsToTranslation(method, buffer);
+                WriteGenericArgumentsToTranslation(method.GetGenericArguments(), buffer);
             }
 
-            if (parameters.Any())
-            {
-                WriteParametersToTranslation(parameters, buffer);
-            }
-            else
-            {
-                buffer.WriteToTranslation("()");
-            }
+            WriteParametersToTranslation(method, buffer);
 
             return buffer.GetContent();
         }
 
-        private static void WriteGenericArgumentsToTranslation(MethodBase method, TranslationBuffer buffer)
+        private static void WriteGenericArgumentsToTranslation(IList<Type> genericArguments, TranslationBuffer buffer)
         {
-            var genericArgumentTypes = method.GetGenericArguments();
+            var genericArgumentTypes = genericArguments;
 
             buffer.WriteToTranslation('<');
 
@@ -65,7 +83,7 @@
 
                 buffer.WriteFriendlyName(argumentType);
 
-                if (++i == genericArgumentTypes.Length)
+                if (++i == genericArgumentTypes.Count)
                 {
                     break;
                 }
@@ -76,8 +94,16 @@
             buffer.WriteToTranslation('>');
         }
 
-        private static void WriteParametersToTranslation(IList<ParameterInfo> parameters, TranslationBuffer buffer)
+        private static void WriteParametersToTranslation(MethodBase method, TranslationBuffer buffer)
         {
+            var parameters = method.GetParameters();
+
+            if (!parameters.Any())
+            {
+                buffer.WriteToTranslation("()");
+                return;
+            }
+
             buffer.WriteNewLineToTranslation();
             buffer.WriteToTranslation('(');
             buffer.Indent();
@@ -104,7 +130,7 @@
                 buffer.WriteSpaceToTranslation();
                 buffer.WriteToTranslation(parameter.Name);
 
-                if (++i == parameters.Count)
+                if (++i == parameters.Length)
                 {
                     break;
                 }

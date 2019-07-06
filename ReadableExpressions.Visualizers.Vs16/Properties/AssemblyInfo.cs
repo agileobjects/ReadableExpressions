@@ -34,6 +34,8 @@ using AgileObjects.ReadableExpressions.Visualizers;
 [assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(UnaryExpression), Description = "ReadableExpressions Visualizer")]
 
 [assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(Type), Description = "ReadableExpressions Visualizer")]
+[assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(MethodBase), Description = "ReadableExpressions Visualizer")]
+[assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(ConstructorInfo), Description = "ReadableExpressions Visualizer")]
 [assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(MethodInfo), Description = "ReadableExpressions Visualizer")]
 
 [assembly: DebuggerVisualizer(typeof(Vs16ExpressionVisualizer), typeof(Vs16ExpressionVisualizerObjectSource), Target = typeof(Func<>), Description = "ReadableExpressions Visualizer")]

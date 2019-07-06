@@ -117,8 +117,9 @@
     <Compile Include="Extensions\WhenGettingAParentExpressionNode.cs" />
     <Compile Include="Extensions\WhenGettingFriendlyNames.cs" />
     <Compile Include="ShouldExtensions.cs" />
+    <Compile Include="StaticTranslators\WhenTranslatingConstructorInfos.cs" />
     <Compile Include="TestClassBase.cs" />
-    <Compile Include="StaticTranslators\WhenTranslatingMethodDefinitions.cs" />
+    <Compile Include="StaticTranslators\WhenTranslatingMethodInfos.cs" />
     <Compile Include="WhenTranslatingVariableNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />
     <Compile Include="WhenTranslatingStringConcatenation.cs" />

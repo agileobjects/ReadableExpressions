@@ -27,7 +27,11 @@
                     break;
 
                 case MethodInfo method:
-                    value = MethodInfoTranslator.Translate(method);
+                    value = MethodDefinitionTranslator.Translate(method);
+                    break;
+
+                case ConstructorInfo ctor:
+                    value = MethodDefinitionTranslator.Translate(ctor);
                     break;
 
                 default:
