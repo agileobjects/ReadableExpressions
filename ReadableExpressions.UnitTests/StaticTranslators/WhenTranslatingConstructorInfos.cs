@@ -30,7 +30,29 @@
 
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
-            translated.ShouldBe("WhenTranslatingConstructorInfos.Helper()");
+            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper()");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnAbstractParameterlessCtorInfo()
+        {
+            var ctor = typeof(AbstractHelper)
+                .GetNonPublicInstanceConstructor();
+
+            var translated = MethodDefinitionTranslator.Translate(ctor);
+
+            translated.ShouldBe("protected abstract WhenTranslatingConstructorInfos.AbstractHelper()");
+        }
+
+        [Fact]
+        public void ShouldTranslateASealedParameterlessCtorInfo()
+        {
+            var ctor = typeof(SealedInternalHelper)
+                .GetNonPublicInstanceConstructor();
+
+            var translated = MethodDefinitionTranslator.Translate(ctor);
+
+            translated.ShouldBe("internal sealed WhenTranslatingConstructorInfos.SealedInternalHelper()");
         }
 
         [Fact]
@@ -42,7 +64,7 @@
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
             const string EXPECTED =
-@"WhenTranslatingConstructorInfos.Helper
+@"public WhenTranslatingConstructorInfos.Helper
 (
     int value
 )";
@@ -58,7 +80,7 @@
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
             const string EXPECTED =
-@"WhenTranslatingConstructorInfos.Helper
+@"public WhenTranslatingConstructorInfos.Helper
 (
     DateTime date,
     int days
@@ -74,7 +96,7 @@
 
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
-            translated.ShouldBe("WhenTranslatingConstructorInfos.Helper<T>()");
+            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T>()");
         }
 
         [Fact]
@@ -85,7 +107,7 @@
 
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
-            translated.ShouldBe("WhenTranslatingConstructorInfos.Helper<Dictionary<int, string>>()");
+            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<Dictionary<int, string>>()");
         }
 
         [Fact]
@@ -96,7 +118,7 @@
 
             var translated = MethodDefinitionTranslator.Translate(method);
 
-            translated.ShouldBe("WhenTranslatingConstructorInfos.Helper<T1, T2>()");
+            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T1, T2>()");
         }
 
         [Fact]
@@ -108,7 +130,7 @@
             var translated = MethodDefinitionTranslator.Translate(method);
 
             const string EXPECTED =
-@"WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>
+@"public WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>
 (
     int value,
     Func<int, DateTime> func,
@@ -126,7 +148,7 @@
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
             const string EXPECTED =
-@"WhenTranslatingConstructorInfos.Helper
+@"public WhenTranslatingConstructorInfos.Helper
 (
     out DateTime value
 )";
@@ -142,7 +164,7 @@
             var translated = MethodDefinitionTranslator.Translate(ctor);
 
             const string EXPECTED =
-@"WhenTranslatingConstructorInfos.Helper
+@"public WhenTranslatingConstructorInfos.Helper
 (
     ref object value
 )";
@@ -201,6 +223,22 @@
                 Console.WriteLine(value);
                 Console.WriteLine(func(value));
                 Console.WriteLine(value2);
+            }
+        }
+
+        private abstract class AbstractHelper
+        {
+            protected AbstractHelper()
+            {
+                Console.WriteLine("Constructed!");
+            }
+        }
+
+        private sealed class SealedInternalHelper
+        {
+            internal SealedInternalHelper()
+            {
+                Console.WriteLine("Constructed!");
             }
         }
         // ReSharper restore UnusedMember.Local

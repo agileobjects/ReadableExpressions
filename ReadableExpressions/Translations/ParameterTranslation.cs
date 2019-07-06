@@ -12,7 +12,7 @@
 
     internal static class ParameterTranslation
     {
-        private static readonly IList<string> _keywords = InternalTypeExtensions
+        private static readonly IList<string> _keywords = InternalReflectionExtensions
             .TypeNames
             .Combine(new[]
             {

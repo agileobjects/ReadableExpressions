@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
+    using NetStandardPolyfills;
 
     /// <summary>
     /// Translates a MethodInfo object into a readable string. Used to provide MethodInfo visualization.
@@ -23,6 +24,8 @@
             }
 
             var buffer = new TranslationBuffer(ctor.ToString().Length);
+
+            WriteModifiersToTranslation(ctor, buffer);
 
             buffer.WriteFriendlyName(ctor.DeclaringType);
 
@@ -50,13 +53,30 @@
 
             var buffer = new TranslationBuffer(method.ToString().Length);
 
-            buffer.WriteFriendlyName(method.ReturnType);
+            WriteModifiersToTranslation(method, buffer);
+
+            if (method.IsStatic)
+            {
+                buffer.WriteToTranslation("static ");
+            }
+
+            var isProperty = method.IsPropertyGetterOrSetterCall(out var property);
+
+            buffer.WriteFriendlyName(isProperty ? property.PropertyType : method.ReturnType);
             buffer.WriteSpaceToTranslation();
 
             if (method.DeclaringType != null)
             {
                 buffer.WriteFriendlyName(method.DeclaringType);
                 buffer.WriteToTranslation('.');
+            }
+
+            if (isProperty)
+            {
+                buffer.WriteToTranslation(property.Name);
+                buffer.WriteToTranslation((method.ReturnType != typeof(void)) ? " { get; }" : " { set; }");
+
+                return buffer.GetContent();
             }
 
             buffer.WriteToTranslation(method.Name);
@@ -69,6 +89,58 @@
             WriteParametersToTranslation(method, buffer);
 
             return buffer.GetContent();
+        }
+
+        private static void WriteModifiersToTranslation(ConstructorInfo ctor, TranslationBuffer buffer)
+        {
+            WriteAccessibilityToTranslation(ctor, buffer);
+
+            if (ctor.DeclaringType.IsAbstract())
+            {
+                buffer.WriteToTranslation("abstract ");
+            }
+            else if (ctor.DeclaringType.IsSealed())
+            {
+                buffer.WriteToTranslation("sealed ");
+            }
+        }
+
+        private static void WriteModifiersToTranslation(MethodInfo method, TranslationBuffer buffer)
+        {
+            WriteAccessibilityToTranslation(method, buffer);
+
+            if (method.IsAbstract)
+            {
+                buffer.WriteToTranslation("abstract ");
+            }
+            else if (method.IsVirtual)
+            {
+                buffer.WriteToTranslation("virtual ");
+            }
+        }
+
+        private static void WriteAccessibilityToTranslation(MethodBase method, TranslationBuffer buffer)
+        {
+            if (method.IsPublic)
+            {
+                buffer.WriteToTranslation("public ");
+            }
+            else if (method.IsAssembly)
+            {
+                buffer.WriteToTranslation("internal ");
+            }
+            else if (method.IsFamily)
+            {
+                buffer.WriteToTranslation("protected ");
+            }
+            else if (method.IsFamilyOrAssembly)
+            {
+                buffer.WriteToTranslation("protected internal ");
+            }
+            else if (method.IsPrivate)
+            {
+                buffer.WriteToTranslation("private ");
+            }
         }
 
         private static void WriteGenericArgumentsToTranslation(IList<Type> genericArguments, TranslationBuffer buffer)
