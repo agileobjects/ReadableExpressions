@@ -13,7 +13,7 @@
         {
             windowService.ShowDialog(
                 ExpressionDialog.Instance.WithText(
-                    objectProvider.GetObject().ToString()));
+                    (string)objectProvider.GetObject()));
         }
     }
 }

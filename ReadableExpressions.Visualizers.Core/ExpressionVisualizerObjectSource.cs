@@ -39,17 +39,9 @@
                     {
                         return;
                     }
-
-                    var targetType = target.GetType();
-
-                    if (targetType.Name.StartsWith("System.Func", StringComparison.Ordinal) ||
-                        targetType.Name.StartsWith("System.Action", StringComparison.Ordinal))
-                    {
-                        value = targetType.GetFriendlyName();
-                        break;
-                    }
-
-                    return;
+                    
+                    value = target.GetType().GetFriendlyName();
+                    break;
             }
 
             serializer.Invoke(outgoingData, value);

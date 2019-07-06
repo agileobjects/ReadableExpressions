@@ -109,7 +109,6 @@
                 case NetStandardTypeCode.Object:
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
-                        FuncConstantTranslation.TryCreate(constant, context, out translation) ||
                         TryGetRegexTranslation(constant, out translation) ||
                         TryTranslateDefault<Guid>(constant, out translation) ||
                         TimeSpanConstantTranslation.TryCreate(constant, out translation))
@@ -361,25 +360,6 @@
             public bool IsTerminated => true;
 
             public void WriteTo(TranslationBuffer buffer) => _lambdaTranslation.WriteTo(buffer);
-        }
-
-        private static class FuncConstantTranslation
-        {
-            public static bool TryCreate(
-                Expression constant,
-                ITranslationContext context,
-                out ITranslation funcTranslation)
-            {
-                if (constant.Type.Name.StartsWith("System.Func", StringComparison.Ordinal) ||
-                    constant.Type.Name.StartsWith("System.Action", StringComparison.Ordinal))
-                {
-                    funcTranslation = context.GetTranslationFor(constant.Type);
-                    return true;
-                }
-
-                funcTranslation = null;
-                return false;
-            }
         }
 
         private class TimeSpanConstantTranslation : ITranslation
