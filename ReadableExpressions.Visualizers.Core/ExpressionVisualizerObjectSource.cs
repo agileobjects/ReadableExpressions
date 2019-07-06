@@ -5,6 +5,7 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using Extensions;
+    using Translations.StaticTranslators;
 
     public class ExpressionVisualizerObjectSource
     {
@@ -26,10 +27,24 @@
                     break;
 
                 case MethodInfo method:
-                    value = "";
+                    value = MethodInfoTranslator.Translate(method);
                     break;
 
                 default:
+                    if (target == null)
+                    {
+                        return;
+                    }
+
+                    var targetType = target.GetType();
+
+                    if (targetType.Name.StartsWith("System.Func", StringComparison.Ordinal) ||
+                        targetType.Name.StartsWith("System.Action", StringComparison.Ordinal))
+                    {
+                        value = targetType.GetFriendlyName();
+                        break;
+                    }
+
                     return;
             }
 
