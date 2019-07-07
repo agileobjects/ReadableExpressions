@@ -27,6 +27,17 @@
             translated.ShouldBe("\"hello!\"");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/43
+        [Fact]
+        public void ShouldTranslateAStringWithANullTerminatingCharacter()
+        {
+            var stringConstant = Constant("hel\0lo!", typeof(string));
+
+            var translated = ToReadableString(stringConstant);
+
+            translated.ShouldBe(@"""hel\0lo!""");
+        }
+
         [Fact]
         public void ShouldTranslateABoolean()
         {
