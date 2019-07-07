@@ -101,5 +101,16 @@
 
             translated.ShouldBe("((i - j) / k) + \" Maths!\"");
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/43
+        [Fact]
+        public void ShouldChandleANullTerminatingCharacter()
+        {
+            var concat = CreateLambda((string str1, string str2) => str1 + '\0' + str2);
+
+            var translated = ToReadableString(concat.Body);
+
+            translated.ShouldBe("str1 + '\\0' + str2");
+        }
     }
 }

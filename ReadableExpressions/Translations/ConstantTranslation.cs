@@ -74,8 +74,9 @@
                     return true;
 
                 case NetStandardTypeCode.Char:
-                    translation = new TranslationWrapper(FixedValueTranslation(constant)).WrappedWith("'", "'");
-
+                    var character = (char)constant.Value;
+                    var value = character == '\0' ? Expression.Constant(@"\0") : constant;
+                    translation = new TranslationWrapper(FixedValueTranslation(value)).WrappedWith("'", "'");
                     return true;
 
                 case NetStandardTypeCode.DateTime:
@@ -123,7 +124,7 @@
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = (string)constant.Value;
+                    var stringValue = ((string)constant.Value).Replace("\0", @"\0");
 
                     if (stringValue.IsComment())
                     {
