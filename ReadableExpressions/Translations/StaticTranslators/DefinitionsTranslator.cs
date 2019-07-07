@@ -7,14 +7,35 @@
     using NetStandardPolyfills;
 
     /// <summary>
-    /// Translates a MethodInfo object into a readable string. Used to provide MethodInfo visualization.
+    /// Translates reflection objects into readable strings. Used to provide visualizations.
     /// </summary>
-    public static class MethodDefinitionTranslator
+    public static class DefinitionsTranslator
     {
+        /// <summary>
+        /// Translates the given <paramref name="type"/> into a readable string.
+        /// </summary>
+        /// <param name="type">The Type to translate.</param>
+        /// <returns>A readable string version of the given <paramref name="type"/>.</returns>
+        public static string Translate(Type type)
+        {
+            if (type == null)
+            {
+                return "[Type not found]";
+            }
+
+            var buffer = new TranslationBuffer(type.ToString().Length);
+
+            WriteModifiersToTranslation(type, buffer);
+
+            buffer.WriteFriendlyName(type);
+
+            return buffer.GetContent();
+        }
+
         /// <summary>
         /// Translates the given <paramref name="ctor"/> into a readable string.
         /// </summary>
-        /// <param name="ctor">The MethodInfo to translate.</param>
+        /// <param name="ctor">The ConstructorInfo to translate.</param>
         /// <returns>A readable string version of the given <paramref name="ctor"/>.</returns>
         public static string Translate(ConstructorInfo ctor)
         {
@@ -25,14 +46,9 @@
 
             var buffer = new TranslationBuffer(ctor.ToString().Length);
 
-            WriteModifiersToTranslation(ctor, buffer);
+            WriteAccessibilityToTranslation(ctor, buffer);
 
             buffer.WriteFriendlyName(ctor.DeclaringType);
-
-            if (ctor.IsGenericMethod)
-            {
-                WriteGenericArgumentsToTranslation(ctor.GetGenericArguments(), buffer);
-            }
 
             WriteParametersToTranslation(ctor, buffer);
 
@@ -54,11 +70,6 @@
             var buffer = new TranslationBuffer(method.ToString().Length);
 
             WriteModifiersToTranslation(method, buffer);
-
-            if (method.IsStatic)
-            {
-                buffer.WriteToTranslation("static ");
-            }
 
             var isProperty = method.IsPropertyGetterOrSetterCall(out var property);
 
@@ -91,17 +102,92 @@
             return buffer.GetContent();
         }
 
-        private static void WriteModifiersToTranslation(ConstructorInfo ctor, TranslationBuffer buffer)
+        private static void WriteModifiersToTranslation(Type type, TranslationBuffer buffer)
         {
-            WriteAccessibilityToTranslation(ctor, buffer);
+            WriteAccessibilityToTranslation(type, buffer);
 
-            if (ctor.DeclaringType.IsAbstract())
+            if (type.IsInterface())
             {
-                buffer.WriteToTranslation("abstract ");
+                buffer.WriteToTranslation("interface ");
+                return;
             }
-            else if (ctor.DeclaringType.IsSealed())
+
+            if (type.IsValueType())
+            {
+                buffer.WriteToTranslation("struct ");
+                return;
+            }
+            
+            if (type.IsAbstract())
+            {
+                buffer.WriteToTranslation(type.IsSealed() ? "static " : "abstract ");
+            }
+            else if (type.IsSealed())
             {
                 buffer.WriteToTranslation("sealed ");
+            }
+
+            buffer.WriteToTranslation("class ");
+        }
+
+        private static void WriteAccessibilityToTranslation(Type type, TranslationBuffer buffer)
+        {
+            if (type.IsPublic())
+            {
+                buffer.WriteToTranslation("public ");
+                return;
+            }
+
+            if (!type.IsNested)
+            {
+                buffer.WriteToTranslation("internal ");
+                return;
+            }
+#if NETSTANDARD
+            var typeInfo = type.GetTypeInfo();
+
+            if (typeInfo.IsNestedPublic)
+#else
+            if (type.IsNestedPublic)
+#endif
+            {
+                buffer.WriteToTranslation("public ");
+                return;
+            }
+#if NETSTANDARD
+            if (typeInfo.IsNestedAssembly)
+#else
+            if (type.IsNestedAssembly)
+#endif
+            {
+                buffer.WriteToTranslation("internal ");
+                return;
+            }
+#if NETSTANDARD
+            if (typeInfo.IsNestedAssembly)
+#else
+            if (type.IsNestedFamORAssem)
+#endif
+            {
+                buffer.WriteToTranslation("protected internal ");
+                return;
+            }
+#if NETSTANDARD
+            if (typeInfo.IsNestedAssembly)
+#else
+            if (type.IsNestedFamily)
+#endif
+            {
+                buffer.WriteToTranslation("protected ");
+                return;
+            }
+#if NETSTANDARD
+            if (typeInfo.IsNestedPrivate)
+#else
+            if (type.IsNestedPrivate)
+#endif
+            {
+                buffer.WriteToTranslation("private ");
             }
         }
 
@@ -113,9 +199,17 @@
             {
                 buffer.WriteToTranslation("abstract ");
             }
-            else if (method.IsVirtual)
+            else
             {
-                buffer.WriteToTranslation("virtual ");
+                if (method.IsStatic)
+                {
+                    buffer.WriteToTranslation("static ");
+                }
+
+                if (method.IsVirtual)
+                {
+                    buffer.WriteToTranslation("virtual ");
+                }
             }
         }
 
