@@ -14,7 +14,6 @@
     using Interfaces;
     using NetStandardPolyfills;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
 
     internal static class MethodCallTranslation
     {
@@ -36,7 +35,7 @@
 
         public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
-            if (IsPropertyGetterOrSetterCall(methodCall, out var property))
+            if (methodCall.Method.IsPropertyGetterOrSetterCall(out var property))
             {
                 var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
 
@@ -85,48 +84,6 @@
             }
 
             return methodCallTranslation;
-        }
-
-        private static bool IsPropertyGetterOrSetterCall(MethodCallExpression methodCall, out PropertyInfo property)
-        {
-            if (methodCall.Method.HasAttribute<CompilerGeneratedAttribute>())
-            {
-                // Find declaring property
-                property = GetPropertyOrNull(methodCall.Method);
-
-                if (property != null)
-                {
-                    return true;
-                }
-            }
-
-            property = null;
-            return false;
-        }
-
-        private static PropertyInfo GetPropertyOrNull(MethodInfo method)
-        {
-            var hasSingleArgument = method.GetParameters().Length == 1;
-            var hasReturnType = method.ReturnType != typeof(void);
-
-            if (hasSingleArgument == hasReturnType)
-            {
-                return null;
-            }
-
-            var type = method.DeclaringType;
-
-            var allProperties =
-                        type.GetPublicInstanceProperties()
-                .Concat(type.GetNonPublicInstanceProperties())
-                .Concat(type.GetPublicStaticProperties())
-                .Concat(type.GetNonPublicStaticProperties());
-
-            return allProperties.FirstOrDefault(property => Equals(
-                hasReturnType
-                    ? property.GetGetter(nonPublic: true)
-                    : property.GetSetter(nonPublic: true),
-                method));
         }
 
         private static bool IsStringConcatCall(MethodCallExpression methodCall)

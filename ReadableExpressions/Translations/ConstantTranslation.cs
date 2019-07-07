@@ -109,7 +109,6 @@
                 case NetStandardTypeCode.Object:
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
-                        FuncConstantTranslation.TryCreate(constant, out translation) ||
                         TryGetRegexTranslation(constant, out translation) ||
                         TryTranslateDefault<Guid>(constant, out translation) ||
                         TimeSpanConstantTranslation.TryCreate(constant, out translation))
@@ -361,125 +360,6 @@
             public bool IsTerminated => true;
 
             public void WriteTo(TranslationBuffer buffer) => _lambdaTranslation.WriteTo(buffer);
-        }
-
-        private class FuncConstantTranslation : ITranslation
-        {
-            private static readonly Regex _funcMatcher = new Regex(@"^System\.(?:Func|Action)`\d+\[.+\]$");
-
-            private readonly string _funcString;
-
-            private FuncConstantTranslation(Type funcType, string funcString)
-            {
-                Type = funcType;
-                _funcString = funcString;
-                EstimatedSize = funcString.Length;
-            }
-
-            public static bool TryCreate(ConstantExpression constant, out ITranslation funcTranslation)
-            {
-                var match = _funcMatcher.Match(constant.Value.ToString());
-
-                if (match.Success)
-                {
-                    funcTranslation = new FuncConstantTranslation(constant.Type, match.Value);
-                    return true;
-                }
-
-                funcTranslation = null;
-                return false;
-            }
-
-            public ExpressionType NodeType => Constant;
-
-            public Type Type { get; }
-
-            public int EstimatedSize { get; }
-
-            public void WriteTo(TranslationBuffer buffer)
-            {
-                var symbols = new[] { '`', ',', '[', ']' };
-                var parseIndex = 0;
-
-                while (true)
-                {
-                    var nextSymbolIndex = _funcString.IndexOfAny(symbols, parseIndex);
-
-                    if (nextSymbolIndex == -1)
-                    {
-                        var substring = _funcString.Substring(parseIndex);
-
-                        if (substring.Length > 0)
-                        {
-                            buffer.WriteToTranslation(GetTypeName(substring));
-                        }
-
-                        break;
-                    }
-
-                    var substringLength = nextSymbolIndex - parseIndex;
-
-                    if (substringLength > 0)
-                    {
-                        var substring = _funcString.Substring(parseIndex, substringLength);
-
-                        if (substring == "System.Nullable")
-                        {
-                            var nullableTypeIndex = parseIndex + "System.Nullable`1[".Length;
-                            var nullableTypeEndIndex = _funcString.IndexOf(']', nullableTypeIndex);
-                            var nullableTypeLength = nullableTypeEndIndex - nullableTypeIndex;
-                            substring = _funcString.Substring(nullableTypeIndex, nullableTypeLength);
-
-                            buffer.WriteToTranslation(GetTypeName(substring));
-                            buffer.WriteToTranslation('?');
-                            parseIndex = nullableTypeEndIndex + 1;
-                            continue;
-                        }
-
-                        buffer.WriteToTranslation(GetTypeName(substring));
-                        parseIndex = nextSymbolIndex + 1;
-                    }
-
-                    switch (_funcString[nextSymbolIndex])
-                    {
-                        case '`':
-                            buffer.WriteToTranslation('<');
-                            parseIndex = _funcString.IndexOf('[', parseIndex) + 1;
-                            continue;
-
-                        case ',':
-                            buffer.WriteToTranslation(", ");
-
-                            if (substringLength == 0)
-                            {
-                                ++parseIndex;
-                            }
-
-                            continue;
-
-                        case '[':
-                            buffer.WriteToTranslation("[]");
-                            ++parseIndex;
-                            continue;
-
-                        case ']':
-                            buffer.WriteToTranslation('>');
-
-                            if (substringLength == 0)
-                            {
-                                ++parseIndex;
-                            }
-
-                            break;
-                    }
-                }
-            }
-
-            private static string GetTypeName(string typeFullName)
-            {
-                return typeFullName.GetSubstitutionOrNull() ??
-                       typeFullName.Substring(typeFullName.LastIndexOf('.') + 1);
-            }
         }
 
         private class TimeSpanConstantTranslation : ITranslation
