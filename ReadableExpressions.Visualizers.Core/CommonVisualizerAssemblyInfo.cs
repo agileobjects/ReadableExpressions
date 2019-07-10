@@ -8,3 +8,6 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © 2019")]
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: CLSCompliant(true)]
+
+[assembly: AssemblyVersion("2.4.2")]
+[assembly: AssemblyFileVersion("2.4.2")]

@@ -46,16 +46,15 @@
     <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
       <Link>CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\VersionInfo.cs">
-      <Link>VersionInfo.cs</Link>
-    </Compile>
     <Compile Include="RegistryData.cs" />
     <Compile Include="VisualizerInstallationActions.cs" />
     <Compile Include="EmbeddedResourceExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Visualizer.cs" />
     <Compile Include="VsPost2015Data.cs" />
-    <EmbeddedResource Include="extension.vsixmanifest" />
+    <EmbeddedResource Include="extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs10.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.dll</Link>
     </EmbeddedResource>

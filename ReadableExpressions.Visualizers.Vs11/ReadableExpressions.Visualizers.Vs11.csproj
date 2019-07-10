@@ -45,9 +45,6 @@
     <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
       <Link>CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="..\VersionInfo.cs">
-      <Link>VersionInfo.cs</Link>
-    </Compile>
     <Compile Include="Vs11ExpressionVisualizerObjectSource.cs" />
     <Compile Include="Vs11ExpressionVisualizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
