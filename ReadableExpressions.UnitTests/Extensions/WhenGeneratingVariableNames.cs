@@ -71,6 +71,17 @@
             typeof(int?[][]).GetVariableNameInCamelCase().ShouldBe("nullableIntArrayArray");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/48
+        [Fact]
+        public void ShouldNameAnInnerClassOfAGenericType()
+        {
+            typeof(Issue48<int>.Inner)
+                .GetVariableNameInPascalCase()
+                .ShouldBe($"{nameof(WhenGeneratingVariableNames)}__Issue48_Int__Inner");
+        }
+
+        #region Helper Members
+
         // ReSharper disable ClassNeverInstantiated.Local
         private class Box { }
 
@@ -85,6 +96,13 @@
         private class Journey { }
 
         private class Body { }
+
+        private class Issue48<T>
+        {
+            public class Inner { }
+        }
         // ReSharper restore ClassNeverInstantiated.Local
+
+        #endregion
     }
 }
