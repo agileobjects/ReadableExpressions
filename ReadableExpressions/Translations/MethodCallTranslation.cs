@@ -166,7 +166,7 @@
         private class StandardMethodCallTranslation : ITranslation
         {
             private readonly ITranslation _subjectTranslation;
-            private readonly MethodInvocationTranslatable _methodInvocationTranslatable;
+            private readonly MethodInvocationTranslation _methodInvocationTranslation;
             private bool _isPartOfMethodCallChain;
 
             public StandardMethodCallTranslation(
@@ -178,16 +178,16 @@
             {
                 NodeType = nodeType;
                 _subjectTranslation = subjectTranslation;
-                _methodInvocationTranslatable = new MethodInvocationTranslatable(method, parameters, context);
+                _methodInvocationTranslation = new MethodInvocationTranslation(method, parameters, context);
                 EstimatedSize = GetEstimatedSize();
             }
 
             private int GetEstimatedSize()
-                => _subjectTranslation.EstimatedSize + ".".Length + _methodInvocationTranslatable.EstimatedSize;
+                => _subjectTranslation.EstimatedSize + ".".Length + _methodInvocationTranslation.EstimatedSize;
 
             public ExpressionType NodeType { get; }
 
-            public Type Type => _methodInvocationTranslatable.Type;
+            public Type Type => _methodInvocationTranslation.Type;
 
             public int EstimatedSize { get; }
 
@@ -204,7 +204,7 @@
                 }
 
                 buffer.WriteToTranslation('.');
-                _methodInvocationTranslatable.WriteTo(buffer);
+                _methodInvocationTranslation.WriteTo(buffer);
 
                 if (_isPartOfMethodCallChain)
                 {
@@ -213,13 +213,13 @@
             }
         }
 
-        private class MethodInvocationTranslatable : ITranslatable
+        private class MethodInvocationTranslation : ITranslatable
         {
             private readonly IMethod _method;
             private readonly ParameterSetTranslation _parameters;
             private readonly ITranslatable[] _explicitGenericArguments;
 
-            public MethodInvocationTranslatable(IMethod method, ParameterSetTranslation parameters, ITranslationContext context)
+            public MethodInvocationTranslation(IMethod method, ParameterSetTranslation parameters, ITranslationContext context)
             {
                 _method = method;
                 _parameters = parameters;
