@@ -191,7 +191,7 @@
             }
         }
 
-        private static void WriteModifiersToTranslation(MethodInfo method, TranslationBuffer buffer)
+        private static void WriteModifiersToTranslation(MethodBase method, TranslationBuffer buffer)
         {
             WriteAccessibilityToTranslation(method, buffer);
 

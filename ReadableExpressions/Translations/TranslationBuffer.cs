@@ -1,4 +1,8 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿#if DEBUG
+using System.Diagnostics;
+#endif
+
+namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
     using System.Text;
@@ -6,13 +10,15 @@
 
     internal class TranslationBuffer : ITranslationQuery
     {
-
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
         public TranslationBuffer(int estimatedSize)
         {
+#if DEBUG
+            Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
+#endif
             _content = new StringBuilder(estimatedSize);
         }
 
@@ -208,6 +214,12 @@
             }
         }
 
-        public string GetContent() => (_content.Length > 0) ? _content.ToString() : null;
+        public string GetContent()
+        {
+#if DEBUG
+            Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+#endif
+            return (_content.Length > 0) ? _content.ToString() : null;
+        }
     }
 }
