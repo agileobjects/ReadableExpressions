@@ -129,7 +129,7 @@
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    translation = FixedValueTranslation(constant).WithSuffix("L");
+                    translation = FixedValueTranslation(constant, Numeric).WithSuffix("L", Numeric);
                     return true;
 
                 case NetStandardTypeCode.Int32:

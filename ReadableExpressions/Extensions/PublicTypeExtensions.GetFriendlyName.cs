@@ -128,7 +128,7 @@
 
         private static void WriteTypeName(this TranslationBuffer buffer, Type type)
         {
-            var tokenType = type.IsInterface() ? InterfaceName : TypeName;
+            var tokenType = type.IsClass() ? TypeName : InterfaceName;
             buffer.WriteToTranslation(type.Name, tokenType);
         }
 
