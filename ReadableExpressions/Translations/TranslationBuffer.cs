@@ -35,7 +35,8 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             for (var i = _content.Length; i > 0;)
             {
-                var contentCharacter = _content[--i];
+                --i;
+                var contentCharacter = _content[i];
 
                 if (contentCharacter == '\n')
                 {
