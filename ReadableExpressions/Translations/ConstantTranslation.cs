@@ -24,12 +24,14 @@
             {
                 var userTranslation = context.Settings.ConstantExpressionValueFactory(constant.Type, constant.Value);
 
-                return FixedValueTranslation(userTranslation ?? "null", constant.Type);
+                return (userTranslation == null)
+                    ? NullTranslation(constant.Type)
+                    : FixedValueTranslation(userTranslation, constant.Type);
             }
 
             if (constant.Value == null)
             {
-                return FixedValueTranslation("null", constant.Type, Keyword);
+                return NullTranslation(constant.Type);
             }
 
             if (constant.Type.IsEnum())
@@ -52,21 +54,37 @@
             return context.GetTranslationFor(valueType).WithNodeType(Constant);
         }
 
-        private static ITranslation FixedValueTranslation(ConstantExpression constant, TokenType tokenType = TokenType.Default) 
+        private static ITranslation FixedValueTranslation(ConstantExpression constant, TokenType tokenType = TokenType.Default)
             => FixedValueTranslation(constant.Value, constant.Type, tokenType);
 
-        private static ITranslation FixedValueTranslation(object value, Type type, TokenType tokenType = TokenType.Default) 
+        private static ITranslation FixedValueTranslation(object value, Type type, TokenType tokenType = TokenType.Default)
             => FixedValueTranslation(value.ToString(), type, tokenType);
 
+        private static ITranslation NullTranslation(Type type)
+            => FixedValueTranslation("null", type, Keyword);
+
         private static ITranslation FixedValueTranslation(
-            string value, 
+            string value,
             Type type,
-            TokenType tokenType,
-            bool isTerminated = false)
+            TokenType tokenType)
         {
-            return isTerminated
-                ? new FixedTerminatedValueTranslation(Constant, value, type, tokenType)
-                : new FixedValueTranslation(Constant, value, type, tokenType);
+            return new FixedValueTranslation(Constant, value, type, tokenType);
+        }
+
+        private static ITranslation FixedTerminatedValueTranslation(
+            string value,
+            Type type,
+            TokenType tokenType)
+        {
+            return new FixedTerminatedValueTranslation(Constant, value, type, tokenType);
+        }
+
+        private static ITranslation FixedValuesTranslation(
+            Type type,
+            int estimatedSize,
+            params Action<TranslationBuffer>[] valueWriters)
+        {
+            return new FixedValuesTranslation(Constant, type, estimatedSize, valueWriters);
         }
 
         private static bool TryTranslateFromTypeCode(
@@ -78,9 +96,9 @@
             {
                 case NetStandardTypeCode.Boolean:
                     translation = FixedValueTranslation(
-                        constant.Value.ToString().ToLowerInvariant(), 
+                        constant.Value.ToString().ToLowerInvariant(),
                         constant.Type);
-                    
+
                     return true;
 
                 case NetStandardTypeCode.Char:
@@ -98,7 +116,13 @@
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    translation = FixedValueTranslation("DBNull.Value", constant.Type);
+                    translation = FixedValuesTranslation(
+                        constant.Type,
+                        "DBNull.Value".Length,
+                        b => b.WriteToTranslation("DBNull", TypeName),
+                        b => b.WriteToTranslation('.'),
+                        b => b.WriteToTranslation("Value"));
+
                     return true;
 
                 case NetStandardTypeCode.Decimal:
@@ -138,7 +162,7 @@
 
                     if (stringValue.IsComment())
                     {
-                        translation = FixedValueTranslation(stringValue, typeof(string), Comment, isTerminated: true);
+                        translation = FixedTerminatedValueTranslation(stringValue, typeof(string), Comment);
                         return true;
                     }
 
@@ -459,7 +483,7 @@
                     buffer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
-            EndTranslation:
+                EndTranslation:
                 buffer.WriteToTranslation(')');
             }
 
