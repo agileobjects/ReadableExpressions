@@ -54,7 +54,7 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("new ");
+            buffer.WriteNewToTranslation();
             _typeNameTranslation.WriteTo(buffer);
             buffer.WriteToTranslation('[');
 

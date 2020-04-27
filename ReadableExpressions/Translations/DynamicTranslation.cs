@@ -35,7 +35,11 @@
                 return translation;
             }
 
-            return new FixedValueTranslation(ExpressionType.Dynamic, args.OperationDescription, dynamicExpression.Type);
+            return new FixedValueTranslation(
+                ExpressionType.Dynamic, 
+                args.OperationDescription, 
+                dynamicExpression.Type,
+                TokenType.Default);
         }
 
         private class DynamicTranslationArgs

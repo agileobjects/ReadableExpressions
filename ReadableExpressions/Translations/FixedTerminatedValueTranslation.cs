@@ -10,8 +10,12 @@
 
     internal class FixedTerminatedValueTranslation : FixedValueTranslation, IPotentialSelfTerminatingTranslatable
     {
-        public FixedTerminatedValueTranslation(ExpressionType expressionType, string value, Type type)
-            : base(expressionType, value, type)
+        public FixedTerminatedValueTranslation(
+            ExpressionType expressionType, 
+            string value, 
+            Type type,
+            TokenType tokenType)
+            : base(expressionType, value, type, tokenType)
         {
         }
 

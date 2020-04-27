@@ -303,8 +303,9 @@
                 }
 
                 parameterTranslation.WriteTo(buffer);
+                ++i;
 
-                if (++i == ParameterCount)
+                if (i == ParameterCount)
                 {
                     break;
                 }

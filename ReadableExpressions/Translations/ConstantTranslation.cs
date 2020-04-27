@@ -14,6 +14,7 @@
     using Interfaces;
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
+    using static TokenType;
 
     internal static class ConstantTranslation
     {
@@ -28,7 +29,7 @@
 
             if (constant.Value == null)
             {
-                return FixedValueTranslation("null", constant.Type);
+                return FixedValueTranslation("null", constant.Type, Keyword);
             }
 
             if (constant.Type.IsEnum())
@@ -51,15 +52,21 @@
             return context.GetTranslationFor(valueType).WithNodeType(Constant);
         }
 
-        private static ITranslation FixedValueTranslation(ConstantExpression constant) => FixedValueTranslation(constant.Value, constant.Type);
+        private static ITranslation FixedValueTranslation(ConstantExpression constant, TokenType tokenType = TokenType.Default) 
+            => FixedValueTranslation(constant.Value, constant.Type, tokenType);
 
-        private static ITranslation FixedValueTranslation(object value, Type type) => FixedValueTranslation(value.ToString(), type);
+        private static ITranslation FixedValueTranslation(object value, Type type, TokenType tokenType = TokenType.Default) 
+            => FixedValueTranslation(value.ToString(), type, tokenType);
 
-        private static ITranslation FixedValueTranslation(string value, Type type, bool isTerminated = false)
+        private static ITranslation FixedValueTranslation(
+            string value, 
+            Type type,
+            TokenType tokenType,
+            bool isTerminated = false)
         {
             return isTerminated
-                ? new FixedTerminatedValueTranslation(Constant, value, type)
-                : new FixedValueTranslation(Constant, value, type);
+                ? new FixedTerminatedValueTranslation(Constant, value, type, tokenType)
+                : new FixedValueTranslation(Constant, value, type, tokenType);
         }
 
         private static bool TryTranslateFromTypeCode(
@@ -70,7 +77,10 @@
             switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
             {
                 case NetStandardTypeCode.Boolean:
-                    translation = FixedValueTranslation(constant.Value.ToString().ToLowerInvariant(), constant.Type);
+                    translation = FixedValueTranslation(
+                        constant.Value.ToString().ToLowerInvariant(), 
+                        constant.Type);
+                    
                     return true;
 
                 case NetStandardTypeCode.Char:
@@ -104,7 +114,7 @@
                     return true;
 
                 case NetStandardTypeCode.Int32:
-                    translation = FixedValueTranslation(constant);
+                    translation = FixedValueTranslation(constant, Numeric);
                     return true;
 
                 case NetStandardTypeCode.Object:
@@ -128,11 +138,11 @@
 
                     if (stringValue.IsComment())
                     {
-                        translation = FixedValueTranslation(stringValue, typeof(string), isTerminated: true);
+                        translation = FixedValueTranslation(stringValue, typeof(string), Comment, isTerminated: true);
                         return true;
                     }
 
-                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string));
+                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string), Text);
                     translation = new TranslationWrapper(translation).WrappedWith("\"", "\"");
 
                     return true;
@@ -244,7 +254,6 @@
 
         private class DateTimeConstantTranslation : ITranslation
         {
-            private const string _newDateTime = "new DateTime(";
             private readonly DateTime _value;
             private readonly bool _hasMilliseconds;
             private readonly bool _hasTime;
@@ -260,7 +269,7 @@
 
             private int GetEstimatedSize()
             {
-                var estimatedSize = _newDateTime.Length + 4 + 4 + 4;
+                var estimatedSize = "new DateTime(".Length + 4 + 4 + 4;
 
                 if (_hasMilliseconds || _hasTime)
                 {
@@ -283,7 +292,8 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_newDateTime);
+                buffer.WriteNewToTranslation();
+                buffer.WriteToTranslation(nameof(DateTime), TypeName);
 
                 buffer.WriteToTranslation(_value.Year);
                 WriteTwoDigitDatePart(_value.Month, buffer);
@@ -315,7 +325,7 @@
                     return;
                 }
 
-                buffer.WriteToTranslation('0');
+                buffer.WriteToTranslation('0', Numeric);
                 buffer.WriteToTranslation(datePart);
             }
         }

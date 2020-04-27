@@ -37,17 +37,17 @@
         }
 
         private static FixedTerminatedValueTranslation FixedTerminatedValueTranslation(string value, GotoExpression @goto)
-            => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type);
+            => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type, TokenType.ControlStatement);
 
         private class ReturnValueTranslation : ITranslation
         {
-            private const string _returnKeyword = "return ";
+            private const string _returnKeyword = "return";
             private readonly CodeBlockTranslation _returnValueTranslation;
 
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
                 _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length;
+                EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length + 1;
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
@@ -58,7 +58,8 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_returnKeyword);
+                buffer.WriteToTranslation(_returnKeyword, TokenType.ControlStatement);
+                buffer.WriteSpaceToTranslation();
                 _returnValueTranslation.WriteTo(buffer);
             }
         }

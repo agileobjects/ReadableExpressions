@@ -1,12 +1,12 @@
-﻿#if DEBUG
-using System.Diagnostics;
-#endif
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+#if DEBUG
+    using System.Diagnostics;
+#endif
     using System.Text;
     using Interfaces;
+    using static TokenType;
 
     internal class TranslationBuffer : ITranslationQuery
     {
@@ -183,43 +183,38 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
         }
 
-        public void WriteToTranslation(char character)
+        public void WriteToTranslation(char character, TokenType tokenType = Default)
         {
             WriteIndentIfRequired();
 
-            if (_formatter.Encode(character, out var endoded))
-            {
-                WriteToTranslation(endoded);
-                return;
-            }
-
-            _content.Append(character);
+            _formatter.WriteFormatted(character, Write, Write, tokenType);
         }
 
-        public void WriteToTranslation(
-            string stringValue,
-            TokenType tokenType = TokenType.Default)
+        private void Write(char character) => _content.Append(character);
+
+        public void WriteToTranslation(string stringValue, TokenType tokenType = Default)
         {
             if (stringValue.Length == 1)
             {
-                WriteToTranslation(stringValue[0]);
+                WriteToTranslation(stringValue[0], tokenType);
                 return;
             }
 
             WriteIndentIfRequired();
 
-            WriteIfRequired(_formatter.PreToken(tokenType));
-
-            _content.Append(stringValue);
-
-            WriteIfRequired(_formatter.PostToken(tokenType));
+            _formatter.WriteFormatted(stringValue, Write, Write, tokenType);
         }
 
-        public void WriteToTranslation(int intValue)
+        private void Write(string stringValue) => _content.Append(stringValue);
+
+        public void WriteToTranslation(int intValue, TokenType tokenType = Numeric)
         {
             WriteIndentIfRequired();
-            _content.Append(intValue);
+
+            _formatter.WriteFormatted(intValue, Write, Write, tokenType);
         }
+
+        private void Write(int intValue) => _content.Append(intValue);
 
         public void WriteToTranslation(object value)
         {
@@ -233,14 +228,6 @@ namespace AgileObjects.ReadableExpressions.Translations
             {
                 _content.Append(' ', _currentIndent);
                 _writeIndent = false;
-            }
-        }
-
-        private void WriteIfRequired(string value)
-        {
-            if (value != null)
-            {
-                _content.Append(value);
             }
         }
 
@@ -301,7 +288,12 @@ namespace AgileObjects.ReadableExpressions.Translations
         /// <summary>
         /// The name of a method.
         /// </summary>
-        MethodName
+        MethodName,
+
+        /// <summary>
+        /// A code comment.
+        /// </summary>
+        Comment
     }
 
     /// <summary>
@@ -310,55 +302,60 @@ namespace AgileObjects.ReadableExpressions.Translations
     public interface ITranslationFormatter
     {
         /// <summary>
-        /// Gets the formatting string to apply before a token of the given <paramref name="type"/>,
-        /// or null if none is necessary.
+        /// Write the given <paramref name="value"/> of the given <paramref name="type"/> using the
+        /// given <paramref name="valueWriter"/>, along with any appropriate formatting.
         /// </summary>
-        /// <param name="type">The TokenType for which to retrieve the formatting string.</param>
-        /// <returns>
-        /// The formatting string to apply before a token of the given <paramref name="type"/>, or
-        /// null if none is necessary.
-        /// </returns>
-        string PreToken(TokenType type);
-
-        /// <summary>
-        /// Gets the formatting string to apply after a token of the given <paramref name="type"/>,
-        /// or null if none is necessary.
-        /// </summary>
-        /// <param name="type">The TokenType for which to retrieve the formatting string.</param>
-        /// <returns>
-        /// The formatting string to apply after a token of the given <paramref name="type"/>, or
-        /// null if none is necessary.
-        /// </returns>
-        string PostToken(TokenType type);
-
-        /// <summary>
-        /// Gets a value indicating whether the given <paramref name="character"/> should be replaced
-        /// by the output <paramref name="encoded"/> value.
-        /// </summary>
-        /// <param name="character">The character for which to make the determination.</param>
-        /// <param name="encoded">
-        /// Populated with the encoded value to write instead of the given <paramref name="character"/>,
-        /// if appropriate.
+        /// <typeparam name="TValue">The type of the value to write.</typeparam>
+        /// <param name="value">The value to write.</param>
+        /// <param name="valueWriter">
+        /// An action to execute to write the <paramref name="value"/> to the translation.
         /// </param>
-        /// <returns>
-        /// True if the given <paramref name="character"/> should be replaced by the output
-        /// <paramref name="encoded"/> value, otherwise false.
-        /// </returns>
-        bool Encode(char character, out string encoded);
+        /// <param name="stringWriter">
+        /// An action to execute to write any formatting strings to the translation.
+        /// </param>
+        /// <param name="type">The <see cref="TokenType"/> of the given <paramref name="value"/>.</param>
+        void WriteFormatted<TValue>(
+            TValue value,
+            Action<TValue> valueWriter,
+            Action<string> stringWriter,
+            TokenType type);
+
+        /// <summary>
+        /// Write the given <paramref name="character"/> using the given <paramref name="characterWriter"/>,
+        /// along with any appropriate formatting. This overload is provided to enable encoding of
+        /// the value if required.
+        /// </summary>
+        /// <param name="character">The character to write.</param>
+        /// <param name="characterWriter">
+        /// An action to execute to write the <paramref name="character"/> to the translation.
+        /// </param>
+        /// <param name="stringWriter">
+        /// An action to execute to write any formatting strings to the translation.
+        /// </param>
+        /// <param name="type">The <see cref="TokenType"/> of the given <paramref name="character"/>.</param>
+        void WriteFormatted(
+            char character,
+            Action<char> characterWriter,
+            Action<string> stringWriter,
+            TokenType type);
     }
 
     internal class NullTranslationFormatter : ITranslationFormatter
     {
         public static readonly ITranslationFormatter Insance = new NullTranslationFormatter();
 
-        public string PreToken(TokenType type) => null;
+        public void WriteFormatted<TValue>(
+            TValue value,
+            Action<TValue> valueWriter,
+            Action<string> stringWriter,
+            TokenType type)
+            => valueWriter.Invoke(value);
 
-        public string PostToken(TokenType type) => null;
-
-        public bool Encode(char character, out string encoded)
-        {
-            encoded = null;
-            return false;
-        }
+        public void WriteFormatted(
+            char character,
+            Action<char> characterWriter,
+            Action<string> stringWriter,
+            TokenType type)
+            => characterWriter.Invoke(character);
     }
 }

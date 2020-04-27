@@ -31,7 +31,7 @@
 
             if (expressionTypes.Length == 1)
             {
-                return new FixedValueTranslation(NewArrayInit, "new[]", arrayInit.Type);
+                return new FixedValueTranslation(NewArrayInit, "new[]", arrayInit.Type, TokenType.Default);
             }
 
             return GetNewBoundedArrayTranslation(arrayInit, context).WrappedWith("new ", "[]");

@@ -102,6 +102,12 @@
                     CastTranslation.IsCast(translation.NodeType);
         }
 
+        public static void WriteNewToTranslation(this TranslationBuffer buffer)
+        {
+            buffer.WriteToTranslation("new", TokenType.Keyword);
+            buffer.WriteSpaceToTranslation();
+        }
+
         public static void WriteSpaceToTranslation(this TranslationBuffer buffer)
             => buffer.WriteToTranslation(' ');
     }

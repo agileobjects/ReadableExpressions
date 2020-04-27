@@ -44,7 +44,7 @@
             {
                 AllowNavigation = false,
                 AllowWebBrowserDrop = false,
-                Font = new Font(new FontFamily("Consolas"), 11.0f)
+                Font = new Font(new FontFamily("Consolas"), 13f)
             };
 
             var viewerPanel = new Panel
@@ -117,9 +117,10 @@
             SetViewerSize(GetViewerSizeBasedOn(Size));
         }
 
-        public ExpressionDialog WithText(string expression)
+        public ExpressionDialog WithText(string translation)
         {
-            var textSize = TextRenderer.MeasureText(expression, _viewer.Font);
+            var rawText = TranslationHtmlFormatter.RemoveFormatting(translation);
+            var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
             var viewerSize = new Size(
                 textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + SystemInformation.VerticalScrollBarWidth + 10,
@@ -135,7 +136,7 @@ body {{
     background: #1E1E1E;
     color: #DCDCDC; 
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-    font-size: 11pt;
+    font-size: 11.5pt;
 }}
 .kw {{ color: #569CD6 }}
 .pm {{ color: #9CDCFE }}
@@ -145,10 +146,11 @@ body {{
 .tx {{ color: #D69D85 }}
 .nm {{ color: #B5CEA8 }}
 .mn {{ color: #DCDCAA }}
+.cm {{ color: #57A64A }}
 </style>
 </head>
 <body>
-    <pre>{expression}</pre>
+    <pre>{translation}</pre>
 </body>
 </html>";
 
