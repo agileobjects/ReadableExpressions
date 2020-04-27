@@ -5,6 +5,7 @@
     using System.Diagnostics;
 #endif
     using System.Text;
+    using Formatting;
     using Interfaces;
     using static TokenType;
 
@@ -203,7 +204,7 @@
 
             if (tokenType != Default)
             {
-                _formatter.WriteFormatted(stringValue, Write, Write, tokenType);
+                _formatter.WriteFormatted(stringValue, Write, tokenType);
                 return;
             }
 
@@ -250,68 +251,5 @@
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;
         }
-    }
-
-    /// <summary>
-    /// Implementing classes will add formatting to an Expression translation.
-    /// </summary>
-    public interface ITranslationFormatter
-    {
-        /// <summary>
-        /// Write the given <paramref name="value"/> of the given <paramref name="type"/> using the
-        /// given <paramref name="valueWriter"/>, along with any appropriate formatting.
-        /// </summary>
-        /// <typeparam name="TValue">The type of the value to write.</typeparam>
-        /// <param name="value">The value to write.</param>
-        /// <param name="valueWriter">
-        /// An action to execute to write the <paramref name="value"/> to the translation.
-        /// </param>
-        /// <param name="stringWriter">
-        /// An action to execute to write any formatting strings to the translation.
-        /// </param>
-        /// <param name="type">The <see cref="TokenType"/> of the given <paramref name="value"/>.</param>
-        void WriteFormatted<TValue>(
-            TValue value,
-            Action<TValue> valueWriter,
-            Action<string> stringWriter,
-            TokenType type);
-
-        /// <summary>
-        /// Write the given <paramref name="character"/> using the given <paramref name="characterWriter"/>,
-        /// along with any appropriate formatting. This overload is provided to enable encoding of
-        /// the value if required.
-        /// </summary>
-        /// <param name="character">The character to write.</param>
-        /// <param name="characterWriter">
-        /// An action to execute to write the <paramref name="character"/> to the translation.
-        /// </param>
-        /// <param name="stringWriter">
-        /// An action to execute to write any formatting strings to the translation.
-        /// </param>
-        /// <param name="type">The <see cref="TokenType"/> of the given <paramref name="character"/>.</param>
-        void WriteFormatted(
-            char character,
-            Action<char> characterWriter,
-            Action<string> stringWriter,
-            TokenType type);
-    }
-
-    internal class NullTranslationFormatter : ITranslationFormatter
-    {
-        public static readonly ITranslationFormatter Insance = new NullTranslationFormatter();
-
-        public void WriteFormatted<TValue>(
-            TValue value,
-            Action<TValue> valueWriter,
-            Action<string> stringWriter,
-            TokenType type)
-            => valueWriter.Invoke(value);
-
-        public void WriteFormatted(
-            char character,
-            Action<char> characterWriter,
-            Action<string> stringWriter,
-            TokenType type)
-            => characterWriter.Invoke(character);
     }
 }

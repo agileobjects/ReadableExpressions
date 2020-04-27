@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Translations;
+    using Translations.Formatting;
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.

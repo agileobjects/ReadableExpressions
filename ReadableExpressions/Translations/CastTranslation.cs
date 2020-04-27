@@ -148,7 +148,7 @@
             public void WriteTo(TranslationBuffer buffer)
             {
                 _testedValueTranslation.WriteTo(buffer);
-                buffer.WriteToTranslation(_test);
+                buffer.WriteKeywordToTranslation(_test);
                 _testedTypeNameTranslation.WriteTo(buffer);
             }
         }

@@ -103,7 +103,7 @@
         }
 
         public static void WriteNewToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteToTranslation("new ", TokenType.Keyword);
+            => buffer.WriteKeywordToTranslation("new ");
 
         public static void WriteSpaceToTranslation(this TranslationBuffer buffer)
             => buffer.WriteToTranslation(' ');
@@ -112,6 +112,15 @@
             => buffer.WriteToTranslation('.');
 
         public static void WriteReturnToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteToTranslation("return ", TokenType.ControlStatement);
+            => buffer.WriteControlStatementToTranslation("return ");
+
+        public static void WriteControlStatementToTranslation(this TranslationBuffer buffer, string statement)
+            => buffer.WriteToTranslation(statement, TokenType.ControlStatement);
+
+        public static void WriteKeywordToTranslation(this TranslationBuffer buffer, string keyword)
+            => buffer.WriteToTranslation(keyword, TokenType.Keyword);
+
+        public static void WriteTypeNameToTranslation(this TranslationBuffer buffer, string name)
+            => buffer.WriteToTranslation(name, TokenType.TypeName);
     }
 }

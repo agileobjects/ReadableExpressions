@@ -92,20 +92,22 @@
             ITranslationContext context,
             out ITranslation translation)
         {
-            switch ((Nullable.GetUnderlyingType(constant.Type) ?? constant.Type).GetTypeCode())
+            var type = constant.Type;
+
+            switch ((Nullable.GetUnderlyingType(type) ?? type).GetTypeCode())
             {
                 case NetStandardTypeCode.Boolean:
                     translation = FixedValueTranslation(
                         constant.Value.ToString().ToLowerInvariant(),
-                        constant.Type,
+                        type,
                         Keyword);
 
                     return true;
 
                 case NetStandardTypeCode.Char:
                     var character = (char)constant.Value;
-                    var value = character == '\0' ? Expression.Constant(@"\0") : constant;
-                    translation = FixedValueTranslation(value, Text).WithPrefix("'", Text).WithSuffix("'", Text);
+                    var value = "'" + (character == '\0' ? @"\0" : character.ToString()) + "'";
+                    translation = FixedValueTranslation(value, type, Text);
                     return true;
 
                 case NetStandardTypeCode.DateTime:
@@ -161,8 +163,8 @@
                         return true;
                     }
 
-                    translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string), Text);
-                    translation = translation.WithPrefix("\"", Text).WithSuffix("\"", Text);
+                    stringValue = "\"" + stringValue.Replace("\"", "\\\"") + "\"";
+                    translation = FixedValueTranslation(stringValue, typeof(string), Text);
                     return true;
             }
 
@@ -187,7 +189,7 @@
             return FixedValuesTranslation(
                 constant.Type,
                 "DBNull.Value".Length,
-                b => b.WriteToTranslation("DBNull", TypeName),
+                b => b.WriteTypeNameToTranslation("DBNull"),
                 b => b.WriteDotToTranslation(),
                 b => b.WriteToTranslation("Value"));
         }
@@ -320,7 +322,7 @@
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteNewToTranslation();
-                buffer.WriteToTranslation(nameof(DateTime), TypeName);
+                buffer.WriteTypeNameToTranslation(nameof(DateTime));
                 buffer.WriteToTranslation('(');
 
                 buffer.WriteToTranslation(_value.Year);
@@ -464,7 +466,7 @@
 
                 if ((_timeSpan.Days == 0) && (_timeSpan.Hours == 0) && (_timeSpan.Minutes == 0) && (_timeSpan.Seconds == 0))
                 {
-                    buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                    buffer.WriteTypeNameToTranslation(nameof(TimeSpan));
                     buffer.WriteDotToTranslation();
                     buffer.WriteToTranslation("FromTicks", MethodName);
                     buffer.WriteToTranslation('(');
@@ -473,7 +475,7 @@
                 }
 
                 buffer.WriteNewToTranslation();
-                buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                buffer.WriteTypeNameToTranslation(nameof(TimeSpan));
                 buffer.WriteToTranslation('(');
 
                 if (_timeSpan.Days == 0)
@@ -522,7 +524,7 @@
                     return false;
                 }
 
-                buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                buffer.WriteTypeNameToTranslation(nameof(TimeSpan));
                 buffer.WriteDotToTranslation();
                 buffer.WriteToTranslation("From", MethodName);
                 buffer.WriteToTranslation(valueName, MethodName);

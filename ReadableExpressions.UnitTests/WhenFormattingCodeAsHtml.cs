@@ -19,7 +19,17 @@
     public class WhenFormattingCodeAsHtml : TestClassBase
     {
         [Fact]
-        public void ShouldTranslateAParameterlessNewExpression()
+        public void ShouldFormatAStringConstant()
+        {
+            var stringConstant = Constant("List<string>", typeof(string));
+
+            var translated = ToReadableHtmlString(stringConstant);
+
+            translated.ShouldBe("<span class=\"tx\">\"List&lt;string&gt;\"</span>");
+        }
+
+        [Fact]
+        public void ShouldFormatAParameterlessNewExpression()
         {
             var createObject = CreateLambda(() => new object());
 
@@ -29,7 +39,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnAssignment()
+        public void ShouldFormatAnAssignment()
         {
             var intVariable = Variable(typeof(int), "i");
             var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
@@ -45,7 +55,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateANewListExpressionWithAdditions()
+        public void ShouldFormatANewListExpressionWithAdditions()
         {
             var createList = CreateLambda(() => new List<decimal> { 1m, 2.005m, 3m });
 
@@ -63,7 +73,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateAConditionalBranchWithAComment()
+        public void ShouldFormatAConditionalBranchWithAComment()
         {
             var comment = ReadableExpression.Comment("Maths works");
             var one = Constant(1);
@@ -136,7 +146,7 @@
 {
     <span class=""cs"">return </span><span class=""kw"">new </span><span class=""tn"">WhenFormattingCodeAsHtml</span>.<span class=""tn"">Address</span>
     {
-        Line1 = <span class=""tx"">""</span><span class=""tx"">Over here</span><span class=""tx"">""</span>
+        Line1 = <span class=""tx"">""Over here""</span>
     };
 }
 <span class=""kw"">catch</span>
@@ -147,7 +157,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateGotoStatements()
+        public void ShouldFormatGotoStatements()
         {
             var labelTargetOne = Label(typeof(void), "One");
             var labelOne = Label(labelTargetOne);
@@ -190,14 +200,14 @@
     <span class=""cs"">goto </span>Two;
 }
 
-<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">Neither</span><span class=""tx"">""</span>);
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""Neither""</span>);
 <span class=""cs"">return</span>;
 
 One:
-<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">One</span><span class=""tx"">""</span>);
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""One""</span>);
 
 Two:
-<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">Two</span><span class=""tx"">""</span>);
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""Two""</span>);
 ";
             translated.ShouldBe(EXPECTED.Trim());
         }

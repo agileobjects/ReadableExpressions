@@ -3,6 +3,7 @@
     using System;
     using System.Text.RegularExpressions;
     using Translations;
+    using Translations.Formatting;
     using static System.Text.RegularExpressions.RegexOptions;
 
     internal class TranslationHtmlFormatter : ITranslationFormatter
@@ -17,19 +18,6 @@
                 .Replace(translation, string.Empty)
                 .Replace("&lt;", "<")
                 .Replace("&gt;", ">");
-        }
-
-        public void WriteFormatted<TValue>(
-            TValue value,
-            Action<TValue> valueWriter,
-            Action<string> stringWriter,
-            TokenType type)
-        {
-            WritePreTokenIfRequired(stringWriter, type);
-
-            valueWriter.Invoke(value);
-
-            WritePostTokenIfRequired(stringWriter, type);
         }
 
         public void WriteFormatted(
@@ -48,6 +36,28 @@
             {
                 characterWriter.Invoke(character);
             }
+
+            WritePostTokenIfRequired(stringWriter, type);
+        }
+
+        public void WriteFormatted(string value, Action<string> stringWriter, TokenType type)
+        {
+            WritePreTokenIfRequired(stringWriter, type);
+
+            stringWriter.Invoke(value.Replace("<", "&lt;").Replace(">", "&gt;"));
+
+            WritePostTokenIfRequired(stringWriter, type);
+        }
+
+        public void WriteFormatted<TValue>(
+            TValue value,
+            Action<TValue> valueWriter,
+            Action<string> stringWriter,
+            TokenType type)
+        {
+            WritePreTokenIfRequired(stringWriter, type);
+
+            valueWriter.Invoke(value);
 
             WritePostTokenIfRequired(stringWriter, type);
         }
@@ -111,7 +121,7 @@
         private static void WritePreTokenIfRequired(Action<string> stringWriter, TokenType type)
             => WriteIfRequired(GetPreTokenOrNull(type), stringWriter);
 
-        private static void WritePostTokenIfRequired(Action<string> stringWriter, TokenType type) 
+        private static void WritePostTokenIfRequired(Action<string> stringWriter, TokenType type)
             => WriteIfRequired(GetPostTokenOrNull(type), stringWriter);
 
         private static void WriteIfRequired(string value, Action<string> stringWriter)

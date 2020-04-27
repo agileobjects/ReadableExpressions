@@ -15,15 +15,15 @@
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    return FixedTerminatedValueTranslation("break;", @goto);
+                    return new TerminatedGotoTranslation(@goto, "break");
 
                 case GotoExpressionKind.Continue:
-                    return FixedTerminatedValueTranslation("continue;", @goto);
+                    return new TerminatedGotoTranslation(@goto, "continue");
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        return FixedTerminatedValueTranslation("return;", @goto);
+                        return new TerminatedGotoTranslation(@goto, "return");
                     }
 
                     return new ReturnValueTranslation(@goto, context);
@@ -38,6 +38,32 @@
 
         private static FixedTerminatedValueTranslation FixedTerminatedValueTranslation(string value, GotoExpression @goto)
             => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type, TokenType.ControlStatement);
+
+        private class TerminatedGotoTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        {
+            private readonly string _statement;
+
+            public TerminatedGotoTranslation(Expression @goto, string statement)
+            {
+                Type = @goto.Type;
+                _statement = statement;
+                EstimatedSize = _statement.Length + 1;
+            }
+
+            public ExpressionType NodeType => ExpressionType.Goto;
+
+            public Type Type {get;}
+
+            public int EstimatedSize { get; }
+
+            public bool IsTerminated => true;
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteControlStatementToTranslation(_statement);
+                buffer.WriteToTranslation(';');
+            }
+        }
 
         private class ReturnValueTranslation : ITranslation
         {
@@ -58,7 +84,7 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_returnKeyword, TokenType.ControlStatement);
+                buffer.WriteControlStatementToTranslation(_returnKeyword);
                 _returnValueTranslation.WriteTo(buffer);
             }
         }

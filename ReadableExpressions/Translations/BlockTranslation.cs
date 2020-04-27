@@ -264,7 +264,9 @@ namespace AgileObjects.ReadableExpressions.Translations
             {
                 _statements[i].WriteTo(buffer);
 
-                if (++i == _statementCount)
+                ++i;
+
+                if (i == _statementCount)
                 {
                     break;
                 }

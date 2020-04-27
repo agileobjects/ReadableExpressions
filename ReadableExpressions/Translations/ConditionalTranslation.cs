@@ -8,7 +8,6 @@
 #endif
     using Extensions;
     using Interfaces;
-    using static TokenType;
 
     internal static class ConditionalTranslation
     {
@@ -110,7 +109,7 @@
 
             protected void WriteIfStatement(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("if ", ControlStatement);
+                buffer.WriteControlStatementToTranslation("if ");
                 TestTranslation.WriteInParentheses(buffer);
                 IfTrueTranslation.WriteTo(buffer);
             }
@@ -236,7 +235,7 @@
             {
                 WriteIfStatement(buffer);
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("else", ControlStatement);
+                buffer.WriteControlStatementToTranslation("else");
 
                 if (_isElseIf)
                 {

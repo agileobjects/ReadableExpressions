@@ -152,7 +152,7 @@
             }
 
             protected override void WriteTypeName(string name)
-                => _buffer.WriteToTranslation(name, TypeName);
+                => _buffer.WriteTypeNameToTranslation(name);
 
             protected override void WriteInterfaceName(string name)
                 => _buffer.WriteToTranslation(name, InterfaceName);
