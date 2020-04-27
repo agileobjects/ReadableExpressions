@@ -26,6 +26,22 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnAssignment()
+        {
+            var intVariable = Variable(typeof(int), "i");
+            var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
+
+            var translated = ToReadableHtmlString(assignDefaultToInt);
+
+            translated.ShouldBe(
+                "<span class=\"vb\">i</span> = " +
+                "<span class=\"kw\">default</span>" +
+                "(" +
+                "<span class=\"kw\">int</span>" +
+                ")");
+        }
+
+        [Fact]
         public void ShouldTranslateANewListExpressionWithAdditions()
         {
             var createList = CreateLambda(() => new List<decimal> { 1m, 2.005m, 3m });

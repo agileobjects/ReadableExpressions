@@ -60,7 +60,7 @@
                     return "<span class=\"kw\">";
 
                 case TokenType.Variable:
-                    return "<span class=\"pm\">";
+                    return "<span class=\"vb\">";
 
                 case TokenType.TypeName:
                     return "<span class=\"tn\">";

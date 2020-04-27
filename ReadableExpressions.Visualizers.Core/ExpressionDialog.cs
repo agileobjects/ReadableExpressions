@@ -139,7 +139,7 @@ body {{
     font-size: 11.5pt;
 }}
 .kw {{ color: #569CD6 }}
-.pm {{ color: #9CDCFE }}
+.vb {{ color: #9CDCFE }}
 .tn {{ color: #4EC9B0 }}
 .in {{ color: #B8D7A3 }}
 .cs {{ color: #D8A0DF }}
