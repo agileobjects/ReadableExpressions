@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using Visualizers.Core;
 #if !NET35
     using System.Linq.Expressions;
@@ -113,12 +114,50 @@
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
+        {
+            var exception = Variable(typeof(Exception), "ex");
+            var newAddress = New(typeof(Address).GetConstructors().First());
+            var line1Property = newAddress.Type.GetMember("Line1").First();
+            var line1Value = Constant("Over here");
+            var line1Init = Bind(line1Property, line1Value);
+            var addressInit = MemberInit(newAddress, line1Init);
+            var rethrow = Rethrow(newAddress.Type);
+            var globalCatchAndRethrow = Catch(exception, rethrow);
+            var tryCatch = TryCatch(addressInit, globalCatchAndRethrow);
+
+            var tryCatchBlock = Block(tryCatch);
+
+            var translated = ToReadableHtmlString(tryCatchBlock);
+
+            const string EXPECTED = @"
+<span class=""kw"">try</span>
+{
+    <span class=""cs"">return </span><span class=""kw"">new </span><span class=""tn"">WhenFormattingCodeAsHtml</span>.<span class=""tn"">Address</span>
+    {
+        Line1 = <span class=""tx"">""</span><span class=""tx"">Over here</span><span class=""tx"">""</span>
+    };
+}
+<span class=""kw"">catch</span>
+{
+    <span class=""kw"">throw</span>;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Members
 
         private static string ToReadableHtmlString(Expression expression)
         {
             return expression.ToReadableString(settings => settings
                 .FormatUsing(TranslationHtmlFormatter.Instance));
+        }
+
+        private class Address
+        {
+            // ReSharper disable once UnusedMember.Local
+            public string Line1 { get; set; }
         }
 
         #endregion

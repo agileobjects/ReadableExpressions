@@ -68,20 +68,22 @@
                 {
                     buffer.WriteFriendlyName(type.DeclaringType, settings);
                     buffer.WriteDotToTranslation();
-                    buffer.WriteToTranslation(substitutedTypeName ?? type.Name);
+
+                    if (!WriteSubstituteToTranslation(substitutedTypeName, buffer))
+                    {
+                        buffer.WriteTypeName(type);
+                    }
+
                     return;
                 }
 
-                if (substitutedTypeName != null)
+                if (WriteSubstituteToTranslation(substitutedTypeName, buffer))
                 {
-                    buffer.WriteToTranslation(substitutedTypeName, Keyword);
                     return;
                 }
-
-                var tokenType = type.IsInterface() ? InterfaceName : TypeName;
 
                 buffer.WriteTypeNamespaceIfRequired(type, settings);
-                buffer.WriteToTranslation(type.Name, tokenType);
+                buffer.WriteTypeName(type);
                 return;
             }
 
@@ -97,6 +99,19 @@
             buffer.WriteToTranslation('?');
         }
 
+        private static bool WriteSubstituteToTranslation(
+            string substitutedTypeName,
+            TranslationBuffer buffer)
+        {
+            if (substitutedTypeName == null)
+            {
+                return false;
+            }
+
+            buffer.WriteToTranslation(substitutedTypeName, Keyword);
+            return true;
+        }
+
         private static void WriteTypeNamespaceIfRequired(
             this TranslationBuffer buffer,
             Type type,
@@ -109,6 +124,12 @@
 
             buffer.WriteToTranslation(type.Namespace);
             buffer.WriteDotToTranslation();
+        }
+
+        private static void WriteTypeName(this TranslationBuffer buffer, Type type)
+        {
+            var tokenType = type.IsInterface() ? InterfaceName : TypeName;
+            buffer.WriteToTranslation(type.Name, tokenType);
         }
 
         private static void WriteGenericTypeName(

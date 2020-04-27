@@ -162,8 +162,7 @@
                     }
 
                     translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string), Text);
-                    translation = new TranslationWrapper(translation).WrappedWith("\"", "\"");
-
+                    translation = new TranslationWrapper(translation).WithPrefix("\"", Text).WithSuffix("\"", Text);
                     return true;
             }
 
