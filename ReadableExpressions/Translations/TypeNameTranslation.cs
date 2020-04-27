@@ -72,7 +72,7 @@
                     buffer.WriteToTranslation("Object", TokenType.TypeName);
                     return;
                 }
-                
+
                 buffer.WriteToTranslation(_object, TokenType.Keyword);
                 return;
             }

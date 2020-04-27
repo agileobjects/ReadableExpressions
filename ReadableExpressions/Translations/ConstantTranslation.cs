@@ -105,7 +105,7 @@
                 case NetStandardTypeCode.Char:
                     var character = (char)constant.Value;
                     var value = character == '\0' ? Expression.Constant(@"\0") : constant;
-                    translation = new TranslationWrapper(FixedValueTranslation(value)).WrappedWith("'", "'");
+                    translation = FixedValueTranslation(value, Text).WithPrefix("'", Text).WithSuffix("'", Text);
                     return true;
 
                 case NetStandardTypeCode.DateTime:
@@ -129,7 +129,7 @@
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    translation = new TranslationWrapper(FixedValueTranslation(constant)).WithSuffix("L");
+                    translation = FixedValueTranslation(constant).WithSuffix("L");
                     return true;
 
                 case NetStandardTypeCode.Int32:
@@ -162,7 +162,7 @@
                     }
 
                     translation = FixedValueTranslation(stringValue.Replace("\"", "\\\""), typeof(string), Text);
-                    translation = new TranslationWrapper(translation).WithPrefix("\"", Text).WithSuffix("\"", Text);
+                    translation = translation.WithPrefix("\"", Text).WithSuffix("\"", Text);
                     return true;
             }
 
@@ -200,7 +200,7 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("m", Numeric);
+            return valueTranslation.WithSuffix("m", Numeric);
         }
 
         private static ITranslation GetDoubleTranslation(ConstantExpression constant)
@@ -211,7 +211,7 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("d", Numeric);
+            return valueTranslation.WithSuffix("d", Numeric);
         }
 
         private static ITranslation GetFloatTranslation(ConstantExpression constant)
@@ -222,7 +222,7 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("f", Numeric);
+            return valueTranslation.WithSuffix("f", Numeric);
         }
 
         private static bool TryGetTypeTranslation(
@@ -230,15 +230,14 @@
             ITranslationContext context,
             out ITranslation translation)
         {
-            if (!constant.Type.IsAssignableTo(typeof(Type)))
+            if (constant.Type.IsAssignableTo(typeof(Type)))
             {
-                translation = null;
-                return false;
+                translation = new TypeLiteralTranslation((Type)constant.Value, context);
+                return true;
             }
 
-            translation = context.GetTranslationFor((Type)constant.Value);
-            translation = new TranslationWrapper(translation).WrappedWith("typeof(", ")");
-            return true;
+            translation = null;
+            return false;
         }
 
         private static bool TryGetRegexTranslation(ConstantExpression constant, out ITranslation translation)
@@ -322,6 +321,7 @@
             {
                 buffer.WriteNewToTranslation();
                 buffer.WriteToTranslation(nameof(DateTime), TypeName);
+                buffer.WriteToTranslation('(');
 
                 buffer.WriteToTranslation(_value.Year);
                 WriteTwoDigitDatePart(_value.Month, buffer);

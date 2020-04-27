@@ -25,7 +25,7 @@
 
             var translated = ToReadableHtmlString(createObject.Body);
 
-            translated.ShouldBe("<span class=\"kw\">new</span> <span class=\"tn\">Object</span>()");
+            translated.ShouldBe("<span class=\"kw\">new </span><span class=\"tn\">Object</span>()");
         }
 
         [Fact]
@@ -144,6 +144,62 @@
     <span class=""kw"">throw</span>;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateGotoStatements()
+        {
+            var labelTargetOne = Label(typeof(void), "One");
+            var labelOne = Label(labelTargetOne);
+            var writeOne = CreateLambda(() => Console.Write("One"));
+            var gotoOne = Goto(labelTargetOne);
+
+            var labelTargetTwo = Label(typeof(void), "Two");
+            var labelTwo = Label(labelTargetTwo);
+            var writeTwo = CreateLambda(() => Console.Write("Two"));
+            var gotoTwo = Goto(labelTargetTwo);
+
+            var intVariable = Variable(typeof(int), "i");
+            var intEqualsOne = Equal(intVariable, Constant(1));
+            var intEqualsTwo = Equal(intVariable, Constant(2));
+
+            var ifTwoGotoTwo = IfThen(intEqualsTwo, gotoTwo);
+            var gotoOneOrTwo = IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
+
+            var writeNeither = CreateLambda(() => Console.Write("Neither"));
+            var returnFromBlock = Return(Label());
+
+            var block = Block(
+                gotoOneOrTwo,
+                writeNeither.Body,
+                returnFromBlock,
+                labelOne,
+                writeOne.Body,
+                labelTwo,
+                writeTwo.Body);
+
+            var translated = ToReadableHtmlString(block);
+
+            const string EXPECTED = @"
+<span class=""cs"">if </span>(<span class=""vb"">i</span> == <span class=""nm"">1</span>)
+{
+    <span class=""cs"">goto </span>One;
+}
+<span class=""cs"">else if </span>(<span class=""vb"">i</span> == <span class=""nm"">2</span>)
+{
+    <span class=""cs"">goto </span>Two;
+}
+
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">Neither</span><span class=""tx"">""</span>);
+<span class=""cs"">return</span>;
+
+One:
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">One</span><span class=""tx"">""</span>);
+
+Two:
+<span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""</span><span class=""tx"">Two</span><span class=""tx"">""</span>);
+";
+            translated.ShouldBe(EXPECTED.Trim());
         }
 
         #region Helper Members

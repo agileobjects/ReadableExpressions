@@ -88,7 +88,7 @@
                 buffer.WriteToTranslation(property.Name);
                 buffer.WriteToTranslation(" { ");
                 buffer.WriteToTranslation((method.ReturnType != typeof(void)) ? "get" : "set", Keyword);
-                buffer.WriteToTranslation("; } ");
+                buffer.WriteToTranslation("; }");
 
                 return buffer.GetContent();
             }

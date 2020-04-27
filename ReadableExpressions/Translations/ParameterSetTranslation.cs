@@ -197,12 +197,12 @@
 
             if (info.IsOut)
             {
-                return new TranslationWrapper(translation).WithPrefix("out ");
+                return translation.WithPrefix("out ");
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return new TranslationWrapper(translation).WithPrefix("ref ");
+                return translation.WithPrefix("ref ");
             }
 
             return translation;
