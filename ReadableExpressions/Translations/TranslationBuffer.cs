@@ -7,7 +7,7 @@
     using System.Text;
     using Formatting;
     using Interfaces;
-    using static TokenType;
+    using static Formatting.TokenType;
 
     internal class TranslationBuffer : ITranslationQuery
     {

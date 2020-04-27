@@ -4,13 +4,14 @@
     using System.Reflection;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.RegularExpressions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Text.RegularExpressions;
     using Extensions;
+    using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
 

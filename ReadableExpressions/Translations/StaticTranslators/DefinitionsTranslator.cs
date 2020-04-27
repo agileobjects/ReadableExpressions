@@ -5,7 +5,7 @@
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
-    using static TokenType;
+    using static Formatting.TokenType;
 
     /// <summary>
     /// Translates reflection objects into readable strings. Used to provide visualizations.
@@ -87,7 +87,7 @@
             {
                 buffer.WriteToTranslation(property.Name);
                 buffer.WriteToTranslation(" { ");
-                buffer.WriteToTranslation((method.ReturnType != typeof(void)) ? "get" : "set", Keyword);
+                buffer.WriteKeywordToTranslation((method.ReturnType != typeof(void)) ? "get" : "set");
                 buffer.WriteToTranslation("; }");
 
                 return buffer.GetContent();
@@ -220,23 +220,23 @@
         {
             if (method.IsPublic)
             {
-                buffer.WriteToTranslation("public ", Keyword);
+                buffer.WriteKeywordToTranslation("public ");
             }
             else if (method.IsAssembly)
             {
-                buffer.WriteToTranslation("internal ", Keyword);
+                buffer.WriteKeywordToTranslation("internal ");
             }
             else if (method.IsFamily)
             {
-                buffer.WriteToTranslation("protected ", Keyword);
+                buffer.WriteKeywordToTranslation("protected ");
             }
             else if (method.IsFamilyOrAssembly)
             {
-                buffer.WriteToTranslation("protected internal ", Keyword);
+                buffer.WriteKeywordToTranslation("protected internal ");
             }
             else if (method.IsPrivate)
             {
-                buffer.WriteToTranslation("private ", Keyword);
+                buffer.WriteKeywordToTranslation("private ");
             }
         }
 

@@ -4,7 +4,7 @@
     using NetStandardPolyfills;
     using Translations;
     using static ExpressionExtensions;
-    using static Translations.TokenType;
+    using static Translations.Formatting.TokenType;
 
     /// <summary>
     /// Provides a set of static extension methods for type information.
@@ -108,7 +108,7 @@
                 return false;
             }
 
-            buffer.WriteToTranslation(substitutedTypeName, Keyword);
+            buffer.WriteKeywordToTranslation(substitutedTypeName);
             return true;
         }
 

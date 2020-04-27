@@ -69,11 +69,11 @@
             {
                 if (_writeObjectTypeName)
                 {
-                    buffer.WriteToTranslation("Object", TokenType.TypeName);
+                    buffer.WriteTypeNameToTranslation("Object");
                     return;
                 }
 
-                buffer.WriteToTranslation(_object, TokenType.Keyword);
+                buffer.WriteKeywordToTranslation(_object);
                 return;
             }
 

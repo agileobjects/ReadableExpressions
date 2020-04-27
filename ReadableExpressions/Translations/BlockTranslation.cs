@@ -1,16 +1,18 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
     using Extensions;
     using Interfaces;
 #if NET35
-    using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
-    using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
@@ -439,7 +441,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 }
                 else
                 {
-                    buffer.WriteToTranslation(_var, TokenType.Keyword);
+                    buffer.WriteKeywordToTranslation(_var);
                 }
 
                 buffer.WriteSpaceToTranslation();

@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Formatting;
     using Interfaces;
 
     internal class FixedValueTranslation : ITranslation

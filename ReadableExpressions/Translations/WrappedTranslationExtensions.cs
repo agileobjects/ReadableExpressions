@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using Formatting;
     using Interfaces;
 
     internal static class WrappedTranslationExtensions

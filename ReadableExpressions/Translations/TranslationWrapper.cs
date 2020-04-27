@@ -6,8 +6,9 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Formatting;
     using Interfaces;
-    using static TokenType;
+    using static Formatting.TokenType;
 
     internal class TranslationWrapper : ITranslation, IPotentialSelfTerminatingTranslatable
     {

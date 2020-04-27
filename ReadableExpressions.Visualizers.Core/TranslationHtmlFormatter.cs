@@ -2,7 +2,6 @@
 {
     using System;
     using System.Text.RegularExpressions;
-    using Translations;
     using Translations.Formatting;
     using static System.Text.RegularExpressions.RegexOptions;
 

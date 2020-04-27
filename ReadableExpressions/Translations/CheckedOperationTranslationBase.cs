@@ -22,7 +22,7 @@
                 return;
             }
 
-            buffer.WriteToTranslation("checked", TokenType.Keyword);
+            buffer.WriteKeywordToTranslation("checked");
 
             isMultiStatementChecked = IsMultiStatement();
 

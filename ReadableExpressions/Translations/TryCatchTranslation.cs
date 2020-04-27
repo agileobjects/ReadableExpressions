@@ -9,7 +9,7 @@
 #endif
     using Extensions;
     using Interfaces;
-    using static TokenType;
+    using static Formatting.TokenType;
 
     internal class TryCatchTranslation :
         ITranslation,
@@ -133,7 +133,7 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("try", Keyword);
+            buffer.WriteKeywordToTranslation("try");
             _bodyTranslation.WriteTo(buffer);
 
             for (int i = 0, l = _catchBlockTranslations.Count; i < l; ++i)
@@ -145,14 +145,14 @@
             if (_hasFault)
             {
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("fault", Keyword);
+                buffer.WriteKeywordToTranslation("fault");
                 _faultTranslation.WriteTo(buffer);
             }
 
             if (_hasFinally)
             {
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("finally", Keyword);
+                buffer.WriteKeywordToTranslation("finally");
                 _finallyTranslation.WriteTo(buffer);
             }
         }
@@ -184,7 +184,7 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("catch", Keyword);
+                buffer.WriteKeywordToTranslation("catch");
                 _exceptionClause?.WriteTo(buffer);
                 _catchBodyTranslation.WriteTo(buffer);
             }
@@ -242,7 +242,7 @@
                 public override void WriteTo(TranslationBuffer buffer)
                 {
                     base.WriteTo(buffer);
-                    buffer.WriteToTranslation(" when ", Keyword);
+                    buffer.WriteKeywordToTranslation(" when ");
                     _filterTranslation.WriteTo(buffer);
                 }
             }

@@ -8,7 +8,7 @@
 #endif
     using Extensions;
     using Interfaces;
-    using static TokenType;
+    using static Formatting.TokenType;
 
     internal static class ParameterTranslation
     {

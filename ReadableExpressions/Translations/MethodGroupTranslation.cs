@@ -4,11 +4,14 @@
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Extensions;
 #else
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+#if NET35
+    using Extensions;
+#endif
+    using Formatting;
     using Interfaces;
 
     internal class MethodGroupTranslation : ITranslation

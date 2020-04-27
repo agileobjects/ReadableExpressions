@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Formatting
 {
     /// <summary>
     /// Defines types of source code elements.

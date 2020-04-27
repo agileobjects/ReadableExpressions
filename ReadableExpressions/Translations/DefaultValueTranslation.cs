@@ -56,7 +56,7 @@
         {
             if (_typeCanBeNull)
             {
-                buffer.WriteToTranslation(_null, TokenType.Keyword);
+                buffer.WriteKeywordToTranslation(_null);
             }
 
             if (_typeNameTranslation == null)
@@ -65,7 +65,7 @@
                 return;
             }
 
-            buffer.WriteToTranslation(_default, TokenType.Keyword);
+            buffer.WriteKeywordToTranslation(_default);
             _typeNameTranslation.WriteInParentheses(buffer);
         }
     }

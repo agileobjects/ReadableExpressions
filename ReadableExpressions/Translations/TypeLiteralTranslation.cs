@@ -26,10 +26,8 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("typeof", TokenType.Keyword);
-            buffer.WriteToTranslation('(');
-            _typeNameTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation(')');
+            buffer.WriteKeywordToTranslation("typeof");
+            _typeNameTranslation.WriteInParentheses(buffer);
         }
     }
 }
