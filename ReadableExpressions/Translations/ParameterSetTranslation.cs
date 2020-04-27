@@ -1,19 +1,22 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
 #endif
+    using System.Reflection;
     using Extensions;
-    using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class ParameterSetTranslation : ITranslatable
     {
@@ -137,7 +140,7 @@
                         translation = context.GetTranslationFor(p);
                     }
 
-                    CreateCodeBlock:
+                CreateCodeBlock:
                     estimatedSize += translation.EstimatedSize;
 
                     // TODO: Only use code blocks where useful:
@@ -198,12 +201,12 @@
 
             if (info.IsOut)
             {
-                return translation.WithPrefix("out ", TokenType.Keyword);
+                return new ModifiedParameterTranslation(translation, "out ");
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return translation.WithPrefix("ref ", TokenType.Keyword);
+                return new ModifiedParameterTranslation(translation, "ref ");
             }
 
             return translation;
@@ -352,6 +355,33 @@
             Auto,
             Always,
             Never
+        }
+
+        private class ModifiedParameterTranslation : ITranslation
+        {
+            private readonly ITranslation _parameterTranslation;
+            private readonly string _modifier;
+
+            public ModifiedParameterTranslation(
+                ITranslation parameterTranslation,
+                string modifier)
+            {
+                _parameterTranslation = parameterTranslation;
+                _modifier = modifier;
+                EstimatedSize = parameterTranslation.EstimatedSize + modifier.Length;
+            }
+
+            public ExpressionType NodeType => _parameterTranslation.NodeType;
+
+            public Type Type => _parameterTranslation.Type;
+
+            public int EstimatedSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteKeywordToTranslation(_modifier);
+                _parameterTranslation.WriteTo(buffer);
+            }
         }
     }
 }

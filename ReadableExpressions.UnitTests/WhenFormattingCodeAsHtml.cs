@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using NetStandardPolyfills;
     using Visualizers.Core;
 #if !NET35
     using System.Linq.Expressions;
@@ -210,6 +211,23 @@ Two:
 <span class=""tn"">Console</span>.<span class=""mn"">Write</span>(<span class=""tx"">""Two""</span>);
 ";
             translated.ShouldBe(EXPECTED.Trim());
+        }
+
+        [Fact]
+        public void ShouldFormatRefParameterKeywords()
+        {
+            var helperVariable = Variable(typeof(IndexedProperty), "ip");
+            var three = Constant(3);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("RefGet");
+            var tryGetCall = Call(helperVariable, tryGetMethod, three, valueVariable);
+
+            var translated = ToReadableHtmlString(tryGetCall);
+
+            translated.ShouldBe(
+                "<span class=\"vb\">ip</span>.<span class=\"mn\">RefGet</span>(" +
+                "<span class=\"nm\">3</span>, " +
+                "<span class=\"kw\">ref </span><span class=\"vb\">value</span>)");
         }
 
         #region Helper Members

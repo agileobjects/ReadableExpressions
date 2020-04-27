@@ -6,18 +6,14 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Formatting;
     using Interfaces;
-    using static Formatting.TokenType;
 
     internal class TranslationWrapper : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslatable _translatable;
         private string _prefix;
-        private TokenType _prefixTokenType;
         private bool _hasPrefix;
         private string _suffix;
-        private TokenType _suffixTokenType;
         private bool _hasSuffix;
 
         public TranslationWrapper(ITranslation translation)
@@ -59,18 +55,16 @@
 
         public TranslationWrapper WrappedWith(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
 
-        public TranslationWrapper WithPrefix(string prefix, TokenType tokenType = Default)
+        private TranslationWrapper WithPrefix(string prefix)
         {
             _prefix = prefix;
-            _prefixTokenType = tokenType;
             _hasPrefix = true;
             return this;
         }
 
-        public TranslationWrapper WithSuffix(string suffix, TokenType tokenType = Default)
+        private TranslationWrapper WithSuffix(string suffix)
         {
             _suffix = suffix;
-            _suffixTokenType = tokenType;
             _hasSuffix = true;
             return this;
         }
@@ -79,14 +73,14 @@
         {
             if (_hasPrefix)
             {
-                buffer.WriteToTranslation(_prefix, _prefixTokenType);
+                buffer.WriteToTranslation(_prefix);
             }
 
             _translatable.WriteTo(buffer);
 
             if (_hasSuffix)
             {
-                buffer.WriteToTranslation(_suffix, _suffixTokenType);
+                buffer.WriteToTranslation(_suffix);
             }
         }
     }
