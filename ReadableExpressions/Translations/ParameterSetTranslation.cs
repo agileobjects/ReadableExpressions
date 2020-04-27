@@ -11,6 +11,7 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
     using Extensions;
+    using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
 
@@ -197,12 +198,12 @@
 
             if (info.IsOut)
             {
-                return translation.WithPrefix("out ");
+                return translation.WithPrefix("out ", TokenType.Keyword);
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return translation.WithPrefix("ref ");
+                return translation.WithPrefix("ref ", TokenType.Keyword);
             }
 
             return translation;

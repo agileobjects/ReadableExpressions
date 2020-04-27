@@ -66,9 +66,9 @@
                 "<span class=\"tn\">List</span>" +
                 "&lt;<span class=\"kw\">decimal</span>&gt; " +
                 "{ " +
-                "<span class=\"nm\">1</span><span class=\"nm\">m</span>, " +
-                "<span class=\"nm\">2.005</span><span class=\"nm\">m</span>, " +
-                "<span class=\"nm\">3</span><span class=\"nm\">m</span> " +
+                "<span class=\"nm\">1m</span>, " +
+                "<span class=\"nm\">2.005m</span>, " +
+                "<span class=\"nm\">3m</span> " +
                 "}");
         }
 
@@ -195,7 +195,7 @@
 {
     <span class=""cs"">goto </span>One;
 }
-<span class=""cs"">else if </span>(<span class=""vb"">i</span> == <span class=""nm"">2</span>)
+<span class=""cs"">else</span> <span class=""cs"">if </span>(<span class=""vb"">i</span> == <span class=""nm"">2</span>)
 {
     <span class=""cs"">goto </span>Two;
 }

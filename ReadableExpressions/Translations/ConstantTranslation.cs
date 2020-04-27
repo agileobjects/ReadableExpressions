@@ -137,7 +137,7 @@
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    translation = FixedValueTranslation(constant, Numeric).WithSuffix("L", Numeric);
+                    translation = GetLongTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Int32:
@@ -204,34 +204,37 @@
         {
             var value = (decimal)constant.Value;
 
-            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+            var stringValue = (value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type, Numeric);
+                : value.ToString(CurrentCulture);
 
-            return valueTranslation.WithSuffix("m", Numeric);
+            return FixedValueTranslation(stringValue + "m", constant.Type, Numeric);
         }
 
         private static ITranslation GetDoubleTranslation(ConstantExpression constant)
         {
             var value = (double)constant.Value;
 
-            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+            var stringValue = (value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type, Numeric);
+                : value.ToString(CurrentCulture);
 
-            return valueTranslation.WithSuffix("d", Numeric);
+            return FixedValueTranslation(stringValue + "d", constant.Type, Numeric);
         }
 
         private static ITranslation GetFloatTranslation(ConstantExpression constant)
         {
             var value = (float)constant.Value;
 
-            var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
+            var stringValue = (value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type, Numeric);
+                : value.ToString(CurrentCulture);
 
-            return valueTranslation.WithSuffix("f", Numeric);
+            return FixedValueTranslation(stringValue + "f", constant.Type, Numeric);
         }
+
+        private static ITranslation GetLongTranslation(ConstantExpression constant)
+            => FixedValueTranslation((long)constant.Value + "L", constant.Type, Numeric);
 
         private static bool TryGetTypeTranslation(
             ConstantExpression constant,
@@ -500,7 +503,7 @@
                     buffer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
-                EndTranslation:
+            EndTranslation:
                 buffer.WriteToTranslation(')');
             }
 

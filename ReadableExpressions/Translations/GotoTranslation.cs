@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Formatting;
     using Interfaces;
 
     internal static class GotoTranslation
@@ -33,12 +32,9 @@
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    return FixedTerminatedValueTranslation("goto " + @goto.Target.Name + ";", @goto);
+                    return new GotoNamedLabelTranslation(@goto);
             }
         }
-
-        private static FixedTerminatedValueTranslation FixedTerminatedValueTranslation(string value, GotoExpression @goto)
-            => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type, TokenType.ControlStatement);
 
         private class TerminatedGotoTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
         {
@@ -53,7 +49,7 @@
 
             public ExpressionType NodeType => ExpressionType.Goto;
 
-            public Type Type {get;}
+            public Type Type { get; }
 
             public int EstimatedSize { get; }
 
@@ -66,15 +62,41 @@
             }
         }
 
+        private class GotoNamedLabelTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        {
+            private readonly string _labelName;
+
+            public GotoNamedLabelTranslation(GotoExpression @goto)
+            {
+                Type = @goto.Type;
+                _labelName = @goto.Target.Name;
+                EstimatedSize = "goto ".Length + _labelName.Length + 1;
+            }
+
+            public ExpressionType NodeType => ExpressionType.Goto;
+
+            public Type Type { get; }
+
+            public int EstimatedSize { get; }
+
+            public bool IsTerminated => true;
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteControlStatementToTranslation("goto ");
+                buffer.WriteToTranslation(_labelName);
+                buffer.WriteToTranslation(';');
+            }
+        }
+
         private class ReturnValueTranslation : ITranslation
         {
-            private const string _returnKeyword = "return ";
             private readonly CodeBlockTranslation _returnValueTranslation;
 
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
                 _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length;
+                EstimatedSize = _returnValueTranslation.EstimatedSize + "return ".Length;
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
@@ -85,7 +107,7 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteControlStatementToTranslation(_returnKeyword);
+                buffer.WriteReturnToTranslation();
                 _returnValueTranslation.WriteTo(buffer);
             }
         }
