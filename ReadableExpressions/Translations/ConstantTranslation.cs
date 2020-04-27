@@ -464,12 +464,17 @@
 
                 if ((_timeSpan.Days == 0) && (_timeSpan.Hours == 0) && (_timeSpan.Minutes == 0) && (_timeSpan.Seconds == 0))
                 {
-                    buffer.WriteToTranslation("TimeSpan.FromTicks(");
+                    buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                    buffer.WriteDotToTranslation();
+                    buffer.WriteToTranslation("FromTicks", MethodName);
+                    buffer.WriteToTranslation('(');
                     buffer.WriteToTranslation(Math.Floor(_timeSpan.TotalMilliseconds * 10000).ToString(CurrentCulture));
                     goto EndTranslation;
                 }
 
-                buffer.WriteToTranslation("new TimeSpan(");
+                buffer.WriteNewToTranslation();
+                buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                buffer.WriteToTranslation('(');
 
                 if (_timeSpan.Days == 0)
                 {
@@ -517,8 +522,10 @@
                     return false;
                 }
 
-                buffer.WriteToTranslation("TimeSpan.From");
-                buffer.WriteToTranslation(valueName);
+                buffer.WriteToTranslation(nameof(TimeSpan), TypeName);
+                buffer.WriteDotToTranslation();
+                buffer.WriteToTranslation("From", MethodName);
+                buffer.WriteToTranslation(valueName, MethodName);
                 buffer.WriteToTranslation('(');
                 buffer.WriteToTranslation(value);
                 buffer.WriteToTranslation(')');

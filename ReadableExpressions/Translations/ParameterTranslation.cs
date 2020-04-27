@@ -113,7 +113,7 @@
 
                 if (_variableNumber != null)
                 {
-                    buffer.WriteToTranslation(_variableNumber.Value.ToString(), Variable);
+                    buffer.WriteToTranslation(_variableNumber.Value, Variable);
                 }
             }
         }

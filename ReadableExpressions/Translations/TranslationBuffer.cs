@@ -212,13 +212,21 @@
 
         private void Write(string stringValue) => _content.Append(stringValue);
 
-        public void WriteToTranslation(int intValue)
+        public void WriteToTranslation(int intValue, TokenType tokenType = Numeric)
         {
             WriteIndentIfRequired();
-            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
+            _formatter.WriteFormatted(intValue, Write, Write, tokenType);
         }
 
         private void Write(int intValue) => _content.Append(intValue);
+
+        public void WriteToTranslation(long longValue)
+        {
+            WriteIndentIfRequired();
+            _formatter.WriteFormatted(longValue, Write, Write, Numeric);
+        }
+
+        private void Write(long longValue) => _content.Append(longValue);
 
         public void WriteToTranslation(object value)
         {
