@@ -70,7 +70,9 @@
             };
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
-                TranslationHtmlFormatter.RemoveFormatting(_viewer.DocumentText));
+            // ReSharper disable PossibleNullReferenceException
+                TranslationHtmlFormatter.RemoveFormatting(_viewer.Document.Body.InnerHtml));
+            // ReSharper restore PossibleNullReferenceException
 
             var toolbar = new ToolStrip(copyButton)
             {

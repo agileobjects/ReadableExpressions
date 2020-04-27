@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using System;
     using System.Collections.Generic;
+    using System.IO;
     using Visualizers.Core;
 #if !NET35
     using System.Linq.Expressions;
@@ -77,10 +79,48 @@
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldAssignTheResultOfATryCatch()
+        {
+            var intVariable = Variable(typeof(int), "i");
+
+            var assignIntToZero = Assign(intVariable, Constant(0));
+
+            var read = CreateLambda(() => Console.Read());
+
+            var returnDefault = Catch(typeof(IOException), Default(typeof(int)));
+            var readOrDefault = TryCatch(read.Body, returnDefault);
+
+            var assignReadOrDefault = Assign(intVariable, readOrDefault);
+
+            var assignmentBlock = Block(new[] { intVariable }, assignIntToZero, assignReadOrDefault);
+
+            var translated = ToReadableHtmlString(assignmentBlock);
+
+            const string EXPECTED = @"
+<span class=""kw"">var</span> <span class=""vb"">i</span> = <span class=""nm"">0</span>;
+<span class=""vb"">i</span> =
+{
+    <span class=""kw"">try</span>
+    {
+        <span class=""cs"">return </span><span class=""tn"">Console</span>.<span class=""mn"">Read</span>();
+    }
+    <span class=""kw"">catch</span> (<span class=""tn"">IOException</span>)
+    {
+        <span class=""cs"">return </span><span class=""kw"">default</span>(<span class=""kw"">int</span>);
+    }
+};";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        #region Helper Members
+
         private static string ToReadableHtmlString(Expression expression)
         {
             return expression.ToReadableString(settings => settings
                 .FormatUsing(TranslationHtmlFormatter.Instance));
         }
+
+        #endregion
     }
 }
