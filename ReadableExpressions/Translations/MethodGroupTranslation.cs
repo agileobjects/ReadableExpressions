@@ -55,8 +55,8 @@
         public void WriteTo(TranslationBuffer buffer)
         {
             _subjectTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation('.');
-            buffer.WriteToTranslation(_subjectMethodName);
+            buffer.WriteDotToTranslation();
+            buffer.WriteToTranslation(_subjectMethodName, TokenType.MethodName);
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using Extensions;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
+    using Interfaces;
+    using static TokenType;
 
     internal static class ConditionalTranslation
     {
@@ -109,7 +110,7 @@
 
             protected void WriteIfStatement(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("if ");
+                buffer.WriteToTranslation("if ", ControlStatement);
                 TestTranslation.WriteInParentheses(buffer);
                 IfTrueTranslation.WriteTo(buffer);
             }
@@ -235,7 +236,7 @@
             {
                 WriteIfStatement(buffer);
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("else");
+                buffer.WriteToTranslation("else", ControlStatement);
 
                 if (_isElseIf)
                 {

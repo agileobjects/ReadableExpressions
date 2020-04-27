@@ -103,12 +103,12 @@
         }
 
         public static void WriteNewToTranslation(this TranslationBuffer buffer)
-        {
-            buffer.WriteToTranslation("new", TokenType.Keyword);
-            buffer.WriteSpaceToTranslation();
-        }
+            => buffer.WriteToTranslation("new ", TokenType.Keyword);
 
         public static void WriteSpaceToTranslation(this TranslationBuffer buffer)
             => buffer.WriteToTranslation(' ');
+
+        public static void WriteDotToTranslation(this TranslationBuffer buffer)
+            => buffer.WriteToTranslation('.');
     }
 }

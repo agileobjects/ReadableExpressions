@@ -86,7 +86,7 @@
             if (_subject != null)
             {
                 _subject.WriteInParenthesesIfRequired(buffer);
-                buffer.WriteToTranslation('.');
+                buffer.WriteDotToTranslation();
             }
 
             buffer.WriteToTranslation(_memberName);

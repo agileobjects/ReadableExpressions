@@ -186,7 +186,6 @@
         public void WriteToTranslation(char character, TokenType tokenType = Default)
         {
             WriteIndentIfRequired();
-
             _formatter.WriteFormatted(character, Write, Write, tokenType);
         }
 
@@ -202,16 +201,21 @@
 
             WriteIndentIfRequired();
 
-            _formatter.WriteFormatted(stringValue, Write, Write, tokenType);
+            if (tokenType != Default)
+            {
+                _formatter.WriteFormatted(stringValue, Write, Write, tokenType);
+                return;
+            }
+
+            Write(stringValue);
         }
 
         private void Write(string stringValue) => _content.Append(stringValue);
 
-        public void WriteToTranslation(int intValue, TokenType tokenType = Numeric)
+        public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
-
-            _formatter.WriteFormatted(intValue, Write, Write, tokenType);
+            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
         }
 
         private void Write(int intValue) => _content.Append(intValue);
@@ -238,62 +242,6 @@
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;
         }
-    }
-
-    /// <summary>
-    /// Defines types of source code elements.
-    /// </summary>
-    public enum TokenType
-    {
-        /// <summary>
-        /// A default source code element.
-        /// </summary>
-        Default,
-
-        /// <summary>
-        /// A language keyword (new, int, default, etc).
-        /// </summary>
-        Keyword,
-
-        /// <summary>
-        /// A method or constructor parameter.
-        /// </summary>
-        Parameter,
-
-        /// <summary>
-        /// The name of a type.
-        /// </summary>
-        TypeName,
-
-        /// <summary>
-        /// The name of an interface.
-        /// </summary>
-        InterfaceName,
-
-        /// <summary>
-        /// A control statement (if, else, return, etc).
-        /// </summary>
-        ControlStatement,
-
-        /// <summary>
-        /// A constant string or character value.
-        /// </summary>
-        Text,
-
-        /// <summary>
-        /// A constant numeric value.
-        /// </summary>
-        Numeric,
-
-        /// <summary>
-        /// The name of a method.
-        /// </summary>
-        MethodName,
-
-        /// <summary>
-        /// A code comment.
-        /// </summary>
-        Comment
     }
 
     /// <summary>

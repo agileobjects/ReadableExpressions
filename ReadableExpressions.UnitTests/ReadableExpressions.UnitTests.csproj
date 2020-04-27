@@ -123,7 +123,7 @@
     <Compile Include="StaticTranslators\WhenTranslatingConstructorInfos.cs" />
     <Compile Include="TestClassBase.cs" />
     <Compile Include="StaticTranslators\WhenTranslatingMethodInfos.cs" />
-    <Compile Include="WhenFormattingCodeToHtml.cs" />
+    <Compile Include="WhenFormattingCodeAsHtml.cs" />
     <Compile Include="WhenTranslatingVariableNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />
     <Compile Include="WhenTranslatingStringConcatenation.cs" />

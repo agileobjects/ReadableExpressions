@@ -203,7 +203,7 @@
                     buffer.Indent();
                 }
 
-                buffer.WriteToTranslation('.');
+                buffer.WriteDotToTranslation();
                 _methodInvocationTranslation.WriteTo(buffer);
 
                 if (_isPartOfMethodCallChain)
@@ -300,7 +300,7 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_method.Name);
+                buffer.WriteToTranslation(_method.Name, TokenType.MethodName);
                 WriteGenericArgumentNamesIfNecessary(buffer);
                 _parameters.WriteTo(buffer);
             }

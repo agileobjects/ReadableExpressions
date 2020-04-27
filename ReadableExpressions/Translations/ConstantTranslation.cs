@@ -97,7 +97,8 @@
                 case NetStandardTypeCode.Boolean:
                     translation = FixedValueTranslation(
                         constant.Value.ToString().ToLowerInvariant(),
-                        constant.Type);
+                        constant.Type,
+                        Keyword);
 
                     return true;
 
@@ -116,13 +117,7 @@
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    translation = FixedValuesTranslation(
-                        constant.Type,
-                        "DBNull.Value".Length,
-                        b => b.WriteToTranslation("DBNull", TypeName),
-                        b => b.WriteToTranslation('.'),
-                        b => b.WriteToTranslation("Value"));
-
+                    translation = GetDbNullTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Decimal:
@@ -188,15 +183,25 @@
             return true;
         }
 
+        private static ITranslation GetDbNullTranslation(Expression constant)
+        {
+            return FixedValuesTranslation(
+                constant.Type,
+                "DBNull.Value".Length,
+                b => b.WriteToTranslation("DBNull", TypeName),
+                b => b.WriteDotToTranslation(),
+                b => b.WriteToTranslation("Value"));
+        }
+
         private static ITranslation GetDecimalTranslation(ConstantExpression constant)
         {
             var value = (decimal)constant.Value;
 
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type);
+                : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("m");
+            return new TranslationWrapper(valueTranslation).WithSuffix("m", Numeric);
         }
 
         private static ITranslation GetDoubleTranslation(ConstantExpression constant)
@@ -205,9 +210,9 @@
 
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type);
+                : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("d");
+            return new TranslationWrapper(valueTranslation).WithSuffix("d", Numeric);
         }
 
         private static ITranslation GetFloatTranslation(ConstantExpression constant)
@@ -216,9 +221,9 @@
 
             var valueTranslation = FixedValueTranslation((value % 1).Equals(0)
                 ? value.ToString("0")
-                : value.ToString(CurrentCulture), constant.Type);
+                : value.ToString(CurrentCulture), constant.Type, Numeric);
 
-            return new TranslationWrapper(valueTranslation).WithSuffix("f");
+            return new TranslationWrapper(valueTranslation).WithSuffix("f", Numeric);
         }
 
         private static bool TryGetTypeTranslation(
@@ -271,7 +276,7 @@
             public void WriteTo(TranslationBuffer buffer)
             {
                 _typeNameTranslation.WriteTo(buffer);
-                buffer.WriteToTranslation('.');
+                buffer.WriteDotToTranslation();
                 buffer.WriteToTranslation(_enumValue);
             }
         }

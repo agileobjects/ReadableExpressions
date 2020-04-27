@@ -59,7 +59,7 @@
                 case TokenType.Keyword:
                     return "<span class=\"kw\">";
 
-                case TokenType.Parameter:
+                case TokenType.Variable:
                     return "<span class=\"pm\">";
 
                 case TokenType.TypeName:
@@ -93,7 +93,7 @@
             switch (type)
             {
                 case TokenType.Keyword:
-                case TokenType.Parameter:
+                case TokenType.Variable:
                 case TokenType.TypeName:
                 case TokenType.InterfaceName:
                 case TokenType.ControlStatement:

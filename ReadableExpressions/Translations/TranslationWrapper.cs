@@ -7,13 +7,16 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
+    using static TokenType;
 
     internal class TranslationWrapper : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslatable _translatable;
         private string _prefix;
+        private TokenType _prefixTokenType;
         private bool _hasPrefix;
         private string _suffix;
+        private TokenType _suffixTokenType;
         private bool _hasSuffix;
 
         public TranslationWrapper(ITranslation translation)
@@ -29,7 +32,7 @@
         }
 
         public ExpressionType NodeType { get; }
-        
+
         public Type Type { get; }
 
         public int EstimatedSize => GetEstimatedSize();
@@ -55,16 +58,18 @@
 
         public TranslationWrapper WrappedWith(string prefix, string suffix) => WithPrefix(prefix).WithSuffix(suffix);
 
-        public TranslationWrapper WithPrefix(string prefix)
+        public TranslationWrapper WithPrefix(string prefix, TokenType tokenType = Default)
         {
             _prefix = prefix;
+            _prefixTokenType = tokenType;
             _hasPrefix = true;
             return this;
         }
 
-        public TranslationWrapper WithSuffix(string suffix)
+        public TranslationWrapper WithSuffix(string suffix, TokenType tokenType = Default)
         {
             _suffix = suffix;
+            _suffixTokenType = tokenType;
             _hasSuffix = true;
             return this;
         }
@@ -73,14 +78,14 @@
         {
             if (_hasPrefix)
             {
-                buffer.WriteToTranslation(_prefix);
+                buffer.WriteToTranslation(_prefix, _prefixTokenType);
             }
 
             _translatable.WriteTo(buffer);
 
             if (_hasSuffix)
             {
-                buffer.WriteToTranslation(_suffix);
+                buffer.WriteToTranslation(_suffix, _suffixTokenType);
             }
         }
     }

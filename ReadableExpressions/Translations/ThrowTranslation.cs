@@ -36,7 +36,7 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation(_throw);
+            buffer.WriteToTranslation(_throw, TokenType.Keyword);
 
             if (_thrownItemTranslation == null)
             {

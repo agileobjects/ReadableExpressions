@@ -5,6 +5,7 @@
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
+    using static TokenType;
 
     /// <summary>
     /// Translates reflection objects into readable strings. Used to provide visualizations.
@@ -79,18 +80,20 @@
             if (method.DeclaringType != null)
             {
                 buffer.WriteFriendlyName(method.DeclaringType);
-                buffer.WriteToTranslation('.');
+                buffer.WriteDotToTranslation();
             }
 
             if (isProperty)
             {
                 buffer.WriteToTranslation(property.Name);
-                buffer.WriteToTranslation((method.ReturnType != typeof(void)) ? " { get; }" : " { set; }");
+                buffer.WriteToTranslation(" { ");
+                buffer.WriteToTranslation((method.ReturnType != typeof(void)) ? "get" : "set", Keyword);
+                buffer.WriteToTranslation("; } ");
 
                 return buffer.GetContent();
             }
 
-            buffer.WriteToTranslation(method.Name);
+            buffer.WriteToTranslation(method.Name, MethodName);
 
             if (method.IsGenericMethod)
             {
@@ -217,23 +220,23 @@
         {
             if (method.IsPublic)
             {
-                buffer.WriteToTranslation("public ");
+                buffer.WriteToTranslation("public ", Keyword);
             }
             else if (method.IsAssembly)
             {
-                buffer.WriteToTranslation("internal ");
+                buffer.WriteToTranslation("internal ", Keyword);
             }
             else if (method.IsFamily)
             {
-                buffer.WriteToTranslation("protected ");
+                buffer.WriteToTranslation("protected ", Keyword);
             }
             else if (method.IsFamilyOrAssembly)
             {
-                buffer.WriteToTranslation("protected internal ");
+                buffer.WriteToTranslation("protected internal ", Keyword);
             }
             else if (method.IsPrivate)
             {
-                buffer.WriteToTranslation("private ");
+                buffer.WriteToTranslation("private ", Keyword);
             }
         }
 

@@ -67,14 +67,14 @@
                 if (type.IsNested)
                 {
                     buffer.WriteFriendlyName(type.DeclaringType, settings);
-                    buffer.WriteToTranslation('.');
+                    buffer.WriteDotToTranslation();
                     buffer.WriteToTranslation(substitutedTypeName ?? type.Name);
                     return;
                 }
 
                 if (substitutedTypeName != null)
                 {
-                    buffer.WriteToTranslation(substitutedTypeName);
+                    buffer.WriteToTranslation(substitutedTypeName, Keyword);
                     return;
                 }
 
@@ -108,7 +108,7 @@
             }
 
             buffer.WriteToTranslation(type.Namespace);
-            buffer.WriteToTranslation('.');
+            buffer.WriteDotToTranslation();
         }
 
         private static void WriteGenericTypeName(
@@ -163,7 +163,7 @@
                 => _buffer.WriteTypeNamespaceIfRequired(genericType, _settings);
 
             protected override void WriteNestedTypeNamesSeparator()
-                => _buffer.WriteToTranslation('.');
+                => _buffer.WriteDotToTranslation();
         }
     }
 }
