@@ -155,7 +155,7 @@
 
             if (_writeBraces && _ensureReturnKeyword && !_translation.IsMultiStatement())
             {
-                buffer.WriteToTranslation("return ", TokenType.ControlStatement);
+                buffer.WriteReturnToTranslation();
             }
 
             _translation.WriteTo(buffer);

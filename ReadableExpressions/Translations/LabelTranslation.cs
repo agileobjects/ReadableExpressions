@@ -84,7 +84,7 @@
                 return;
             }
 
-            buffer.WriteToTranslation("return ");
+            buffer.WriteReturnToTranslation();
             _labelValueTranslation.WriteTo(buffer);
             buffer.WriteToTranslation(';');
         }

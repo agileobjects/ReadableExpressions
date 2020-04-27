@@ -44,7 +44,8 @@
             {
                 AllowNavigation = false,
                 AllowWebBrowserDrop = false,
-                Font = new Font(new FontFamily("Consolas"), 13f)
+                Font = new Font(new FontFamily("Consolas"), 13.5f),
+                ScrollBarsEnabled = true
             };
 
             var viewerPanel = new Panel
@@ -68,7 +69,8 @@
                 Text = "Copy",
             };
 
-            copyButton.Click += (sender, args) => Clipboard.SetText(_viewer.Text);
+            copyButton.Click += (sender, args) => Clipboard.SetText(
+                TranslationHtmlFormatter.RemoveFormatting(_viewer.DocumentText));
 
             var toolbar = new ToolStrip(copyButton)
             {
@@ -135,8 +137,9 @@
 body {{ 
     background: #1E1E1E;
     color: #DCDCDC; 
-    font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
-    font-size: 11.5pt;
+    font-family: '{_viewer.Font.FontFamily.Name}', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 13pt;
+    overflow: auto;
 }}
 .kw {{ color: #569CD6 }}
 .vb {{ color: #9CDCFE }}
@@ -153,7 +156,6 @@ body {{
     <pre>{translation}</pre>
 </body>
 </html>";
-
             return this;
         }
 

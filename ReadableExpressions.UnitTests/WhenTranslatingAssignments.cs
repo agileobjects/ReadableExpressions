@@ -98,7 +98,6 @@ checked
         return one + two;
     }
 }";
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

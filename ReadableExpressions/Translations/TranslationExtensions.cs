@@ -110,5 +110,8 @@
 
         public static void WriteDotToTranslation(this TranslationBuffer buffer)
             => buffer.WriteToTranslation('.');
+
+        public static void WriteReturnToTranslation(this TranslationBuffer buffer)
+            => buffer.WriteToTranslation("return ", TokenType.ControlStatement);
     }
 }

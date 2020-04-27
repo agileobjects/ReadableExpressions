@@ -2,13 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
-    using Extensions;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
+    using Interfaces;
+    using static TokenType;
 
     internal class TryCatchTranslation :
         ITranslation,
@@ -132,7 +133,7 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("try");
+            buffer.WriteToTranslation("try", Keyword);
             _bodyTranslation.WriteTo(buffer);
 
             for (int i = 0, l = _catchBlockTranslations.Count; i < l; ++i)
@@ -144,14 +145,14 @@
             if (_hasFault)
             {
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("fault");
+                buffer.WriteToTranslation("fault", Keyword);
                 _faultTranslation.WriteTo(buffer);
             }
 
             if (_hasFinally)
             {
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("finally");
+                buffer.WriteToTranslation("finally", Keyword);
                 _finallyTranslation.WriteTo(buffer);
             }
         }
@@ -183,7 +184,7 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("catch");
+                buffer.WriteToTranslation("catch", Keyword);
                 _exceptionClause?.WriteTo(buffer);
                 _catchBodyTranslation.WriteTo(buffer);
             }
@@ -220,7 +221,7 @@
                     buffer.WriteToTranslation(" (");
                     _exceptionTypeTranslation.WriteTo(buffer);
                     buffer.WriteSpaceToTranslation();
-                    buffer.WriteToTranslation(_variableName);
+                    buffer.WriteToTranslation(_variableName, Variable);
                     buffer.WriteToTranslation(')');
                 }
             }
@@ -241,7 +242,7 @@
                 public override void WriteTo(TranslationBuffer buffer)
                 {
                     base.WriteTo(buffer);
-                    buffer.WriteToTranslation(" when ");
+                    buffer.WriteToTranslation(" when ", Keyword);
                     _filterTranslation.WriteTo(buffer);
                 }
             }

@@ -357,7 +357,7 @@ namespace AgileObjects.ReadableExpressions.Translations
 
                 if (_writeReturnKeyword)
                 {
-                    buffer.WriteToTranslation("return ");
+                    buffer.WriteReturnToTranslation();
                 }
 
                 WriteStatementTo(buffer);
@@ -437,7 +437,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 }
                 else
                 {
-                    buffer.WriteToTranslation(_var);
+                    buffer.WriteToTranslation(_var, TokenType.Keyword);
                 }
 
                 buffer.WriteSpaceToTranslation();
