@@ -256,6 +256,21 @@ Console.WriteLine();";
         }
 
         [Fact]
+        public void ShouldTranslateEmptyBlocks()
+        {
+            var intVariable = Parameter(typeof(string), "value");
+
+            var block = Block(
+                new[] { intVariable }, 
+                Block(Default(typeof(object)), Default(typeof(object))), 
+                Default(typeof(object)));
+
+            var translated = ToReadableString(block);
+
+            translated.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void ShouldIgnoreAVariableOnlyBlockStatement()
         {
             var countVariable = Variable(typeof(int), "count");

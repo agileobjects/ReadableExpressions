@@ -4,6 +4,7 @@
     using NetStandardPolyfills;
     using Translations;
     using static ExpressionExtensions;
+    using static Translations.TokenType;
 
     /// <summary>
     /// Provides a set of static extension methods for type information.
@@ -77,8 +78,10 @@
                     return;
                 }
 
+                var tokenType = type.IsInterface() ? InterfaceName : TypeName;
+
                 buffer.WriteTypeNamespaceIfRequired(type, settings);
-                buffer.WriteToTranslation(type.Name);
+                buffer.WriteToTranslation(type.Name, tokenType);
                 return;
             }
 
@@ -127,8 +130,11 @@
                 _settings = settings;
             }
 
-            protected override void WriteTypeName(string typeName)
-                => _buffer.WriteToTranslation(typeName);
+            protected override void WriteTypeName(string name)
+                => _buffer.WriteToTranslation(name, TypeName);
+
+            protected override void WriteInterfaceName(string name)
+                => _buffer.WriteToTranslation(name, InterfaceName);
 
             protected override bool TryWriteCustomAnonTypeName(Type anonType)
             {

@@ -137,12 +137,21 @@ body {{
     font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     font-size: 11pt;
 }}
+.kw {{ color: #569CD6 }}
+.pm {{ color: #9CDCFE }}
+.tn {{ color: #4EC9B0 }}
+.in {{ color: #B8D7A3 }}
+.cs {{ color: #D8A0DF }}
+.tx {{ color: #D69D85 }}
+.nm {{ color: #B5CEA8 }}
+.mn {{ color: #DCDCAA }}
 </style>
 </head>
 <body>
     <pre>{expression}</pre>
 </body>
 </html>";
+
             return this;
         }
 

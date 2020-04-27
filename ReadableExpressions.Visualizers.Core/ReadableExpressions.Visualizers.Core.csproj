@@ -43,10 +43,9 @@
     <Compile Include="ExpressionDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>

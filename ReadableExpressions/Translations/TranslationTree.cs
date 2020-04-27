@@ -242,7 +242,7 @@
 
         public string GetTranslation()
         {
-            var buffer = new TranslationBuffer(_root.EstimatedSize);
+            var buffer = new TranslationBuffer(_settings.Formatter, _root.EstimatedSize);
 
             _root.WriteTo(buffer);
 

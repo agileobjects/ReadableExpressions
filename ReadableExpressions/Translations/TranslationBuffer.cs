@@ -10,12 +10,19 @@ namespace AgileObjects.ReadableExpressions.Translations
 
     internal class TranslationBuffer : ITranslationQuery
     {
+        private readonly ITranslationFormatter _formatter;
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
         public TranslationBuffer(int estimatedSize)
+            : this(NullTranslationFormatter.Insance, estimatedSize)
         {
+        }
+
+        public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
+        {
+            _formatter = formatter;
 #if DEBUG
             Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
 #endif
@@ -179,10 +186,19 @@ namespace AgileObjects.ReadableExpressions.Translations
         public void WriteToTranslation(char character)
         {
             WriteIndentIfRequired();
+
+            if (_formatter.Encode(character, out var endoded))
+            {
+                WriteToTranslation(endoded);
+                return;
+            }
+
             _content.Append(character);
         }
 
-        public void WriteToTranslation(string stringValue)
+        public void WriteToTranslation(
+            string stringValue,
+            TokenType tokenType = TokenType.Default)
         {
             if (stringValue.Length == 1)
             {
@@ -191,7 +207,12 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
 
             WriteIndentIfRequired();
+
+            WriteIfRequired(_formatter.PreToken(tokenType));
+
             _content.Append(stringValue);
+
+            WriteIfRequired(_formatter.PostToken(tokenType));
         }
 
         public void WriteToTranslation(int intValue)
@@ -215,12 +236,129 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
         }
 
+        private void WriteIfRequired(string value)
+        {
+            if (value != null)
+            {
+                _content.Append(value);
+            }
+        }
+
         public string GetContent()
         {
 #if DEBUG
             Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;
+        }
+    }
+
+    /// <summary>
+    /// Defines types of source code elements.
+    /// </summary>
+    public enum TokenType
+    {
+        /// <summary>
+        /// A default source code element.
+        /// </summary>
+        Default,
+
+        /// <summary>
+        /// A language keyword (new, int, default, etc).
+        /// </summary>
+        Keyword,
+
+        /// <summary>
+        /// A method or constructor parameter.
+        /// </summary>
+        Parameter,
+
+        /// <summary>
+        /// The name of a type.
+        /// </summary>
+        TypeName,
+
+        /// <summary>
+        /// The name of an interface.
+        /// </summary>
+        InterfaceName,
+
+        /// <summary>
+        /// A control statement (if, else, return, etc).
+        /// </summary>
+        ControlStatement,
+
+        /// <summary>
+        /// A constant string or character value.
+        /// </summary>
+        Text,
+
+        /// <summary>
+        /// A constant numeric value.
+        /// </summary>
+        Numeric,
+
+        /// <summary>
+        /// The name of a method.
+        /// </summary>
+        MethodName
+    }
+
+    /// <summary>
+    /// Implementing classes will add formatting to an Expression translation.
+    /// </summary>
+    public interface ITranslationFormatter
+    {
+        /// <summary>
+        /// Gets the formatting string to apply before a token of the given <paramref name="type"/>,
+        /// or null if none is necessary.
+        /// </summary>
+        /// <param name="type">The TokenType for which to retrieve the formatting string.</param>
+        /// <returns>
+        /// The formatting string to apply before a token of the given <paramref name="type"/>, or
+        /// null if none is necessary.
+        /// </returns>
+        string PreToken(TokenType type);
+
+        /// <summary>
+        /// Gets the formatting string to apply after a token of the given <paramref name="type"/>,
+        /// or null if none is necessary.
+        /// </summary>
+        /// <param name="type">The TokenType for which to retrieve the formatting string.</param>
+        /// <returns>
+        /// The formatting string to apply after a token of the given <paramref name="type"/>, or
+        /// null if none is necessary.
+        /// </returns>
+        string PostToken(TokenType type);
+
+        /// <summary>
+        /// Gets a value indicating whether the given <paramref name="character"/> should be replaced
+        /// by the output <paramref name="encoded"/> value.
+        /// </summary>
+        /// <param name="character">The character for which to make the determination.</param>
+        /// <param name="encoded">
+        /// Populated with the encoded value to write instead of the given <paramref name="character"/>,
+        /// if appropriate.
+        /// </param>
+        /// <returns>
+        /// True if the given <paramref name="character"/> should be replaced by the output
+        /// <paramref name="encoded"/> value, otherwise false.
+        /// </returns>
+        bool Encode(char character, out string encoded);
+    }
+
+    internal class NullTranslationFormatter : ITranslationFormatter
+    {
+        public static readonly ITranslationFormatter Insance = new NullTranslationFormatter();
+
+        public string PreToken(TokenType type) => null;
+
+        public string PostToken(TokenType type) => null;
+
+        public bool Encode(char character, out string encoded)
+        {
+            encoded = null;
+            return false;
         }
     }
 }

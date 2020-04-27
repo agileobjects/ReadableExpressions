@@ -125,7 +125,8 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("new ");
+                buffer.WriteToTranslation("new", TokenType.Keyword);
+                buffer.WriteToTranslation(' ');
                 _typeNameTranslation.WriteTo(buffer);
 
                 if (_omitParenthesesIfParameterless && Parameters.None)

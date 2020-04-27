@@ -67,7 +67,13 @@
         {
             if (_isObject)
             {
-                buffer.WriteToTranslation(_writeObjectTypeName ? "Object" : _object);
+                if (_writeObjectTypeName)
+                {
+                    buffer.WriteToTranslation("Object", TokenType.TypeName);
+                    return;
+                }
+                
+                buffer.WriteToTranslation(_object, TokenType.Keyword);
                 return;
             }
 

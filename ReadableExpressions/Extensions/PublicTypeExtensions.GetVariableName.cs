@@ -49,7 +49,7 @@
 
             if (namingType.IsGenericType())
             {
-                variableName = GetGenericTypeVariableName(variableName, namingType, settings);
+                variableName = GetGenericTypeVariableName(namingType, settings);
             }
 
             variableName = RemoveLeadingNonAlphaNumerics(variableName);
@@ -60,10 +60,7 @@
         private static string GetBaseVariableName(Type namingType, TranslationSettings translationSettings)
             => namingType.IsPrimitive() ? namingType.GetFriendlyName(translationSettings) : namingType.Name;
 
-        private static string GetGenericTypeVariableName(
-            string variableName,
-            Type namingType,
-            TranslationSettings settings)
+        private static string GetGenericTypeVariableName(Type namingType, TranslationSettings settings)
         {
             var nonNullableType = namingType.GetNonNullableType();
             var genericTypeArguments = namingType.GetGenericTypeArguments();
@@ -102,8 +99,11 @@
 
             public string TypeName { get; private set; }
 
-            protected override void WriteTypeName(string typeName)
-                => TypeName += typeName;
+            protected override void WriteTypeName(string name)
+                => TypeName += name;
+
+            protected override void WriteInterfaceName(string name)
+                => TypeName += name;
 
             protected override void WriteTypeArgumentNamePrefix()
                 => TypeName += "_";
