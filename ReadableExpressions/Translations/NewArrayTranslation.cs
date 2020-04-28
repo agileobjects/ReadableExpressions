@@ -27,7 +27,8 @@
             }
             else
             {
-                _boundTranslations = new ITranslation[newArray.Expressions.Count];
+                var translationsCount = newArray.Expressions.Count;
+                _boundTranslations = new ITranslation[translationsCount];
 
                 for (var i = 0; ;)
                 {
@@ -38,7 +39,7 @@
 
                     ++i;
 
-                    if (i == _boundTranslations.Length)
+                    if (i == translationsCount)
                     {
                         break;
                     }

@@ -84,11 +84,12 @@
                 return Enumerable<ITranslatable>.EmptyArray;
             }
 
-            var catchBlockTranslations = new ITranslatable[catchBlocks.Count];
+            var catchBlockCount = catchBlocks.Count;
+            var catchBlockTranslations = new ITranslatable[catchBlockCount];
 
             estimatedCatchBlocksSize = 0;
 
-            for (int i = 0, l = catchBlocks.Count; ;)
+            for (var i = 0; ;)
             {
                 var catchBlockTranslation = new CatchBlockTranslation(catchBlocks[i], context);
 
@@ -97,7 +98,7 @@
 
                 ++i;
 
-                if (i == l)
+                if (i == catchBlockCount)
                 {
                     break;
                 }
