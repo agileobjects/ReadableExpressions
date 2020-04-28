@@ -46,14 +46,14 @@
         public static bool IsBinary(this ITranslation translation)
             => BinaryTranslation.IsBinary(translation.NodeType);
 
-        public static TranslationWrapper WithParentheses(this ITranslation translation)
-            => new TranslationWrapper(translation).WrappedWith("(", ")");
+        public static ITranslation WithParentheses(this ITranslation translation)
+            => new WrappedTranslation("(", translation, ")");
 
-        public static TranslationWrapper WithNodeType(this ITranslation translation, ExpressionType nodeType)
-            => new TranslationWrapper(nodeType, translation, translation.Type);
+        public static ITranslation WithNodeType(this ITranslation translation, ExpressionType nodeType)
+            => new ModifiedTranslation(translation, nodeType);
 
-        public static TranslationWrapper WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
-            => new TranslationWrapper(nodeType, translatable, type);
+        public static ITranslation WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
+            => new ModifiedTranslation(translatable, nodeType, type);
 
         public static void WriteOpeningBraceToTranslation(this TranslationBuffer buffer, bool startOnNewLine = true)
         {

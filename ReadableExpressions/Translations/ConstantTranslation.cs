@@ -237,7 +237,7 @@
             }
 
             translation = FixedValueTranslation(constant);
-            translation = new TranslationWrapper(translation).WrappedWith("Regex /* ", " */");
+            translation = new WrappedTranslation("Regex /* ", translation, " */");
             return true;
         }
 
