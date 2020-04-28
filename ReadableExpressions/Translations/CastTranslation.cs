@@ -132,21 +132,25 @@
                 _testedValueTranslation = testedValueTranslation;
                 _test = test;
                 _testedTypeNameTranslation = context.GetTranslationFor(testedType);
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                return _testedValueTranslation.EstimatedSize +
-                       _test.Length +
-                       _testedTypeNameTranslation.EstimatedSize;
+                TranslationSize =
+                    _testedValueTranslation.TranslationSize +
+                    _test.Length +
+                    _testedTypeNameTranslation.TranslationSize;
+
+                FormattingSize =
+                    _testedValueTranslation.FormattingSize +
+                    context.GetKeywordFormattingSize() +
+                    _testedTypeNameTranslation.FormattingSize;
             }
 
             public ExpressionType NodeType { get; }
 
             public Type Type => _testedTypeNameTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -161,7 +165,10 @@
             private readonly ITranslation _castValueTranslation;
             private readonly ITranslation _castTypeNameTranslation;
 
-            public StandardCastTranslation(Expression cast, ITranslation castValueTranslation, ITranslationContext context)
+            public StandardCastTranslation(
+                Expression cast,
+                ITranslation castValueTranslation,
+                ITranslationContext context)
                 : this(
                     cast.NodeType,
                     context.GetTranslationFor(cast.Type),
@@ -183,14 +190,17 @@
                     _castValueTranslation = _castValueTranslation.WithParentheses();
                 }
 
-                EstimatedSize = _castTypeNameTranslation.EstimatedSize + _castValueTranslation.EstimatedSize;
+                TranslationSize = _castTypeNameTranslation.TranslationSize + _castValueTranslation.TranslationSize;
+                FormattingSize = _castTypeNameTranslation.FormattingSize + _castValueTranslation.FormattingSize;
             }
 
             public ExpressionType NodeType { get; }
 
             public Type Type => _castTypeNameTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {

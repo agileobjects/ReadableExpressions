@@ -35,7 +35,7 @@
 
             if (expressionTypes.Length == 1)
             {
-                return new NewImplicitlyTypedArrayTranslation(arrayInit);
+                return new NewImplicitlyTypedArrayTranslation(arrayInit, context);
             }
 
             return new NewBoundedArrayTranslation(arrayInit, context);
@@ -65,13 +65,16 @@
 
         private class NewImplicitlyTypedArrayTranslation : NewArrayTranslationBase, ITranslation
         {
-            public NewImplicitlyTypedArrayTranslation(Expression arrayInit)
+            public NewImplicitlyTypedArrayTranslation(Expression arrayInit, ITranslationContext context)
                 : base(arrayInit)
             {
-                EstimatedSize = "new[]".Length;
+                TranslationSize = "new[]".Length;
+                FormattingSize = context.GetKeywordFormattingSize();
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -88,10 +91,13 @@
                 : base(arrayInit)
             {
                 _emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
-                EstimatedSize = "new ".Length + _emptyArrayNewing.EstimatedSize + "[]".Length;
+                TranslationSize = "new ".Length + _emptyArrayNewing.TranslationSize + "[]".Length;
+                FormattingSize = context.GetKeywordFormattingSize() + _emptyArrayNewing.FormattingSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -109,10 +115,13 @@
                 : base(arrayInit)
             {
                 _emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
-                EstimatedSize = "new ".Length + _emptyArrayNewing.EstimatedSize + "[0]".Length;
+                TranslationSize = "new ".Length + _emptyArrayNewing.TranslationSize + "[0]".Length;
+                FormattingSize = context.GetKeywordFormattingSize() + _emptyArrayNewing.FormattingSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+            
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {

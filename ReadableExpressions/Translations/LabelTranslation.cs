@@ -30,7 +30,7 @@
             if (_labelIsNamed)
             {
                 // ReSharper disable once PossibleNullReferenceException
-                EstimatedSize = _labelName.Length + 1 + Environment.NewLine.Length;
+                TranslationSize = _labelName.Length + 1 + Environment.NewLine.Length;
             }
             else if (_labelHasNoValue)
             {
@@ -46,7 +46,8 @@
             }
 
             _labelValueTranslation = context.GetCodeBlockTranslationFor(label.DefaultValue);
-            EstimatedSize += _labelValueTranslation.EstimatedSize;
+            TranslationSize += _labelValueTranslation.TranslationSize;
+            FormattingSize = _labelValueTranslation.FormattingSize;
         }
 
         private static string GetLabelNamePart(LabelExpression label, ITranslationContext context)
@@ -60,10 +61,12 @@
         }
 
         public ExpressionType NodeType => ExpressionType.Label;
-        
+
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsTerminated { get; }
 

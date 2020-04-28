@@ -68,7 +68,7 @@
             => GetTranslationFor(expression);
 
         CodeBlockTranslation ITranslationContext.GetCodeBlockTranslationFor(Expression expression)
-            => new CodeBlockTranslation(GetTranslationFor(expression));
+            => new CodeBlockTranslation(GetTranslationFor(expression), this);
 
         private ITranslation GetTranslationFor(Expression expression)
         {
@@ -242,7 +242,8 @@
 
         public string GetTranslation()
         {
-            var buffer = new TranslationBuffer(_settings.Formatter, _root.EstimatedSize);
+            var estimatedSize = _root.TranslationSize + _root.FormattingSize;
+            var buffer = new TranslationBuffer(_settings.Formatter, estimatedSize);
 
             _root.WriteTo(buffer);
 

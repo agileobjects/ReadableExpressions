@@ -18,14 +18,16 @@
         public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
         {
             _operand = context.GetTranslationFor(arrayLength.Operand);
-            EstimatedSize = _operand.EstimatedSize + _lengthPropertyLength;
+            TranslationSize = _operand.TranslationSize + _lengthPropertyLength;
         }
 
         public ExpressionType NodeType => ExpressionType.ArrayLength;
 
         public Type Type => typeof(int);
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize => _operand.FormattingSize;
 
         public void WriteTo(TranslationBuffer buffer)
         {

@@ -39,7 +39,9 @@
 
         public Type Type { get; }
 
-        public int EstimatedSize => _value.Length;
+        public int TranslationSize => _value.Length;
+        
+        public int FormattingSize => 0;
 
         public void WriteTo(TranslationBuffer buffer)
             => buffer.WriteToTranslation(_value, _tokenType);

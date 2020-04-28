@@ -31,7 +31,9 @@
 
         public Type Type { get; }
 
-        public int EstimatedSize => _baseTranslatable.EstimatedSize;
+        public int TranslationSize => _baseTranslatable.TranslationSize;
+        
+        public int FormattingSize => _baseTranslatable.FormattingSize;
 
         public bool IsTerminated => _baseTranslatable.IsTerminated();
 

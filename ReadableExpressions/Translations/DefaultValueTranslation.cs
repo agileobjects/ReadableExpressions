@@ -22,7 +22,7 @@
             bool allowNullKeyword = true)
         {
             Type = defaultExpression.Type;
-            
+
             if (Type == typeof(void))
             {
                 IsEmpty = true;
@@ -35,20 +35,23 @@
 
                 if (_typeCanBeNull)
                 {
-                    EstimatedSize = _null.Length;
+                    TranslationSize = _null.Length;
                     return;
                 }
             }
 
             _typeNameTranslation = context.GetTranslationFor(Type);
-            EstimatedSize = _default.Length + _typeNameTranslation.EstimatedSize + 2;
+            TranslationSize = _default.Length + _typeNameTranslation.TranslationSize + "()".Length;
+            FormattingSize = context.GetKeywordFormattingSize() + _typeNameTranslation.FormattingSize;
         }
 
         public ExpressionType NodeType => ExpressionType.Default;
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsEmpty { get; }
 

@@ -20,7 +20,8 @@
             Type = switchStatement.Type;
             _valueTranslation = context.GetTranslationFor(switchStatement.SwitchValue);
 
-            var estimatedSize = _valueTranslation.EstimatedSize;
+            var translationSize = _valueTranslation.TranslationSize;
+            var formattingSize = _valueTranslation.FormattingSize;
             var caseCount = switchStatement.Cases.Count;
 
             _caseTestValueTranslations = new ITranslation[caseCount][];
@@ -37,7 +38,8 @@
                 {
                     var caseTestValueTranslation = context.GetTranslationFor(@case.TestValues[j]);
                     caseTestValueTranslations[j] = caseTestValueTranslation;
-                    estimatedSize += caseTestValueTranslation.EstimatedSize;
+                    translationSize += caseTestValueTranslation.TranslationSize;
+                    formattingSize += caseTestValueTranslation.FormattingSize;
 
                     ++j;
 
@@ -62,20 +64,24 @@
 
             if (_defaultCaseTranslation != null)
             {
-                estimatedSize += _defaultCaseTranslation.EstimatedSize;
+                translationSize += _defaultCaseTranslation.TranslationSize;
+                formattingSize += _defaultCaseTranslation.FormattingSize;
             }
 
-            EstimatedSize = estimatedSize;
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         private static CodeBlockTranslation GetCaseBodyTranslationOrNull(Expression caseBody, ITranslationContext context)
             => (caseBody != null) ? context.GetCodeBlockTranslationFor(caseBody).WithTermination().WithoutBraces() : null;
 
         public ExpressionType NodeType => ExpressionType.Switch;
-        
+
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsTerminated => true;
 

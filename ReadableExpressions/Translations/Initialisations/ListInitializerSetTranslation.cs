@@ -38,22 +38,27 @@
 
             public MultiArgumentInitializerTranslation(ElementInit init, ITranslationContext context)
             {
-                var estimatedSize = 0;
+                var translationSize = 0;
+                var formattingSize = 0;
 
                 _translations = init
                     .Arguments
                     .ProjectToArray(arg =>
                     {
                         var translation = context.GetCodeBlockTranslationFor(arg);
-                        estimatedSize += translation.EstimatedSize;
+                        translationSize += translation.TranslationSize;
+                        formattingSize += translation.FormattingSize;
 
                         return translation;
                     });
 
-                EstimatedSize = estimatedSize;
+                TranslationSize = translationSize;
+                FormattingSize = formattingSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {

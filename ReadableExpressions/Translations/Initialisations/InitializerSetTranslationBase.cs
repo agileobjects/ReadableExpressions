@@ -9,32 +9,38 @@
 
         protected InitializerSetTranslationBase(IList<TInitializer> initializers, ITranslationContext context)
         {
-            Count = initializers.Count;
-            _initializerTranslations = new ITranslatable[Count];
+            var initializersCount = initializers.Count;
+            Count = initializersCount;
+            _initializerTranslations = new ITranslatable[initializersCount];
 
-            var estimatedSize = 0;
+            var translationSize = 0;
+            var formattingSize = 0;
 
             for (var i = 0; ;)
             {
                 // ReSharper disable once VirtualMemberCallInConstructor
                 var initializerTranslation = GetTranslation(initializers[i], context);
                 _initializerTranslations[i] = initializerTranslation;
-                estimatedSize += initializerTranslation.EstimatedSize;
+                translationSize += initializerTranslation.TranslationSize;
+                formattingSize += initializerTranslation.FormattingSize;
 
                 ++i;
 
-                if (i == Count)
+                if (i == initializersCount)
                 {
                     break;
                 }
             }
 
-            EstimatedSize = estimatedSize;
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         protected abstract ITranslatable GetTranslation(TInitializer initializer, ITranslationContext context);
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public int Count { get; }
 

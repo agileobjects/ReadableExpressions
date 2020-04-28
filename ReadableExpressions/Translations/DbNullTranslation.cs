@@ -10,18 +10,21 @@
 
     internal class DbNullTranslation : ITranslation
     {
-        public DbNullTranslation(Expression dbNull)
+        public DbNullTranslation(Expression dbNull, ITranslationContext context)
         {
             Type = dbNull.Type;
-            EstimatedSize = "DBNull.Value".Length;
+            TranslationSize = "DBNull.Value".Length;
+            FormattingSize = context.GetTypeNameFormattingSize();
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
-        
+
         public Type Type { get; }
-        
-        public int EstimatedSize { get; }
-        
+
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteTypeNameToTranslation("DBNull");

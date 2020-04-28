@@ -19,14 +19,16 @@
             _prefix = prefix;
             _translation = translation;
             _suffix = suffix;
-            EstimatedSize = prefix.Length + _translation.EstimatedSize + suffix.Length;
+            TranslationSize = prefix.Length + _translation.TranslationSize + suffix.Length;
         }
 
         public ExpressionType NodeType => _translation.NodeType;
 
         public Type Type => _translation.Type;
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize => _translation.FormattingSize;
 
         public bool IsTerminated => _translation.IsTerminated();
 

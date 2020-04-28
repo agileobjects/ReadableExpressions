@@ -33,14 +33,20 @@
 
             _catchBlockTranslations = GetCatchBlockTranslations(
                 tryCatchFinally.Handlers,
-                out var estimatedCatchBlocksSize,
+                out var catchBlockTranslationsSize,
+                out var catchBlocksFormattingSize,
                 context);
+
+            var translationSize = _bodyTranslation.TranslationSize + catchBlockTranslationsSize;
+            var formattingSize = _bodyTranslation.FormattingSize + catchBlocksFormattingSize;
 
             _hasFault = tryCatchFinally.Fault != null;
 
             if (_hasFault)
             {
                 _faultTranslation = GetReturnableBlockTranslation(tryCatchFinally.Fault, context);
+                translationSize += _faultTranslation.TranslationSize;
+                formattingSize += context.GetKeywordFormattingSize();
             }
 
             _hasFinally = tryCatchFinally.Finally != null;
@@ -48,9 +54,12 @@
             if (_hasFinally)
             {
                 _finallyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Finally, context);
+                translationSize += _finallyTranslation.TranslationSize;
+                formattingSize += context.GetKeywordFormattingSize();
             }
 
-            EstimatedSize = GetEstimatedSize(estimatedCatchBlocksSize);
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         private ITranslation GetReturnableBlockTranslation(Expression block, ITranslationContext context)
@@ -75,25 +84,27 @@
 
         private static IList<ITranslatable> GetCatchBlockTranslations(
             IList<CatchBlock> catchBlocks,
-            out int estimatedCatchBlocksSize,
+            out int catchBlockTranslationsSize,
+            out int catchBlocksFormattingSize,
             ITranslationContext context)
         {
             if (catchBlocks.Count == 0)
             {
-                estimatedCatchBlocksSize = 0;
+                catchBlockTranslationsSize = catchBlocksFormattingSize = 0;
                 return Enumerable<ITranslatable>.EmptyArray;
             }
 
             var catchBlockCount = catchBlocks.Count;
             var catchBlockTranslations = new ITranslatable[catchBlockCount];
 
-            estimatedCatchBlocksSize = 0;
+            catchBlockTranslationsSize = catchBlocksFormattingSize = 0;
 
             for (var i = 0; ;)
             {
                 var catchBlockTranslation = new CatchBlockTranslation(catchBlocks[i], context);
 
-                estimatedCatchBlocksSize += catchBlockTranslation.EstimatedSize;
+                catchBlockTranslationsSize += catchBlockTranslation.TranslationSize;
+                catchBlocksFormattingSize += catchBlockTranslation.FormattingSize;
                 catchBlockTranslations[i] = catchBlockTranslation;
 
                 ++i;
@@ -107,28 +118,13 @@
             return catchBlockTranslations;
         }
 
-        private int GetEstimatedSize(int estimatedCatchBlocksSize)
-        {
-            var estimatedSize = _bodyTranslation.EstimatedSize + estimatedCatchBlocksSize;
-
-            if (_hasFault)
-            {
-                estimatedSize += _faultTranslation.EstimatedSize;
-            }
-
-            if (_hasFinally)
-            {
-                estimatedSize += _finallyTranslation.EstimatedSize;
-            }
-
-            return estimatedSize;
-        }
-
         public ExpressionType NodeType => ExpressionType.Try;
-        
+
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsMultiStatement => true;
 
@@ -175,15 +171,21 @@
                     _catchBodyTranslation.WithReturnKeyword();
                 }
 
-                EstimatedSize = _catchBodyTranslation.EstimatedSize;
+                var keywordFormattingSize = context.GetKeywordFormattingSize();
+
+                TranslationSize = _catchBodyTranslation.TranslationSize;
+                FormattingSize = keywordFormattingSize + _catchBodyTranslation.FormattingSize;
 
                 if (_exceptionClause != null)
                 {
-                    EstimatedSize += _exceptionClause.EstimatedSize;
+                    TranslationSize += _exceptionClause.TranslationSize;
+                    FormattingSize += keywordFormattingSize + _exceptionClause.FormattingSize;
                 }
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -214,10 +216,13 @@
                 {
                     _exceptionTypeTranslation = context.GetTranslationFor(catchBlock.Test);
                     _variableName = catchBlock.Variable.Name;
-                    EstimatedSize = _exceptionTypeTranslation.EstimatedSize + _variableName.Length + 5;
+                    TranslationSize = _exceptionTypeTranslation.TranslationSize + _variableName.Length + 5;
+                    FormattingSize = _exceptionTypeTranslation.FormattingSize;
                 }
 
-                public virtual int EstimatedSize { get; }
+                public virtual int TranslationSize { get; }
+
+                public virtual int FormattingSize { get; }
 
                 public virtual void WriteTo(TranslationBuffer buffer)
                 {
@@ -237,10 +242,13 @@
                     : base(catchBlock, context)
                 {
                     _filterTranslation = context.GetTranslationFor(catchBlock.Filter);
-                    EstimatedSize = base.EstimatedSize + _filterTranslation.EstimatedSize + 6;
+                    TranslationSize = base.TranslationSize + _filterTranslation.TranslationSize + 6;
+                    FormattingSize = base.FormattingSize + _filterTranslation.FormattingSize;
                 }
 
-                public override int EstimatedSize { get; }
+                public override int TranslationSize { get; }
+
+                public override int FormattingSize { get; }
 
                 public override void WriteTo(TranslationBuffer buffer)
                 {
@@ -257,10 +265,12 @@
                 public AnonymousExceptionClause(CatchBlock catchBlock, ITranslationContext context)
                 {
                     _exceptionTypeTranslation = context.GetTranslationFor(catchBlock.Test);
-                    EstimatedSize = _exceptionTypeTranslation.EstimatedSize + 1;
+                    TranslationSize = _exceptionTypeTranslation.TranslationSize + 3;
                 }
 
-                public int EstimatedSize { get; }
+                public int TranslationSize { get; }
+
+                public int FormattingSize => _exceptionTypeTranslation.FormattingSize;
 
                 public void WriteTo(TranslationBuffer buffer)
                 {

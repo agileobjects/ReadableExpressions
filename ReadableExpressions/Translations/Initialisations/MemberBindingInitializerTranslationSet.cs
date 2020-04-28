@@ -46,10 +46,12 @@
                 _memberName = memberBinding.Member.Name;
                 _bindingTranslations = new MemberBindingInitializerTranslationSet(memberBinding.Bindings, context);
                 _parent = parent;
-                EstimatedSize = _memberName.Length + 2 + _bindingTranslations.EstimatedSize;
+                TranslationSize = _memberName.Length + 2 + _bindingTranslations.TranslationSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize => _bindingTranslations.FormattingSize;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -68,17 +70,19 @@
             private readonly MemberBindingInitializerTranslationSet _parent;
 
             public ListBindingTranslation(
-                MemberListBinding listBinding, 
+                MemberListBinding listBinding,
                 MemberBindingInitializerTranslationSet parent,
                 ITranslationContext context)
             {
                 _memberName = listBinding.Member.Name;
                 _initializerTranslations = new ListInitializerSetTranslation(listBinding.Initializers, context);
                 _parent = parent;
-                EstimatedSize = _memberName.Length + 2 + _initializerTranslations.EstimatedSize;
+                TranslationSize = _memberName.Length + 2 + _initializerTranslations.TranslationSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize => _initializerTranslations.FormattingSize;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -99,10 +103,12 @@
             {
                 _memberName = assignment.Member.Name;
                 _valueTranslation = context.GetCodeBlockTranslationFor(assignment.Expression);
-                EstimatedSize = _memberName.Length + 4 + _valueTranslation.EstimatedSize;
+                TranslationSize = _memberName.Length + 4 + _valueTranslation.TranslationSize;
             }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize => _valueTranslation.FormattingSize;
 
             public void WriteTo(TranslationBuffer buffer)
             {

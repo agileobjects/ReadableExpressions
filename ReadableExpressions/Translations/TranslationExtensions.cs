@@ -11,6 +11,24 @@
 
     internal static class TranslationExtensions
     {
+        public static int GetKeywordFormattingSize(this ITranslationContext context)
+            => context.GetFormattingSize(TokenType.Keyword);
+
+        public static int GetControlStatementFormattingSize(this ITranslationContext context)
+            => context.GetFormattingSize(TokenType.ControlStatement);
+
+        public static int GetTypeNameFormattingSize(this ITranslationContext context)
+            => context.GetFormattingSize(TokenType.TypeName);
+
+        public static int GetVariableFormattingSize(this ITranslationContext context)
+            => context.GetFormattingSize(TokenType.Variable);
+
+        public static int GetNumericFormattingSize(this ITranslationContext context)
+            => context.GetFormattingSize(TokenType.Numeric);
+
+        public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
+            => context.Settings.Formatter.GetFormattingSize(tokenType);
+
         public static bool IsMultiStatement(this ITranslation translation)
         {
             switch (translation.NodeType)
@@ -38,7 +56,7 @@
         }
 
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
-            => translatable.EstimatedSize > 100;
+            => translatable.TranslationSize > 100;
 
         public static bool IsAssignment(this ITranslation translation)
             => AssignmentTranslation.IsAssignment(translation.NodeType);
@@ -85,7 +103,10 @@
             buffer.WriteToTranslation(')');
         }
 
-        public static void WriteInParenthesesIfRequired(this ITranslation translation, TranslationBuffer buffer)
+        public static void WriteInParenthesesIfRequired(
+            this ITranslation translation, 
+            TranslationBuffer buffer,
+            ITranslationContext context)
         {
             if (ShouldWriteInParentheses(translation))
             {
@@ -93,7 +114,7 @@
                 return;
             }
 
-            new CodeBlockTranslation(translation).WriteTo(buffer);
+            new CodeBlockTranslation(translation, context).WriteTo(buffer);
         }
 
         public static bool ShouldWriteInParentheses(this ITranslation translation)

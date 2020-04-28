@@ -34,7 +34,7 @@
             }
 
             _operandTranslation = context.GetTranslationFor(unary.Operand);
-            EstimatedSize = _operandTranslation.EstimatedSize + _operator.Length;
+            TranslationSize = _operandTranslation.TranslationSize + _operator.Length;
         }
 
         private static string GetOperatorFor(ExpressionType nodeType)
@@ -58,7 +58,9 @@
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize => _operandTranslation.FormattingSize;
 
         public void WriteTo(TranslationBuffer buffer)
         {

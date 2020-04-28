@@ -37,8 +37,8 @@
             }
 
             return new FixedValueTranslation(
-                ExpressionType.Dynamic, 
-                args.OperationDescription, 
+                ExpressionType.Dynamic,
+                args.OperationDescription,
                 dynamicExpression.Type,
                 TokenType.Default);
         }
@@ -95,7 +95,7 @@
                 var subject = args.Context.GetTranslationFor(args.FirstArgument);
                 var memberName = match.Groups["MemberName"].Value;
 
-                return new MemberAccessTranslation(subject, memberName, args.ExpressionType);
+                return new MemberAccessTranslation(subject, memberName, args.ExpressionType, args.Context);
             }
         }
 

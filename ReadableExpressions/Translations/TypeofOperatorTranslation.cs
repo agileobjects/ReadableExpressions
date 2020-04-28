@@ -15,14 +15,17 @@
         public TypeofOperatorTranslation(Type type, ITranslationContext context)
         {
             _typeNameTranslation = context.GetTranslationFor(type);
-            EstimatedSize = _typeNameTranslation.EstimatedSize + "typeof()".Length;
+            TranslationSize = _typeNameTranslation.TranslationSize + "typeof()".Length;
+            FormattingSize = _typeNameTranslation.FormattingSize + context.GetKeywordFormattingSize();
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
 
         public Type Type => typeof(Type);
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {

@@ -1,46 +1,21 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
 #endif
     using Interfaces;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
-        private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
-            new Dictionary<ExpressionType, string>(23)
-            {
-                [Add] = " + ",
-                [AddChecked] = " + ",
-                [And] = " & ",
-                [AndAlso] = " && ",
-                [Coalesce] = " ?? ",
-                [Divide] = " / ",
-                [Equal] = " == ",
-                [ExclusiveOr] = " ^ ",
-                [GreaterThan] = " > ",
-                [GreaterThanOrEqual] = " >= ",
-                [LeftShift] = " << ",
-                [LessThan] = " < ",
-                [LessThanOrEqual] = " <= ",
-                [Modulo] = " % ",
-                [Multiply] = " * ",
-                [MultiplyChecked] = " * ",
-                [NotEqual] = " != ",
-                [Or] = " | ",
-                [OrElse] = " || ",
-                [Power] = " ** ",
-                [RightShift] = " >> ",
-                [Subtract] = " - ",
-                [SubtractChecked] = " - "
-            };
-
+        private readonly ITranslationContext _context;
         private readonly ITranslation _leftOperandTranslation;
         private readonly string _operator;
         private readonly ITranslation _rightOperandTranslation;
@@ -48,12 +23,14 @@
         private BinaryTranslation(BinaryExpression binary, ITranslationContext context)
             : base(IsCheckedBinary(binary.NodeType), "(", ")")
         {
+            _context = context;
             NodeType = binary.NodeType;
             Type = binary.Type;
             _leftOperandTranslation = context.GetTranslationFor(binary.Left);
             _operator = GetOperator(binary);
             _rightOperandTranslation = context.GetTranslationFor(binary.Right);
-            EstimatedSize = GetEstimatedSize();
+            TranslationSize = GetTranslationSize();
+            FormattingSize = _leftOperandTranslation.FormattingSize + _rightOperandTranslation.FormattingSize;
         }
 
         public static ITranslation For(BinaryExpression binary, ITranslationContext context)
@@ -95,37 +72,70 @@
             return false;
         }
 
-        public static string GetOperator(BinaryExpression expression) => _operatorsByNodeType[expression.NodeType];
+        public static string GetOperator(Expression expression) => GetOperator(expression.NodeType);
 
-        public static bool IsBinary(ExpressionType nodeType) => _operatorsByNodeType.ContainsKey(nodeType);
-
-        private int GetEstimatedSize()
+        private static string GetOperator(ExpressionType nodeType)
         {
-            var estimatedSize =
-                _leftOperandTranslation.EstimatedSize +
-               _operator.Length +
-               _rightOperandTranslation.EstimatedSize;
+            return nodeType switch
+            {
+                Add => " + ",
+                AddChecked => " + ",
+                And => " & ",
+                AndAlso => " && ",
+                Coalesce => " ?? ",
+                Divide => " / ",
+                Equal => " == ",
+                ExclusiveOr => " ^ ",
+                GreaterThan => " > ",
+                GreaterThanOrEqual => " >= ",
+                LeftShift => " << ",
+                LessThan => " < ",
+                LessThanOrEqual => " <= ",
+                Modulo => " % ",
+                Multiply => " * ",
+                MultiplyChecked => " * ",
+                NotEqual => " != ",
+                Or => " | ",
+                OrElse => " || ",
+                Power => " ** ",
+                RightShift => " >> ",
+                Subtract => " - ",
+                SubtractChecked => " - ",
+                _ => null
+            };
+        }
+
+        public static bool IsBinary(ExpressionType nodeType) => GetOperator(nodeType) != null;
+
+        private int GetTranslationSize()
+        {
+            var translationSize =
+                _leftOperandTranslation.TranslationSize +
+                _operator.Length +
+                _rightOperandTranslation.TranslationSize;
 
             if (IsCheckedOperation)
             {
-                estimatedSize += 10;
+                translationSize += 10;
             }
 
-            return estimatedSize;
+            return translationSize;
         }
 
         public ExpressionType NodeType { get; }
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {
             WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
-            _leftOperandTranslation.WriteInParenthesesIfRequired(buffer);
+            _leftOperandTranslation.WriteInParenthesesIfRequired(buffer, _context);
             buffer.WriteToTranslation(_operator);
-            _rightOperandTranslation.WriteInParenthesesIfRequired(buffer);
+            _rightOperandTranslation.WriteInParenthesesIfRequired(buffer, _context);
             WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
         }
 
@@ -134,6 +144,7 @@
 
         private class StandaloneEqualityComparisonTranslation : ITranslation
         {
+            private readonly ITranslationContext _context;
             private readonly StandaloneBoolean _standaloneBoolean;
             private readonly ITranslation _operandTranslation;
 
@@ -144,10 +155,11 @@
                 Expression comparison,
                 ITranslationContext context)
             {
+                _context = context;
                 NodeType = nodeType;
                 _standaloneBoolean = new StandaloneBoolean(boolean, @operator, comparison);
                 _operandTranslation = context.GetTranslationFor(_standaloneBoolean.Expression);
-                EstimatedSize = _operandTranslation.EstimatedSize + 1;
+                TranslationSize = _operandTranslation.TranslationSize + 1;
             }
 
             public static bool TryGetTranslation(BinaryExpression comparison, ITranslationContext context, out ITranslation translation)
@@ -190,7 +202,9 @@
 
             public Type Type => typeof(bool);
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize => _operandTranslation.FormattingSize;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -200,7 +214,7 @@
                     return;
                 }
 
-                NegationTranslation.ForNot(_operandTranslation).WriteTo(buffer);
+                NegationTranslation.ForNot(_operandTranslation, _context).WriteTo(buffer);
             }
 
             private class StandaloneBoolean

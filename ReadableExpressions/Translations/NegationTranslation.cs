@@ -11,6 +11,7 @@
     internal class NegationTranslation : ITranslation
     {
         private const char _bang = '!';
+        private readonly ITranslationContext _context;
         private readonly char _operator;
         private readonly ITranslation _negatedValue;
 
@@ -18,34 +19,39 @@
             : this(
                 negation.NodeType,
                (negation.NodeType == ExpressionType.Not) ? _bang : '-',
-                context.GetTranslationFor(negation.Operand))
+                context.GetTranslationFor(negation.Operand),
+                context)
         {
         }
 
         private NegationTranslation(
             ExpressionType negationType,
             char @operator,
-            ITranslation negatedValue)
+            ITranslation negatedValue,
+            ITranslationContext context)
         {
+            _context = context;
             NodeType = negationType;
             _operator = @operator;
             _negatedValue = negatedValue;
-            EstimatedSize = negatedValue.EstimatedSize + 3;
+            TranslationSize = negatedValue.TranslationSize + 3;
         }
 
-        public static ITranslation ForNot(ITranslation negatedValue)
-            => new NegationTranslation(ExpressionType.Not, _bang, negatedValue);
+        public static ITranslation ForNot(ITranslation negatedValue, ITranslationContext context)
+            => new NegationTranslation(ExpressionType.Not, _bang, negatedValue, context);
 
         public ExpressionType NodeType { get; }
 
         public Type Type => typeof(bool);
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize => _negatedValue.FormattingSize;
 
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteToTranslation(_operator);
-            _negatedValue.WriteInParenthesesIfRequired(buffer);
+            _negatedValue.WriteInParenthesesIfRequired(buffer, _context);
         }
     }
 }

@@ -33,9 +33,10 @@
             NodeType = initType;
             _newingTranslation = newingTranslation;
             InitializerTranslations = initializerTranslations;
-            EstimatedSize = newingTranslation.EstimatedSize + initializerTranslations.EstimatedSize;
+            TranslationSize = newingTranslation.TranslationSize + initializerTranslations.TranslationSize;
+            FormattingSize = newingTranslation.FormattingSize + initializerTranslations.FormattingSize;
 
-            initializerTranslations.IsLongTranslation = EstimatedSize > 40;
+            initializerTranslations.IsLongTranslation = TranslationSize > 40;
         }
 
         protected static bool InitHasNoInitializers(
@@ -58,7 +59,9 @@
 
         public Type Type => _newingTranslation.Type;
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+        
+        public int FormattingSize { get; }
 
         protected InitializerSetTranslationBase<TInitializer> InitializerTranslations { get; }
 

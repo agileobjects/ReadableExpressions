@@ -19,103 +19,77 @@
                 return new UnnamedParameterTranslation(parameter, context);
             }
 
-            return new StandardParameterTranslation(parameter);
+            return new StandardParameterTranslation(parameter, context);
         }
 
         private class StandardParameterTranslation : ITranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly bool _useLiteralPrefix;
+            private readonly string _parameterName;
 
-            public StandardParameterTranslation(ParameterExpression parameter)
+            public StandardParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
             {
                 _parameter = parameter;
-                _useLiteralPrefix = IsKeyword(parameter.Name);
-                EstimatedSize = GetEstimatedSize();
-            }
+                _parameterName = parameter.Name;
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameter.Name.Length;
-
-                if (_useLiteralPrefix)
+                if (IsKeyword(_parameterName))
                 {
-                    ++estimatedSize;
+                    _parameterName = "@" + _parameterName;
                 }
 
-                return estimatedSize;
+                TranslationSize = _parameterName.Length;
+                FormattingSize = context.GetVariableFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
 
             public Type Type => _parameter.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
-            {
-                if (_useLiteralPrefix)
-                {
-                    buffer.WriteToTranslation('@', Variable);
-                }
-
-                buffer.WriteToTranslation(_parameter.Name, Variable);
-            }
+                => buffer.WriteToTranslation(_parameterName, Variable);
         }
 
         private class UnnamedParameterTranslation : ITranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly int? _variableNumber;
             private readonly string _parameterName;
-            private readonly bool _useLiteralPrefix;
 
             public UnnamedParameterTranslation(ParameterExpression parameter, ITranslationContext context)
             {
                 _parameter = parameter;
-                _variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
                 _parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
-                _useLiteralPrefix = (_variableNumber == null) && IsKeyword(_parameterName);
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameterName.Length;
+                var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
 
-                if (_useLiteralPrefix)
+                if (variableNumber.HasValue)
                 {
-                    ++estimatedSize;
+                    _parameterName += variableNumber.Value;
+                }
+                else if (IsKeyword(_parameterName))
+                {
+                    _parameterName = "@" + _parameterName;
                 }
 
-                if (_variableNumber.HasValue)
-                {
-                    estimatedSize += 2;
-                }
-
-                return estimatedSize;
+                TranslationSize = _parameterName.Length;
+                FormattingSize = context.GetVariableFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
 
             public Type Type => _parameter.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
-            {
-                if (_useLiteralPrefix)
-                {
-                    buffer.WriteToTranslation('@', Variable);
-                }
-
-                buffer.WriteToTranslation(_parameterName, Variable);
-
-                if (_variableNumber != null)
-                {
-                    buffer.WriteToTranslation(_variableNumber.Value, Variable);
-                }
-            }
+                => buffer.WriteToTranslation(_parameterName, Variable);
         }
 
         private static bool IsKeyword(string variableName)

@@ -184,7 +184,10 @@
             }
         }
 
-        public void WriteToTranslation(char character, TokenType tokenType = Default)
+        public void WriteToTranslation(char character)
+            => WriteToTranslation(character, Default);
+
+        private void WriteToTranslation(char character, TokenType tokenType)
         {
             WriteIndentIfRequired();
             _formatter.WriteFormatted(character, Write, Write, tokenType);
@@ -213,10 +216,10 @@
 
         private void Write(string stringValue) => _content.Append(stringValue);
 
-        public void WriteToTranslation(int intValue, TokenType tokenType = Numeric)
+        public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
-            _formatter.WriteFormatted(intValue, Write, Write, tokenType);
+            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
         }
 
         private void Write(int intValue) => _content.Append(intValue);

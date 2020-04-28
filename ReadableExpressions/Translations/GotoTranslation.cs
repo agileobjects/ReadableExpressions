@@ -15,15 +15,15 @@
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    return new TerminatedGotoTranslation(@goto, "break");
+                    return new TerminatedGotoTranslation(@goto, "break", context);
 
                 case GotoExpressionKind.Continue:
-                    return new TerminatedGotoTranslation(@goto, "continue");
+                    return new TerminatedGotoTranslation(@goto, "continue", context);
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        return new TerminatedGotoTranslation(@goto, "return");
+                        return new TerminatedGotoTranslation(@goto, "return", context);
                     }
 
                     return new ReturnValueTranslation(@goto, context);
@@ -32,7 +32,7 @@
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    return new GotoNamedLabelTranslation(@goto);
+                    return new GotoNamedLabelTranslation(@goto, context);
             }
         }
 
@@ -40,18 +40,24 @@
         {
             private readonly string _statement;
 
-            public TerminatedGotoTranslation(Expression @goto, string statement)
+            public TerminatedGotoTranslation(
+                Expression @goto,
+                string statement,
+                ITranslationContext context)
             {
                 Type = @goto.Type;
                 _statement = statement;
-                EstimatedSize = _statement.Length + 1;
+                TranslationSize = statement.Length + 1; // <- for the ';'
+                FormattingSize = context.GetControlStatementFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
 
             public Type Type { get; }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public bool IsTerminated => true;
 
@@ -66,18 +72,21 @@
         {
             private readonly string _labelName;
 
-            public GotoNamedLabelTranslation(GotoExpression @goto)
+            public GotoNamedLabelTranslation(GotoExpression @goto, ITranslationContext context)
             {
                 Type = @goto.Type;
                 _labelName = @goto.Target.Name;
-                EstimatedSize = "goto ".Length + _labelName.Length + 1;
+                TranslationSize = "goto ".Length + _labelName.Length + 1; // <- for the ';'
+                FormattingSize = context.GetControlStatementFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
 
             public Type Type { get; }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public bool IsTerminated => true;
 
@@ -96,14 +105,17 @@
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
                 _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                EstimatedSize = _returnValueTranslation.EstimatedSize + "return ".Length;
+                TranslationSize = _returnValueTranslation.TranslationSize + "return ".Length;
+                FormattingSize = context.GetControlStatementFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
 
             public Type Type => _returnValueTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {

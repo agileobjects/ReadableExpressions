@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Collections.Generic;
     using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -16,26 +15,6 @@
         ITranslation,
         IPotentialSelfTerminatingTranslatable
     {
-        private static readonly Dictionary<ExpressionType, string> _symbolsByNodeType =
-            new Dictionary<ExpressionType, string>
-            {
-                [AddAssign] = " +=",
-                [AddAssignChecked] = " +=",
-                [AndAssign] = " &=",
-                [Assign] = " =",
-                [DivideAssign] = " /=",
-                [ExclusiveOrAssign] = " ^=",
-                [LeftShiftAssign] = " <<=",
-                [ModuloAssign] = " %=",
-                [MultiplyAssign] = " *=",
-                [MultiplyAssignChecked] = " *=",
-                [OrAssign] = " |=",
-                [PowerAssign] = " **=",
-                [RightShiftAssign] = " >>=",
-                [SubtractAssign] = " -=",
-                [SubtractAssignChecked] = " -="
-            };
-
         private readonly ITranslation _targetTranslation;
         private readonly string _operator;
         private readonly ITranslation _valueTranslation;
@@ -59,9 +38,10 @@
         {
             NodeType = nodeType;
             _targetTranslation = targetTranslation;
-            _operator = _symbolsByNodeType[NodeType];
+            _operator = GetOperatorOrNull(nodeType);
             _valueTranslation = GetValueTranslation(value, context);
-            EstimatedSize = GetEstimatedSize();
+            TranslationSize = GetTranslationSize();
+            FormattingSize = _targetTranslation.FormattingSize + _valueTranslation.FormattingSize;
         }
 
         private static bool IsCheckedAssignment(ExpressionType assignmentType)
@@ -75,6 +55,29 @@
             }
 
             return false;
+        }
+
+        private static string GetOperatorOrNull(ExpressionType assignmentType)
+        {
+            return assignmentType switch
+            {
+                AddAssign => " +=",
+                AddAssignChecked => " +=",
+                AndAssign => " &=",
+                Assign => " =",
+                DivideAssign => " /=",
+                ExclusiveOrAssign => " ^=",
+                LeftShiftAssign => " <<=",
+                ModuloAssign => " %=",
+                MultiplyAssign => " *=",
+                MultiplyAssignChecked => " *=",
+                OrAssign => " |=",
+                PowerAssign => " **=",
+                RightShiftAssign => " >>=",
+                SubtractAssign => " -=",
+                SubtractAssignChecked => " -=",
+                _ => null
+            };
         }
 
         private ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
@@ -103,32 +106,34 @@
             _suppressSpaceBeforeValue = true;
 
             return (valueBlock.NodeType == Conditional)
-                ? valueBlock.WithoutBraces() 
+                ? valueBlock.WithoutBraces()
                 : valueBlock.WithBraces();
         }
 
-        private int GetEstimatedSize()
+        private int GetTranslationSize()
         {
-            var estimatedSize =
-               _targetTranslation.EstimatedSize +
+            var translationSize =
+               _targetTranslation.TranslationSize +
                _operator.Length + 1 +
-               _valueTranslation.EstimatedSize;
+               _valueTranslation.TranslationSize;
 
             if (IsCheckedOperation)
             {
-                estimatedSize += 10;
+                translationSize += 10;
             }
 
-            return estimatedSize;
+            return translationSize;
         }
 
-        public static bool IsAssignment(ExpressionType nodeType) => _symbolsByNodeType.ContainsKey(nodeType);
+        public static bool IsAssignment(ExpressionType nodeType) => GetOperatorOrNull(nodeType) != null;
 
         public ExpressionType NodeType { get; }
 
         public Type Type => _targetTranslation.Type;
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsTerminated => _valueTranslation.IsTerminated();
 

@@ -13,16 +13,19 @@
     {
         private readonly string _comment;
 
-        public CommentTranslation(string comment)
+        public CommentTranslation(string comment, ITranslationContext context)
         {
             _comment = comment;
+            FormattingSize = context.GetFormattingSize(TokenType.Comment);
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
 
         public Type Type => typeof(string);
 
-        public int EstimatedSize => _comment.Length;
+        public int TranslationSize => _comment.Length;
+
+        public int FormattingSize { get; }
 
         public bool IsTerminated => true;
 

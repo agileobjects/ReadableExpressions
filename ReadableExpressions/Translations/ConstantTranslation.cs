@@ -103,13 +103,13 @@
                 case NetStandardTypeCode.DateTime:
                     if (!TryTranslateDefault<DateTime>(constant, context, out translation))
                     {
-                        translation = new DateTimeConstantTranslation(constant);
+                        translation = new DateTimeConstantTranslation(constant, context);
                     }
 
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    translation = new DbNullTranslation(constant);
+                    translation = new DbNullTranslation(constant, context);
                     return true;
 
                 case NetStandardTypeCode.Decimal:
@@ -149,7 +149,7 @@
 
                     if (stringValue.IsComment())
                     {
-                        translation = new CommentTranslation(stringValue);
+                        translation = new CommentTranslation(stringValue, context);
                         return true;
                     }
 
@@ -250,14 +250,16 @@
             {
                 _typeNameTranslation = context.GetTranslationFor(constant.Type);
                 _enumValue = constant.Value.ToString();
-                EstimatedSize = _typeNameTranslation.EstimatedSize + 1 + _enumValue.Length;
+                TranslationSize = _typeNameTranslation.TranslationSize + 1 + _enumValue.Length;
             }
 
             public ExpressionType NodeType => Constant;
 
             public Type Type => _typeNameTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize => _typeNameTranslation.FormattingSize;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -273,37 +275,40 @@
             private readonly bool _hasMilliseconds;
             private readonly bool _hasTime;
 
-            public DateTimeConstantTranslation(ConstantExpression constant)
+            public DateTimeConstantTranslation(ConstantExpression constant, ITranslationContext context)
             {
                 Type = constant.Type;
                 _value = (DateTime)constant.Value;
                 _hasMilliseconds = _value.Millisecond != 0;
                 _hasTime = (_value.Hour != 0) || (_value.Minute != 0) || (_value.Second != 0);
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = "new DateTime(".Length + 4 + 4 + 4;
+                var translationSize = "new DateTime(".Length + 4 + 4 + 4;
+                var numericFormattingSize = context.GetNumericFormattingSize();
+                var formattingSize = context.GetTypeNameFormattingSize() + numericFormattingSize * 3;
 
                 if (_hasMilliseconds || _hasTime)
                 {
-                    estimatedSize += 4 + 4 + 4;
+                    translationSize += 4 + 4 + 4;
+                    formattingSize += numericFormattingSize * 3;
 
                     if (_hasMilliseconds)
                     {
-                        estimatedSize += 2 + 4;
+                        translationSize += ", ".Length + 4;
+                        formattingSize += numericFormattingSize;
                     }
                 }
 
-                return estimatedSize + 1;
+                TranslationSize = translationSize + 1;
+                FormattingSize = formattingSize;
             }
 
             public ExpressionType NodeType => Constant;
 
             public Type Type { get; }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -341,7 +346,7 @@
                     return;
                 }
 
-                buffer.WriteToTranslation('0', Numeric);
+                buffer.WriteToTranslation(0);
                 buffer.WriteToTranslation(datePart);
             }
         }
@@ -382,7 +387,9 @@
 
             public Type Type => _lambdaTranslation.Type;
 
-            public int EstimatedSize => _lambdaTranslation.EstimatedSize;
+            public int TranslationSize => _lambdaTranslation.TranslationSize;
+
+            public int FormattingSize => _lambdaTranslation.FormattingSize;
 
             public bool IsTerminated => true;
 
@@ -393,11 +400,17 @@
         {
             private readonly TimeSpan _timeSpan;
 
-            private TimeSpanConstantTranslation(ConstantExpression timeSpanConstant)
+            private TimeSpanConstantTranslation(
+                ConstantExpression timeSpanConstant,
+                ITranslationContext context)
             {
                 Type = timeSpanConstant.Type;
                 _timeSpan = (TimeSpan)timeSpanConstant.Value;
-                EstimatedSize = _timeSpan.ToString().Length;
+                TranslationSize = _timeSpan.ToString().Length;
+
+                var formattingSize = context.GetTypeNameFormattingSize();
+
+                FormattingSize = formattingSize;
             }
 
             public static bool TryCreate(
@@ -416,7 +429,7 @@
                     return true;
                 }
 
-                timeSpanTranslation = new TimeSpanConstantTranslation(constant);
+                timeSpanTranslation = new TimeSpanConstantTranslation(constant, context);
                 return true;
             }
 
@@ -424,7 +437,9 @@
 
             public Type Type { get; }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -483,7 +498,7 @@
                     buffer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
-            EndTranslation:
+                EndTranslation:
                 buffer.WriteToTranslation(')');
             }
 
@@ -513,10 +528,11 @@
                     return false;
                 }
 
+                var factoryMethodName = "From" + valueName;
+
                 buffer.WriteTypeNameToTranslation(nameof(TimeSpan));
                 buffer.WriteDotToTranslation();
-                buffer.WriteToTranslation("From", MethodName);
-                buffer.WriteToTranslation(valueName, MethodName);
+                buffer.WriteToTranslation(factoryMethodName, MethodName);
                 buffer.WriteToTranslation('(');
                 buffer.WriteToTranslation(value);
                 buffer.WriteToTranslation(')');

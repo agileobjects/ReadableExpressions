@@ -19,7 +19,8 @@
             Type = newArray.Type;
             _typeNameTranslation = context.GetTranslationFor(newArray.Type.GetElementType());
 
-            var estimatedSize = _typeNameTranslation.EstimatedSize + 6;
+            var translationSize = _typeNameTranslation.TranslationSize + 6;
+            var formattingSize = _typeNameTranslation.FormattingSize;
 
             if (newArray.Expressions.Count == 0)
             {
@@ -35,7 +36,8 @@
                     var boundTranslation = context.GetTranslationFor(newArray.Expressions[i]);
 
                     _boundTranslations[i] = boundTranslation;
-                    estimatedSize += boundTranslation.EstimatedSize + 2;
+                    translationSize += boundTranslation.TranslationSize + 2;
+                    formattingSize += boundTranslation.FormattingSize;
 
                     ++i;
 
@@ -46,14 +48,17 @@
                 }
             }
 
-            EstimatedSize = estimatedSize;
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         public ExpressionType NodeType => ExpressionType.NewArrayBounds;
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+        
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {

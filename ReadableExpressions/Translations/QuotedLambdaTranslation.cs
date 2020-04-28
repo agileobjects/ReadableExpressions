@@ -34,7 +34,9 @@
 
         public Type Type => _quotedLambdaTranslation.Type;
 
-        public int EstimatedSize => _quotedLambdaTranslation.EstimatedSize;
+        public int TranslationSize => _quotedLambdaTranslation.TranslationSize;
+
+        public int FormattingSize => _quotedLambdaTranslation.FormattingSize;
 
         public void WriteTo(TranslationBuffer buffer)
         {
