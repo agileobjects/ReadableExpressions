@@ -8,6 +8,26 @@
     public interface ITranslationFormatter
     {
         /// <summary>
+        /// Gets the raw, unformatted version of the given <paramref name="formatted"/> text.
+        /// </summary>
+        /// <param name="formatted">The formatted text for which to retrieve the raw version.</param>
+        /// <returns>
+        /// The raw, unformatted version of the given <paramref name="formatted"/> text.
+        /// </returns>
+        string GetRaw(string formatted);
+
+        /// <summary>
+        /// Gets the number of characters required for formatting for the given <paramref name="tokenType"/>.
+        /// </summary>
+        /// <param name="tokenType">
+        /// The <see cref="TokenType"/> for which to retrieve the formatting size.
+        /// </param>
+        /// <returns>
+        /// The number of characters required for formatting for the given <paramref name="tokenType"/>.
+        /// </returns>
+        int GetFormattingSize(TokenType tokenType);
+
+        /// <summary>
         /// Write the given <paramref name="character"/> using the given <paramref name="characterWriter"/>,
         /// along with any appropriate formatting. This overload is provided to enable encoding of
         /// the value if required.

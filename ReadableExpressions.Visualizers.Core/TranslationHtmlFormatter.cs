@@ -10,14 +10,17 @@
         public static readonly ITranslationFormatter Instance = new TranslationHtmlFormatter();
 
         private static readonly Regex _htmlMatcher = new Regex("<[^>]+>", Compiled);
+        private static readonly int _formattingSize = "<span class=\"kw\"></span>".Length - 2;
 
-        public static string RemoveFormatting(string translation)
+        public string GetRaw(string formatted)
         {
             return _htmlMatcher
-                .Replace(translation, string.Empty)
+                .Replace(formatted, string.Empty)
                 .Replace("&lt;", "<")
                 .Replace("&gt;", ">");
         }
+
+        public int GetFormattingSize(TokenType tokenType) => _formattingSize;
 
         public void WriteFormatted(
             char character,

@@ -6,6 +6,10 @@
     {
         public static readonly ITranslationFormatter Insance = new NullTranslationFormatter();
 
+        public string GetRaw(string formatted) => formatted;
+
+        public int GetFormattingSize(TokenType tokenType) => 0;
+
         public void WriteFormatted(string value, Action<string> stringWriter, TokenType type)
             => stringWriter.Invoke(value);
 

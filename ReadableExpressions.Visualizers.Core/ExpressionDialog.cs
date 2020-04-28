@@ -71,7 +71,7 @@
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
             // ReSharper disable PossibleNullReferenceException
-                TranslationHtmlFormatter.RemoveFormatting(_viewer.Document.Body.InnerHtml));
+                TranslationHtmlFormatter.Instance.GetRaw(_viewer.Document.Body.InnerHtml));
             // ReSharper restore PossibleNullReferenceException
 
             var toolbar = new ToolStrip(copyButton)
@@ -123,7 +123,7 @@
 
         public ExpressionDialog WithText(string translation)
         {
-            var rawText = TranslationHtmlFormatter.RemoveFormatting(translation);
+            var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
             var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
             var viewerSize = new Size(
