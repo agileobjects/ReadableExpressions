@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="ExpressionDialogSettings.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
     <Compile Include="ExpressionDialog.cs">
       <SubType>Form</SubType>

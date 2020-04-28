@@ -123,6 +123,8 @@
 
         public ExpressionDialog WithText(string translation)
         {
+            var appSettingsPath = Application.UserAppDataPath;
+
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
             var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
