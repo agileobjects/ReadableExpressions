@@ -15,15 +15,15 @@
             switch (@goto.Kind)
             {
                 case GotoExpressionKind.Break:
-                    return FixedTerminatedValueTranslation("break;", @goto);
+                    return new TerminatedGotoTranslation(@goto, "break", context);
 
                 case GotoExpressionKind.Continue:
-                    return FixedTerminatedValueTranslation("continue;", @goto);
+                    return new TerminatedGotoTranslation(@goto, "continue", context);
 
                 case GotoExpressionKind.Return:
                     if (@goto.Value == null)
                     {
-                        return FixedTerminatedValueTranslation("return;", @goto);
+                        return new TerminatedGotoTranslation(@goto, "return", context);
                     }
 
                     return new ReturnValueTranslation(@goto, context);
@@ -32,33 +32,94 @@
                     goto case GotoExpressionKind.Return;
 
                 default:
-                    return FixedTerminatedValueTranslation("goto " + @goto.Target.Name + ";", @goto);
+                    return new GotoNamedLabelTranslation(@goto, context);
             }
         }
 
-        private static FixedTerminatedValueTranslation FixedTerminatedValueTranslation(string value, GotoExpression @goto)
-            => new FixedTerminatedValueTranslation(ExpressionType.Goto, value, @goto.Type);
+        private class TerminatedGotoTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        {
+            private readonly string _statement;
+
+            public TerminatedGotoTranslation(
+                Expression @goto,
+                string statement,
+                ITranslationContext context)
+            {
+                Type = @goto.Type;
+                _statement = statement;
+                TranslationSize = statement.Length + 1; // <- for the ';'
+                FormattingSize = context.GetControlStatementFormattingSize();
+            }
+
+            public ExpressionType NodeType => ExpressionType.Goto;
+
+            public Type Type { get; }
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public bool IsTerminated => true;
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteControlStatementToTranslation(_statement);
+                buffer.WriteToTranslation(';');
+            }
+        }
+
+        private class GotoNamedLabelTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        {
+            private readonly string _labelName;
+
+            public GotoNamedLabelTranslation(GotoExpression @goto, ITranslationContext context)
+            {
+                Type = @goto.Type;
+                _labelName = @goto.Target.Name;
+                TranslationSize = "goto ".Length + _labelName.Length + 1; // <- for the ';'
+                FormattingSize = context.GetControlStatementFormattingSize();
+            }
+
+            public ExpressionType NodeType => ExpressionType.Goto;
+
+            public Type Type { get; }
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public bool IsTerminated => true;
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteControlStatementToTranslation("goto ");
+                buffer.WriteToTranslation(_labelName);
+                buffer.WriteToTranslation(';');
+            }
+        }
 
         private class ReturnValueTranslation : ITranslation
         {
-            private const string _returnKeyword = "return ";
             private readonly CodeBlockTranslation _returnValueTranslation;
 
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
                 _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                EstimatedSize = _returnValueTranslation.EstimatedSize + _returnKeyword.Length;
+                TranslationSize = _returnValueTranslation.TranslationSize + "return ".Length;
+                FormattingSize = context.GetControlStatementFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Goto;
 
             public Type Type => _returnValueTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_returnKeyword);
+                buffer.WriteReturnToTranslation();
                 _returnValueTranslation.WriteTo(buffer);
             }
         }

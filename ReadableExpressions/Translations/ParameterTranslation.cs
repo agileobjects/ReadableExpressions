@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,34 +8,10 @@
 #endif
     using Extensions;
     using Interfaces;
+    using static Formatting.TokenType;
 
     internal static class ParameterTranslation
     {
-        private static readonly IList<string> _keywords = InternalReflectionExtensions
-            .TypeNames
-            .Combine(new[]
-            {
-                "typeof",
-                "default",
-                "void",
-                "readonly",
-                "do",
-                "while",
-                "switch",
-                "if",
-                "else",
-                "try",
-                "catch",
-                "finally",
-                "throw",
-                "for",
-                "foreach",
-                "goto",
-                "return",
-                "implicit",
-                "explicit"
-            });
-
         public static ITranslation For(ParameterExpression parameter, ITranslationContext context)
         {
             if (parameter.Name.IsNullOrWhiteSpace())
@@ -44,102 +19,106 @@
                 return new UnnamedParameterTranslation(parameter, context);
             }
 
-            return new StandardParameterTranslation(parameter);
+            return new StandardParameterTranslation(parameter, context);
         }
 
         private class StandardParameterTranslation : ITranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly bool _useLiteralPrefix;
+            private readonly string _parameterName;
 
-            public StandardParameterTranslation(ParameterExpression parameter)
+            public StandardParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
             {
                 _parameter = parameter;
-                _useLiteralPrefix = _keywords.Contains(parameter.Name);
-                EstimatedSize = GetEstimatedSize();
-            }
+                _parameterName = parameter.Name;
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameter.Name.Length;
-
-                if (_useLiteralPrefix)
+                if (IsKeyword(_parameterName))
                 {
-                    ++estimatedSize;
+                    _parameterName = "@" + _parameterName;
                 }
 
-                return estimatedSize;
+                TranslationSize = _parameterName.Length;
+                FormattingSize = context.GetVariableFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
 
             public Type Type => _parameter.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
-            {
-                if (_useLiteralPrefix)
-                {
-                    buffer.WriteToTranslation('@');
-                }
-
-                buffer.WriteToTranslation(_parameter.Name);
-            }
+                => buffer.WriteToTranslation(_parameterName, Variable);
         }
 
         private class UnnamedParameterTranslation : ITranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly int? _variableNumber;
             private readonly string _parameterName;
-            private readonly bool _useLiteralPrefix;
 
             public UnnamedParameterTranslation(ParameterExpression parameter, ITranslationContext context)
             {
                 _parameter = parameter;
-                _variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
                 _parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
-                _useLiteralPrefix = (_variableNumber == null) && _keywords.Contains(_parameterName);
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameterName.Length;
+                var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
 
-                if (_useLiteralPrefix)
+                if (variableNumber.HasValue)
                 {
-                    ++estimatedSize;
+                    _parameterName += variableNumber.Value;
+                }
+                else if (IsKeyword(_parameterName))
+                {
+                    _parameterName = "@" + _parameterName;
                 }
 
-                if (_variableNumber.HasValue)
-                {
-                    estimatedSize += 2;
-                }
-
-                return estimatedSize;
+                TranslationSize = _parameterName.Length;
+                FormattingSize = context.GetVariableFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
 
             public Type Type => _parameter.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
+                => buffer.WriteToTranslation(_parameterName, Variable);
+        }
+
+        private static bool IsKeyword(string variableName)
+        {
+            switch (variableName)
             {
-                if (_useLiteralPrefix)
-                {
-                    buffer.WriteToTranslation('@');
-                }
+                case "typeof":
+                case "default":
+                case "void":
+                case "readonly":
+                case "do":
+                case "while":
+                case "switch":
+                case "if":
+                case "else":
+                case "try":
+                case "catch":
+                case "finally":
+                case "throw":
+                case "for":
+                case "foreach":
+                case "goto":
+                case "return":
+                case "implicit":
+                case "explicit":
+                    return true;
 
-                buffer.WriteToTranslation(_parameterName);
-
-                if (_variableNumber != null)
-                {
-                    buffer.WriteToTranslation(_variableNumber.Value.ToString());
-                }
+                default:
+                    return InternalReflectionExtensions.TypeNames.Contains(variableName);
             }
         }
     }

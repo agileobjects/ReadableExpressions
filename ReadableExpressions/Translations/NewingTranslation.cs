@@ -49,25 +49,27 @@
                 Type = newing.Type;
                 _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(Type) ?? string.Empty;
                 _ctorParameters = newing.Constructor.GetParameters();
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                return _typeName.Length +
-                       _ctorParameters.Sum(p => p.Name.Length) +
-                       (3 * _ctorParameters.Length) + // <- for ' = '
-                        Parameters.EstimatedSize +
-                       "new {  }".Length;
+                TranslationSize =
+                    _typeName.Length +
+                    _ctorParameters.Sum(p => p.Name.Length + 3 /* <- for ' = ' */) +
+                     Parameters.TranslationSize +
+                    "new {  }".Length;
+
+                FormattingSize =
+                    context.GetKeywordFormattingSize() +
+                    context.GetVariableFormattingSize() * _ctorParameters.Length;
             }
 
             public Type Type { get; }
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("new ");
+                buffer.WriteNewToTranslation();
 
                 if (_typeName.Length != 0)
                 {
@@ -85,7 +87,9 @@
                         buffer.WriteToTranslation(" = ");
                         Parameters[i].WriteTo(buffer);
 
-                        if (++i == _ctorParameters.Length)
+                        ++i;
+
+                        if (i == _ctorParameters.Length)
                         {
                             break;
                         }
@@ -111,21 +115,25 @@
             {
                 _omitParenthesesIfParameterless = omitParenthesesIfParameterless;
                 _typeNameTranslation = context.GetTranslationFor(newing.Type).WithObjectTypeName();
-                EstimatedSize = GetEstimatedSize();
+
+                TranslationSize =
+                    "new ()".Length +
+                    _typeNameTranslation.TranslationSize +
+                     Parameters.TranslationSize;
+
+                FormattingSize =
+                     context.GetKeywordFormattingSize() +
+                    _typeNameTranslation.FormattingSize +
+                     Parameters.FormattingSize;
             }
 
-            private int GetEstimatedSize()
-            {
-                return _typeNameTranslation.EstimatedSize +
-                       Parameters.EstimatedSize +
-                       "new ()".Length;
-            }
+            public int TranslationSize { get; }
 
-            public int EstimatedSize { get; }
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("new ");
+                buffer.WriteNewToTranslation();
                 _typeNameTranslation.WriteTo(buffer);
 
                 if (_omitParenthesesIfParameterless && Parameters.None)

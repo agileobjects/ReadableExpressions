@@ -1,13 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using Extensions;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
+    using Interfaces;
 
     internal static class ConditionalTranslation
     {
@@ -43,7 +43,7 @@
 
         private abstract class ConditionalTranslationBase : ITranslation
         {
-            private int? _estimatedSize;
+            private int? _translationSize;
 
             protected ConditionalTranslationBase(
                 ConditionalExpression conditional,
@@ -66,7 +66,7 @@
             }
 
             public ExpressionType NodeType => ExpressionType.Conditional;
-            
+
             public Type Type { get; }
 
             protected ITranslation TestTranslation { get; }
@@ -75,25 +75,41 @@
 
             protected ITranslation IfFalseTranslation { get; set; }
 
-            public int EstimatedSize
-                => _estimatedSize ?? ((_estimatedSize = GetEstimatedSize()).Value);
+            public int TranslationSize => _translationSize ??= GetTranslationSize();
 
-            private int GetEstimatedSize()
+            private int GetTranslationSize()
             {
-                var estimatedSize = TestTranslation.EstimatedSize + IfTrueTranslation.EstimatedSize;
+                var translationSize = TestTranslation.TranslationSize + IfTrueTranslation.TranslationSize;
 
                 if (IfFalseTranslation != null)
                 {
-                    estimatedSize += IfFalseTranslation.EstimatedSize;
+                    translationSize += IfFalseTranslation.TranslationSize;
                 }
 
                 // +10 for parentheses, ternary symbols, etc:
-                return estimatedSize + 10;
+                return translationSize + 10;
             }
 
-            protected static ITranslation GetCodeBlockTranslation(ITranslation translation, bool withReturnKeyword)
+            public int FormattingSize => GetFormattingSize();
+
+            private int GetFormattingSize()
             {
-                var codeBlockTranslation = new CodeBlockTranslation(translation)
+                var formattingSize = TestTranslation.FormattingSize + IfTrueTranslation.FormattingSize;
+
+                if (IfFalseTranslation != null)
+                {
+                    formattingSize += IfFalseTranslation.FormattingSize;
+                }
+
+                return formattingSize;
+            }
+
+            protected static ITranslation GetCodeBlockTranslation(
+                ITranslation translation,
+                bool withReturnKeyword,
+                ITranslationContext context)
+            {
+                var codeBlockTranslation = new CodeBlockTranslation(translation, context)
                     .WithTermination()
                     .WithBraces();
 
@@ -109,7 +125,7 @@
 
             protected void WriteIfStatement(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation("if ");
+                buffer.WriteControlStatementToTranslation("if ");
                 TestTranslation.WriteInParentheses(buffer);
                 IfTrueTranslation.WriteTo(buffer);
             }
@@ -122,7 +138,8 @@
                     conditional,
                     GetCodeBlockTranslation(
                         context.GetTranslationFor(conditional.IfTrue),
-                        withReturnKeyword: conditional.IfTrue.IsReturnable()),
+                        withReturnKeyword: conditional.IfTrue.IsReturnable(),
+                        context),
                     context)
             {
             }
@@ -134,7 +151,8 @@
 
         private class TernaryTranslation : ConditionalTranslationBase
         {
-            private readonly Action<TranslationBuffer> _translationWriter;
+            private readonly ITranslationContext _context;
+            private readonly Action<TranslationBuffer, ITranslationContext> _translationWriter;
 
             public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
@@ -143,6 +161,7 @@
                     context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutStartingNewLine(),
                     context)
             {
+                _context = context;
                 if (this.ExceedsLengthThreshold())
                 {
                     _translationWriter = WriteMultiLineTernary;
@@ -153,20 +172,21 @@
                 }
             }
 
-            public override void WriteTo(TranslationBuffer buffer) => _translationWriter.Invoke(buffer);
+            public override void WriteTo(TranslationBuffer buffer)
+                => _translationWriter.Invoke(buffer, _context);
 
-            private void WriteSingleLineTernary(TranslationBuffer buffer)
+            private void WriteSingleLineTernary(TranslationBuffer buffer, ITranslationContext context)
             {
-                TestTranslation.WriteInParenthesesIfRequired(buffer);
+                TestTranslation.WriteInParenthesesIfRequired(buffer, context);
                 buffer.WriteToTranslation(" ? ");
                 IfTrueTranslation.WriteTo(buffer);
                 buffer.WriteToTranslation(" : ");
                 IfFalseTranslation.WriteTo(buffer);
             }
 
-            private void WriteMultiLineTernary(TranslationBuffer buffer)
+            private void WriteMultiLineTernary(TranslationBuffer buffer, ITranslationContext context)
             {
-                TestTranslation.WriteInParenthesesIfRequired(buffer);
+                TestTranslation.WriteInParenthesesIfRequired(buffer, context);
 
                 buffer.WriteNewLineToTranslation();
                 buffer.Indent();
@@ -190,7 +210,8 @@
                     conditional,
                     GetCodeBlockTranslation(
                         context.GetTranslationFor(conditional.IfTrue),
-                        withReturnKeyword: true),
+                        withReturnKeyword: true,
+                        context),
                     context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutBraces(),
                     context)
             {
@@ -214,7 +235,8 @@
                     conditional,
                     GetCodeBlockTranslation(
                         context.GetTranslationFor(conditional.IfTrue),
-                        withReturnKeyword: false),
+                        withReturnKeyword: false,
+                        context),
                     context.GetTranslationFor(conditional.IfFalse),
                     context)
             {
@@ -222,7 +244,10 @@
 
                 if (_isElseIf == false)
                 {
-                    IfFalseTranslation = GetCodeBlockTranslation(IfFalseTranslation, conditional.IfFalse.IsReturnable());
+                    IfFalseTranslation = GetCodeBlockTranslation(
+                        IfFalseTranslation,
+                        conditional.IfFalse.IsReturnable(),
+                        context);
                 }
             }
 
@@ -235,7 +260,7 @@
             {
                 WriteIfStatement(buffer);
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("else");
+                buffer.WriteControlStatementToTranslation("else");
 
                 if (_isElseIf)
                 {

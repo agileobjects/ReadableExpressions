@@ -8,7 +8,7 @@
     {
         public static readonly ExpressionDialog Instance = new ExpressionDialog();
 
-        private readonly TextBox _textBox;
+        private readonly WebBrowser _viewer;
         private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _toolbar;
         private readonly int _titleBarHeight;
@@ -23,10 +23,10 @@
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
 
-            _textBox = AddTextBox();
+            _viewer = AddExpressionViewer();
             _toolbar = AddToolbar();
 
-            SetTextBoxMaximumSize();
+            SetViewerMaximumSize();
         }
 
         private Size GetDialogMaximumSize()
@@ -38,27 +38,27 @@
                 Convert.ToInt32(screenSize.Height * .8));
         }
 
-        private TextBox AddTextBox()
+        private WebBrowser AddExpressionViewer()
         {
-            var textBox = new TextBox
+            var viewer = new WebBrowser
             {
-                Font = new Font(FontFamily.GenericMonospace, 11.0f),
-                Multiline = true,
-                ScrollBars = ScrollBars.Both,
-                ReadOnly = true
+                AllowNavigation = false,
+                AllowWebBrowserDrop = false,
+                Font = new Font(new FontFamily("Consolas"), 13.5f),
+                ScrollBarsEnabled = true
             };
 
-            var textBoxPanel = new Panel
+            var viewerPanel = new Panel
             {
                 Dock = DockStyle.Fill
             };
 
-            textBoxPanel.Controls.Add(textBox);
-            Controls.Add(textBoxPanel);
+            viewerPanel.Controls.Add(viewer);
+            Controls.Add(viewerPanel);
 
-            textBox.Resize += (sender, arg) => textBoxPanel.Size = ((Control)sender).Size;
+            viewer.Resize += (sender, arg) => viewerPanel.Size = ((Control)sender).Size;
 
-            return textBox;
+            return viewer;
         }
 
         private ToolStrip AddToolbar()
@@ -69,7 +69,10 @@
                 Text = "Copy",
             };
 
-            copyButton.Click += (sender, args) => Clipboard.SetText(_textBox.Text);
+            copyButton.Click += (sender, args) => Clipboard.SetText(
+            // ReSharper disable PossibleNullReferenceException
+                TranslationHtmlFormatter.Instance.GetRaw(_viewer.Document.Body.InnerHtml));
+            // ReSharper restore PossibleNullReferenceException
 
             var toolbar = new ToolStrip(copyButton)
             {
@@ -82,12 +85,12 @@
             return toolbar;
         }
 
-        private void SetTextBoxMaximumSize()
+        private void SetViewerMaximumSize()
         {
-            _textBox.MaximumSize = GetTextBoxSizeBasedOn(_dialogMaximumSize);
+            _viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
         }
 
-        private Size GetTextBoxSizeBasedOn(Size containerSize)
+        private Size GetViewerSizeBasedOn(Size containerSize)
         {
             return new Size(
                 containerSize.Width - SystemInformation.VerticalScrollBarWidth,
@@ -115,33 +118,58 @@
         {
             base.OnResizeEnd(e);
 
-            SetTextBoxSize(GetTextBoxSizeBasedOn(Size));
+            SetViewerSize(GetViewerSizeBasedOn(Size));
         }
 
-        public ExpressionDialog WithText(string expression)
+        public ExpressionDialog WithText(string translation)
         {
-            var textSize = TextRenderer.MeasureText(expression, _textBox.Font);
+            var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
+            var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
-            var textBoxSize = new Size(
-                textSize.Width + _textBox.Padding.Left + _textBox.Padding.Right + SystemInformation.VerticalScrollBarWidth + 10,
-                textSize.Height + _textBox.Padding.Top + _textBox.Padding.Bottom + _textBox.Font.Height);
+            var viewerSize = new Size(
+                textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + SystemInformation.VerticalScrollBarWidth + 10,
+                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + _viewer.Font.Height);
 
-            SetTextBoxSize(textBoxSize);
+            SetViewerSize(viewerSize);
 
-            _textBox.Text = expression;
-
+            _viewer.DocumentText = $@"
+<html>
+<head>
+<style type=""text/css"">
+body {{ 
+    background: #1E1E1E;
+    color: #DCDCDC; 
+    font-family: '{_viewer.Font.FontFamily.Name}', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-size: 13pt;
+    overflow: auto;
+}}
+.kw {{ color: #569CD6 }}
+.vb {{ color: #9CDCFE }}
+.tn {{ color: #4EC9B0 }}
+.in {{ color: #B8D7A3 }}
+.cs {{ color: #D8A0DF }}
+.tx {{ color: #D69D85 }}
+.nm {{ color: #B5CEA8 }}
+.mn {{ color: #DCDCAA }}
+.cm {{ color: #57A64A }}
+</style>
+</head>
+<body>
+    <pre>{translation}</pre>
+</body>
+</html>";
             return this;
         }
 
-        private void SetTextBoxSize(Size newSize)
+        private void SetViewerSize(Size newSize)
         {
             EnableAutoSize();
 
             var finalSize = new Size(
-                Math.Max(newSize.Width, _textBox.Parent.Width),
-                Math.Max(newSize.Height, _textBox.Parent.Height));
+                Math.Max(newSize.Width, _viewer.Parent.Width),
+                Math.Max(newSize.Height, _viewer.Parent.Height));
 
-            _textBox.Size = finalSize;
+            _viewer.Size = finalSize;
 
             DisableAutoSize();
         }
@@ -149,13 +177,13 @@
         private void EnableAutoSize()
         {
             _autoSize =
-            _textBox.Parent.AutoSize = true;
+            _viewer.Parent.AutoSize = true;
         }
 
         private void DisableAutoSize()
         {
             _autoSize =
-            _textBox.Parent.AutoSize = false;
+            _viewer.Parent.AutoSize = false;
         }
     }
 }

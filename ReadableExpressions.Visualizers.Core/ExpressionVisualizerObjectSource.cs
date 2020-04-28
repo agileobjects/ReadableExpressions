@@ -19,7 +19,7 @@
             switch (target)
             {
                 case Expression expression:
-                    value = expression.ToReadableString() ?? "default(void)";
+                    value = GetTranslationForVisualizer(expression) ?? "default(void)";
                     break;
 
                 case Type type:
@@ -45,6 +45,12 @@
             }
 
             serializer.Invoke(outgoingData, value);
+        }
+
+        private static string GetTranslationForVisualizer(Expression expression)
+        {
+            return expression.ToReadableString(settings => settings
+                .FormatUsing(TranslationHtmlFormatter.Instance));
         }
     }
 }

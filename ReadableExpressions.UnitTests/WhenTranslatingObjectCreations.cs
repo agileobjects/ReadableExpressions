@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using NetStandardPolyfills;
 #if !NET35
@@ -274,7 +275,7 @@ new IDisposable[]
         [Fact]
         public void ShouldTranslateAnEmptyNewArrayExpression()
         {
-            var newArray = NewArrayInit(typeof(int), new List<Expression>(0));
+            var newArray = NewArrayInit(typeof(int), Enumerable.Empty<Expression>());
 
             var translated = ToReadableString(newArray);
 

@@ -1,25 +1,28 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Reflection;
+    using Formatting;
     using Interfaces;
 
     internal class MemberAccessTranslation : ITranslation
     {
+        private readonly ITranslationContext _context;
         private readonly string _memberName;
         private readonly ITranslation _subject;
 
         public MemberAccessTranslation(MemberExpression memberAccess, ITranslationContext context)
-            : this(memberAccess.Member.Name)
+            : this(memberAccess.Member.Name, context)
         {
             Type = memberAccess.Type;
             _subject = GetSubjectOrNull(memberAccess, context);
-            EstimatedSize = GetEstimatedSize();
+            TranslationSize = GetTranslationSize();
+            FormattingSize = GetFormattingSize();
         }
 
         private static ITranslation GetSubjectOrNull(MemberExpression memberAccess, ITranslationContext context)
@@ -55,38 +58,49 @@
             return subjectType == member.DeclaringType;
         }
 
-        public MemberAccessTranslation(ITranslation subject, string memberName, Type memberType)
-            : this(memberName)
+        public MemberAccessTranslation(
+            ITranslation subject,
+            string memberName,
+            Type memberType,
+            ITranslationContext context)
+            : this(memberName, context)
         {
             Type = memberType;
             _subject = subject;
-            EstimatedSize = GetEstimatedSize();
+            TranslationSize = GetTranslationSize();
+            FormattingSize = GetFormattingSize();
         }
 
-        private MemberAccessTranslation(string memberName)
+        private MemberAccessTranslation(string memberName, ITranslationContext context)
         {
+            _context = context;
             _memberName = memberName;
         }
 
-        private int GetEstimatedSize()
+        private int GetTranslationSize()
         {
             return (_subject != null)
-                  ? _subject.EstimatedSize + ".".Length + _memberName.Length
-                  : _memberName.Length;
+                ? _subject.TranslationSize + ".".Length + _memberName.Length
+                : _memberName.Length;
         }
+
+        private int GetFormattingSize()
+            => _subject?.FormattingSize ?? +_context.GetFormattingSize(TokenType.MethodName);
 
         public ExpressionType NodeType => ExpressionType.MemberAccess;
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_subject != null)
             {
-                _subject.WriteInParenthesesIfRequired(buffer);
-                buffer.WriteToTranslation('.');
+                _subject.WriteInParenthesesIfRequired(buffer, _context);
+                buffer.WriteDotToTranslation();
             }
 
             buffer.WriteToTranslation(_memberName);

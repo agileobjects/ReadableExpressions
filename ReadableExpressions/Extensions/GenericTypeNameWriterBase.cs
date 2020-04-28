@@ -49,7 +49,7 @@
 
             if (backtickIndex == -1)
             {
-                WriteTypeName(typeName);
+                WriteTypeName(typeName, genericType);
                 return;
             }
 
@@ -100,7 +100,21 @@
             WriteGenericTypeName(genericType, numberOfParameters, typeArguments);
         }
 
-        protected abstract void WriteTypeName(string typeName);
+        private void WriteTypeName(string name, Type type)
+        {
+            if (type.IsInterface())
+            {
+                WriteInterfaceName(name);
+            }
+            else
+            {
+                WriteTypeName(name);
+            }
+        }
+
+        protected abstract void WriteTypeName(string name);
+
+        protected abstract void WriteInterfaceName(string name);
 
         private void WriteGenericTypeName(
             Type type, 
@@ -128,7 +142,7 @@
                 typeName = type.Name.Substring(0, parameterCountIndex);
             }
 
-            WriteTypeName(typeName);
+            WriteTypeName(typeName, type);
             WriteTypeArgumentNamePrefix();
 
             for (var i = 0; ;)

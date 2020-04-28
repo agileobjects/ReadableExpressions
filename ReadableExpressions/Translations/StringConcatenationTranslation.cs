@@ -22,7 +22,8 @@
         {
             NodeType = nodeType;
 
-            var estimatedSize = 0;
+            var translationSize = 0;
+            var formattingSize = 0;
             _operandCount = operands.Count;
             _operandTranslations = new ITranslation[_operandCount];
 
@@ -48,17 +49,21 @@
                 }
 
                 _operandTranslations[i] = operandTranslation;
-                estimatedSize += operandTranslation.EstimatedSize + 3; // <- +3 for ' + '
+                translationSize += operandTranslation.TranslationSize + 3; // <- +3 for ' + '
+                formattingSize += operandTranslation.FormattingSize;
             }
 
-            EstimatedSize = estimatedSize;
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         public ExpressionType NodeType { get; }
 
         public Type Type => typeof(string);
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+        
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {
@@ -75,7 +80,9 @@
                     operandTranslation.WriteTo(buffer);
                 }
 
-                if (++i == _operandCount)
+                ++i;
+
+                if (i == _operandCount)
                 {
                     break;
                 }

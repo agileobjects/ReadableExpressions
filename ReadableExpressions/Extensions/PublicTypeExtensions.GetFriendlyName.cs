@@ -4,6 +4,7 @@
     using NetStandardPolyfills;
     using Translations;
     using static ExpressionExtensions;
+    using static Translations.Formatting.TokenType;
 
     /// <summary>
     /// Provides a set of static extension methods for type information.
@@ -66,19 +67,23 @@
                 if (type.IsNested)
                 {
                     buffer.WriteFriendlyName(type.DeclaringType, settings);
-                    buffer.WriteToTranslation('.');
-                    buffer.WriteToTranslation(substitutedTypeName ?? type.Name);
+                    buffer.WriteDotToTranslation();
+
+                    if (!WriteSubstituteToTranslation(substitutedTypeName, buffer))
+                    {
+                        buffer.WriteTypeName(type);
+                    }
+
                     return;
                 }
 
-                if (substitutedTypeName != null)
+                if (WriteSubstituteToTranslation(substitutedTypeName, buffer))
                 {
-                    buffer.WriteToTranslation(substitutedTypeName);
                     return;
                 }
 
                 buffer.WriteTypeNamespaceIfRequired(type, settings);
-                buffer.WriteToTranslation(type.Name);
+                buffer.WriteTypeName(type);
                 return;
             }
 
@@ -94,6 +99,19 @@
             buffer.WriteToTranslation('?');
         }
 
+        private static bool WriteSubstituteToTranslation(
+            string substitutedTypeName,
+            TranslationBuffer buffer)
+        {
+            if (substitutedTypeName == null)
+            {
+                return false;
+            }
+
+            buffer.WriteKeywordToTranslation(substitutedTypeName);
+            return true;
+        }
+
         private static void WriteTypeNamespaceIfRequired(
             this TranslationBuffer buffer,
             Type type,
@@ -105,7 +123,13 @@
             }
 
             buffer.WriteToTranslation(type.Namespace);
-            buffer.WriteToTranslation('.');
+            buffer.WriteDotToTranslation();
+        }
+
+        private static void WriteTypeName(this TranslationBuffer buffer, Type type)
+        {
+            var tokenType = type.IsClass() ? TypeName : InterfaceName;
+            buffer.WriteToTranslation(type.Name, tokenType);
         }
 
         private static void WriteGenericTypeName(
@@ -127,8 +151,11 @@
                 _settings = settings;
             }
 
-            protected override void WriteTypeName(string typeName)
-                => _buffer.WriteToTranslation(typeName);
+            protected override void WriteTypeName(string name)
+                => _buffer.WriteTypeNameToTranslation(name);
+
+            protected override void WriteInterfaceName(string name)
+                => _buffer.WriteToTranslation(name, InterfaceName);
 
             protected override bool TryWriteCustomAnonTypeName(Type anonType)
             {
@@ -157,7 +184,7 @@
                 => _buffer.WriteTypeNamespaceIfRequired(genericType, _settings);
 
             protected override void WriteNestedTypeNamesSeparator()
-                => _buffer.WriteToTranslation('.');
+                => _buffer.WriteDotToTranslation();
         }
     }
 }

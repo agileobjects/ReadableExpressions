@@ -20,7 +20,13 @@
             Type = lambda.Type;
             _parameters = new ParameterSetTranslation(lambda.Parameters, context);
             _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
-            EstimatedSize = GetEstimatedSize();
+
+            TranslationSize =
+                _parameters.TranslationSize +
+                _fatArrow.Length +
+                _bodyTranslation.TranslationSize;
+
+            FormattingSize = _parameters.FormattingSize + _bodyTranslation.FormattingSize;
 
             if (_bodyTranslation.IsMultiStatement == false)
             {
@@ -28,14 +34,13 @@
             }
         }
 
-        private int GetEstimatedSize()
-            => _parameters.EstimatedSize + _fatArrow.Length + _bodyTranslation.EstimatedSize;
-
         public ExpressionType NodeType => ExpressionType.Lambda;
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
 

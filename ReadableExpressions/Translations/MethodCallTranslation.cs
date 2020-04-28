@@ -5,15 +5,19 @@
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
 #endif
+    using System.Reflection;
     using Extensions;
+    using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
-    using System.Reflection;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal static class MethodCallTranslation
     {
@@ -57,7 +61,7 @@
 
             if (methodCall.Method.IsImplicitOperator())
             {
-                return new CodeBlockTranslation(parameters[0]).WithNodeType(Call);
+                return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
             var subject = GetSubjectTranslation(methodCall, context);
@@ -120,7 +124,7 @@
                 Call,
                 typeNameTranslation,
                 castMethod,
-                new ParameterSetTranslation(castValue).WithParentheses(),
+                new ParameterSetTranslation(castValue, context).WithParentheses(),
                 context);
         }
 
@@ -147,7 +151,8 @@
                 : base(
                     GetSubjectOrNull(getterCall.Object, property, context),
                     property.Name,
-                    property.PropertyType)
+                    property.PropertyType,
+                    context)
             {
             }
         }
@@ -165,6 +170,7 @@
 
         private class StandardMethodCallTranslation : ITranslation
         {
+            private readonly ITranslationContext _context;
             private readonly ITranslation _subjectTranslation;
             private readonly MethodInvocationTranslation _methodInvocationTranslation;
             private bool _isPartOfMethodCallChain;
@@ -176,26 +182,34 @@
                 ParameterSetTranslation parameters,
                 ITranslationContext context)
             {
+                _context = context;
                 NodeType = nodeType;
                 _subjectTranslation = subjectTranslation;
                 _methodInvocationTranslation = new MethodInvocationTranslation(method, parameters, context);
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-                => _subjectTranslation.EstimatedSize + ".".Length + _methodInvocationTranslation.EstimatedSize;
+                TranslationSize =
+                    _subjectTranslation.TranslationSize +
+                    ".".Length +
+                    _methodInvocationTranslation.TranslationSize;
+
+                FormattingSize =
+                    _subjectTranslation.FormattingSize +
+                    _methodInvocationTranslation.FormattingSize;
+            }
 
             public ExpressionType NodeType { get; }
 
             public Type Type => _methodInvocationTranslation.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                _subjectTranslation.WriteInParenthesesIfRequired(buffer);
+                _subjectTranslation.WriteInParenthesesIfRequired(buffer, _context);
 
                 if (_isPartOfMethodCallChain)
                 {
@@ -203,7 +217,7 @@
                     buffer.Indent();
                 }
 
-                buffer.WriteToTranslation('.');
+                buffer.WriteDotToTranslation();
                 _methodInvocationTranslation.WriteTo(buffer);
 
                 if (_isPartOfMethodCallChain)
@@ -223,15 +237,21 @@
             {
                 _method = method;
                 _parameters = parameters;
-                _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var totalLength);
-                EstimatedSize = method.Name.Length + totalLength + parameters.EstimatedSize;
+                _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
+                TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
+
+                FormattingSize =
+                    _explicitGenericArguments.Length * context.GetTypeNameFormattingSize() +
+                     parameters.FormattingSize;
             }
 
-            private ITranslatable[] GetRequiredExplicitGenericArguments(ITranslationContext context, out int totalLength)
+            private ITranslatable[] GetRequiredExplicitGenericArguments(
+                ITranslationContext context,
+                out int translationsSize)
             {
                 if (!_method.IsGenericMethod)
                 {
-                    totalLength = 0;
+                    translationsSize = 0;
                     return Enumerable<ITranslatable>.EmptyArray;
                 }
 
@@ -247,11 +267,11 @@
 
                 if (!genericParameterTypes.Any())
                 {
-                    totalLength = 0;
+                    translationsSize = 0;
                     return Enumerable<ITranslatable>.EmptyArray;
                 }
 
-                var argumentsLength = 0;
+                var argumentTranslationsSize = 0;
 
                 var arguments = _method
                     .GetGenericArguments()
@@ -264,16 +284,16 @@
 
                         ITranslatable argumentTypeTranslation = context.GetTranslationFor(argumentType);
 
-                        argumentsLength += argumentTypeTranslation.EstimatedSize + 2;
+                        argumentTranslationsSize += argumentTypeTranslation.TranslationSize + 2;
 
                         return argumentTypeTranslation;
                     })
                     .Filter(argument => argument != null)
                     .ToArray();
 
-                totalLength = argumentsLength;
+                translationsSize = argumentTranslationsSize;
 
-                return (totalLength != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
+                return (translationsSize != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
             }
 
             private static void RemoveSuppliedGenericTypeParameters(
@@ -296,11 +316,13 @@
 
             public Type Type => _method.ReturnType;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteToTranslation(_method.Name);
+                buffer.WriteToTranslation(_method.Name, TokenType.MethodName);
                 WriteGenericArgumentNamesIfNecessary(buffer);
                 _parameters.WriteTo(buffer);
             }

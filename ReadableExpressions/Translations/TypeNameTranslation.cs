@@ -22,9 +22,12 @@
             _translationSettings = context.Settings;
             _isObject = type == typeof(object);
 
+            var typeNameFormattingSize = context.GetTypeNameFormattingSize();
+
             if (_isObject)
             {
-                EstimatedSize = _object.Length;
+                TranslationSize = _object.Length;
+                FormattingSize = typeNameFormattingSize;
                 return;
             }
 
@@ -33,25 +36,36 @@
                 return;
             }
 
+            var translationSize = 0;
+            var formattingSize = typeNameFormattingSize;
+
             if (_translationSettings.FullyQualifyTypeNames && (type.Namespace != null))
             {
-                EstimatedSize = type.Namespace.Length;
+                translationSize = type.Namespace.Length;
             }
 
-            EstimatedSize += type.GetSubstitutionOrNull()?.Length ?? type.Name.Length;
+            translationSize += type.GetSubstitutionOrNull()?.Length ?? type.Name.Length;
 
             while (type.IsNested)
             {
                 type = type.DeclaringType;
-                EstimatedSize += type.Name.Length;
+
+                // ReSharper disable once PossibleNullReferenceException
+                translationSize += type.Name.Length;
+                formattingSize += typeNameFormattingSize;
             }
+
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         public ExpressionType NodeType => ExpressionType.Constant;
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+        
+        public int FormattingSize { get; }
 
         public TypeNameTranslation WithObjectTypeName()
         {
@@ -67,7 +81,13 @@
         {
             if (_isObject)
             {
-                buffer.WriteToTranslation(_writeObjectTypeName ? "Object" : _object);
+                if (_writeObjectTypeName)
+                {
+                    buffer.WriteTypeNameToTranslation("Object");
+                    return;
+                }
+
+                buffer.WriteKeywordToTranslation(_object);
                 return;
             }
 

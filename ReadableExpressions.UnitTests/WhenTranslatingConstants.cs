@@ -172,6 +172,16 @@
         }
 
         [Fact]
+        public void ShouldTranslateADefaultGenericType()
+        {
+            var listConstant = Constant(default(List<string>));
+
+            var translated = ToReadableString(listConstant);
+
+            translated.ShouldBe("null");
+        }
+
+        [Fact]
         public void ShouldTranslateADateTimeWithNoTime()
         {
             var dateConstant = Constant(new DateTime(2015, 07, 02));

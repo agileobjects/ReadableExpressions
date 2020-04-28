@@ -123,6 +123,7 @@
     <Compile Include="StaticTranslators\WhenTranslatingConstructorInfos.cs" />
     <Compile Include="TestClassBase.cs" />
     <Compile Include="StaticTranslators\WhenTranslatingMethodInfos.cs" />
+    <Compile Include="WhenFormattingCodeAsHtml.cs" />
     <Compile Include="WhenTranslatingVariableNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />
     <Compile Include="WhenTranslatingStringConcatenation.cs" />
@@ -148,6 +149,10 @@
     <Compile Include="WhenTranslatingMemberAccesses.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
+      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
+      <Name>ReadableExpressions.Visualizers.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>
       <Name>ReadableExpressions</Name>
@@ -160,6 +165,7 @@
   <ItemGroup>
     <Analyzer Include="..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

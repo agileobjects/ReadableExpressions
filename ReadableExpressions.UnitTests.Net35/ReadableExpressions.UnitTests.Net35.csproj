@@ -68,7 +68,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.UnitTests\**\*.cs" Exclude="..\ReadableExpressions.UnitTests\obj\**\*.cs;..\ReadableExpressions.UnitTests\WhenUsingPartialTrust.cs;">
+    <Compile Include="..\ReadableExpressions.UnitTests\**\*.cs" Exclude="..\ReadableExpressions.UnitTests\obj\**\*.cs;..\ReadableExpressions.UnitTests\WhenUsingPartialTrust.cs;..\ReadableExpressions.UnitTests\WhenFormattingCodeAsHtml.cs;">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>

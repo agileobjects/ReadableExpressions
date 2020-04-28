@@ -19,7 +19,7 @@
                 return new MultiLineBinaryConditionTranslation((BinaryExpression)condition, conditionTranslation, context);
             }
 
-            var conditionCodeBlockTranslation = new CodeBlockTranslation(conditionTranslation);
+            var conditionCodeBlockTranslation = new CodeBlockTranslation(conditionTranslation, context);
 
             return conditionTranslation.IsMultiStatement()
                 ? conditionCodeBlockTranslation.WithSingleCodeBlockParameterFormatting()
@@ -45,35 +45,40 @@
 
         private class MultiLineBinaryConditionTranslation : ITranslation
         {
+            private readonly ITranslationContext _context;
             private readonly ITranslation _binaryConditionLeftTranslation;
             private readonly string _binaryConditionOperator;
             private readonly ITranslation _binaryConditionRightTranslation;
 
             public MultiLineBinaryConditionTranslation(
                 BinaryExpression binaryCondition,
-                ITranslation conditionTranslation,
+                ITranslatable conditionTranslatable,
                 ITranslationContext context)
             {
+                _context = context;
                 NodeType = binaryCondition.NodeType;
                 _binaryConditionLeftTranslation = For(binaryCondition.Left, context);
                 _binaryConditionOperator = BinaryTranslation.GetOperator(binaryCondition);
                 _binaryConditionRightTranslation = For(binaryCondition.Right, context);
-                EstimatedSize = conditionTranslation.EstimatedSize;
+                TranslationSize = conditionTranslatable.TranslationSize;
+                FormattingSize = conditionTranslatable.FormattingSize;
             }
 
             public ExpressionType NodeType { get; }
 
             public Type Type => typeof(bool);
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+            
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(buffer);
+                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(buffer, _context);
                 buffer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
                 buffer.WriteNewLineToTranslation();
                 buffer.Indent();
-                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(buffer);
+                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(buffer, _context);
                 buffer.Unindent();
             }
         }

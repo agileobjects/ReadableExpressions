@@ -14,41 +14,50 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _translation;
+        private readonly ITranslationContext _context;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
         private bool _startOnNewLine;
         private bool _indentContents;
         private bool _writeBraces;
 
-        public CodeBlockTranslation(ITranslation translation)
+        public CodeBlockTranslation(ITranslation translation, ITranslationContext context)
         {
             NodeType = translation.NodeType;
             _translation = translation;
+            _context = context;
             _startOnNewLine = true;
             _writeBraces = IsMultiStatement = translation.IsMultiStatement();
-            CalculateEstimatedSize();
+            CalculateSizes();
         }
 
-        private void CalculateEstimatedSize()
+        private void CalculateSizes()
         {
-            EstimatedSize = _translation.EstimatedSize;
+            var translationSize = _translation.TranslationSize;
+            var formattingSize = _translation.FormattingSize;
 
             if (_ensureReturnKeyword)
             {
-                EstimatedSize += 10;
+                translationSize += 10;
+                formattingSize += _context.GetControlStatementFormattingSize();
             }
 
             if (_writeBraces)
             {
-                EstimatedSize += 10;
+                translationSize += 10;
             }
+
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         public ExpressionType NodeType { get; }
 
         public Type Type => _translation.Type;
 
-        public int EstimatedSize { get; private set; }
+        public int TranslationSize { get; private set; }
+
+        public int FormattingSize { get; private set; }
 
         public bool IsMultiStatement { get; }
 
@@ -102,7 +111,7 @@
         public CodeBlockTranslation WithReturnKeyword()
         {
             _ensureReturnKeyword = true;
-            CalculateEstimatedSize();
+            CalculateSizes();
             return this;
         }
 
@@ -114,7 +123,7 @@
             }
 
             _writeBraces = true;
-            CalculateEstimatedSize();
+            CalculateSizes();
             return this;
         }
 
@@ -126,7 +135,7 @@
             }
 
             _writeBraces = false;
-            CalculateEstimatedSize();
+            CalculateSizes();
             return this;
         }
 
@@ -155,7 +164,7 @@
 
             if (_writeBraces && _ensureReturnKeyword && !_translation.IsMultiStatement())
             {
-                buffer.WriteToTranslation("return ");
+                buffer.WriteReturnToTranslation();
             }
 
             _translation.WriteTo(buffer);

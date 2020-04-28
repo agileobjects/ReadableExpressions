@@ -1,16 +1,18 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
     using Extensions;
     using Interfaces;
 #if NET35
-    using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
-    using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
@@ -31,11 +33,41 @@ namespace AgileObjects.ReadableExpressions.Translations
             Type = block.Type;
             _variables = GetVariableDeclarations(block, context);
             _hasVariables = _variables.Count > 0;
-            _statements = GetBlockStatements(block, context, out var hasMultiStatementStatement, out var estimatedStatementsSize, out _hasGoto);
+
+            _statements = GetBlockStatements(
+                block,
+                context,
+                out var hasMultiStatementStatement,
+                out var statementTranslationsSize,
+                out var statementsFormattingSize,
+                out _hasGoto);
+
             _statementCount = _statements.Count;
-            EstimatedSize = GetEstimatedSize(estimatedStatementsSize);
             IsMultiStatement = hasMultiStatementStatement || (_statementCount > 1) || _hasVariables;
             IsTerminated = true;
+
+            if (!_hasVariables)
+            {
+                TranslationSize = statementTranslationsSize;
+                return;
+            }
+
+            var translationSize = statementTranslationsSize;
+            var formattingSize = statementsFormattingSize;
+
+            foreach (var parametersByType in _variables)
+            {
+                translationSize +=
+                    parametersByType.Key.TranslationSize +
+                    parametersByType.Value.TranslationSize;
+
+                formattingSize +=
+                    parametersByType.Key.FormattingSize +
+                    parametersByType.Value.FormattingSize;
+            }
+
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         private static IDictionary<ITranslation, ParameterSetTranslation> GetVariableDeclarations(
@@ -62,7 +94,8 @@ namespace AgileObjects.ReadableExpressions.Translations
             BlockExpression block,
             ITranslationContext context,
             out bool hasMultiStatementStatement,
-            out int estimatedStatementsSize,
+            out int statementTranslationsSize,
+            out int statementsFormattingSize,
             out bool hasGoto)
         {
             var expressions = block.Expressions;
@@ -71,7 +104,8 @@ namespace AgileObjects.ReadableExpressions.Translations
             var statementIndex = 0;
 
             hasMultiStatementStatement = false;
-            estimatedStatementsSize = 0;
+            statementTranslationsSize = 0;
+            statementsFormattingSize = 0;
             hasGoto = false;
 
             for (int i = 0, lastExpressionIndex = expressionCount - 1; ; ++i)
@@ -86,7 +120,8 @@ namespace AgileObjects.ReadableExpressions.Translations
                         : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
 
                     translations[statementIndex++] = statementTranslation;
-                    estimatedStatementsSize += statementTranslation.EstimatedSize;
+                    statementTranslationsSize += statementTranslation.TranslationSize;
+                    statementsFormattingSize += statementTranslation.FormattingSize;
                     hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
 
                     if (statementIndex == 1)
@@ -176,24 +211,6 @@ namespace AgileObjects.ReadableExpressions.Translations
             }
         }
 
-        private int GetEstimatedSize(int estimatedStatementsSize)
-        {
-            if (_variables.Count == 0)
-            {
-                return estimatedStatementsSize;
-            }
-
-            var estimatedSize = estimatedStatementsSize;
-
-            foreach (var parametersByType in _variables)
-            {
-                estimatedSize += parametersByType.Key.EstimatedSize;
-                estimatedSize += parametersByType.Value.EstimatedSize;
-            }
-
-            return estimatedSize;
-        }
-
         private static bool AddBlankLineBeforeFinalStatement(
             int translationCount,
             IList<BlockStatementTranslation> statementTranslations)
@@ -223,7 +240,9 @@ namespace AgileObjects.ReadableExpressions.Translations
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public bool IsMultiStatement { get; }
 
@@ -264,7 +283,9 @@ namespace AgileObjects.ReadableExpressions.Translations
             {
                 _statements[i].WriteTo(buffer);
 
-                if (++i == _statementCount)
+                ++i;
+
+                if (i == _statementCount)
                 {
                     break;
                 }
@@ -289,7 +310,8 @@ namespace AgileObjects.ReadableExpressions.Translations
                 _statementTranslation = context.GetTranslationFor(expression);
                 _statementIsUnterminated = StatementIsUnterminated(expression);
                 _writeBlankLineBefore = WriteBlankLineBefore();
-                EstimatedSize = _statementTranslation.EstimatedSize + 1;
+                TranslationSize = _statementTranslation.TranslationSize + 1;
+                FormattingSize = _statementTranslation.FormattingSize;
             }
 
             private bool StatementIsUnterminated(Expression expression)
@@ -324,7 +346,9 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             public Expression Expression { get; }
 
-            public int EstimatedSize { get; protected set; }
+            public int TranslationSize { get; protected set; }
+
+            public int FormattingSize { get; protected set; }
 
             public bool IsMultiStatement
                 => _isMultiStatement ?? (_isMultiStatement = _statementTranslation.IsMultiStatement()).Value;
@@ -357,7 +381,7 @@ namespace AgileObjects.ReadableExpressions.Translations
 
                 if (_writeReturnKeyword)
                 {
-                    buffer.WriteToTranslation("return ");
+                    buffer.WriteReturnToTranslation();
                 }
 
                 WriteStatementTo(buffer);
@@ -402,11 +426,13 @@ namespace AgileObjects.ReadableExpressions.Translations
                 if (UseFullTypeName(assignment))
                 {
                     _typeNameTranslation = context.GetTranslationFor(assignment.Left.Type);
-                    EstimatedSize += _typeNameTranslation.EstimatedSize + 2;
+                    TranslationSize += _typeNameTranslation.TranslationSize + 2;
+                    FormattingSize += _typeNameTranslation.FormattingSize;
                     return;
                 }
 
-                EstimatedSize += _var.Length;
+                TranslationSize += _var.Length;
+                FormattingSize += context.GetKeywordFormattingSize();
             }
 
             private static bool UseFullTypeName(BinaryExpression assignment)
@@ -437,7 +463,7 @@ namespace AgileObjects.ReadableExpressions.Translations
                 }
                 else
                 {
-                    buffer.WriteToTranslation(_var);
+                    buffer.WriteKeywordToTranslation(_var);
                 }
 
                 buffer.WriteSpaceToTranslation();
