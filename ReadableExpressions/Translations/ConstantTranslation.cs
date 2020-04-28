@@ -101,7 +101,7 @@
                     return true;
 
                 case NetStandardTypeCode.DateTime:
-                    if (!TryTranslateDefault<DateTime>(constant, out translation))
+                    if (!TryTranslateDefault<DateTime>(constant, context, out translation))
                     {
                         translation = new DateTimeConstantTranslation(constant);
                     }
@@ -132,8 +132,8 @@
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
                         TryGetRegexTranslation(constant, out translation) ||
-                        TryTranslateDefault<Guid>(constant, out translation) ||
-                        TimeSpanConstantTranslation.TryCreate(constant, out translation))
+                        TryTranslateDefault<Guid>(constant, context, out translation) ||
+                        TimeSpanConstantTranslation.TryCreate(constant, context, out translation))
                     {
                         return true;
                     }
@@ -162,7 +162,10 @@
             return false;
         }
 
-        private static bool TryTranslateDefault<T>(ConstantExpression constant, out ITranslation translation)
+        private static bool TryTranslateDefault<T>(
+            ConstantExpression constant,
+            ITranslationContext context,
+            out ITranslation translation)
         {
             if ((constant.Type != typeof(T)) || !constant.Value.Equals(default(T)))
             {
@@ -170,7 +173,7 @@
                 return false;
             }
 
-            translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name, typeof(T))).WrappedWith("default(", ")");
+            translation = new DefaultValueTranslation(constant, context);
             return true;
         }
 
@@ -397,7 +400,10 @@
                 EstimatedSize = _timeSpan.ToString().Length;
             }
 
-            public static bool TryCreate(ConstantExpression constant, out ITranslation timeSpanTranslation)
+            public static bool TryCreate(
+                ConstantExpression constant,
+                ITranslationContext context,
+                out ITranslation timeSpanTranslation)
             {
                 if (constant.Type != typeof(TimeSpan))
                 {
@@ -405,7 +411,7 @@
                     return false;
                 }
 
-                if (TryTranslateDefault<TimeSpan>(constant, out timeSpanTranslation))
+                if (TryTranslateDefault<TimeSpan>(constant, context, out timeSpanTranslation))
                 {
                     return true;
                 }
