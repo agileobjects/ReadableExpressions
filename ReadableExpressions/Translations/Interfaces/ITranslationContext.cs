@@ -16,19 +16,25 @@
         TranslationSettings Settings { get; }
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expression"/> which should be declared in the
-        /// same statement in which they are assigned.
+        /// Gets the variables in the translated <see cref="Expression"/> which are first used as
+        /// an output parameter argument.
+        /// </summary>
+        IEnumerable<ParameterExpression> InlineOutputVariables { get; }
+
+        /// <summary>
+        /// Gets the variables in the translated <see cref="Expression"/> which should be declared
+        /// in the same statement in which they are assigned.
         /// </summary>
         IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="expression"/> represents an assignment 
-        /// where the assigned variable is declared as part of the assignment statement.
+        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
+        /// assignment where the assigned variable is declared as part of the assignment statement.
         /// </summary>
         /// <param name="expression">The <see cref="Expression"/> to evaluate.</param>
         /// <returns>
-        /// True if the given <paramref name="expression"/> represents an assignment where the assigned variable 
-        /// is declared as part of the assignment statement, otherwise false.
+        /// True if the given <paramref name="expression"/> represents an assignment where the assigned
+        /// variable is declared as part of the assignment statement, otherwise false.
         /// </returns>
         bool IsNotJoinedAssignment(Expression expression);
 

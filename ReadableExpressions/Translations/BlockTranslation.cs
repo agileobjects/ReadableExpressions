@@ -76,6 +76,7 @@
         {
             var variablesByType = block
                 .Variables
+                .Except(context.InlineOutputVariables)
                 .Except(context.JoinedAssignmentVariables)
                 .GroupBy(v => v.Type)
                 .ToArray();

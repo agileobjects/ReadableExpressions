@@ -29,14 +29,14 @@
 
         TranslationSettings ITranslationContext.Settings => _settings;
 
+        IEnumerable<ParameterExpression> ITranslationContext.InlineOutputVariables
+            => _expressionAnalysis.InlineOutputVariables;
+
         IEnumerable<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _expressionAnalysis.JoinedAssignmentVariables;
 
         bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
-        {
-            return (expression.NodeType != Assign) ||
-                   !_expressionAnalysis.JoinedAssignments.Contains((BinaryExpression)expression);
-        }
+            => _expressionAnalysis.IsNotJoinedAssignment(expression);
 
         bool ITranslationContext.IsCatchBlockVariable(Expression expression)
             => _expressionAnalysis.IsCatchBlockVariable(expression);
@@ -48,7 +48,7 @@
             => _expressionAnalysis.GoesToReturnLabel(@goto);
 
         bool ITranslationContext.IsPartOfMethodCallChain(MethodCallExpression methodCall)
-            => _expressionAnalysis.ChainedMethodCalls.Contains(methodCall);
+            => _expressionAnalysis.IsPartOfMethodCallChain(methodCall);
 
         int? ITranslationContext.GetUnnamedVariableNumberOrNull(ParameterExpression variable)
         {
@@ -209,7 +209,7 @@
 
                 case NewArrayInit:
                     return ArrayInitialisationTranslation.For((NewArrayExpression)expression, this);
-                    
+
                 case Parameter:
                     return ParameterTranslation.For((ParameterExpression)expression, this);
 

@@ -510,6 +510,53 @@ string.Join(
         }
 
         [Fact]
+        public void ShouldIncludeAnOutParameterVariableDeclaration()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda);
+
+            const string EXPECTED = @"
+ip =>
+{
+    object value;
+    ip.TryGet(1, out value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAnInlineOutParameterVariable()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda, s => s.UseInlineOutputParameters);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGet(1, out var value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeRefParameterKeywords()
         {
             var helperVariable = Variable(typeof(IndexedProperty), "ip");
@@ -600,11 +647,11 @@ new CustomAdder
     internal class PropertiesHelper
     {
         public static int PublicStatic { get; set; }
-        
+
         public int PublicInstance { get; set; }
 
         internal static int NonPublicStatic { get; set; }
-        
+
         internal int NonPublicInstance { get; set; }
     }
 
