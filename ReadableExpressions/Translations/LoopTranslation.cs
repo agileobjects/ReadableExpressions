@@ -29,7 +29,10 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("while (true)");
+            buffer.WriteControlStatementToTranslation("while ");
+            buffer.WriteToTranslation('(');
+            buffer.WriteKeywordToTranslation("true");
+            buffer.WriteToTranslation(')');
             _loopBodyTranslation.WriteTo(buffer);
         }
     }

@@ -11,13 +11,14 @@
     internal class ArrayLengthTranslation : ITranslation
     {
         private const string _length = ".Length";
+        private static readonly int _lengthPropertyLength = _length.Length;
 
         private readonly ITranslation _operand;
 
         public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
         {
             _operand = context.GetTranslationFor(arrayLength.Operand);
-            EstimatedSize = _operand.EstimatedSize + LengthPropertyLength;
+            EstimatedSize = _operand.EstimatedSize + _lengthPropertyLength;
         }
 
         public ExpressionType NodeType => ExpressionType.ArrayLength;
@@ -25,8 +26,6 @@
         public Type Type => typeof(int);
 
         public int EstimatedSize { get; }
-
-        private static int LengthPropertyLength => _length.Length;
 
         public void WriteTo(TranslationBuffer buffer)
         {
