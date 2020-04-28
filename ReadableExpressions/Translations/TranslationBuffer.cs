@@ -24,8 +24,11 @@
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
             _formatter = formatter;
-#if DEBUG
-            Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
+#if DEBUG && NET40
+            if (AppDomain.CurrentDomain.IsFullyTrusted)
+            {
+                Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
+            }
 #endif
             _content = new StringBuilder(estimatedSize);
         }
@@ -249,8 +252,11 @@
 
         public string GetContent()
         {
-#if DEBUG
-            Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+#if DEBUG && NET40
+            if (AppDomain.CurrentDomain.IsFullyTrusted)
+            {
+                Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+            }
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;
         }
