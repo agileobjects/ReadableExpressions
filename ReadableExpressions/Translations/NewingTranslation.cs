@@ -85,7 +85,9 @@
                         buffer.WriteToTranslation(" = ");
                         Parameters[i].WriteTo(buffer);
 
-                        if (++i == _ctorParameters.Length)
+                        ++i;
+
+                        if (i == _ctorParameters.Length)
                         {
                             break;
                         }

@@ -75,7 +75,9 @@
                     operandTranslation.WriteTo(buffer);
                 }
 
-                if (++i == _operandCount)
+                ++i;
+
+                if (i == _operandCount)
                 {
                     break;
                 }

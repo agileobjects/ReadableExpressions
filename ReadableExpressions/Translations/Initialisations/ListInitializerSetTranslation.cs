@@ -65,7 +65,9 @@
                 {
                     _translations[i].WriteTo(buffer);
 
-                    if (++i == argumentCount)
+                    ++i;
+
+                    if (i == argumentCount)
                     {
                         break;
                     }

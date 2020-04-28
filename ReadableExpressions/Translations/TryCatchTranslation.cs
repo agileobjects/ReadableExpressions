@@ -95,7 +95,9 @@
                 estimatedCatchBlocksSize += catchBlockTranslation.EstimatedSize;
                 catchBlockTranslations[i] = catchBlockTranslation;
 
-                if (++i == l)
+                ++i;
+
+                if (i == l)
                 {
                     break;
                 }

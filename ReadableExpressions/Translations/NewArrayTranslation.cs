@@ -36,7 +36,9 @@
                     _boundTranslations[i] = boundTranslation;
                     estimatedSize += boundTranslation.EstimatedSize + 2;
 
-                    if (++i == _boundTranslations.Length)
+                    ++i;
+
+                    if (i == _boundTranslations.Length)
                     {
                         break;
                     }
@@ -64,7 +66,9 @@
                 {
                     _boundTranslations[i].WriteTo(buffer);
 
-                    if (++i == _boundTranslations.Length)
+                    ++i;
+
+                    if (i == _boundTranslations.Length)
                     {
                         break;
                     }

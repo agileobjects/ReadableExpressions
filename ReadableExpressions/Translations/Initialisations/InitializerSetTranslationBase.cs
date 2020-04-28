@@ -21,7 +21,9 @@
                 _initializerTranslations[i] = initializerTranslation;
                 estimatedSize += initializerTranslation.EstimatedSize;
 
-                if (++i == Count)
+                ++i;
+
+                if (i == Count)
                 {
                     break;
                 }
@@ -57,7 +59,9 @@
             {
                 _initializerTranslations[i].WriteTo(buffer);
 
-                if (++i == Count)
+                ++i;
+
+                if (i == Count)
                 {
                     break;
                 }

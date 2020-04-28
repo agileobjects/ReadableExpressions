@@ -252,7 +252,9 @@
 
                 buffer.WriteFriendlyName(argumentType);
 
-                if (++i == genericArgumentTypes.Count)
+                ++i;
+
+                if (i == genericArgumentTypes.Count)
                 {
                     break;
                 }
@@ -299,7 +301,9 @@
                 buffer.WriteSpaceToTranslation();
                 buffer.WriteToTranslation(parameter.Name);
 
-                if (++i == parameters.Length)
+                ++i;
+
+                if (i == parameters.Length)
                 {
                     break;
                 }

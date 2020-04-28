@@ -1,14 +1,13 @@
-﻿using System;
-
-namespace AgileObjects.ReadableExpressions.Translations.Initialisations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 {
+    using System;
     using System.Collections.Generic;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Interfaces;
 
     internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
