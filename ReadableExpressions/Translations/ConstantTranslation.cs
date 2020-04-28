@@ -77,22 +77,6 @@
             return new FixedValueTranslation(Constant, value, type, tokenType);
         }
 
-        private static ITranslation FixedTerminatedValueTranslation(
-            string value,
-            Type type,
-            TokenType tokenType)
-        {
-            return new FixedTerminatedValueTranslation(Constant, value, type, tokenType);
-        }
-
-        private static ITranslation FixedValuesTranslation(
-            Type type,
-            int estimatedSize,
-            params Action<TranslationBuffer>[] valueWriters)
-        {
-            return new FixedValuesTranslation(Constant, type, estimatedSize, valueWriters);
-        }
-
         private static bool TryTranslateFromTypeCode(
             ConstantExpression constant,
             ITranslationContext context,
@@ -125,7 +109,7 @@
                     return true;
 
                 case NetStandardTypeCode.DBNull:
-                    translation = GetDbNullTranslation(constant);
+                    translation = new DbNullTranslation(constant);
                     return true;
 
                 case NetStandardTypeCode.Decimal:
@@ -165,7 +149,7 @@
 
                     if (stringValue.IsComment())
                     {
-                        translation = FixedTerminatedValueTranslation(stringValue, typeof(string), Comment);
+                        translation = new CommentTranslation(stringValue);
                         return true;
                     }
 
@@ -188,16 +172,6 @@
 
             translation = new TranslationWrapper(FixedValueTranslation(typeof(T).Name, typeof(T))).WrappedWith("default(", ")");
             return true;
-        }
-
-        private static ITranslation GetDbNullTranslation(Expression constant)
-        {
-            return FixedValuesTranslation(
-                constant.Type,
-                "DBNull.Value".Length,
-                b => b.WriteTypeNameToTranslation("DBNull"),
-                b => b.WriteDotToTranslation(),
-                b => b.WriteToTranslation("Value"));
         }
 
         private static ITranslation GetDecimalTranslation(ConstantExpression constant)
