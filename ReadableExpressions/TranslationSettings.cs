@@ -10,6 +10,8 @@
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
+        private bool _commentQuotedLambdas;
+
         internal TranslationSettings()
         {
             UseImplicitGenericParameters = true;
@@ -45,6 +47,20 @@
         internal bool UseImplicitGenericParameters { get; private set; }
 
         /// <summary>
+        /// Declare output parameter variables inline with the method call where they are first used.
+        /// </summary>
+        public TranslationSettings DeclareOutputParametersInline
+        {
+            get
+            {
+                DeclareOutParamsInline = true;
+                return this;
+            }
+        }
+
+        internal bool DeclareOutParamsInline { get; private set; }
+
+        /// <summary>
         /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
         /// been Quoted.
         /// </summary>
@@ -52,14 +68,12 @@
         {
             get
             {
-                CommentQuotedLambdas = true;
+                _commentQuotedLambdas = true;
                 return this;
             }
         }
 
-        internal bool DoNotCommentQuotedLambdas => !CommentQuotedLambdas;
-
-        internal bool CommentQuotedLambdas { get; set; }
+        internal bool DoNotCommentQuotedLambdas => !_commentQuotedLambdas;
 
         /// <summary>
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the

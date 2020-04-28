@@ -15,30 +15,47 @@ The extension method (in the namespace `AgileObjects.ReadableExpressions`) is us
 
 To maintain explicit generic arguments on method calls where they are implied, use:
 
-    string readable = myExpression
-        .ToReadableString(c => c.UseExplicitGenericParameters);
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.UseExplicitGenericParameters);
+```
 
 To include namespaces when outputting Type names, use:
 
-    string readable = myExpression
-        .ToReadableString(c => c.UseFullyQualifiedTypeNames);
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.UseFullyQualifiedTypeNames);
+```
+
+To declare output parameter variables inline with the method where they are first used, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.DeclareOutputParametersInline);
+```
 
 To define a custom factory for naming anonymous types, use:
 
-    string readable = myExpression
-        .ToReadableString(c => c.NameAnonymousTypesUsing(
-            anonType => GetAnonTypeName(anonType)));
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.NameAnonymousTypesUsing(
+        anonType => GetAnonTypeName(anonType)));
+```
 
 To define a custom factory for translating ConstantExpression values, use:
 
-    string readable = myExpression
-        .ToReadableString(c => c.TranslateConstantsUsing(
-            (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.TranslateConstantsUsing(
+        (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
+```
 
 To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
 
-    string readable = myExpression
-        .ToReadableString(c => c.ShowQuotedLambdaComments);
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowQuotedLambdaComments);
+```
 
 ### Debugger Visualizers
 An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
