@@ -8,11 +8,11 @@
 #endif
     using Interfaces;
 
-    internal class TypeLiteralTranslation : ITranslation
+    internal class TypeofOperatorTranslation : ITranslation
     {
         private readonly ITranslation _typeNameTranslation;
 
-        public TypeLiteralTranslation(Type type, ITranslationContext context)
+        public TypeofOperatorTranslation(Type type, ITranslationContext context)
         {
             _typeNameTranslation = context.GetTranslationFor(type);
             EstimatedSize = _typeNameTranslation.EstimatedSize + "typeof()".Length;

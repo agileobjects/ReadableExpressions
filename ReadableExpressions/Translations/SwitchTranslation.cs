@@ -39,7 +39,9 @@
                     caseTestValueTranslations[j] = caseTestValueTranslation;
                     estimatedSize += caseTestValueTranslation.EstimatedSize;
 
-                    if (++j == testValueCount)
+                    ++j;
+
+                    if (j == testValueCount)
                     {
                         break;
                     }
@@ -48,7 +50,9 @@
                 _caseTestValueTranslations[i] = caseTestValueTranslations;
                 _caseTranslations[i] = GetCaseBodyTranslationOrNull(@case.Body, context);
 
-                if (++i == caseCount)
+                ++i;
+
+                if (i == caseCount)
                 {
                     break;
                 }
@@ -77,7 +81,7 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
-            buffer.WriteToTranslation("switch ");
+            buffer.WriteControlStatementToTranslation("switch ");
             _valueTranslation.WriteInParentheses(buffer);
             buffer.WriteOpeningBraceToTranslation();
 
@@ -87,7 +91,7 @@
 
                 for (int j = 0, m = caseTestValueTranslations.Length - 1; ; ++j)
                 {
-                    buffer.WriteToTranslation("case ");
+                    buffer.WriteControlStatementToTranslation("case ");
                     caseTestValueTranslations[j].WriteTo(buffer);
                     buffer.WriteToTranslation(':');
                     buffer.WriteNewLineToTranslation();
@@ -123,7 +127,7 @@
             if (WriteBreak(bodyTranslation))
             {
                 buffer.WriteNewLineToTranslation();
-                buffer.WriteToTranslation("break;");
+                buffer.WriteControlStatementToTranslation("break;");
             }
 
             buffer.Unindent();
@@ -138,7 +142,7 @@
 
             buffer.WriteNewLineToTranslation();
             buffer.WriteNewLineToTranslation();
-            buffer.WriteToTranslation("default:");
+            buffer.WriteControlStatementToTranslation("default:");
             buffer.WriteNewLineToTranslation();
 
             WriteCaseBody(_defaultCaseTranslation, buffer);
