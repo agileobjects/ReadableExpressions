@@ -7,7 +7,9 @@ ReadableExpressions is an extension method for the [Expression](https://msdn.mic
 ### Usage
 The extension method (in the namespace `AgileObjects.ReadableExpressions`) is used like so:
 
-    string readable = myExpression.ToReadableString();
+```csharp
+string readable = myExpression.ToReadableString();
+```
 
 ...it also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
 
