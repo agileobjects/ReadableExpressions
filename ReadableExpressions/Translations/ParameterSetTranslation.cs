@@ -202,19 +202,17 @@
             ParameterInfo info,
             ITranslationContext context)
         {
-            var translation = context.GetTranslationFor(parameter);
-
             if (info.IsOut)
             {
-                return new ModifiedParameterTranslation(translation, "out ", context);
+                return new OutParameterTranslation(parameter, context);
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return new ModifiedParameterTranslation(translation, "ref ", context);
+                return new RefParameterTranslation(parameter, context);
             }
 
-            return translation;
+            return context.GetTranslationFor(parameter);
         }
 
         private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
@@ -364,20 +362,27 @@
             Never
         }
 
-        private class ModifiedParameterTranslation : ITranslation
+        private class OutParameterTranslation : ITranslation
         {
+            private const string _out = "out ";
+            private const string _var = "var ";
             private readonly ITranslation _parameterTranslation;
-            private readonly string _modifier;
+            private readonly bool _declareParameterInline;
 
-            public ModifiedParameterTranslation(
-                ITranslation parameterTranslation,
-                string modifier,
-                ITranslationContext context)
+            public OutParameterTranslation(Expression parameter, ITranslationContext context)
             {
-                _parameterTranslation = parameterTranslation;
-                _modifier = modifier;
-                TranslationSize = parameterTranslation.TranslationSize + modifier.Length;
-                FormattingSize = parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+                _parameterTranslation = context.GetTranslationFor(parameter);
+                TranslationSize = _parameterTranslation.TranslationSize + _out.Length;
+                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+
+                if ((parameter.NodeType == Parameter) &&
+                     context.Settings.DeclareOutParamsInline &&
+                     context.ShouldBeDeclaredInline((ParameterExpression)parameter))
+                {
+                    _declareParameterInline = true;
+                    TranslationSize += _var.Length;
+                    FormattingSize += context.GetKeywordFormattingSize();
+                }
             }
 
             public ExpressionType NodeType => _parameterTranslation.NodeType;
@@ -390,7 +395,40 @@
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                buffer.WriteKeywordToTranslation(_modifier);
+                buffer.WriteKeywordToTranslation(_out);
+
+                if (_declareParameterInline)
+                {
+                    buffer.WriteKeywordToTranslation(_var);
+                }
+
+                _parameterTranslation.WriteTo(buffer);
+            }
+        }
+
+        private class RefParameterTranslation : ITranslation
+        {
+            private const string _ref = "ref ";
+            private readonly ITranslation _parameterTranslation;
+
+            public RefParameterTranslation(Expression parameter, ITranslationContext context)
+            {
+                _parameterTranslation = context.GetTranslationFor(parameter);
+                TranslationSize = _parameterTranslation.TranslationSize + _ref.Length;
+                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+            }
+
+            public ExpressionType NodeType => _parameterTranslation.NodeType;
+
+            public Type Type => _parameterTranslation.Type;
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteKeywordToTranslation(_ref);
                 _parameterTranslation.WriteTo(buffer);
             }
         }

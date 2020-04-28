@@ -17,11 +17,12 @@
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
+        private ICollection<ParameterExpression> _declaredOutputParameters;
 
         public TranslationTree(Expression expression, TranslationSettings settings)
         {
             _settings = settings;
-            _expressionAnalysis = ExpressionAnalysis.For(expression);
+            _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
             _root = GetTranslationFor(expression);
         }
 
@@ -29,10 +30,25 @@
 
         TranslationSettings ITranslationContext.Settings => _settings;
 
-        IEnumerable<ParameterExpression> ITranslationContext.InlineOutputVariables
+        ICollection<ParameterExpression> ITranslationContext.InlineOutputVariables
             => _expressionAnalysis.InlineOutputVariables;
 
-        IEnumerable<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
+        bool ITranslationContext.ShouldBeDeclaredInline(ParameterExpression parameter)
+        {
+            var declareInline =
+                _expressionAnalysis.InlineOutputVariables.Contains(parameter) &&
+                _declaredOutputParameters?.Contains(parameter) != true;
+
+            if (declareInline)
+            {
+                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
+                return true;
+            }
+
+            return false;
+        }
+
+        ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _expressionAnalysis.JoinedAssignmentVariables;
 
         bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
@@ -62,15 +78,13 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
-        TypeNameTranslation ITranslationContext.GetTranslationFor(Type type) => new TypeNameTranslation(type, this);
-
-        ITranslation ITranslationContext.GetTranslationFor(Expression expression)
-            => GetTranslationFor(expression);
+        TypeNameTranslation ITranslationContext.GetTranslationFor(Type type)
+            => new TypeNameTranslation(type, this);
 
         CodeBlockTranslation ITranslationContext.GetCodeBlockTranslationFor(Expression expression)
             => new CodeBlockTranslation(GetTranslationFor(expression), this);
 
-        private ITranslation GetTranslationFor(Expression expression)
+        public ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)
             {

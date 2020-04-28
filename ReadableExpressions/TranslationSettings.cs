@@ -49,16 +49,16 @@
         /// <summary>
         /// Declare output parameter variables inline with the method call where they are first used.
         /// </summary>
-        public TranslationSettings UseInlineOutputParameters
+        public TranslationSettings DeclareOutputParametersInline
         {
             get
             {
-                UseInlineOutParameters = true;
+                DeclareOutParamsInline = true;
                 return this;
             }
         }
 
-        internal bool UseInlineOutParameters { get; private set; }
+        internal bool DeclareOutParamsInline { get; private set; }
 
         /// <summary>
         /// Annotate a Quoted Lambda Expression with a comment indicating that it has 

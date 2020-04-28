@@ -19,13 +19,24 @@
         /// Gets the variables in the translated <see cref="Expression"/> which are first used as
         /// an output parameter argument.
         /// </summary>
-        IEnumerable<ParameterExpression> InlineOutputVariables { get; }
+        ICollection<ParameterExpression> InlineOutputVariables { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the given <paramref name="parameter"/> is an output
+        /// parameter that should be declared inline.
+        /// </summary>
+        /// <param name="parameter">The parameter for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="parameter"/> is an output parameter that should be
+        /// declared inline, otherwise false.
+        /// </returns>
+        bool ShouldBeDeclaredInline(ParameterExpression parameter);
 
         /// <summary>
         /// Gets the variables in the translated <see cref="Expression"/> which should be declared
         /// in the same statement in which they are assigned.
         /// </summary>
-        IEnumerable<ParameterExpression> JoinedAssignmentVariables { get; }
+        ICollection<ParameterExpression> JoinedAssignmentVariables { get; }
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an

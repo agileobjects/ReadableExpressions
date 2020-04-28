@@ -12,6 +12,7 @@
 
     internal class ExpressionAnalysis
     {
+        private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
         private ICollection<ParameterExpression> _accessedVariables;
         private IList<ParameterExpression> _inlineOutputVariables;
@@ -26,11 +27,16 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
+        private ExpressionAnalysis(TranslationSettings settings)
+        {
+            _settings = settings;
+        }
+
         #region Factory Method
 
-        public static ExpressionAnalysis For(Expression expression)
+        public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
-            var analysis = new ExpressionAnalysis();
+            var analysis = new ExpressionAnalysis(settings);
 
             analysis.Visit(expression);
 
@@ -311,6 +317,21 @@
                         // Expression.ToString() replaces multiple lines with ' ... ';
                         // potential fragile, but works unless MS change it:
                         _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                }
+            }
+
+            if (_settings.DeclareOutParamsInline)
+            {
+                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                {
+                    var argument = methodCall.Arguments[i];
+
+                    if ((argument.NodeType == ExpressionType.Parameter) &&
+                        VariableHasNotYetBeenAccessed(argument))
+                    {
+                        (_inlineOutputVariables ??= new List<ParameterExpression>())
+                            .Add((ParameterExpression)argument);
                     }
                 }
             }
