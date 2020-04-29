@@ -17,6 +17,21 @@
             Comment = "#57A64A"
         };
 
+        public static readonly ExpressionTranslationTheme Light = new ExpressionTranslationTheme
+        {
+            Background = "#FFF",
+            Default = "#000",
+            Keyword = "#0000FF",
+            Variable = "#1F377F",
+            TypeName = "#2B91AF",
+            InterfaceName = "#2B91AF",
+            CommandStatement = "#8F08C4",
+            Text = "#A31515",
+            Numeric = "#000",
+            MethodName = "#74531F",
+            Comment = "#008000"
+        };
+
         public string Background { get; set; }
 
         public string Default { get; set; }

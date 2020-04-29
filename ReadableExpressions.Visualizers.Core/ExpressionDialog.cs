@@ -2,6 +2,7 @@
 {
     using System;
     using System.Drawing;
+    using System.Drawing.Text;
     using System.Windows.Forms;
 
     public class ExpressionDialog : Form
@@ -44,7 +45,7 @@
             {
                 AllowNavigation = false,
                 AllowWebBrowserDrop = false,
-                Font = new Font(new FontFamily("Consolas"), 13.5f),
+                Font = new Font(new FontFamily(GenericFontFamilies.Monospace), 13.5f),
                 ScrollBarsEnabled = false
             };
 
@@ -141,7 +142,7 @@
 body {{ 
     background: {settings.Theme.Background};
     color: {settings.Theme.Default}; 
-    font-family: '{_viewer.Font.FontFamily.Name}', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+    font-family: '{_viewer.Font.FontFamily.Name}';
     font-size: 13pt;
     overflow: auto;
 }}
