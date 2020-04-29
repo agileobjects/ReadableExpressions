@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Windows.Forms;
@@ -58,86 +59,103 @@
                     Theme = new ExpressionTranslationTheme()
                 };
 
-                if (settingsByName.TryGetValue(nameof(_themeBackground), out var value))
-                {
-                    settings.Theme.Background = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeDefault), out value))
-                {
-                    settings.Theme.Default = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeKeyword), out value))
-                {
-                    settings.Theme.Keyword = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeVariable), out value))
-                {
-                    settings.Theme.Variable = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeTypeName), out value))
-                {
-                    settings.Theme.TypeName = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeInterfaceName), out value))
-                {
-                    settings.Theme.InterfaceName = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeCommandStatement), out value))
-                {
-                    settings.Theme.CommandStatement = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeText), out value))
-                {
-                    settings.Theme.Text = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeNumeric), out value))
-                {
-                    settings.Theme.Numeric = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeMethodName), out value))
-                {
-                    settings.Theme.MethodName = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(_themeComment), out value))
-                {
-                    settings.Theme.Comment = value;
-                }
-
-                if (settingsByName.TryGetValue(nameof(UseFullyQualifiedTypeNames), out value))
-                {
-                    settings.UseFullyQualifiedTypeNames = bool.TryParse(value, out var result) && result;
-                }
-
-                if (settingsByName.TryGetValue(nameof(UseExplicitGenericParameters), out value))
-                {
-                    settings.UseExplicitGenericParameters = bool.TryParse(value, out var result) && result;
-                }
-
-                if (settingsByName.TryGetValue(nameof(DeclareOutputParametersInline), out value))
-                {
-                    settings.DeclareOutputParametersInline = bool.TryParse(value, out var result) && result;
-                }
-
-                if (settingsByName.TryGetValue(nameof(ShowQuotedLambdaComments), out value))
-                {
-                    settings.ShowQuotedLambdaComments = bool.TryParse(value, out var result) && result;
-                }
+                SetValues(settings, settingsByName);
 
                 return settings;
             }
             catch
             {
                 return _default;
+            }
+        }
+
+        private static void SetValues(
+            ExpressionDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            SetThemeValues(settings, settingsByName);
+
+            if (settingsByName.TryGetValue(nameof(UseFullyQualifiedTypeNames), out var value))
+            {
+                settings.UseFullyQualifiedTypeNames = IsTrue(value);
+            }
+
+            if (settingsByName.TryGetValue(nameof(UseExplicitGenericParameters), out value))
+            {
+                settings.UseExplicitGenericParameters = IsTrue(value);
+            }
+
+            if (settingsByName.TryGetValue(nameof(DeclareOutputParametersInline), out value))
+            {
+                settings.DeclareOutputParametersInline = IsTrue(value);
+            }
+
+            if (settingsByName.TryGetValue(nameof(ShowQuotedLambdaComments), out value))
+            {
+                settings.ShowQuotedLambdaComments = IsTrue(value);
+            }
+        }
+
+        private static bool IsTrue(string value) 
+            => bool.TryParse(value, out var result) && result;
+
+        private static void SetThemeValues(
+            ExpressionDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            if (settingsByName.TryGetValue(nameof(_themeBackground), out var value))
+            {
+                settings.Theme.Background = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeDefault), out value))
+            {
+                settings.Theme.Default = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeKeyword), out value))
+            {
+                settings.Theme.Keyword = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeVariable), out value))
+            {
+                settings.Theme.Variable = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeTypeName), out value))
+            {
+                settings.Theme.TypeName = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeInterfaceName), out value))
+            {
+                settings.Theme.InterfaceName = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeCommandStatement), out value))
+            {
+                settings.Theme.CommandStatement = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeText), out value))
+            {
+                settings.Theme.Text = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeNumeric), out value))
+            {
+                settings.Theme.Numeric = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeMethodName), out value))
+            {
+                settings.Theme.MethodName = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(_themeComment), out value))
+            {
+                settings.Theme.Comment = value;
             }
         }
 
