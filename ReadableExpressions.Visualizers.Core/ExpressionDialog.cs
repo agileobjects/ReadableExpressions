@@ -45,7 +45,7 @@
                 AllowNavigation = false,
                 AllowWebBrowserDrop = false,
                 Font = new Font(new FontFamily("Consolas"), 13.5f),
-                ScrollBarsEnabled = true
+                ScrollBarsEnabled = false
             };
 
             var viewerPanel = new Panel
@@ -123,7 +123,7 @@
 
         public ExpressionDialog WithText(string translation)
         {
-            var appSettingsPath = Application.UserAppDataPath;
+            var settings = ExpressionDialogSettings.LoadOrGetDefault();
 
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
             var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
@@ -139,21 +139,21 @@
 <head>
 <style type=""text/css"">
 body {{ 
-    background: #1E1E1E;
-    color: #DCDCDC; 
+    background: {settings.Theme.Background};
+    color: {settings.Theme.Default}; 
     font-family: '{_viewer.Font.FontFamily.Name}', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
     font-size: 13pt;
     overflow: auto;
 }}
-.kw {{ color: #569CD6 }}
-.vb {{ color: #9CDCFE }}
-.tn {{ color: #4EC9B0 }}
-.in {{ color: #B8D7A3 }}
-.cs {{ color: #D8A0DF }}
-.tx {{ color: #D69D85 }}
-.nm {{ color: #B5CEA8 }}
-.mn {{ color: #DCDCAA }}
-.cm {{ color: #57A64A }}
+.kw {{ color: {settings.Theme.Keyword} }}
+.vb {{ color: {settings.Theme.Variable} }}
+.tn {{ color: {settings.Theme.TypeName} }}
+.in {{ color: {settings.Theme.InterfaceName} }}
+.cs {{ color: {settings.Theme.CommandStatement} }}
+.tx {{ color: {settings.Theme.Text} }}
+.nm {{ color: {settings.Theme.Numeric} }}
+.mn {{ color: {settings.Theme.MethodName} }}
+.cm {{ color: {settings.Theme.Comment} }}
 </style>
 </head>
 <body>
