@@ -6,6 +6,7 @@
     {
         public static readonly ExpressionTranslationTheme Dark = new ExpressionTranslationTheme
         {
+            Name = "Dark",
             Background = "#1E1E1E",
             Default = "#DCDCDC",
             Toolbar = "#2D2D30",
@@ -23,6 +24,7 @@
 
         public static readonly ExpressionTranslationTheme Light = new ExpressionTranslationTheme
         {
+            Name = "Light",
             Background = "#FFF",
             Default = "#000",
             Toolbar = "#EEEEF2",
@@ -41,6 +43,8 @@
         private Color? _foreColour;
         private Color? _toolbarColour;
         private Color? _menuColour;
+
+        public string Name { get; set; }
 
         public string Background { get; set; }
 

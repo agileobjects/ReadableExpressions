@@ -5,14 +5,12 @@
 
     public class Vs10ExpressionVisualizer : DialogDebuggerVisualizer
     {
-        
-
         protected override void Show(
             IDialogVisualizerService windowService,
             IVisualizerObjectProvider objectProvider)
         {
             windowService.ShowDialog(
-                ExpressionDialog.Instance.WithText(
+                new VisualizerDialog().WithText(
                     (string)objectProvider.GetObject()));
         }
     }

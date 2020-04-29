@@ -5,15 +5,15 @@
 
     internal class ExpressionDialogColourTable : ProfessionalColorTable
     {
-        private readonly ExpressionTranslationTheme _theme;
+        private readonly VisualizerDialog _dialog;
 
-        public ExpressionDialogColourTable(ExpressionTranslationTheme theme)
+        public ExpressionDialogColourTable(VisualizerDialog dialog)
         {
-            _theme = theme;
+            _dialog = dialog;
         }
 
-        public override Color ToolStripBorder => _theme.ForeColour;
+        public override Color ToolStripBorder => _dialog.Theme.ForeColour;
 
-        public override Color ToolStripDropDownBackground => _theme.MenuColour;
+        public override Color ToolStripDropDownBackground => _dialog.Theme.MenuColour;
     }
 }

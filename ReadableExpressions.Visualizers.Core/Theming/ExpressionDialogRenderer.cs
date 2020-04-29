@@ -5,19 +5,19 @@
 
     internal class ExpressionDialogRenderer : ToolStripProfessionalRenderer
     {
-        private readonly ExpressionTranslationTheme _theme;
+        private readonly VisualizerDialog _dialog;
 
-        public ExpressionDialogRenderer(ExpressionTranslationTheme theme)
-            : base(new ExpressionDialogColourTable(theme))
+        public ExpressionDialogRenderer(VisualizerDialog dialog)
+            : base(new ExpressionDialogColourTable(dialog))
         {
-            _theme = theme;
+            _dialog = dialog;
         }
 
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
             var backgroundColor = e.Item.Selected && e.Item.Text == "Options"
-                ? _theme.MenuColour
-                : _theme.ToolbarColour;
+                ? _dialog.Theme.MenuColour
+                : _dialog.Theme.ToolbarColour;
 
             e.Graphics.FillRectangle(
                 new SolidBrush(backgroundColor),
@@ -27,7 +27,7 @@
         protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
         {
             e.Graphics.FillRectangle(
-                new SolidBrush(_theme.MenuColour),
+                new SolidBrush(_dialog.Theme.MenuColour),
                 new Rectangle(Point.Empty, e.Item.Size));
         }
     }

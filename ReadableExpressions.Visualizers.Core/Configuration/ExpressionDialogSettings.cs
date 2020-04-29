@@ -18,23 +18,9 @@
         private static readonly string[] _newLines = { Environment.NewLine };
         private static readonly char[] _colons = { ':' };
 
-        #region Theme Keys
+        public static readonly ExpressionDialogSettings Instance = LoadOrGetDefault();
 
-        private const string _themeBackground = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Background);
-        private const string _themeDefault = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Default);
-        private const string _themeKeyword = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Keyword);
-        private const string _themeVariable = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Variable);
-        private const string _themeTypeName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.TypeName);
-        private const string _themeInterfaceName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.InterfaceName);
-        private const string _themeCommandStatement = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.CommandStatement);
-        private const string _themeText = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Text);
-        private const string _themeNumeric = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Numeric);
-        private const string _themeMethodName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.MethodName);
-        private const string _themeComment = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Comment);
-
-        #endregion
-
-        public static ExpressionDialogSettings LoadOrGetDefault()
+        private static ExpressionDialogSettings LoadOrGetDefault()
         {
             try
             {
@@ -69,6 +55,22 @@
                 return _default;
             }
         }
+
+        #region Theme Keys
+
+        private const string _themeBackground = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Background);
+        private const string _themeDefault = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Default);
+        private const string _themeKeyword = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Keyword);
+        private const string _themeVariable = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Variable);
+        private const string _themeTypeName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.TypeName);
+        private const string _themeInterfaceName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.InterfaceName);
+        private const string _themeCommandStatement = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.CommandStatement);
+        private const string _themeText = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Text);
+        private const string _themeNumeric = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Numeric);
+        private const string _themeMethodName = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.MethodName);
+        private const string _themeComment = nameof(Theme) + "." + nameof(ExpressionTranslationTheme.Comment);
+
+        #endregion
 
         private static void SetValues(
             ExpressionDialogSettings settings,
@@ -169,6 +171,31 @@
         public bool DeclareOutputParametersInline { get; set; }
 
         public bool ShowQuotedLambdaComments { get; set; }
+
+        public TranslationSettings Update(TranslationSettings settings)
+        {
+            if (UseFullyQualifiedTypeNames)
+            {
+                settings = settings.UseFullyQualifiedTypeNames;
+            }
+
+            if (UseExplicitGenericParameters)
+            {
+                settings = settings.UseExplicitGenericParameters;
+            }
+
+            if (DeclareOutputParametersInline)
+            {
+                settings = settings.DeclareOutputParametersInline;
+            }
+
+            if (ShowQuotedLambdaComments)
+            {
+                settings = settings.ShowQuotedLambdaComments;
+            }
+
+            return settings;
+        }
 
         public string SerializeToString()
         {

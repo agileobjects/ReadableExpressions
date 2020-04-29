@@ -5,29 +5,25 @@
     using System.Drawing.Text;
     using System.Windows.Forms;
     using Configuration;
+    using Controls;
     using Theming;
     using static System.Windows.Forms.SystemInformation;
 
-    public class ExpressionDialog : Form
+    public class VisualizerDialog : Form
     {
-        public static readonly ExpressionDialog Instance = new ExpressionDialog();
-
-        private readonly ToolStripProfessionalRenderer _renderer;
+        private readonly ExpressionDialogRenderer _renderer;
         private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
         private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
         private readonly int _titleBarHeight;
-        private ExpressionTranslationTheme _theme;
         private bool _autoSize;
-        private bool _viewerUninitialised;
         private string _translation;
 
-        private ExpressionDialog()
+        public VisualizerDialog()
         {
-            var settings = ExpressionDialogSettings.LoadOrGetDefault();
-            _theme = settings.Theme;
-            _renderer = new ExpressionDialogRenderer(_theme);
+            Theme = ExpressionDialogSettings.Instance.Theme;
+            _renderer = new ExpressionDialogRenderer(this);
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
@@ -44,6 +40,10 @@
             SetViewerMaximumSize();
         }
 
+        internal ExpressionTranslationTheme Theme { get; private set; }
+
+        internal bool ViewerUninitialised { get; private set; }
+
         private Size GetDialogMaximumSize()
         {
             var screenSize = Screen.FromControl(this).Bounds.Size;
@@ -55,105 +55,14 @@
 
         private ToolStrip AddMenuStrip()
         {
-            const int MENU_WIDTH = 400;
-            const int THEME_SELECTOR_WIDTH = 220;
-            const int MENU_ITEM_HEIGHT = 44;
-
-            var themeSelectorLabel = new Label
-            {
-                BackColor = _theme.MenuColour,
-                ForeColor = _theme.ForeColour,
-                Size = new Size(MENU_WIDTH - THEME_SELECTOR_WIDTH, MENU_ITEM_HEIGHT),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Text = "Theme"
-            };
-
-            var lightThemeRadio = new RadioButton
-            {
-                BackColor = _theme.MenuColour,
-                ForeColor = _theme.ForeColour,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Text = "Light",
-                Width = THEME_SELECTOR_WIDTH / 2,
-                Height = MENU_ITEM_HEIGHT,
-                Checked = _theme == ExpressionTranslationTheme.Light
-            };
-
-            lightThemeRadio.CheckedChanged += (sender, args) =>
-            {
-                if (_viewerUninitialised)
-                {
-                    return;
-                }
-
-                if (sender is RadioButton themeButton && themeButton.Checked)
-                {
-                    _theme = themeButton.Text == "Light"
-                        ? ExpressionTranslationTheme.Light
-                        : ExpressionTranslationTheme.Dark;
-
-                    SetViewerContent();
-                }
-            };
-
-            var darkThemeRadio = new RadioButton
-            {
-                BackColor = _theme.MenuColour,
-                ForeColor = _theme.ForeColour,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Text = "Dark",
-                Width = THEME_SELECTOR_WIDTH / 2,
-                Height = MENU_ITEM_HEIGHT,
-                Checked = _theme == ExpressionTranslationTheme.Dark
-            };
-
-            darkThemeRadio.CheckedChanged += (sender, args) =>
-            {
-                if (_viewerUninitialised)
-                {
-                    return;
-                }
-
-                if (sender is RadioButton themeButton && themeButton.Checked)
-                {
-                    _theme = themeButton.Text == "Light"
-                        ? ExpressionTranslationTheme.Light
-                        : ExpressionTranslationTheme.Dark;
-
-                    SetViewerContent();
-                }
-            };
-
-            var themeMenuItemPanel = new FlowLayoutPanel
-            {
-                BackColor = _theme.MenuColour,
-                FlowDirection = FlowDirection.LeftToRight,
-                Width = MENU_WIDTH,
-                Controls = { themeSelectorLabel, lightThemeRadio, darkThemeRadio }
-            };
-
-            var themeMenuItem = new ToolStripControlHost(themeMenuItemPanel);
-
-            var optionsMenuItem = new ToolStripMenuItem("Options")
-            {
-                DropDown = new ToolStripDropDown
-                {
-                    BackColor = _theme.MenuColour,
-                    ForeColor = _theme.ForeColour,
-                    Width = MENU_WIDTH,
-                    Items =
-                    {
-                        themeMenuItem
-                    }
-                }
-            };
+            var optionsMenuItem = new VisualizerOptionsMenuItem(this);
 
             var menuStrip = new ToolStrip(optionsMenuItem)
             {
                 Dock = DockStyle.Top,
                 GripStyle = ToolStripGripStyle.Hidden,
-                BackColor = _theme.ToolbarColour,
-                ForeColor = _theme.ForeColour,
+                BackColor = Theme.ToolbarColour,
+                ForeColor = Theme.ForeColour,
                 Renderer = _renderer
             };
 
@@ -180,7 +89,7 @@
 
             viewer.Resize += (sender, arg) => viewerPanel.Size = ((Control)sender).Size;
 
-            _viewerUninitialised = true;
+            ViewerUninitialised = true;
             return viewer;
         }
 
@@ -190,8 +99,8 @@
             {
                 Alignment = ToolStripItemAlignment.Right,
                 Text = "Copy",
-                BackColor = _theme.MenuColour,
-                ForeColor = _theme.ForeColour
+                BackColor = Theme.MenuColour,
+                ForeColor = Theme.ForeColour
             };
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
@@ -203,8 +112,8 @@
             {
                 Dock = DockStyle.Bottom,
                 GripStyle = ToolStripGripStyle.Hidden,
-                BackColor = _theme.ToolbarColour,
-                ForeColor = _theme.ForeColour,
+                BackColor = Theme.ToolbarColour,
+                ForeColor = Theme.ForeColour,
                 Renderer = _renderer
             };
 
@@ -231,7 +140,7 @@
 
         public override string Text => string.Empty;
 
-        public ExpressionDialog WithText(string translation)
+        public VisualizerDialog WithText(string translation)
         {
             _translation = translation;
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
@@ -243,6 +152,13 @@
 
             SetViewerSize(viewerSize);
             return this;
+        }
+
+        internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
+        {
+            Theme = newTheme;
+
+            SetViewerContent();
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
@@ -265,11 +181,11 @@
 
         protected override void OnShown(EventArgs e)
         {
-            if (_viewerUninitialised)
+            if (ViewerUninitialised)
             {
-                _viewer.AllowWebBrowserDrop =
+                _viewer.AllowWebBrowserDrop = false;
                 _viewer.ScrollBarsEnabled = false;
-                _viewerUninitialised = false;
+                ViewerUninitialised = false;
             }
 
             SetViewerContent();
@@ -284,27 +200,28 @@
 <head>
 <style type=""text/css"">
 body {{ 
-    background: {_theme.Background};
-    color: {_theme.Default}; 
+    background: {Theme.Background};
+    color: {Theme.Default}; 
     font-family: '{_viewer.Font.FontFamily.Name}';
     font-size: 13pt;
     overflow: auto;
 }}
-.kw {{ color: {_theme.Keyword} }}
-.vb {{ color: {_theme.Variable} }}
-.tn {{ color: {_theme.TypeName} }}
-.in {{ color: {_theme.InterfaceName} }}
-.cs {{ color: {_theme.CommandStatement} }}
-.tx {{ color: {_theme.Text} }}
-.nm {{ color: {_theme.Numeric} }}
-.mn {{ color: {_theme.MethodName} }}
-.cm {{ color: {_theme.Comment} }}
+.kw {{ color: {Theme.Keyword} }}
+.vb {{ color: {Theme.Variable} }}
+.tn {{ color: {Theme.TypeName} }}
+.in {{ color: {Theme.InterfaceName} }}
+.cs {{ color: {Theme.CommandStatement} }}
+.tx {{ color: {Theme.Text} }}
+.nm {{ color: {Theme.Numeric} }}
+.mn {{ color: {Theme.MethodName} }}
+.cm {{ color: {Theme.Comment} }}
 </style>
 </head>
 <body>
     <pre>{_translation}</pre>
 </body>
 </html>";
+
             if (string.IsNullOrEmpty(_viewer.DocumentText))
             {
                 _viewer.DocumentText = content;
