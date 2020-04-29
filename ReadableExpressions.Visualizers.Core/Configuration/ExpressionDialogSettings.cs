@@ -1,10 +1,11 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Configuration
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Windows.Forms;
+    using Theming;
     using static System.StringSplitOptions;
 
     internal class ExpressionDialogSettings
@@ -96,7 +97,7 @@
             }
         }
 
-        private static bool IsTrue(string value) 
+        private static bool IsTrue(string value)
             => bool.TryParse(value, out var result) && result;
 
         private static void SetThemeValues(

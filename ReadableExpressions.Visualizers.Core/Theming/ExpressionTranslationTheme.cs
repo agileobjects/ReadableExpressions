@@ -1,11 +1,15 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Theming
 {
+    using System.Drawing;
+
     internal class ExpressionTranslationTheme
     {
         public static readonly ExpressionTranslationTheme Dark = new ExpressionTranslationTheme
         {
             Background = "#1E1E1E",
             Default = "#DCDCDC",
+            Toolbar = "#2D2D30",
+            Menu = "#1B1B1C",
             Keyword = "#569CD6",
             Variable = "#9CDCFE",
             TypeName = "#4EC9B0",
@@ -21,6 +25,8 @@
         {
             Background = "#FFF",
             Default = "#000",
+            Toolbar = "#EEEEF2",
+            Menu = "#F6F6F6",
             Keyword = "#0000FF",
             Variable = "#1F377F",
             TypeName = "#2B91AF",
@@ -32,9 +38,26 @@
             Comment = "#008000"
         };
 
+        private Color? _foreColour;
+        private Color? _toolbarColour;
+        private Color? _menuColour;
+
         public string Background { get; set; }
 
         public string Default { get; set; }
+
+        public Color ForeColour
+            => _foreColour ??= ColorTranslator.FromHtml(Default);
+
+        public string Toolbar { get; set; }
+
+        public Color ToolbarColour
+            => _toolbarColour ??= ColorTranslator.FromHtml(Toolbar);
+
+        public string Menu { get; set; }
+
+        public Color MenuColour
+            => _menuColour ??= ColorTranslator.FromHtml(Menu);
 
         public string Keyword { get; set; }
 

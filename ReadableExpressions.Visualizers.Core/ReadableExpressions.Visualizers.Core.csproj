@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +31,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -39,8 +41,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
-    <Compile Include="ExpressionDialogSettings.cs" />
-    <Compile Include="ExpressionTranslationTheme.cs" />
+    <Compile Include="Configuration\ExpressionDialogSettings.cs" />
+    <Compile Include="Theming\ExpressionDialogRenderer.cs" />
+    <Compile Include="Theming\ExpressionDialogColourTable.cs" />
+    <Compile Include="Theming\ExpressionTranslationTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
     <Compile Include="ExpressionDialog.cs">
       <SubType>Form</SubType>
@@ -48,7 +52,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TranslationHtmlFormatter.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Controls\" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>

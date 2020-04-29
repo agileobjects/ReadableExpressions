@@ -39,7 +39,7 @@
                     {
                         return;
                     }
-                    
+
                     value = target.GetType().GetFriendlyName();
                     break;
             }

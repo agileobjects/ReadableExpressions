@@ -410,6 +410,8 @@ catch
             var overallCatchBlock = Catch(typeof(Exception), Constant(-1L));
             var overallTryCatch = TryCatch(overallBlock, overallCatchBlock);
 
+            var translated = ToReadableString(overallTryCatch);
+
             const string EXPECTED = @"
 try
 {
@@ -457,9 +459,6 @@ catch
 {
     return -1L;
 }";
-
-            var translated = ToReadableString(overallTryCatch);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -622,6 +621,8 @@ if (WhenFormattingCode.JoinStrings(
             var lambdaMethod = typeof(HelperClass).GetPublicStaticMethod("GiveMeALambda");
             var lambdaMethodCall = Call(lambdaMethod, stringLambda);
 
+            var translated = ToReadableString(lambdaMethodCall);
+
             const string EXPECTED = @"
 HelperClass.GiveMeALambda((string1, string2) =>
 {
@@ -629,9 +630,6 @@ HelperClass.GiveMeALambda((string1, string2) =>
     Console.WriteLine(""String!"");
     Console.WriteLine(""String!"");
 })";
-
-            var translated = ToReadableString(lambdaMethodCall);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
