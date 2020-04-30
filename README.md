@@ -10,11 +10,13 @@ to produce readable, source-code string versions of [Expression Trees](https://m
 
 The extension method is available in [a NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
 targeting [.NETStandard 1.0](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard)+ and 
-.NET 3.5+, and is used like so:
+.NET 3.5+:
 
-```console
+```shell
 PM> Install-Package AgileObjects.ReadableExpressions
 ```
+
+...and is used like so:
 
 ```csharp
 using AgileObjects.ReadableExpressions;
