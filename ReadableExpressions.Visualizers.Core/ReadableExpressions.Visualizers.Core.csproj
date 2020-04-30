@@ -44,14 +44,35 @@
     <Compile Include="Configuration\VisualizerDialogSettings.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
+    <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ExplicitGenericParamsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FullyQualifiedTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\MenuItemPanelBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\QuotedLambdaCommentsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\SettingCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\ThemeOption.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DialogConstants.cs" />
-    <Compile Include="Controls\ThemeSelectorLabel.cs">
+    <Compile Include="Controls\ThemeSelector.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\ThemeSelectorPanel.cs">
+    <Compile Include="Controls\VisualizerDialogOptionBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DialogConstants.cs" />
+    <Compile Include="Controls\MenuItemLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Theming\ExpressionDialogRenderer.cs" />

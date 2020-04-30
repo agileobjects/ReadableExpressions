@@ -4,16 +4,19 @@
     using System.Windows.Forms;
     using static DialogConstants;
 
-    internal class ThemeSelectorLabel : Label
+    internal class MenuItemLabel : Label
     {
-        public ThemeSelectorLabel(VisualizerDialog dialog)
+        public MenuItemLabel(
+            string text,
+            int controlWidth,
+            VisualizerDialog dialog)
         {
-            Size = new Size(MenuWidth - ThemeSelectorWidth, MenuItemHeight);
+            Size = new Size(MenuWidth - controlWidth, MenuItemHeight);
 
             dialog.RegisterThemeable(this);
 
             base.TextAlign = ContentAlignment.MiddleLeft;
-            base.Text = "Theme";
+            base.Text = text;
         }
     }
 }
