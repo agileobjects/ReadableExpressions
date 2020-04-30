@@ -2,12 +2,23 @@
 
 [![NuGet](http://img.shields.io/nuget/v/AgileObjects.ReadableExpressions.svg)](https://www.nuget.org/packages/AgileObjects.ReadableExpressions)
 
-ReadableExpressions is an extension method for the [Expression](https://msdn.microsoft.com/en-us/library/system.linq.expressions.expression.aspx) class and set of Debugger Visualizers to produce readable, source-code string versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). It targets [.NETStandard 1.0](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard)+ and .NET 3.5+.
+ReadableExpressions is an extension method for the [Expression](https://msdn.microsoft.com/en-us/library/system.linq.expressions.expression.aspx) 
+class and set of [Debugger Visualizers](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers)
+to produce readable, source-code string versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
 
 ### Usage
-The extension method (in the namespace `AgileObjects.ReadableExpressions`) is used like so:
+
+The extension method is available in [a NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
+targeting [.NETStandard 1.0](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard)+ and 
+.NET 3.5+, and is used like so:
+
+```console
+PM> Install-Package AgileObjects.ReadableExpressions
+```
 
 ```csharp
+using AgileObjects.ReadableExpressions;
+
 string readable = myExpression.ToReadableString();
 ```
 
