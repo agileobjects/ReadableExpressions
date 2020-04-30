@@ -18,6 +18,8 @@
 
         public bool UseFullyQualifiedTypeNames { get; set; }
 
+        public bool UseExplicitTypeNames { get; set; }
+
         public bool UseExplicitGenericParameters { get; set; }
 
         public bool DeclareOutputParametersInline { get; set; }
@@ -29,6 +31,11 @@
             if (UseFullyQualifiedTypeNames)
             {
                 settings = settings.UseFullyQualifiedTypeNames;
+            }
+
+            if (UseExplicitTypeNames)
+            {
+                settings = settings.UseExplicitTypeNames;
             }
 
             if (UseExplicitGenericParameters)
