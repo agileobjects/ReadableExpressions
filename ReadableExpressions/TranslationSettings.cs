@@ -16,7 +16,6 @@
         {
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
-            IgnoreLambdaParameterTypes = true;
             Formatter = NullTranslationFormatter.Insance;
         }
 
@@ -83,12 +82,12 @@
         {
             get
             {
-                IgnoreLambdaParameterTypes = false;
+                ShowLambdaParamTypes = true;
                 return this;
             }
         }
 
-        internal bool IgnoreLambdaParameterTypes { get; private set; }
+        internal bool ShowLambdaParamTypes { get; private set; }
 
         /// <summary>
         /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
