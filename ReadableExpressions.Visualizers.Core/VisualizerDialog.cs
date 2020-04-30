@@ -98,6 +98,9 @@
 
             viewer.Resize += (sender, arg) => viewerPanel.Size = ((Control)sender).Size;
 
+            RegisterThemeable(viewer);
+            RegisterThemeable(viewerPanel);
+
             ViewerUninitialised = true;
             return viewer;
         }

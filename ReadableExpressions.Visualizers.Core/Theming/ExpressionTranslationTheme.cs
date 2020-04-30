@@ -84,7 +84,7 @@
 
         public void ApplyTo(Control control)
         {
-            if (control is ToolStrip toolStrip)
+            if (control is ToolStrip toolStrip && !(toolStrip is ToolStripDropDown))
             {
                 ApplyTo(toolStrip);
                 return;

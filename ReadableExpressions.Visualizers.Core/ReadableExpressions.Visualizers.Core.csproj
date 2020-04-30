@@ -47,6 +47,18 @@
     <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\ExplicitGenericParamsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FullyQualifiedTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\MenuItemPanelBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\QuotedLambdaCommentsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\SettingCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>

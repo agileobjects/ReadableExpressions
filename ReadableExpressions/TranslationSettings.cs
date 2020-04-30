@@ -19,7 +19,7 @@
         }
 
         /// <summary>
-        /// Fully qualify Type names with their namespace.
+        /// Fully qualify type names with their namespace.
         /// </summary>
         public TranslationSettings UseFullyQualifiedTypeNames
         {

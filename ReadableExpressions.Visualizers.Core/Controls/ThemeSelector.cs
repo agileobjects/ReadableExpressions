@@ -1,18 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Controls
 {
-    using System.Windows.Forms;
     using static DialogConstants;
     using static Theming.ExpressionTranslationTheme;
 
-    internal class ThemeSelector : FlowLayoutPanel
+    internal class ThemeSelector : MenuItemPanelBase
     {
         public ThemeSelector(VisualizerDialog dialog)
+            : base(dialog)
         {
-            FlowDirection = FlowDirection.LeftToRight;
-            Width = MenuWidth;
-
-            dialog.RegisterThemeable(this);
-
             Controls.Add(new MenuItemLabel("Theme", OptionControlWidth * 2, dialog));
             Controls.Add(new ThemeOption(Light, dialog));
             Controls.Add(new ThemeOption(Dark, dialog));
