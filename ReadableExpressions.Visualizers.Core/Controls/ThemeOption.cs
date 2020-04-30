@@ -11,14 +11,12 @@
             ExpressionTranslationTheme theme,
             VisualizerDialog dialog)
         {
-            var dialogTheme = dialog.Theme;
-
             Width = ThemeSelectorWidth / 2;
             Height = MenuItemHeight;
-            Checked = theme == dialogTheme;
+            Checked = theme == dialog.Theme;
 
             dialog.RegisterThemeable(this);
-            
+
             base.TextAlign = ContentAlignment.MiddleLeft;
             base.Text = theme.Name;
 
