@@ -10,7 +10,7 @@
             FlowDirection = FlowDirection.LeftToRight;
             Width = DialogConstants.MenuWidth;
 
-            base.BackColor = dialog.Theme.MenuColour;
+            dialog.RegisterThemeable(this);
 
             Controls.Add(new ThemeSelectorLabel(dialog));
             Controls.Add(new ThemeOption(Light, dialog));

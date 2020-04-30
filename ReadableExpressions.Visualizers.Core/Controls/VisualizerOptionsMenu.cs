@@ -6,8 +6,8 @@
     {
         public VisualizerOptionsMenu(VisualizerDialog dialog)
         {
-            BackColor = dialog.Theme.MenuColour;
-            ForeColor = dialog.Theme.ForeColour;
+            dialog.RegisterThemeable(this);
+
             Width = DialogConstants.MenuWidth;
 
             base.Items.Add(new ToolStripControlHost(new ThemeSelectorPanel(dialog)));

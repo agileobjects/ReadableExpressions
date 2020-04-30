@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Theming
 {
     using System.Drawing;
+    using System.Windows.Forms;
 
     internal class ExpressionTranslationTheme
     {
@@ -80,5 +81,23 @@
         public string MethodName { get; set; }
 
         public string Comment { get; set; }
+
+        public void ApplyTo(Control control)
+        {
+            if (control is ToolStrip toolStrip)
+            {
+                ApplyTo(toolStrip);
+                return;
+            }
+
+            control.ForeColor = ForeColour;
+            control.BackColor = MenuColour;
+        }
+
+        public void ApplyTo(ToolStrip toolStrip)
+        {
+            toolStrip.ForeColor = ForeColour;
+            toolStrip.BackColor = ToolbarColour;
+        }
     }
 }

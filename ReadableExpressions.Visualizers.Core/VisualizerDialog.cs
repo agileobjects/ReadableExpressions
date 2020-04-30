@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
 {
     using System;
+    using System.Collections.Generic;
     using System.Drawing;
     using System.Drawing.Text;
     using System.Windows.Forms;
@@ -16,6 +17,7 @@
         private readonly ToolStrip _menuStrip;
         private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
+        private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
         private bool _autoSize;
         private string _translation;
@@ -24,6 +26,7 @@
         {
             Theme = ExpressionDialogSettings.Instance.Theme;
             _renderer = new ExpressionDialogRenderer(this);
+            _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
@@ -60,12 +63,10 @@
             var menuStrip = new ToolStrip(optionsMenuItem)
             {
                 Dock = DockStyle.Top,
-                GripStyle = ToolStripGripStyle.Hidden,
-                BackColor = Theme.ToolbarColour,
-                ForeColor = Theme.ForeColour,
-                Renderer = _renderer
+                GripStyle = ToolStripGripStyle.Hidden
             };
 
+            RegisterThemeable(menuStrip);
             Controls.Add(menuStrip);
 
             return menuStrip;
@@ -95,28 +96,27 @@
 
         private ToolStrip AddToolbar()
         {
-            var copyButton = new ToolStripButton
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Text = "Copy",
-                BackColor = Theme.MenuColour,
-                ForeColor = Theme.ForeColour
-            };
+            var copyButton = new Button { Text = "Copy" };
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
             // ReSharper disable PossibleNullReferenceException
                 TranslationHtmlFormatter.Instance.GetRaw(_viewer.Document.Body.InnerHtml));
             // ReSharper restore PossibleNullReferenceException
 
-            var toolbar = new ToolStrip(copyButton)
+            RegisterThemeable(copyButton);
+
+            var buttonWrapper = new ToolStripControlHost(copyButton)
             {
-                Dock = DockStyle.Bottom,
-                GripStyle = ToolStripGripStyle.Hidden,
-                BackColor = Theme.ToolbarColour,
-                ForeColor = Theme.ForeColour,
-                Renderer = _renderer
+                Alignment = ToolStripItemAlignment.Right
             };
 
+            var toolbar = new ToolStrip(buttonWrapper)
+            {
+                Dock = DockStyle.Bottom,
+                GripStyle = ToolStripGripStyle.Hidden
+            };
+
+            RegisterThemeable(toolbar);
             Controls.Add(toolbar);
 
             return toolbar;
@@ -140,6 +140,18 @@
 
         public override string Text => string.Empty;
 
+        private void RegisterThemeable(ToolStrip toolStrip)
+        {
+            toolStrip.Renderer = _renderer;
+            RegisterThemeable((Control)toolStrip);
+        }
+
+        internal void RegisterThemeable(Control control)
+        {
+            Theme.ApplyTo(control);
+            _themeableControls.Add(control);
+        }
+
         public VisualizerDialog WithText(string translation)
         {
             _translation = translation;
@@ -157,6 +169,11 @@
         internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
         {
             Theme = newTheme;
+
+            foreach (var control in _themeableControls)
+            {
+                newTheme.ApplyTo(control);
+            }
 
             SetViewerContent();
         }

@@ -10,8 +10,8 @@
         {
             Size = new Size(MenuWidth - ThemeSelectorWidth, MenuItemHeight);
 
-            base.BackColor = dialog.Theme.MenuColour;
-            base.ForeColor = dialog.Theme.ForeColour;
+            dialog.RegisterThemeable(this);
+
             base.TextAlign = ContentAlignment.MiddleLeft;
             base.Text = "Theme";
         }

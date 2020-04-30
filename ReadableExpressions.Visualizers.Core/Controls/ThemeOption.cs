@@ -17,10 +17,10 @@
             Height = MenuItemHeight;
             Checked = theme == dialogTheme;
 
-            base.Text = theme.Name;
-            base.BackColor = dialogTheme.MenuColour;
-            base.ForeColor = dialogTheme.ForeColour;
+            dialog.RegisterThemeable(this);
+            
             base.TextAlign = ContentAlignment.MiddleLeft;
+            base.Text = theme.Name;
 
             CheckedChanged += (sender, args) =>
             {
