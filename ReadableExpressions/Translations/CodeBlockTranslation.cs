@@ -102,10 +102,10 @@
             return this;
         }
 
-        public CodeBlockTranslation WithSingleLamdaParameterFormatting()
+        public void WithSingleLamdaParameterFormatting()
         {
             _startOnNewLine = false;
-            return WithoutBraces();
+            WithoutBraces();
         }
 
         public CodeBlockTranslation WithReturnKeyword()

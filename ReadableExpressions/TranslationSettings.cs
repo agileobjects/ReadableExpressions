@@ -16,6 +16,7 @@
         {
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
+            IgnoreLambdaParameterTypes = true;
             Formatter = NullTranslationFormatter.Insance;
         }
 
@@ -74,6 +75,20 @@
         }
 
         internal bool DeclareOutParamsInline { get; private set; }
+
+        /// <summary>
+        /// Show the names of lambda parameter types.
+        /// </summary>
+        public TranslationSettings ShowLambdaParameterTypes
+        {
+            get
+            {
+                IgnoreLambdaParameterTypes = false;
+                return this;
+            }
+        }
+
+        internal bool IgnoreLambdaParameterTypes { get; private set; }
 
         /// <summary>
         /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
