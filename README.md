@@ -89,7 +89,3 @@ string readable = myExpression
 ### Debugger Visualizers
 An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
 [the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
-
-### Download
-You can download and install using [the NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), or 
-clone the repository [on GitHub](https://github.com/AgileObjects/ReadableExpressions).
