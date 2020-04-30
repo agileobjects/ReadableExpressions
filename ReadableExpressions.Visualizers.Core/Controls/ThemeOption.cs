@@ -13,7 +13,7 @@
         {
             Width = ThemeSelectorWidth / 2;
             Height = MenuItemHeight;
-            Checked = theme == dialog.Theme;
+            Checked = theme.Name == dialog.Theme.Name;
 
             dialog.RegisterThemeable(this);
 

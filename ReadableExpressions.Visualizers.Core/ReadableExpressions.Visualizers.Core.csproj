@@ -41,7 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
-    <Compile Include="Configuration\ExpressionDialogSettings.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettings.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
     <Compile Include="Controls\ThemeOption.cs">
       <SubType>Component</SubType>
     </Compile>

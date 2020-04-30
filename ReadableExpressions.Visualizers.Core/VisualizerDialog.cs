@@ -24,7 +24,6 @@
 
         public VisualizerDialog()
         {
-            Theme = ExpressionDialogSettings.Instance.Theme;
             _renderer = new ExpressionDialogRenderer(this);
             _themeableControls = new List<Control>();
 
@@ -43,7 +42,13 @@
             SetViewerMaximumSize();
         }
 
-        internal ExpressionTranslationTheme Theme { get; private set; }
+        internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
+
+        internal ExpressionTranslationTheme Theme
+        {
+            get => Settings.Theme;
+            private set => Settings.Theme = value;
+        }
 
         internal bool ViewerUninitialised { get; private set; }
 
@@ -174,6 +179,8 @@
             {
                 newTheme.ApplyTo(control);
             }
+
+            Settings.Save();
 
             SetViewerContent();
         }

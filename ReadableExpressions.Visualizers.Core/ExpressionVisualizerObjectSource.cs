@@ -50,7 +50,7 @@
 
         private static string GetTranslationForVisualizer(Expression expression)
         {
-            return expression.ToReadableString(settings => ExpressionDialogSettings
+            return expression.ToReadableString(settings => VisualizerDialogSettings
                 .Instance
                 .Update(settings)
                 .FormatUsing(TranslationHtmlFormatter.Instance));
