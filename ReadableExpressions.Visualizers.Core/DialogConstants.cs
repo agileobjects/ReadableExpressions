@@ -4,8 +4,9 @@
 
     internal static class DialogConstants
     {
-        public const int MenuWidth = 450;
-        public const int OptionControlWidth = 100;
+        public const int MenuWidth = 500;
+        public const int ThemeOptionWidth = 100;
+        public const int SettingCheckBoxWidth = 50;
         public const int MenuItemHeight = 44;
 
         public static readonly Size MenuItemSize = new Size(MenuWidth, MenuItemHeight);

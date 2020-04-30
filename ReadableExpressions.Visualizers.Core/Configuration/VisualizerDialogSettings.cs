@@ -24,6 +24,8 @@
 
         public bool DeclareOutputParametersInline { get; set; }
 
+        public bool ShowLambdaParameterTypeNames { get; set; }
+
         public bool ShowQuotedLambdaComments { get; set; }
 
         public TranslationSettings Update(TranslationSettings settings)
@@ -46,6 +48,11 @@
             if (DeclareOutputParametersInline)
             {
                 settings = settings.DeclareOutputParametersInline;
+            }
+
+            if (ShowLambdaParameterTypeNames)
+            {
+                settings = settings.ShowLambdaParameterTypes;
             }
 
             if (ShowQuotedLambdaComments)

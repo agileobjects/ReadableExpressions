@@ -11,7 +11,7 @@
             ExpressionTranslationTheme theme,
             VisualizerDialog dialog)
         {
-            Size = new Size(OptionControlWidth, MenuItemHeight);
+            Size = new Size(ThemeOptionWidth, MenuItemHeight);
             Checked = theme.Name == dialog.Theme.Name;
 
             dialog.RegisterThemeable(this);

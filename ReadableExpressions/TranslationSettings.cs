@@ -76,6 +76,20 @@
         internal bool DeclareOutParamsInline { get; private set; }
 
         /// <summary>
+        /// Show the names of lambda parameter types.
+        /// </summary>
+        public TranslationSettings ShowLambdaParameterTypes
+        {
+            get
+            {
+                ShowLambdaParamTypes = true;
+                return this;
+            }
+        }
+
+        internal bool ShowLambdaParamTypes { get; private set; }
+
+        /// <summary>
         /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
         /// been Quoted.
         /// </summary>

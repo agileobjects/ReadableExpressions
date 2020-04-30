@@ -22,22 +22,19 @@
             return new StandardParameterTranslation(parameter, context);
         }
 
-        private class StandardParameterTranslation : ITranslation
+        private abstract class ParameterTranslationBase : IParameterTranslation
         {
             private readonly ParameterExpression _parameter;
             private readonly string _parameterName;
+            private TypeNameTranslation _typeNameTranslation;
 
-            public StandardParameterTranslation(
+            protected ParameterTranslationBase(
                 ParameterExpression parameter,
+                string parameterName,
                 ITranslationContext context)
             {
                 _parameter = parameter;
-                _parameterName = parameter.Name;
-
-                if (IsKeyword(_parameterName))
-                {
-                    _parameterName = "@" + _parameterName;
-                }
+                _parameterName = parameterName;
 
                 TranslationSize = _parameterName.Length;
                 FormattingSize = context.GetVariableFormattingSize();
@@ -47,49 +44,74 @@
 
             public Type Type => _parameter.Type;
 
-            public int TranslationSize { get; }
+            public int TranslationSize { get; private set; }
 
-            public int FormattingSize { get; }
+            public int FormattingSize { get; private set; }
+
+            public void WithTypeNames(ITranslationContext context)
+            {
+                _typeNameTranslation = context.GetTranslationFor(Type);
+
+                TranslationSize += _typeNameTranslation.TranslationSize;
+                FormattingSize += _typeNameTranslation.FormattingSize;
+            }
 
             public void WriteTo(TranslationBuffer buffer)
-                => buffer.WriteToTranslation(_parameterName, Variable);
+            {
+                if (_typeNameTranslation != null)
+                {
+                    _typeNameTranslation.WriteTo(buffer);
+                    buffer.WriteSpaceToTranslation();
+                }
+
+                buffer.WriteToTranslation(_parameterName, Variable);
+            }
         }
 
-        private class UnnamedParameterTranslation : ITranslation
+        private class StandardParameterTranslation : ParameterTranslationBase
         {
-            private readonly ParameterExpression _parameter;
-            private readonly string _parameterName;
-
-            public UnnamedParameterTranslation(ParameterExpression parameter, ITranslationContext context)
+            public StandardParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
+                : base(parameter, GetParameterName(parameter), context)
             {
-                _parameter = parameter;
-                _parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
+            }
 
+            private static string GetParameterName(ParameterExpression parameter)
+            {
+                var parameterName = parameter.Name;
+
+                return IsKeyword(parameterName) ? "@" + parameterName : parameterName;
+            }
+        }
+
+        private class UnnamedParameterTranslation : ParameterTranslationBase
+        {
+            public UnnamedParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
+                : base(parameter, GetParameterName(parameter, context), context)
+            {
+            }
+
+            private static string GetParameterName(
+                ParameterExpression parameter,
+                ITranslationContext context)
+            {
+                var parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
                 var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
 
                 if (variableNumber.HasValue)
                 {
-                    _parameterName += variableNumber.Value;
+                    parameterName += variableNumber.Value;
                 }
-                else if (IsKeyword(_parameterName))
+                else if (IsKeyword(parameterName))
                 {
-                    _parameterName = "@" + _parameterName;
+                    parameterName = "@" + parameterName;
                 }
 
-                TranslationSize = _parameterName.Length;
-                FormattingSize = context.GetVariableFormattingSize();
+                return parameterName;
             }
-
-            public ExpressionType NodeType => ExpressionType.Parameter;
-
-            public Type Type => _parameter.Type;
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public void WriteTo(TranslationBuffer buffer)
-                => buffer.WriteToTranslation(_parameterName, Variable);
         }
 
         private static bool IsKeyword(string variableName)

@@ -43,6 +43,20 @@ string readable = myExpression
     .ToReadableString(c => c.UseExplicitGenericParameters);
 ```
 
+To show lambda parameter type names, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowLambdaParameterTypes);
+```
+
+To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowQuotedLambdaComments);
+```
+
 To define a custom factory for naming anonymous types, use:
 
 ```csharp
@@ -57,13 +71,6 @@ To define a custom factory for translating `ConstantExpression` values, use:
 string readable = myExpression
     .ToReadableString(c => c.TranslateConstantsUsing(
         (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
-```
-
-To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.ShowQuotedLambdaComments);
 ```
 
 ### Debugger Visualizers

@@ -105,6 +105,7 @@
 
             var hasSingleParameter = ParameterCount == 1;
             var singleParameterIsMultiLineLambda = false;
+            var showParameterTypeNames = context.Settings.ShowLambdaParamTypes;
             var translationSize = 0;
             var formattingSize = 0;
 
@@ -137,10 +138,16 @@
 
                         // ReSharper disable once PossibleNullReferenceException
                         translation = GetParameterTranslation(p, methodParameters[parameterIndex], context);
+                        goto CreateCodeBlock;
                     }
-                    else
+
+                    translation = context.GetTranslationFor(p);
+
+                    if (showParameterTypeNames &&
+                        (translation is IParameterTranslation parameterTranslation))
                     {
-                        translation = context.GetTranslationFor(p);
+                        parameterTranslation.WithTypeNames(context);
+                        WithParentheses();
                     }
 
                     CreateCodeBlock:
