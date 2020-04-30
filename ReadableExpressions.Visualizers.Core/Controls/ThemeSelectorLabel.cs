@@ -8,7 +8,7 @@
     {
         public ThemeSelectorLabel(VisualizerDialog dialog)
         {
-            Size = new Size(MenuWidth - ThemeSelectorWidth, MenuItemHeight);
+            Size = new Size(MenuWidth - ThemeOptionWidth * 2, MenuItemHeight);
 
             dialog.RegisterThemeable(this);
 

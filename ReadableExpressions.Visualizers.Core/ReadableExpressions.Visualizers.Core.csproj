@@ -47,11 +47,11 @@
     <Compile Include="Controls\ThemeOption.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DialogConstants.cs" />
-    <Compile Include="Controls\ThemeSelectorLabel.cs">
+    <Compile Include="Controls\ThemeSelector.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\ThemeSelectorPanel.cs">
+    <Compile Include="DialogConstants.cs" />
+    <Compile Include="Controls\ThemeSelectorLabel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Theming\ExpressionDialogRenderer.cs" />

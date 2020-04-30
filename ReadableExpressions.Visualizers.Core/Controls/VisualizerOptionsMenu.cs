@@ -10,7 +10,7 @@
 
             Width = DialogConstants.MenuWidth;
 
-            base.Items.Add(new ToolStripControlHost(new ThemeSelectorPanel(dialog)));
+            base.Items.Add(new ToolStripControlHost(new ThemeSelector(dialog)));
         }
     }
 }

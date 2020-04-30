@@ -3,9 +3,9 @@
     using System.Windows.Forms;
     using static Theming.ExpressionTranslationTheme;
 
-    internal class ThemeSelectorPanel : FlowLayoutPanel
+    internal class ThemeSelector : FlowLayoutPanel
     {
-        public ThemeSelectorPanel(VisualizerDialog dialog)
+        public ThemeSelector(VisualizerDialog dialog)
         {
             FlowDirection = FlowDirection.LeftToRight;
             Width = DialogConstants.MenuWidth;
