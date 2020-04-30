@@ -64,6 +64,11 @@
                 settings.UseFullyQualifiedTypeNames = IsTrue(value);
             }
 
+            if (settingsByName.TryGetValue(nameof(settings.UseExplicitTypeNames), out value))
+            {
+                settings.UseExplicitTypeNames = IsTrue(value);
+            }
+
             if (settingsByName.TryGetValue(nameof(settings.UseExplicitGenericParameters), out value))
             {
                 settings.UseExplicitGenericParameters = IsTrue(value);
@@ -190,6 +195,7 @@
 {ThemeMethodName}: {theme.MethodName}
 {ThemeComment}: {theme.Comment}
 {nameof(settings.UseFullyQualifiedTypeNames)}: {settings.UseFullyQualifiedTypeNames}
+{nameof(settings.UseExplicitTypeNames)}: {settings.UseExplicitTypeNames}
 {nameof(settings.UseExplicitGenericParameters)}: {settings.UseExplicitGenericParameters}
 {nameof(settings.DeclareOutputParametersInline)}: {settings.DeclareOutputParametersInline}
 {nameof(settings.ShowQuotedLambdaComments)}: {settings.ShowQuotedLambdaComments}".TrimStart();

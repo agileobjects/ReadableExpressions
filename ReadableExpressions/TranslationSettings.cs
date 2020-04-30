@@ -14,6 +14,7 @@
 
         internal TranslationSettings()
         {
+            UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
             Formatter = NullTranslationFormatter.Insance;
         }
@@ -31,6 +32,20 @@
         }
 
         internal bool FullyQualifyTypeNames { get; private set; }
+
+        /// <summary>
+        /// Use full variable and output parameter type names instead of using 'var'.
+        /// </summary>
+        public TranslationSettings UseExplicitTypeNames
+        {
+            get
+            {
+                UseImplicitTypeNames = false;
+                return this;
+            }
+        }
+
+        internal bool UseImplicitTypeNames { get; private set; }
 
         /// <summary>
         /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;

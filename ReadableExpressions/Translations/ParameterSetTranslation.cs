@@ -367,6 +367,7 @@
             private const string _out = "out ";
             private const string _var = "var ";
             private readonly ITranslation _parameterTranslation;
+            private readonly ITranslation _typeNameTranslation;
             private readonly bool _declareParameterInline;
 
             public OutParameterTranslation(Expression parameter, ITranslationContext context)
@@ -380,8 +381,17 @@
                      context.ShouldBeDeclaredInline((ParameterExpression)parameter))
                 {
                     _declareParameterInline = true;
-                    TranslationSize += _var.Length;
-                    FormattingSize += context.GetKeywordFormattingSize();
+
+                    if (context.Settings.UseImplicitTypeNames)
+                    {
+                        TranslationSize += _var.Length;
+                        FormattingSize += context.GetKeywordFormattingSize();
+                        return;
+                    }
+
+                    _typeNameTranslation = context.GetTranslationFor(parameter.Type);
+                    TranslationSize += _typeNameTranslation.TranslationSize + 1;
+                    FormattingSize += _typeNameTranslation.FormattingSize;
                 }
             }
 
@@ -399,7 +409,15 @@
 
                 if (_declareParameterInline)
                 {
-                    buffer.WriteKeywordToTranslation(_var);
+                    if (_typeNameTranslation != null)
+                    {
+                        _typeNameTranslation.WriteTo(buffer);
+                        buffer.WriteSpaceToTranslation();
+                    }
+                    else
+                    {
+                        buffer.WriteKeywordToTranslation(_var);
+                    }
                 }
 
                 _parameterTranslation.WriteTo(buffer);

@@ -50,6 +50,9 @@
     <Compile Include="Controls\ExplicitGenericParamsOption.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\ExplicitTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\FullyQualifiedTypeNamesOption.cs">
       <SubType>Component</SubType>
     </Compile>

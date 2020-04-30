@@ -424,7 +424,7 @@
             public BlockAssignmentStatementTranslation(BinaryExpression assignment, ITranslationContext context)
                 : base(assignment, context)
             {
-                if (UseFullTypeName(assignment))
+                if (UseFullTypeName(assignment, context))
                 {
                     _typeNameTranslation = context.GetTranslationFor(assignment.Left.Type);
                     TranslationSize += _typeNameTranslation.TranslationSize + 2;
@@ -436,8 +436,13 @@
                 FormattingSize += context.GetKeywordFormattingSize();
             }
 
-            private static bool UseFullTypeName(BinaryExpression assignment)
+            private static bool UseFullTypeName(BinaryExpression assignment, ITranslationContext context)
             {
+                if (!context.Settings.UseImplicitTypeNames)
+                {
+                    return true;
+                }
+
                 if ((assignment.Left.Type != assignment.Right.Type) ||
                     (assignment.Right.NodeType == Lambda))
                 {

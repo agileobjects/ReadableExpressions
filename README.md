@@ -15,14 +15,14 @@ string readable = myExpression.ToReadableString();
 
 ### Options
 
-To maintain explicit generic arguments on method calls where they are implied, use:
+To include namespaces when outputting type names, use:
 
 ```csharp
 string readable = myExpression
-    .ToReadableString(c => c.UseExplicitGenericParameters);
+    .ToReadableString(c => c.UseFullyQualifiedTypeNames);
 ```
 
-To include namespaces when outputting Type names, use:
+To use full type names instead of using `var` for local and inline-declared output parameter variables, use:
 
 ```csharp
 string readable = myExpression
@@ -36,6 +36,13 @@ string readable = myExpression
     .ToReadableString(c => c.DeclareOutputParametersInline);
 ```
 
+To maintain explicit generic arguments on method calls where they are implied, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.UseExplicitGenericParameters);
+```
+
 To define a custom factory for naming anonymous types, use:
 
 ```csharp
@@ -44,7 +51,7 @@ string readable = myExpression
         anonType => GetAnonTypeName(anonType)));
 ```
 
-To define a custom factory for translating ConstantExpression values, use:
+To define a custom factory for translating `ConstantExpression` values, use:
 
 ```csharp
 string readable = myExpression

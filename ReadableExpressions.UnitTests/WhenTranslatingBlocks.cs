@@ -184,6 +184,21 @@ count += 2;";
         }
 
         [Fact]
+        public void ShouldUseALocalVariableExplicitTypeName()
+        {
+            var countVariable = Variable(typeof(ushort), "count");
+            var assignTenToCount = Assign(countVariable, Constant((ushort)10));
+
+            var countBlock = Block(new[] { countVariable }, assignTenToCount);
+
+            var translated = ToReadableString(countBlock, s => s.UseExplicitTypeNames);
+
+            const string EXPECTED = @"ushort count = 10;";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAMultipleVariableBlockWithNoReturnValue()
         {
             var countOneVariable = Variable(typeof(int), "countOne");
