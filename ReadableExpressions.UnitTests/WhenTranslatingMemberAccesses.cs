@@ -91,6 +91,16 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnExtensionMethodCallWithTypedLambdaParameter()
+        {
+            var noBlankStrings = CreateLambda((string[] a) => a.All(i => i.Length != 0));
+
+            var translated = ToReadableString(noBlankStrings, s => s.ShowLambdaParameterTypes);
+
+            translated.ShouldBe("(string[] a) => a.All((string i) => i.Length != 0)");
+        }
+
+        [Fact]
         public void ShouldTranslateAStaticCallExpression()
         {
             // ReSharper disable once ReferenceEqualsWithValueType

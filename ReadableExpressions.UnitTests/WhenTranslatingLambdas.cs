@@ -49,9 +49,9 @@
         [Fact]
         public void ShouldIncludeLambdaParameterTypes()
         {
-            var convertStringsToInt = CreateLambda((string strValue, int intValue) => strValue + intValue);
+            var concatStringAndInt = CreateLambda((string strValue, int intValue) => strValue + intValue);
 
-            var translated = ToReadableString(convertStringsToInt, s => s.ShowLambdaParameterTypes);
+            var translated = ToReadableString(concatStringAndInt, s => s.ShowLambdaParameterTypes);
 
             translated.ShouldBe("(string strValue, int intValue) => strValue + intValue");
         }

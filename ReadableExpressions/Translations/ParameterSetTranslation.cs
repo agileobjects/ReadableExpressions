@@ -147,6 +147,7 @@
                         (translation is IParameterTranslation parameterTranslation))
                     {
                         parameterTranslation.WithTypeNames(context);
+                        WithParentheses();
                     }
 
                     CreateCodeBlock:

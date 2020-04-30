@@ -16,6 +16,7 @@
             base.Items.Add(new ToolStripControlHost(new ExplicitTypeNamesOption(dialog)));
             base.Items.Add(new ToolStripControlHost(new ExplicitGenericParamsOption(dialog)));
             base.Items.Add(new ToolStripControlHost(new DeclareOutParamsInlineOption(dialog)));
+            base.Items.Add(new ToolStripControlHost(new LambdaParameterTypeNamesOption(dialog)));
             base.Items.Add(new ToolStripControlHost(new QuotedLambdaCommentsOption(dialog)));
         }
     }
