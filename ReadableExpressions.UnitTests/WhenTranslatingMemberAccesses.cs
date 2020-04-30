@@ -557,6 +557,32 @@ ip =>
         }
 
         [Fact]
+        public void ShouldIncludeAnExplicitlyTypedInlineOutParameterVariable()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(
+                tryGetLambda, s => s
+                    .DeclareOutputParametersInline
+                    .UseExplicitTypeNames);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGet(1, out object value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldOnlyDeclareAnOutParameterVariableInlineOnce()
         {
             var helperParameter = Parameter(typeof(IndexedProperty), "ip");
