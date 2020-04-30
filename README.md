@@ -22,11 +22,11 @@ string readable = myExpression
     .ToReadableString(c => c.UseFullyQualifiedTypeNames);
 ```
 
-To use full type names instead of using `var` for local and inline-declared output parameter variables, use:
+To use full type names instead of `var` for local and inline-declared output parameter variables, use:
 
 ```csharp
 string readable = myExpression
-    .ToReadableString(c => c.UseFullyQualifiedTypeNames);
+    .ToReadableString(c => c.UseExplicitTypeNames);
 ```
 
 To declare output parameter variables inline with the method where they are first used, use:
