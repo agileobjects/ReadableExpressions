@@ -30,6 +30,7 @@
 
                 checkbox._optionSetter.Invoke(checkbox._dialog, checkbox.Checked);
                 checkbox._dialog.Settings.Save();
+                checkbox._dialog.UpdateTranslation();
             };
         }
     }

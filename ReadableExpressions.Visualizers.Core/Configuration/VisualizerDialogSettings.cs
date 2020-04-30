@@ -9,8 +9,10 @@
             Theme = ExpressionTranslationTheme.Light
         };
 
-        public static readonly VisualizerDialogSettings Instance =
-            VisualizerDialogSettingsManager.TryLoad(out var settings) ? settings : _default;
+        public static readonly VisualizerDialogSettings Instance = GetInstance();
+
+        public static VisualizerDialogSettings GetInstance()
+            => VisualizerDialogSettingsManager.TryLoad(out var settings) ? settings : _default;
 
         public ExpressionTranslationTheme Theme { get; set; }
 

@@ -15,20 +15,20 @@
             Stream outgoingData,
             Action<Stream, string> serializer)
         {
-            var translated = GetTranslationFor(target, VisualizerDialogSettings.Instance);
+            var translated = GetTranslationFor(target);
 
             serializer.Invoke(outgoingData, translated);
         }
 
-        internal static string GetTranslationFor(object target, VisualizerDialogSettings dialogSettings)
+        internal static string GetTranslationFor(object target)
         {
             switch (target)
             {
                 case Expression expression:
-                    return GetTranslationForVisualizer(expression, dialogSettings) ?? "default(void)";
+                    return Translate(expression) ?? "default(void)";
 
                 case Type type:
-                    return GetTranslationFor(type, dialogSettings);
+                    return Translate(type);
 
                 case MethodInfo method:
                     return DefinitionsTranslator.Translate(method);
@@ -42,20 +42,21 @@
                         return string.Empty;
                     }
 
-                    return GetTranslationFor(target.GetType(), dialogSettings);
+                    return Translate(target.GetType());
             }
         }
 
-        private static string GetTranslationFor(Type type, VisualizerDialogSettings dialogSettings)
-            => type.GetFriendlyName(dialogSettings.Update);
+        private static string Translate(Type type)
+            => type.GetFriendlyName(GetDialogSettings().Update);
 
-        private static string GetTranslationForVisualizer(
-            Expression expression,
-            VisualizerDialogSettings dialogSettings)
+        private static string Translate(Expression expression)
         {
-            return expression.ToReadableString(settings => dialogSettings
+            return expression.ToReadableString(settings => GetDialogSettings()
                 .Update(settings)
                 .FormatUsing(TranslationHtmlFormatter.Instance));
         }
+
+        private static VisualizerDialogSettings GetDialogSettings()
+            => VisualizerDialogSettings.GetInstance();
     }
 }

@@ -12,6 +12,7 @@
 
     public class VisualizerDialog : Form
     {
+        private readonly Func<object> _translationFactory;
         private readonly ExpressionDialogRenderer _renderer;
         private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
@@ -22,8 +23,9 @@
         private bool _autoSize;
         private string _translation;
 
-        public VisualizerDialog()
+        public VisualizerDialog(Func<object> translationFactory)
         {
+            _translationFactory = translationFactory;
             _renderer = new ExpressionDialogRenderer(this);
             _themeableControls = new List<Control>();
 
@@ -40,6 +42,7 @@
             _toolbar = AddToolbar();
 
             SetViewerMaximumSize();
+            SetTranslation();
         }
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
@@ -157,10 +160,16 @@
             _themeableControls.Add(control);
         }
 
-        public VisualizerDialog WithText(string translation)
+        public void UpdateTranslation()
         {
-            _translation = translation;
-            var rawText = TranslationHtmlFormatter.Instance.GetRaw(translation);
+            SetTranslation();
+            SetViewerContent();
+        }
+
+        private void SetTranslation()
+        {
+            _translation = (string)_translationFactory.Invoke();
+            var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
             var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
             var viewerSize = new Size(
@@ -168,7 +177,6 @@
                 textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + _viewer.Font.Height);
 
             SetViewerSize(viewerSize);
-            return this;
         }
 
         internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
