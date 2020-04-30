@@ -4,10 +4,11 @@
     using System.IO;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Configuration;
     using Extensions;
     using Translations.StaticTranslators;
 
-    public class ExpressionVisualizerObjectSource
+    public static class ExpressionVisualizerObjectSource
     {
         public static void GetData(
             object target,
@@ -39,7 +40,7 @@
                     {
                         return;
                     }
-                    
+
                     value = target.GetType().GetFriendlyName();
                     break;
             }
@@ -49,7 +50,9 @@
 
         private static string GetTranslationForVisualizer(Expression expression)
         {
-            return expression.ToReadableString(settings => settings
+            return expression.ToReadableString(settings => VisualizerDialogSettings
+                .Instance
+                .Update(settings)
                 .FormatUsing(TranslationHtmlFormatter.Instance));
         }
     }

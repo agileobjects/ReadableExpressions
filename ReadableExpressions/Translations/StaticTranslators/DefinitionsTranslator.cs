@@ -111,39 +111,39 @@
 
             if (type.IsInterface())
             {
-                buffer.WriteToTranslation("interface ");
+                buffer.WriteKeywordToTranslation("interface ");
                 return;
             }
 
             if (type.IsValueType())
             {
-                buffer.WriteToTranslation("struct ");
+                buffer.WriteKeywordToTranslation("struct ");
                 return;
             }
             
             if (type.IsAbstract())
             {
-                buffer.WriteToTranslation(type.IsSealed() ? "static " : "abstract ");
+                buffer.WriteKeywordToTranslation(type.IsSealed() ? "static " : "abstract ");
             }
             else if (type.IsSealed())
             {
-                buffer.WriteToTranslation("sealed ");
+                buffer.WriteKeywordToTranslation("sealed ");
             }
 
-            buffer.WriteToTranslation("class ");
+            buffer.WriteKeywordToTranslation("class ");
         }
 
         private static void WriteAccessibilityToTranslation(Type type, TranslationBuffer buffer)
         {
             if (type.IsPublic())
             {
-                buffer.WriteToTranslation("public ");
+                buffer.WriteKeywordToTranslation("public ");
                 return;
             }
 
             if (!type.IsNested)
             {
-                buffer.WriteToTranslation("internal ");
+                buffer.WriteKeywordToTranslation("internal ");
                 return;
             }
 #if NETSTANDARD
@@ -154,7 +154,7 @@
             if (type.IsNestedPublic)
 #endif
             {
-                buffer.WriteToTranslation("public ");
+                buffer.WriteKeywordToTranslation("public ");
                 return;
             }
 #if NETSTANDARD
@@ -163,7 +163,7 @@
             if (type.IsNestedAssembly)
 #endif
             {
-                buffer.WriteToTranslation("internal ");
+                buffer.WriteKeywordToTranslation("internal ");
                 return;
             }
 #if NETSTANDARD
@@ -172,7 +172,7 @@
             if (type.IsNestedFamORAssem)
 #endif
             {
-                buffer.WriteToTranslation("protected internal ");
+                buffer.WriteKeywordToTranslation("protected internal ");
                 return;
             }
 #if NETSTANDARD
@@ -181,7 +181,7 @@
             if (type.IsNestedFamily)
 #endif
             {
-                buffer.WriteToTranslation("protected ");
+                buffer.WriteKeywordToTranslation("protected ");
                 return;
             }
 #if NETSTANDARD
@@ -190,7 +190,7 @@
             if (type.IsNestedPrivate)
 #endif
             {
-                buffer.WriteToTranslation("private ");
+                buffer.WriteKeywordToTranslation("private ");
             }
         }
 
@@ -200,18 +200,18 @@
 
             if (method.IsAbstract)
             {
-                buffer.WriteToTranslation("abstract ");
+                buffer.WriteKeywordToTranslation("abstract ");
             }
             else
             {
                 if (method.IsStatic)
                 {
-                    buffer.WriteToTranslation("static ");
+                    buffer.WriteKeywordToTranslation("static ");
                 }
 
                 if (method.IsVirtual)
                 {
-                    buffer.WriteToTranslation("virtual ");
+                    buffer.WriteKeywordToTranslation("virtual ");
                 }
             }
         }
@@ -288,18 +288,18 @@
 
                 if (parameter.IsOut)
                 {
-                    buffer.WriteToTranslation("out ");
+                    buffer.WriteKeywordToTranslation("out ");
                     parameterType = parameterType.GetElementType();
                 }
                 else if (parameterType.IsByRef)
                 {
-                    buffer.WriteToTranslation("ref ");
+                    buffer.WriteKeywordToTranslation("ref ");
                     parameterType = parameterType.GetElementType();
                 }
 
                 buffer.WriteFriendlyName(parameterType);
                 buffer.WriteSpaceToTranslation();
-                buffer.WriteToTranslation(parameter.Name);
+                buffer.WriteToTranslation(parameter.Name, Variable);
 
                 ++i;
 

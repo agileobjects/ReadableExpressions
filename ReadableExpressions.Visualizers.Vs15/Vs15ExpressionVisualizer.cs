@@ -10,7 +10,7 @@
             IVisualizerObjectProvider objectProvider)
         {
             windowService.ShowDialog(
-                ExpressionDialog.Instance.WithText(
+                new VisualizerDialog().WithText(
                     (string)objectProvider.GetObject()));
         }
     }
