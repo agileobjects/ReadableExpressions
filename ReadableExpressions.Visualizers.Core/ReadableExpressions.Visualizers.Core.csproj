@@ -50,6 +50,9 @@
     <Compile Include="Controls\ExplicitGenericParamsOption.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\ImplicitArrayTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\LambdaParameterTypeNamesOption.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -252,6 +252,16 @@ new Dictionary<int, decimal>
         }
 
         [Fact]
+        public void ShouldTranslateAConfiguredExplicitTypeNewArrayExpressionWithAdditions()
+        {
+            var createArray = CreateLambda(() => new[] { 1L, 2L });
+
+            var translated = ToReadableString(createArray.Body, s => s.ShowImplicitArrayTypes);
+
+            translated.ShouldBe("new long[] { 1L, 2L }");
+        }
+
+        [Fact]
         public void ShouldTranslateAnExplicitTypeNewArrayExpressionWithAdditions()
         {
             var createDisposables = CreateLambda(() => new IDisposable[]

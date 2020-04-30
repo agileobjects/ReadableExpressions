@@ -24,6 +24,8 @@
 
         public bool DeclareOutputParametersInline { get; set; }
 
+        public bool ShowImplicitArrayTypes { get; set; }
+
         public bool ShowLambdaParameterTypeNames { get; set; }
 
         public bool ShowQuotedLambdaComments { get; set; }
@@ -48,6 +50,11 @@
             if (DeclareOutputParametersInline)
             {
                 settings = settings.DeclareOutputParametersInline;
+            }
+
+            if (ShowImplicitArrayTypes)
+            {
+                settings = settings.ShowImplicitArrayTypes;
             }
 
             if (ShowLambdaParameterTypeNames)

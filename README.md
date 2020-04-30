@@ -56,6 +56,13 @@ string readable = myExpression
     .ToReadableString(c => c.UseExplicitGenericParameters);
 ```
 
+To show implicitly-typed array type names, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowImplicitArrayTypes);
+```
+
 To show lambda parameter type names, use:
 
 ```csharp

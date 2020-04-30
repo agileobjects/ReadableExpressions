@@ -16,6 +16,7 @@
         {
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
+            HideImplicitlyTypedArrayTypes = true;
             Formatter = NullTranslationFormatter.Insance;
         }
 
@@ -34,7 +35,7 @@
         internal bool FullyQualifyTypeNames { get; private set; }
 
         /// <summary>
-        /// Use full variable and output parameter type names instead of using 'var'.
+        /// Use full type names instead of 'var' for local and inline-declared output parameter variables.
         /// </summary>
         public TranslationSettings UseExplicitTypeNames
         {
@@ -74,6 +75,20 @@
         }
 
         internal bool DeclareOutParamsInline { get; private set; }
+
+        /// <summary>
+        /// Show the names of implicitly-typed array types.
+        /// </summary>
+        public TranslationSettings ShowImplicitArrayTypes
+        {
+            get
+            {
+                HideImplicitlyTypedArrayTypes = false;
+                return this;
+            }
+        }
+
+        internal bool HideImplicitlyTypedArrayTypes { get; private set; }
 
         /// <summary>
         /// Show the names of lambda parameter types.
