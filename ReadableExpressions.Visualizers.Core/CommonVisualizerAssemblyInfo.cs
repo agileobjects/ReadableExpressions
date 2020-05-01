@@ -9,5 +9,5 @@ using System.Reflection;
 [assembly: NeutralResourcesLanguage("en")]
 [assembly: CLSCompliant(true)]
 
-[assembly: AssemblyVersion("2.4.3")]
-[assembly: AssemblyFileVersion("2.4.3")]
+[assembly: AssemblyVersion("3.0.0")]
+[assembly: AssemblyFileVersion("3.0.0")]
