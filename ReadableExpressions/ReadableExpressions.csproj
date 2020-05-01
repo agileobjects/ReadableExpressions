@@ -27,7 +27,7 @@
     <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageIcon>./Icon.gif</PackageIcon>
+    <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
@@ -44,7 +44,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="../Icon.gif" Pack="true" PackagePath="./" />
+    <None Include="../Icon.png" Pack="true" PackagePath="./" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
