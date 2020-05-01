@@ -6,6 +6,8 @@
 
     internal class MenuItemLabel : Label
     {
+        private static readonly Font _font = new Font(new FontFamily("Arial"), 10);
+
         public MenuItemLabel(
             string text,
             string tooltip,
@@ -16,6 +18,7 @@
 
             dialog.RegisterThemeable(this);
 
+            base.Font = _font;
             base.TextAlign = ContentAlignment.MiddleLeft;
             base.Text = text;
 
