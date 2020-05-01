@@ -3,9 +3,8 @@
 [![NuGet](http://img.shields.io/nuget/v/AgileObjects.ReadableExpressions.svg)](https://www.nuget.org/packages/AgileObjects.ReadableExpressions)
 
 ReadableExpressions is set of [Debugger Visualizers](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers)
-and [a NuGet-packaged](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
-[Expression](https://msdn.microsoft.com/en-us/library/system.linq.expressions.expression.aspx) 
-extension method for readable, source-code versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
+and [a NuGet-packaged](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) extension method for 
+readable, source-code versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
 
 ### Debugger Visualizers
 
