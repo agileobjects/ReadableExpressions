@@ -15,16 +15,16 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     
-    <AssemblyVersion>2.5.0.0</AssemblyVersion>
-    <FileVersion>2.5.0.0</FileVersion>
-    <VersionPrefix>2.5.0</VersionPrefix>
-    <Version>2.5.0</Version>
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.0</FileVersion>
+    <VersionPrefix>2.4.0</VersionPrefix>
+    <Version>2.4.0</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
     <Company>AgileObjects Ltd</Company>
     <Title>ReadableExpressions</Title>
-    <Description>An extension method for the Linq and DLR Expression classes and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
+    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.gif</PackageIcon>
@@ -42,6 +42,10 @@
 - Performance improvements
     </PackageReleaseNotes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../Icon.gif" Pack="true" PackagePath="./" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
