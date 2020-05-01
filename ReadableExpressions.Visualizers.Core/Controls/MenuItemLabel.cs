@@ -8,6 +8,7 @@
     {
         public MenuItemLabel(
             string text,
+            string tooltip,
             int controlWidth,
             VisualizerDialog dialog)
         {
@@ -17,6 +18,8 @@
 
             base.TextAlign = ContentAlignment.MiddleLeft;
             base.Text = text;
+
+            dialog.ToolTip.SetToolTip(this, tooltip);
         }
     }
 }

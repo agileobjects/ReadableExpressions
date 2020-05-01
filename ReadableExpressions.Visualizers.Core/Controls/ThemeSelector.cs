@@ -8,7 +8,13 @@
         public ThemeSelector(VisualizerDialog dialog)
             : base(dialog)
         {
-            Controls.Add(new MenuItemLabel("Theme", ThemeOptionWidth * 2, dialog));
+            var label = new MenuItemLabel(
+                "Theme",
+                "Set the visualizer theme",
+                ThemeOptionWidth * 2,
+                dialog);
+
+            Controls.Add(label);
             Controls.Add(new ThemeOption(Light, dialog));
             Controls.Add(new ThemeOption(Dark, dialog));
         }

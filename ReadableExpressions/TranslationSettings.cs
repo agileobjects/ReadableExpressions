@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        /// Fully qualify type names with their namespace.
+        /// Fully qualify type names with their namespaces.
         /// </summary>
         public TranslationSettings UseFullyQualifiedTypeNames
         {
@@ -105,8 +105,7 @@
         internal bool ShowLambdaParamTypes { get; private set; }
 
         /// <summary>
-        /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
-        /// been Quoted.
+        /// Annotate Quoted Lambda Expressions with a comment indicating they have been Quoted.
         /// </summary>
         public TranslationSettings ShowQuotedLambdaComments
         {

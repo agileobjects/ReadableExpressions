@@ -7,12 +7,13 @@
     {
         protected VisualizerDialogOptionBase(
             string labelText,
+            string labelTooltip,
             bool isChecked,
             Action<VisualizerDialog, bool> optionSetter,
             VisualizerDialog dialog)
             : base(dialog)
         {
-            var label = new MenuItemLabel(labelText, SettingCheckBoxWidth, dialog);
+            var label = new MenuItemLabel(labelText, labelTooltip, SettingCheckBoxWidth, dialog);
             var checkbox = new SettingCheckBox(isChecked, optionSetter, dialog);
 
             label.Click += (sender, args) => checkbox.Checked = !checkbox.Checked;

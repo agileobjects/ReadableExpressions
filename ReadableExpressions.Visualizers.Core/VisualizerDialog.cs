@@ -12,6 +12,8 @@
 
     public class VisualizerDialog : Form
     {
+        private static readonly Size _dialogMinimumSize = new Size(530, 125);
+
         private readonly Func<object> _translationFactory;
         private readonly ExpressionDialogRenderer _renderer;
         private readonly Size _dialogMaximumSize;
@@ -31,17 +33,19 @@
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
+            AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
             _dialogMaximumSize = GetDialogMaximumSize();
 
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
 
+            ToolTip = AddToolTip();
             _viewer = AddViewer();
             _menuStrip = AddMenuStrip();
             _toolbar = AddToolbar();
 
-            SetViewerMaximumSize();
+            SetViewerSizeLimits();
             SetTranslation();
         }
 
@@ -52,6 +56,8 @@
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
+
+        internal ToolTip ToolTip { get; }
 
         internal bool ViewerUninitialised { get; private set; }
 
@@ -64,6 +70,11 @@
                 Convert.ToInt32(screenSize.Height * .8));
         }
 
+        private ToolTip AddToolTip()
+        {
+            return new ToolTip();
+        }
+
         private ToolStrip AddMenuStrip()
         {
             var optionsMenuItem = new VisualizerOptionsMenuItem(this);
@@ -71,7 +82,8 @@
             var menuStrip = new ToolStrip(optionsMenuItem)
             {
                 Dock = DockStyle.Top,
-                GripStyle = ToolStripGripStyle.Hidden
+                GripStyle = ToolStripGripStyle.Hidden,
+                AutoSize = true
             };
 
             RegisterThemeable(menuStrip);
@@ -90,7 +102,8 @@
 
             var viewerPanel = new Panel
             {
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                AutoSize = true
             };
 
             viewerPanel.Controls.Add(viewer);
@@ -124,7 +137,8 @@
             var toolbar = new ToolStrip(buttonWrapper)
             {
                 Dock = DockStyle.Bottom,
-                GripStyle = ToolStripGripStyle.Hidden
+                GripStyle = ToolStripGripStyle.Hidden,
+                AutoSize = true
             };
 
             RegisterThemeable(toolbar);
@@ -133,8 +147,9 @@
             return toolbar;
         }
 
-        private void SetViewerMaximumSize()
+        private void SetViewerSizeLimits()
         {
+            _viewer.MinimumSize = _dialogMinimumSize;
             _viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
         }
 
@@ -163,7 +178,7 @@
             _themeableControls.Add(control);
         }
 
-        public void UpdateTranslation()
+        internal void UpdateTranslation()
         {
             SetTranslation();
             SetViewerContent();
@@ -271,25 +286,21 @@ body {{
         {
             EnableAutoSize();
 
-            var finalSize = new Size(
-                Math.Max(newSize.Width, _viewer.Parent.Width),
-                Math.Max(newSize.Height, _viewer.Parent.Height));
+            var finalWidth = Math.Min(
+                Math.Max(newSize.Width, _viewer.MinimumSize.Width),
+                _viewer.MaximumSize.Width);
 
-            _viewer.Size = finalSize;
+            var finalHeight = Math.Min(
+                Math.Max(newSize.Height, _viewer.MinimumSize.Height),
+                _viewer.MaximumSize.Height);
+
+            _viewer.Size = new Size(finalWidth, finalHeight);
 
             DisableAutoSize();
         }
 
-        private void EnableAutoSize()
-        {
-            _autoSize =
-            _viewer.Parent.AutoSize = true;
-        }
+        private void EnableAutoSize() => _autoSize = true;
 
-        private void DisableAutoSize()
-        {
-            _autoSize =
-            _viewer.Parent.AutoSize = false;
-        }
+        private void DisableAutoSize() => _autoSize = false;
     }
 }

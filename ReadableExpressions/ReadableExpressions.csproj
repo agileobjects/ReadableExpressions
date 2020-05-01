@@ -32,9 +32,15 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Fixing translation of null-terminating characters, re: #43
+    <PackageReleaseNotes>- Support for using full type names instead of 'var'
+- Support for declaring out parameter variables inline
+- Support for showing types of implicitly-typed arrays
+- Support for showing lambda parameter types
+- Support for custom translation formatting
+- Fixing translation of null-terminating characters, re: #43
 - Fixing translation of property getter and setter methods in abstract classes
-- Performance improvements</PackageReleaseNotes>
+- Performance improvements
+    </PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
