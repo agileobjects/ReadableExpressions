@@ -1,33 +1,20 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
 #endif
     using Interfaces;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class UnaryTranslation : ITranslation
     {
-        private static readonly Dictionary<ExpressionType, string> _operatorsByNodeType =
-            new Dictionary<ExpressionType, string>(10)
-            {
-                [Decrement] = "--",
-                [Increment] = "++",
-                [IsTrue] = string.Empty,
-                [IsFalse] = "!",
-                [OnesComplement] = "~",
-                [PostDecrementAssign] = "--",
-                [PostIncrementAssign] = "++",
-                [PreDecrementAssign] = "--",
-                [PreIncrementAssign] = "++",
-                [UnaryPlus] = "+"
-            };
-
         private readonly string _operator;
         private readonly ITranslation _operandTranslation;
         private readonly bool _operatorIsSuffix;
@@ -36,7 +23,7 @@
         {
             NodeType = unary.NodeType;
             Type = unary.Type;
-            _operator = _operatorsByNodeType[NodeType];
+            _operator = GetOperatorFor(unary.NodeType);
 
             switch (NodeType)
             {
@@ -47,14 +34,33 @@
             }
 
             _operandTranslation = context.GetTranslationFor(unary.Operand);
-            EstimatedSize = _operandTranslation.EstimatedSize + _operator.Length;
+            TranslationSize = _operandTranslation.TranslationSize + _operator.Length;
+        }
+
+        private static string GetOperatorFor(ExpressionType nodeType)
+        {
+            return nodeType switch
+            {
+                Decrement => "--",
+                Increment => "++",
+                IsTrue => string.Empty,
+                IsFalse => "!",
+                OnesComplement => "~",
+                PostDecrementAssign => "--",
+                PostIncrementAssign => "++",
+                PreDecrementAssign => "--",
+                PreIncrementAssign => "++",
+                _ => "+"
+            };
         }
 
         public ExpressionType NodeType { get; }
-        
+
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize => _operandTranslation.FormattingSize;
 
         public void WriteTo(TranslationBuffer buffer)
         {

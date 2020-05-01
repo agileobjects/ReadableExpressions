@@ -2,13 +2,13 @@
 {
     using System;
     using System.Linq;
-    using System.Reflection;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Reflection;
+    using Interfaces;
     using NetStandardPolyfills;
 
     internal static class TypeEqualTranslation
@@ -64,45 +64,47 @@
                 return CastTranslation.For(typeBinary, context);
             }
 
-            return new TypeOfTranslation(operandTranslation, typeNameTranslation);
+            return new TypeOfTranslation(operandTranslation, typeNameTranslation, context);
         }
 
         private class TypeOfTranslation : ITranslation
         {
-            private const string _typeOf = " TypeOf typeof(";
+            private const string _typeOf = " TypeOf typeof";
             private readonly ITranslation _operandTranslation;
             private readonly ITranslation _typeNameTranslation;
 
-            public TypeOfTranslation(ITranslation operandTranslation, ITranslation typeNameTranslation)
+            public TypeOfTranslation(
+                ITranslation operandTranslation,
+                ITranslation typeNameTranslation,
+                ITranslationContext context)
             {
                 _operandTranslation = operandTranslation;
                 _typeNameTranslation = typeNameTranslation;
-                EstimatedSize = GetEstimatedSize();
-            }
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize =
-                    _operandTranslation.EstimatedSize +
-                    _typeNameTranslation.EstimatedSize;
+                TranslationSize =
+                     operandTranslation.TranslationSize +
+                     typeNameTranslation.TranslationSize +
+                    _typeOf.Length + "()".Length;
 
-                estimatedSize += _typeOf.Length + 2; // <- +2 for parentheses
-
-                return estimatedSize;
+                FormattingSize =
+                    operandTranslation.FormattingSize +
+                    typeNameTranslation.FormattingSize +
+                    context.GetKeywordFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.TypeEqual;
 
             public Type Type => typeof(bool);
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
 
             public void WriteTo(TranslationBuffer buffer)
             {
                 _operandTranslation.WriteTo(buffer);
-                buffer.WriteToTranslation(_typeOf);
-                _typeNameTranslation.WriteTo(buffer);
-                buffer.WriteToTranslation(')');
+                buffer.WriteKeywordToTranslation(_typeOf);
+                _typeNameTranslation.WriteInParentheses(buffer);
             }
         }
     }

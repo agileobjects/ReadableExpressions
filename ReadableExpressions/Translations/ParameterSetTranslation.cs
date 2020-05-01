@@ -1,18 +1,22 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
 #endif
+    using System.Reflection;
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class ParameterSetTranslation : ITranslatable
     {
@@ -23,10 +27,11 @@
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
-        public ParameterSetTranslation(ITranslation parameter)
+        public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
-            _parameterTranslations = new[] { new CodeBlockTranslation(parameter) };
-            EstimatedSize = parameter.EstimatedSize + _openAndCloseParentheses.Length;
+            _parameterTranslations = new[] { new CodeBlockTranslation(parameter, context) };
+            TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
+            FormattingSize = parameter.FormattingSize;
             ParameterCount = 1;
         }
 
@@ -72,7 +77,7 @@
             if (parameterCount == 0)
             {
                 _parameterTranslations = Enumerable<CodeBlockTranslation>.EmptyArray;
-                EstimatedSize = _openAndCloseParentheses.Length;
+                TranslationSize = _openAndCloseParentheses.Length;
                 return;
             }
 
@@ -100,7 +105,9 @@
 
             var hasSingleParameter = ParameterCount == 1;
             var singleParameterIsMultiLineLambda = false;
-            var estimatedSize = 0;
+            var showParameterTypeNames = context.Settings.ShowLambdaParamTypes;
+            var translationSize = 0;
+            var formattingSize = 0;
 
             _parameterTranslations = parameters
                 .Project((p, index) =>
@@ -112,7 +119,8 @@
                         translation = new MethodGroupTranslation(
                             Lambda,
                             MethodCallTranslation.GetSubjectTranslation(lambdaBodyMethodCall, context),
-                            lambdaBodyMethodCall.Method);
+                            lambdaBodyMethodCall.Method,
+                            context);
 
                         goto CreateCodeBlock;
                     }
@@ -130,17 +138,24 @@
 
                         // ReSharper disable once PossibleNullReferenceException
                         translation = GetParameterTranslation(p, methodParameters[parameterIndex], context);
+                        goto CreateCodeBlock;
                     }
-                    else
+
+                    translation = context.GetTranslationFor(p);
+
+                    if (showParameterTypeNames &&
+                        (translation is IParameterTranslation parameterTranslation))
                     {
-                        translation = context.GetTranslationFor(p);
+                        parameterTranslation.WithTypeNames(context);
+                        WithParentheses();
                     }
 
                     CreateCodeBlock:
-                    estimatedSize += translation.EstimatedSize;
+                    translationSize += translation.TranslationSize;
+                    formattingSize += translation.FormattingSize;
 
                     // TODO: Only use code blocks where useful:
-                    var parameterCodeBlock = new CodeBlockTranslation(translation).WithoutTermination();
+                    var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
 
                     if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda(context))
                     {
@@ -153,7 +168,8 @@
                 .ToArray();
 
             _hasSingleMultiStatementLambdaParameter = singleParameterIsMultiLineLambda;
-            EstimatedSize = estimatedSize + (ParameterCount * 2) + 4;
+            TranslationSize = translationSize + (ParameterCount * ", ".Length) + 4;
+            FormattingSize = formattingSize;
         }
 
         private IEnumerable<Expression> GetAllParameters(
@@ -193,19 +209,17 @@
             ParameterInfo info,
             ITranslationContext context)
         {
-            var translation = context.GetTranslationFor(parameter);
-
             if (info.IsOut)
             {
-                return new TranslationWrapper(translation).WithPrefix("out ");
+                return new OutParameterTranslation(parameter, context);
             }
 
             if (info.ParameterType.IsByRef)
             {
-                return new TranslationWrapper(translation).WithPrefix("ref ");
+                return new RefParameterTranslation(parameter, context);
             }
 
-            return translation;
+            return context.GetTranslationFor(parameter);
         }
 
         private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
@@ -247,7 +261,9 @@
             return allArgumentTypesMatch;
         }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         private int ParameterCount { get; set; }
 
@@ -303,8 +319,9 @@
                 }
 
                 parameterTranslation.WriteTo(buffer);
+                ++i;
 
-                if (++i == ParameterCount)
+                if (i == ParameterCount)
                 {
                     break;
                 }
@@ -350,6 +367,95 @@
             Auto,
             Always,
             Never
+        }
+
+        private class OutParameterTranslation : ITranslation
+        {
+            private const string _out = "out ";
+            private const string _var = "var ";
+            private readonly ITranslation _parameterTranslation;
+            private readonly ITranslation _typeNameTranslation;
+            private readonly bool _declareParameterInline;
+
+            public OutParameterTranslation(Expression parameter, ITranslationContext context)
+            {
+                _parameterTranslation = context.GetTranslationFor(parameter);
+                TranslationSize = _parameterTranslation.TranslationSize + _out.Length;
+                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+
+                if ((parameter.NodeType == Parameter) &&
+                     context.Settings.DeclareOutParamsInline &&
+                     context.ShouldBeDeclaredInline((ParameterExpression)parameter))
+                {
+                    _declareParameterInline = true;
+
+                    if (context.Settings.UseImplicitTypeNames)
+                    {
+                        TranslationSize += _var.Length;
+                        FormattingSize += context.GetKeywordFormattingSize();
+                        return;
+                    }
+
+                    _typeNameTranslation = context.GetTranslationFor(parameter.Type);
+                    TranslationSize += _typeNameTranslation.TranslationSize + 1;
+                    FormattingSize += _typeNameTranslation.FormattingSize;
+                }
+            }
+
+            public ExpressionType NodeType => _parameterTranslation.NodeType;
+
+            public Type Type => _parameterTranslation.Type;
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteKeywordToTranslation(_out);
+
+                if (_declareParameterInline)
+                {
+                    if (_typeNameTranslation != null)
+                    {
+                        _typeNameTranslation.WriteTo(buffer);
+                        buffer.WriteSpaceToTranslation();
+                    }
+                    else
+                    {
+                        buffer.WriteKeywordToTranslation(_var);
+                    }
+                }
+
+                _parameterTranslation.WriteTo(buffer);
+            }
+        }
+
+        private class RefParameterTranslation : ITranslation
+        {
+            private const string _ref = "ref ";
+            private readonly ITranslation _parameterTranslation;
+
+            public RefParameterTranslation(Expression parameter, ITranslationContext context)
+            {
+                _parameterTranslation = context.GetTranslationFor(parameter);
+                TranslationSize = _parameterTranslation.TranslationSize + _ref.Length;
+                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+            }
+
+            public ExpressionType NodeType => _parameterTranslation.NodeType;
+
+            public Type Type => _parameterTranslation.Type;
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public void WriteTo(TranslationBuffer buffer)
+            {
+                buffer.WriteKeywordToTranslation(_ref);
+                _parameterTranslation.WriteTo(buffer);
+            }
         }
     }
 }

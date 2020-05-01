@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using NetStandardPolyfills;
 #if !NET35
     using System.ComponentModel.DataAnnotations;
     using System.Data.Entity;
@@ -43,6 +44,16 @@
             var translated = ToReadableString(convertStringsToInt);
 
             translated.ShouldBe("(str1, str2) => int.Parse(str1) + int.Parse(str2)");
+        }
+
+        [Fact]
+        public void ShouldIncludeLambdaParameterTypes()
+        {
+            var concatStringAndInt = CreateLambda((string strValue, int intValue) => strValue + intValue);
+
+            var translated = ToReadableString(concatStringAndInt, s => s.ShowLambdaParameterTypes);
+
+            translated.ShouldBe("(string strValue, int intValue) => strValue + intValue");
         }
 
         [Fact]
@@ -166,8 +177,26 @@ i => (double)i";
             translated.ShouldBe("(i1, i2)");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/49
+        [Fact]
+        public void ShouldTranslateWithoutError()
+        {
+            var parentEntity = Parameter(typeof(Issue49.EntityBase), "parentEntity");
+            var entityExpression = Parameter(typeof(Issue49.EntityBase), "entity");
+
+            var sourceLambda = Lambda<Func<Issue49.EntityBase, Issue49.EntityBase, bool>>(
+                Call(
+                    Convert(parentEntity, typeof(Issue49.DerivedEntity)),
+                    typeof(Issue49.DerivedEntity).GetPublicInstanceMethod(nameof(Issue49.DerivedEntity.Remove)),
+                    Convert(parentEntity, typeof(Issue49.DerivedEntity))),
+                parentEntity,
+                entityExpression);
+
+            ToReadableString(sourceLambda);
+        }
+
+        #region Helper Members
 #if !NET35
-        #region Helper Methods
 
         private class TestDbContext : DbContext
         {
@@ -183,7 +212,16 @@ i => (double)i";
             public string Name { get; set; }
         }
 
-        #endregion
 #endif
+        private static class Issue49
+        {
+            public class EntityBase { }
+
+            public class DerivedEntity : EntityBase
+            {
+                public bool Remove(DerivedEntity derived) => derived != null;
+            }
+        }
+        #endregion
     }
 }

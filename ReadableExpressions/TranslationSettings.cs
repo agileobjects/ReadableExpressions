@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using Translations.Formatting;
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
@@ -9,13 +10,18 @@
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
+        private bool _commentQuotedLambdas;
+
         internal TranslationSettings()
         {
+            UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
+            HideImplicitlyTypedArrayTypes = true;
+            Formatter = NullTranslationFormatter.Insance;
         }
 
         /// <summary>
-        /// Fully qualify Type names with their namespace.
+        /// Fully qualify type names with their namespaces.
         /// </summary>
         public TranslationSettings UseFullyQualifiedTypeNames
         {
@@ -27,6 +33,20 @@
         }
 
         internal bool FullyQualifyTypeNames { get; private set; }
+
+        /// <summary>
+        /// Use full type names instead of 'var' for local and inline-declared output parameter variables.
+        /// </summary>
+        public TranslationSettings UseExplicitTypeNames
+        {
+            get
+            {
+                UseImplicitTypeNames = false;
+                return this;
+            }
+        }
+
+        internal bool UseImplicitTypeNames { get; private set; }
 
         /// <summary>
         /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;
@@ -43,21 +63,60 @@
         internal bool UseImplicitGenericParameters { get; private set; }
 
         /// <summary>
-        /// Annotate a Quoted Lambda Expression with a comment indicating that it has 
-        /// been Quoted.
+        /// Declare output parameter variables inline with the method call where they are first used.
+        /// </summary>
+        public TranslationSettings DeclareOutputParametersInline
+        {
+            get
+            {
+                DeclareOutParamsInline = true;
+                return this;
+            }
+        }
+
+        internal bool DeclareOutParamsInline { get; private set; }
+
+        /// <summary>
+        /// Show the names of implicitly-typed array types.
+        /// </summary>
+        public TranslationSettings ShowImplicitArrayTypes
+        {
+            get
+            {
+                HideImplicitlyTypedArrayTypes = false;
+                return this;
+            }
+        }
+
+        internal bool HideImplicitlyTypedArrayTypes { get; private set; }
+
+        /// <summary>
+        /// Show the names of lambda parameter types.
+        /// </summary>
+        public TranslationSettings ShowLambdaParameterTypes
+        {
+            get
+            {
+                ShowLambdaParamTypes = true;
+                return this;
+            }
+        }
+
+        internal bool ShowLambdaParamTypes { get; private set; }
+
+        /// <summary>
+        /// Annotate Quoted Lambda Expressions with a comment indicating they have been Quoted.
         /// </summary>
         public TranslationSettings ShowQuotedLambdaComments
         {
             get
             {
-                CommentQuotedLambdas = true;
+                _commentQuotedLambdas = true;
                 return this;
             }
         }
 
-        internal bool DoNotCommentQuotedLambdas => !CommentQuotedLambdas;
-
-        internal bool CommentQuotedLambdas { get; set; }
+        internal bool DoNotCommentQuotedLambdas => !_commentQuotedLambdas;
 
         /// <summary>
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
@@ -66,6 +125,7 @@
         /// <param name="nameFactory">
         /// The factory method to execute to retrieve the name for an anonymous type.
         /// </param>
+        /// <returns>This <see cref="TranslationSettings"/>, to support a fluent API.</returns>
         public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
@@ -81,6 +141,7 @@
         /// <param name="valueFactory">
         /// The factory method to execute to retrieve the ConstantExpression's translated value.
         /// </param>
+        /// <returns>This <see cref="TranslationSettings"/>, to support a fluent API.</returns>
         public TranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory)
         {
             ConstantExpressionValueFactory = valueFactory;
@@ -88,5 +149,20 @@
         }
 
         internal Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
+
+        /// <summary>
+        /// Format Expression translations using the given <paramref name="formatter"/>.
+        /// </summary>
+        /// <param name="formatter">
+        /// The <see cref="ITranslationFormatter"/> with which to format Expression translations.
+        /// </param>
+        /// <returns>This <see cref="TranslationSettings"/>, to support a fluent API.</returns>
+        public TranslationSettings FormatUsing(ITranslationFormatter formatter)
+        {
+            Formatter = formatter;
+            return this;
+        }
+
+        internal ITranslationFormatter Formatter { get; private set; }
     }
 }

@@ -98,7 +98,6 @@ checked
         return one + two;
     }
 }";
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -330,7 +329,6 @@ i =
         return default(int);
     }
 };";
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -348,7 +346,6 @@ i =
 if ((i = 10) == 5)
 {
 }";
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

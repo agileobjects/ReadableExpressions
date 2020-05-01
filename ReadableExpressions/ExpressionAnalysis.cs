@@ -12,74 +12,73 @@
 
     internal class ExpressionAnalysis
     {
-        private readonly Dictionary<BinaryExpression, object> _constructsByAssignment;
-        private readonly List<ParameterExpression> _accessedVariables;
-        private readonly List<Expression> _assignedAssignments;
-        private readonly Stack<BlockExpression> _blocks;
-        private readonly Stack<object> _constructs;
-        private List<ParameterExpression> _catchBlockVariables;
+        private readonly TranslationSettings _settings;
+        private Dictionary<BinaryExpression, object> _constructsByAssignment;
+        private ICollection<ParameterExpression> _accessedVariables;
+        private IList<ParameterExpression> _inlineOutputVariables;
+        private IList<ParameterExpression> _joinedAssignmentVariables;
+        private ICollection<BinaryExpression> _joinedAssignments;
+        private ICollection<Expression> _assignedAssignments;
+        private Stack<BlockExpression> _blocks;
+        private Stack<object> _constructs;
+        private ICollection<ParameterExpression> _catchBlockVariables;
         private ICollection<LabelTarget> _namedLabelTargets;
+        private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
-        private ExpressionAnalysis()
+        private ExpressionAnalysis(TranslationSettings settings)
         {
-            _constructsByAssignment = new Dictionary<BinaryExpression, object>();
-            _accessedVariables = new List<ParameterExpression>();
-            JoinedAssignmentVariables = new List<ParameterExpression>();
-            JoinedAssignments = new List<BinaryExpression>();
-            _assignedAssignments = new List<Expression>();
-            ChainedMethodCalls = new List<MethodCallExpression>();
-            _blocks = new Stack<BlockExpression>();
-            _constructs = new Stack<object>();
+            _settings = settings;
         }
 
         #region Factory Method
 
-        public static ExpressionAnalysis For(Expression expression)
+        public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
-            var analysis = new ExpressionAnalysis();
+            var analysis = new ExpressionAnalysis(settings);
 
             analysis.Visit(expression);
+
+            analysis._inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            analysis._joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
 
             return analysis;
         }
 
         #endregion
 
-        public ICollection<ParameterExpression> JoinedAssignmentVariables { get; }
+        public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
-        public ICollection<BinaryExpression> JoinedAssignments { get; }
+        public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
+
+        public bool IsNotJoinedAssignment(Expression expression)
+        {
+            return (expression.NodeType != ExpressionType.Assign) ||
+                   _joinedAssignments?.Contains((BinaryExpression)expression) != true;
+        }
 
         public bool IsCatchBlockVariable(Expression variable)
         {
-            return variable.NodeType == ExpressionType.Parameter &&
-                   (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
+            return (variable.NodeType == ExpressionType.Parameter) &&
+                  (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
         }
-
-        private ICollection<ParameterExpression> CatchBlockVariables
-            => _catchBlockVariables ?? (_catchBlockVariables = new List<ParameterExpression>());
 
         public bool IsReferencedByGoto(LabelTarget labelTarget)
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
-        private ICollection<LabelTarget> NamedLabelTargets
-            => _namedLabelTargets ?? (_namedLabelTargets = new List<LabelTarget>());
-
         public bool GoesToReturnLabel(GotoExpression @goto)
             => _gotoReturnGotos?.Contains(@goto) == true;
 
-        private ICollection<GotoExpression> GotoReturnGotos
-            => _gotoReturnGotos ?? (_gotoReturnGotos = new List<GotoExpression>());
-
-        public List<MethodCallExpression> ChainedMethodCalls { get; }
+        public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
+            => _chainedMethodCalls?.Contains(methodCall) == true;
 
         public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
-            => _unnamedVariablesByType ??
-               (_unnamedVariablesByType = _accessedVariables
-                   .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
-                   .GroupBy(variable => variable.Type)
-                   .ToDictionary(grp => grp.Key, grp => grp.ToArray()));
+            => _unnamedVariablesByType ??= _accessedVariables?
+                .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
+                .GroupBy(variable => variable.Type)
+                .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
+                 EmptyDictionary<Type, ParameterExpression[]>.Instance;
 
         private void Visit(Expression expression)
         {
@@ -255,21 +254,22 @@
         {
             if ((binary.NodeType == ExpressionType.Assign) &&
                 (binary.Left.NodeType == ExpressionType.Parameter) &&
-                !JoinedAssignmentVariables.Contains(binary.Left) &&
-                !_assignedAssignments.Contains(binary))
+               (_joinedAssignmentVariables?.Contains(binary.Left) != true) &&
+               (_assignedAssignments?.Contains(binary) != true))
             {
                 var variable = (ParameterExpression)binary.Left;
 
                 if (VariableHasNotYetBeenAccessed(variable))
                 {
-                    if (_constructs.Any())
+                    if (_constructs?.Any() == true)
                     {
-                        _constructsByAssignment.Add(binary, _constructs.Peek());
+                        (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
+                            .Add(binary, _constructs.Peek());
                     }
 
-                    JoinedAssignments.Add(binary);
-                    _accessedVariables.Add(variable);
-                    JoinedAssignmentVariables.Add(variable);
+                    (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
+                    (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+                    (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
                 }
 
                 AddAssignmentIfAppropriate(binary.Right);
@@ -287,7 +287,7 @@
 
         private void Visit(BlockExpression block)
         {
-            _blocks.Push(block);
+            (_blocks ??= new Stack<BlockExpression>()).Push(block);
 
             Visit(block.Expressions);
             Visit(block.Variables);
@@ -296,25 +296,42 @@
         }
 
         private bool VariableHasNotYetBeenAccessed(Expression variable)
-            => !_accessedVariables.Contains(variable);
+            => _accessedVariables?.Contains(variable) != true;
 
         private void Visit(MethodCallExpression methodCall)
         {
-            if (!ChainedMethodCalls.Contains(methodCall))
+            if (_chainedMethodCalls?.Contains(methodCall) != true)
             {
                 var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
 
                 if (methodCallChain.Length > 1)
                 {
+                    _chainedMethodCalls ??= new List<MethodCallExpression>();
+
                     if (methodCallChain.Length > 2)
                     {
-                        ChainedMethodCalls.AddRange(methodCallChain);
+                        _chainedMethodCalls.AddRange(methodCallChain);
                     }
                     else if (methodCallChain[0].ToString().Contains(" ... "))
                     {
                         // Expression.ToString() replaces multiple lines with ' ... ';
                         // potential fragile, but works unless MS change it:
-                        ChainedMethodCalls.AddRange(methodCallChain);
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                }
+            }
+
+            if (_settings.DeclareOutParamsInline)
+            {
+                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                {
+                    var argument = methodCall.Arguments[i];
+
+                    if ((argument.NodeType == ExpressionType.Parameter) &&
+                        VariableHasNotYetBeenAccessed(argument))
+                    {
+                        (_inlineOutputVariables ??= new List<ParameterExpression>())
+                            .Add((ParameterExpression)argument);
                     }
                 }
             }
@@ -350,7 +367,7 @@
                 goto VisitValue;
             }
 
-            var currentBlockFinalExpression = _blocks.Peek()?.Expressions.Last();
+            var currentBlockFinalExpression = _blocks?.Peek()?.Expressions.Last();
 
             if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
             {
@@ -358,12 +375,12 @@
 
                 if (@goto.Target == returnLabel.Target)
                 {
-                    GotoReturnGotos.Add(@goto);
+                    (_gotoReturnGotos ??= new List<GotoExpression>()).Add(@goto);
                     goto VisitValue;
                 }
             }
 
-            NamedLabelTargets.Add(@goto.Target);
+            (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
             VisitValue:
             Visit(@goto.Value);
@@ -449,15 +466,15 @@
 
             if (VariableHasNotYetBeenAccessed(variable))
             {
-                _accessedVariables.Add(variable);
+                (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
             }
 
-            if (!JoinedAssignmentVariables.Contains(variable))
+            if (_joinedAssignmentVariables?.Contains(variable) != true)
             {
                 return;
             }
 
-            var joinedAssignmentData = _constructsByAssignment
+            var joinedAssignmentData = _constructsByAssignment?
                 .Filter(kvp => kvp.Key.Left == variable)
                 .Project(kvp => new
                 {
@@ -466,15 +483,16 @@
                 })
                 .FirstOrDefault();
 
-            if ((joinedAssignmentData == null) || _constructs.Contains(joinedAssignmentData.Construct))
+            if ((joinedAssignmentData == null) ||
+               (_constructs?.Contains(joinedAssignmentData.Construct) == true))
             {
                 return;
             }
 
             // This variable was assigned within a construct but is being accessed 
             // outside of that scope, so the assignment shouldn't be joined:
-            JoinedAssignmentVariables.Remove(variable);
-            JoinedAssignments.Remove(joinedAssignmentData.Assignment);
+            _joinedAssignmentVariables.Remove(variable);
+            _joinedAssignments.Remove(joinedAssignmentData.Assignment);
             _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
         }
 
@@ -519,7 +537,7 @@
         {
             if (@catch.Variable != null)
             {
-                CatchBlockVariables.Add(@catch.Variable);
+                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(@catch.Variable);
             }
 
             VisitConstruct(@catch, c =>
@@ -548,7 +566,7 @@
 
         private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> baseMethod)
         {
-            _constructs.Push(expression);
+            (_constructs ??= new Stack<object>()).Push(expression);
 
             baseMethod.Invoke(expression);
 
@@ -571,7 +589,7 @@
                         continue;
 
                     case ExpressionType.Assign:
-                        _assignedAssignments.Add(assignedValue);
+                        (_assignedAssignments ??= new List<Expression>()).Add(assignedValue);
                         break;
                 }
                 break;

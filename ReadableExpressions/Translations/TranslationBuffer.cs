@@ -1,18 +1,35 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+#if DEBUG
+    using System.Diagnostics;
+#endif
     using System.Text;
+    using Formatting;
     using Interfaces;
+    using static Formatting.TokenType;
 
     internal class TranslationBuffer : ITranslationQuery
     {
-
+        private readonly ITranslationFormatter _formatter;
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
         public TranslationBuffer(int estimatedSize)
+            : this(NullTranslationFormatter.Insance, estimatedSize)
         {
+        }
+
+        public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
+        {
+            _formatter = formatter;
+#if DEBUG && NET40
+            if (AppDomain.CurrentDomain.IsFullyTrusted)
+            {
+                Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
+            }
+#endif
             _content = new StringBuilder(estimatedSize);
         }
 
@@ -29,7 +46,8 @@
 
             for (var i = _content.Length; i > 0;)
             {
-                var contentCharacter = _content[--i];
+                --i;
+                var contentCharacter = _content[i];
 
                 if (contentCharacter == '\n')
                 {
@@ -170,28 +188,52 @@
         }
 
         public void WriteToTranslation(char character)
+            => WriteToTranslation(character, Default);
+
+        private void WriteToTranslation(char character, TokenType tokenType)
         {
             WriteIndentIfRequired();
-            _content.Append(character);
+            _formatter.WriteFormatted(character, Write, Write, tokenType);
         }
 
-        public void WriteToTranslation(string stringValue)
+        private void Write(char character) => _content.Append(character);
+
+        public void WriteToTranslation(string stringValue, TokenType tokenType = Default)
         {
             if (stringValue.Length == 1)
             {
-                WriteToTranslation(stringValue[0]);
+                WriteToTranslation(stringValue[0], tokenType);
                 return;
             }
 
             WriteIndentIfRequired();
-            _content.Append(stringValue);
+
+            if (tokenType != Default)
+            {
+                _formatter.WriteFormatted(stringValue, Write, tokenType);
+                return;
+            }
+
+            Write(stringValue);
         }
+
+        private void Write(string stringValue) => _content.Append(stringValue);
 
         public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
-            _content.Append(intValue);
+            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
         }
+
+        private void Write(int intValue) => _content.Append(intValue);
+
+        public void WriteToTranslation(long longValue)
+        {
+            WriteIndentIfRequired();
+            _formatter.WriteFormatted(longValue, Write, Write, Numeric);
+        }
+
+        private void Write(long longValue) => _content.Append(longValue);
 
         public void WriteToTranslation(object value)
         {
@@ -208,6 +250,15 @@
             }
         }
 
-        public string GetContent() => (_content.Length > 0) ? _content.ToString() : null;
+        public string GetContent()
+        {
+#if DEBUG && NET40
+            if (AppDomain.CurrentDomain.IsFullyTrusted)
+            {
+                Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+            }
+#endif
+            return (_content.Length > 0) ? _content.ToString() : null;
+        }
     }
 }

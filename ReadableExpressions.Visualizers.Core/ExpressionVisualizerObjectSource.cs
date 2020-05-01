@@ -4,47 +4,59 @@
     using System.IO;
     using System.Linq.Expressions;
     using System.Reflection;
+    using Configuration;
     using Extensions;
     using Translations.StaticTranslators;
 
-    public class ExpressionVisualizerObjectSource
+    public static class ExpressionVisualizerObjectSource
     {
         public static void GetData(
             object target,
             Stream outgoingData,
             Action<Stream, string> serializer)
         {
-            string value;
+            var translated = GetTranslationFor(target);
 
+            serializer.Invoke(outgoingData, translated);
+        }
+
+        internal static string GetTranslationFor(object target)
+        {
             switch (target)
             {
                 case Expression expression:
-                    value = expression.ToReadableString() ?? "default(void)";
-                    break;
+                    return Translate(expression) ?? "default(void)";
 
                 case Type type:
-                    value = type.GetFriendlyName();
-                    break;
+                    return Translate(type);
 
                 case MethodInfo method:
-                    value = DefinitionsTranslator.Translate(method);
-                    break;
+                    return DefinitionsTranslator.Translate(method);
 
                 case ConstructorInfo ctor:
-                    value = DefinitionsTranslator.Translate(ctor);
-                    break;
+                    return DefinitionsTranslator.Translate(ctor);
 
                 default:
                     if (target == null)
                     {
-                        return;
+                        return string.Empty;
                     }
-                    
-                    value = target.GetType().GetFriendlyName();
-                    break;
-            }
 
-            serializer.Invoke(outgoingData, value);
+                    return Translate(target.GetType());
+            }
         }
+
+        private static string Translate(Type type)
+            => type.GetFriendlyName(GetDialogSettings().Update);
+
+        private static string Translate(Expression expression)
+        {
+            return expression.ToReadableString(settings => GetDialogSettings()
+                .Update(settings)
+                .FormatUsing(TranslationHtmlFormatter.Instance));
+        }
+
+        private static VisualizerDialogSettings GetDialogSettings()
+            => VisualizerDialogSettings.GetInstance();
     }
 }

@@ -1,36 +1,51 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>An extension method for the Linq and DLR Expression classes and set of Debugger Visualizers to produce readable, source-code string versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
-    <Copyright>2019 Steve Wilkes</Copyright>
-    <AssemblyTitle>ReadableExpressions</AssemblyTitle>
-    <Authors>Steve Wilkes</Authors>
-    <TargetFrameworks>netstandard1.0;net35;net40</TargetFrameworks>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
+    <TargetFrameworks>net35;net40;netstandard1.0;</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AssemblyName>AgileObjects.ReadableExpressions</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
     <AssemblyOriginatorKeyFile>..\ReadableExpressions.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    
+    <AssemblyVersion>2.4.0.0</AssemblyVersion>
+    <FileVersion>2.4.0.0</FileVersion>
+    <VersionPrefix>2.4.0</VersionPrefix>
+    <Version>2.4.0</Version>
+
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
+    <Authors>Steve Wilkes</Authors>
+    <Company>AgileObjects Ltd</Company>
     <Title>ReadableExpressions</Title>
+    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
+    <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <RootNamespace>AgileObjects.ReadableExpressions</RootNamespace>
-    <AssemblyVersion>2.3.2.0</AssemblyVersion>
-    <FileVersion>2.3.2.0</FileVersion>
-    <VersionPrefix>2.3.2</VersionPrefix>
-    <Version>2.3.2</Version>
-    <Company>AgileObjects Ltd</Company>
-    <PackageReleaseNotes>- Fixing translation of null-terminating characters, re: #43
+    <PackageReleaseNotes>- Support for using full type names instead of 'var'
+- Support for declaring out parameter variables inline
+- Support for showing types of implicitly-typed arrays
+- Support for showing lambda parameter types
+- Support for custom translation formatting
+- Fixing translation of null-terminating characters, re: #43
 - Fixing translation of property getter and setter methods in abstract classes
-- Performance improvements</PackageReleaseNotes>
+- Performance improvements
+    </PackageReleaseNotes>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../Icon.png" Pack="true" PackagePath="./" />
+  </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />

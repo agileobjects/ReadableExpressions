@@ -91,6 +91,16 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnExtensionMethodCallWithTypedLambdaParameter()
+        {
+            var noBlankStrings = CreateLambda((string[] a) => a.All(i => i.Length != 0));
+
+            var translated = ToReadableString(noBlankStrings, s => s.ShowLambdaParameterTypes);
+
+            translated.ShouldBe("(string[] a) => a.All((string i) => i.Length != 0)");
+        }
+
+        [Fact]
         public void ShouldTranslateAStaticCallExpression()
         {
             // ReSharper disable once ReferenceEqualsWithValueType
@@ -510,6 +520,159 @@ string.Join(
         }
 
         [Fact]
+        public void ShouldIncludeAnOutParameterVariableDeclaration()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda);
+
+            const string EXPECTED = @"
+ip =>
+{
+    object value;
+    ip.TryGet(1, out value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAnInlineOutParameterVariable()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGet(1, out var value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAnExplicitlyTypedInlineOutParameterVariable()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(
+                tryGetLambda, s => s
+                    .DeclareOutputParametersInline
+                    .UseExplicitTypeNames);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGet(1, out object value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAnExplicitlyTypedFullyQualifiedInlineOutParameterVariable()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(List<int>), "value");
+            
+            var tryGetMethod = typeof(IndexedProperty)
+                .GetPublicInstanceMethod("TryGetGeneric")
+                .MakeGenericMethod(valueVariable.Type);
+            
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, List<int>>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(
+                tryGetLambda, s => s
+                    .UseFullyQualifiedTypeNames
+                    .UseExplicitTypeNames
+                    .DeclareOutputParametersInline);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGetGeneric(1, out System.Collections.Generic.List<int> value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldOnlyDeclareAnOutParameterVariableInlineOnce()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+
+            const string EXPECTED = @"
+ip =>
+{
+    ip.TryGet(1, out var value);
+    ip.TryGet(1, out value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotDeclareAnInitialisedOutParameterVariableInline()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var one = Constant(1);
+            var valueVariable = Variable(typeof(object), "value");
+            var valueAssignment = Assign(valueVariable, Default(valueVariable.Type));
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, valueAssignment, tryGetCall, valueVariable);
+            var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
+
+            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+
+            const string EXPECTED = @"
+ip =>
+{
+    var value = default(object);
+    ip.TryGet(1, out value);
+
+    return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeRefParameterKeywords()
         {
             var helperVariable = Variable(typeof(IndexedProperty), "ip");
@@ -600,11 +763,11 @@ new CustomAdder
     internal class PropertiesHelper
     {
         public static int PublicStatic { get; set; }
-        
+
         public int PublicInstance { get; set; }
 
         internal static int NonPublicStatic { get; set; }
-        
+
         internal int NonPublicInstance { get; set; }
     }
 
@@ -624,6 +787,13 @@ new CustomAdder
         public bool TryGet(int index, out object value)
         {
             value = _values.ElementAtOrDefault(index);
+            return value != null;
+        }
+
+        public bool TryGetGeneric<T>(int index, out T value)
+            where T : class
+        {
+            value = _values.ElementAtOrDefault(index) as T;
             return value != null;
         }
 

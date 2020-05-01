@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,34 +8,10 @@
 #endif
     using Extensions;
     using Interfaces;
+    using static Formatting.TokenType;
 
     internal static class ParameterTranslation
     {
-        private static readonly IList<string> _keywords = InternalReflectionExtensions
-            .TypeNames
-            .Combine(new[]
-            {
-                "typeof",
-                "default",
-                "void",
-                "readonly",
-                "do",
-                "while",
-                "switch",
-                "if",
-                "else",
-                "try",
-                "catch",
-                "finally",
-                "throw",
-                "for",
-                "foreach",
-                "goto",
-                "return",
-                "implicit",
-                "explicit"
-            });
-
         public static ITranslation For(ParameterExpression parameter, ITranslationContext context)
         {
             if (parameter.Name.IsNullOrWhiteSpace())
@@ -44,102 +19,128 @@
                 return new UnnamedParameterTranslation(parameter, context);
             }
 
-            return new StandardParameterTranslation(parameter);
+            return new StandardParameterTranslation(parameter, context);
         }
 
-        private class StandardParameterTranslation : ITranslation
+        private abstract class ParameterTranslationBase : IParameterTranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly bool _useLiteralPrefix;
-
-            public StandardParameterTranslation(ParameterExpression parameter)
-            {
-                _parameter = parameter;
-                _useLiteralPrefix = _keywords.Contains(parameter.Name);
-                EstimatedSize = GetEstimatedSize();
-            }
-
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameter.Name.Length;
-
-                if (_useLiteralPrefix)
-                {
-                    ++estimatedSize;
-                }
-
-                return estimatedSize;
-            }
-
-            public ExpressionType NodeType => ExpressionType.Parameter;
-
-            public Type Type => _parameter.Type;
-
-            public int EstimatedSize { get; }
-
-            public void WriteTo(TranslationBuffer buffer)
-            {
-                if (_useLiteralPrefix)
-                {
-                    buffer.WriteToTranslation('@');
-                }
-
-                buffer.WriteToTranslation(_parameter.Name);
-            }
-        }
-
-        private class UnnamedParameterTranslation : ITranslation
-        {
-            private readonly ParameterExpression _parameter;
-            private readonly int? _variableNumber;
             private readonly string _parameterName;
-            private readonly bool _useLiteralPrefix;
+            private TypeNameTranslation _typeNameTranslation;
 
-            public UnnamedParameterTranslation(ParameterExpression parameter, ITranslationContext context)
+            protected ParameterTranslationBase(
+                ParameterExpression parameter,
+                string parameterName,
+                ITranslationContext context)
             {
                 _parameter = parameter;
-                _variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
-                _parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
-                _useLiteralPrefix = (_variableNumber == null) && _keywords.Contains(_parameterName);
-                EstimatedSize = GetEstimatedSize();
-            }
+                _parameterName = parameterName;
 
-            private int GetEstimatedSize()
-            {
-                var estimatedSize = _parameterName.Length;
-
-                if (_useLiteralPrefix)
-                {
-                    ++estimatedSize;
-                }
-
-                if (_variableNumber.HasValue)
-                {
-                    estimatedSize += 2;
-                }
-
-                return estimatedSize;
+                TranslationSize = _parameterName.Length;
+                FormattingSize = context.GetVariableFormattingSize();
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
 
             public Type Type => _parameter.Type;
 
-            public int EstimatedSize { get; }
+            public int TranslationSize { get; private set; }
+
+            public int FormattingSize { get; private set; }
+
+            public void WithTypeNames(ITranslationContext context)
+            {
+                _typeNameTranslation = context.GetTranslationFor(Type);
+
+                TranslationSize += _typeNameTranslation.TranslationSize;
+                FormattingSize += _typeNameTranslation.FormattingSize;
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                if (_useLiteralPrefix)
+                if (_typeNameTranslation != null)
                 {
-                    buffer.WriteToTranslation('@');
+                    _typeNameTranslation.WriteTo(buffer);
+                    buffer.WriteSpaceToTranslation();
                 }
 
-                buffer.WriteToTranslation(_parameterName);
+                buffer.WriteToTranslation(_parameterName, Variable);
+            }
+        }
 
-                if (_variableNumber != null)
+        private class StandardParameterTranslation : ParameterTranslationBase
+        {
+            public StandardParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
+                : base(parameter, GetParameterName(parameter), context)
+            {
+            }
+
+            private static string GetParameterName(ParameterExpression parameter)
+            {
+                var parameterName = parameter.Name;
+
+                return IsKeyword(parameterName) ? "@" + parameterName : parameterName;
+            }
+        }
+
+        private class UnnamedParameterTranslation : ParameterTranslationBase
+        {
+            public UnnamedParameterTranslation(
+                ParameterExpression parameter,
+                ITranslationContext context)
+                : base(parameter, GetParameterName(parameter, context), context)
+            {
+            }
+
+            private static string GetParameterName(
+                ParameterExpression parameter,
+                ITranslationContext context)
+            {
+                var parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
+                var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
+
+                if (variableNumber.HasValue)
                 {
-                    buffer.WriteToTranslation(_variableNumber.Value.ToString());
+                    parameterName += variableNumber.Value;
                 }
+                else if (IsKeyword(parameterName))
+                {
+                    parameterName = "@" + parameterName;
+                }
+
+                return parameterName;
+            }
+        }
+
+        private static bool IsKeyword(string variableName)
+        {
+            switch (variableName)
+            {
+                case "typeof":
+                case "default":
+                case "void":
+                case "readonly":
+                case "do":
+                case "while":
+                case "switch":
+                case "if":
+                case "else":
+                case "try":
+                case "catch":
+                case "finally":
+                case "throw":
+                case "for":
+                case "foreach":
+                case "goto":
+                case "return":
+                case "implicit":
+                case "explicit":
+                    return true;
+
+                default:
+                    return InternalReflectionExtensions.TypeNames.Contains(variableName);
             }
         }
     }

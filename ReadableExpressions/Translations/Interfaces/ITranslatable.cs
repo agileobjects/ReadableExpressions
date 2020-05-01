@@ -2,7 +2,9 @@
 {
     internal interface ITranslatable
     {
-        int EstimatedSize { get; }
+        int TranslationSize { get; }
+        
+        int FormattingSize { get; }
 
         void WriteTo(TranslationBuffer buffer);
     }

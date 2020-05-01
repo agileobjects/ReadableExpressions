@@ -1,0 +1,11 @@
+Dark
+keyword - blue 569CD6
+parameter - light blue 9CDCFE
+type name - green 4EC9B0
+interface name - yellow / green B8D7A3
+control statement - purple D8A0DF
+string / character - red D69D85
+number - light green B5CEA8
+method name - yellow DCDCAA
+background - black 1E1E1E
+default - white DCDCDC

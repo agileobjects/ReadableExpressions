@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,6 +31,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -39,14 +41,66 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettings.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
+    <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
+    <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ExplicitGenericParamsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ImplicitArrayTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\LambdaParameterTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ExplicitTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FullyQualifiedTypeNamesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\MenuItemPanelBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\QuotedLambdaCommentsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\SettingCheckBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ThemeOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ThemeSelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\VisualizerDialogOptionBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DialogConstants.cs" />
+    <Compile Include="Controls\MenuItemLabel.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Theming\ExpressionDialogRenderer.cs" />
+    <Compile Include="Theming\ExpressionDialogColourTable.cs" />
+    <Compile Include="Theming\ExpressionTranslationTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
-    <Compile Include="ExpressionDialog.cs">
+    <Compile Include="VisualizerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TranslationHtmlFormatter.cs" />
+    <Compile Include="Controls\VisualizerOptionsMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\VisualizerOptionsMenuItem.cs">
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>

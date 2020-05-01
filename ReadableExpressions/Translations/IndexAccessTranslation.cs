@@ -14,13 +14,14 @@
         private readonly ITranslation _subject;
         private readonly ParameterSetTranslation _parameters;
 
-        public IndexAccessTranslation(ITranslation subject, ParameterSetTranslation parameters, Type indexValueType)
+        public IndexAccessTranslation(
+            ITranslation subject,
+            ParameterSetTranslation parameters,
+            Type indexValueType)
+            : this(subject, parameters)
         {
             NodeType = ExpressionType.Call;
             Type = indexValueType;
-            _subject = subject;
-            _parameters = parameters;
-            EstimatedSize = GetEstimatedSize();
         }
 
         public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
@@ -41,19 +42,27 @@
             Expression subject,
             ICollection<Expression> arguments,
             ITranslationContext context)
+            : this(
+                context.GetTranslationFor(subject),
+                new ParameterSetTranslation(arguments, context))
         {
-            _subject = context.GetTranslationFor(subject);
-            _parameters = new ParameterSetTranslation(arguments, context);
-            EstimatedSize = GetEstimatedSize();
         }
 
-        private int GetEstimatedSize() => _subject.EstimatedSize + _parameters.EstimatedSize + 2;
+        private IndexAccessTranslation(ITranslation subject, ParameterSetTranslation parameters)
+        {
+            _subject = subject;
+            _parameters = parameters;
+            TranslationSize = subject.TranslationSize + parameters.TranslationSize + 2;
+            FormattingSize = subject.FormattingSize + parameters.FormattingSize;
+        }
 
         public ExpressionType NodeType { get; }
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {

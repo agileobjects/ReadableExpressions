@@ -4,12 +4,16 @@
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using Extensions;
 #else
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+#if NET35
+    using Extensions;
+#endif
+    using Formatting;
     using Interfaces;
+    using static Formatting.TokenType;
 
     internal class MethodGroupTranslation : ITranslation
     {
@@ -19,13 +23,15 @@
         public MethodGroupTranslation(
             ExpressionType nodeType,
             ITranslation subjectTranslation,
-            MethodInfo subjectMethodInfo)
+            MethodInfo subjectMethodInfo,
+            ITranslationContext context)
         {
             NodeType = nodeType;
             Type = subjectMethodInfo.ReturnType;
             _subjectTranslation = subjectTranslation;
             _subjectMethodName = subjectMethodInfo.Name;
-            EstimatedSize = _subjectTranslation.EstimatedSize + ".".Length + _subjectMethodName.Length;
+            TranslationSize = _subjectTranslation.TranslationSize + ".".Length + _subjectMethodName.Length;
+            FormattingSize = _subjectTranslation.FormattingSize + context.GetFormattingSize(MethodName);
         }
 
         public static ITranslation ForCreateDelegateCall(
@@ -43,20 +49,22 @@
                 ? context.GetTranslationFor(subjectMethod.DeclaringType)
                 : context.GetTranslationFor(createDelegateCall.Arguments.ElementAtOrDefault(1));
 
-            return new MethodGroupTranslation(nodeType, subjectTranslation, subjectMethod);
+            return new MethodGroupTranslation(nodeType, subjectTranslation, subjectMethod, context);
         }
 
         public ExpressionType NodeType { get; }
 
         public Type Type { get; }
 
-        public int EstimatedSize { get; }
+        public int TranslationSize { get; }
+
+        public int FormattingSize { get; }
 
         public void WriteTo(TranslationBuffer buffer)
         {
             _subjectTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation('.');
-            buffer.WriteToTranslation(_subjectMethodName);
+            buffer.WriteDotToTranslation();
+            buffer.WriteToTranslation(_subjectMethodName, TokenType.MethodName);
         }
     }
 }
