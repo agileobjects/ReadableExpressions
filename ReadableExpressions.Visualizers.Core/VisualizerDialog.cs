@@ -248,6 +248,7 @@
             var content = $@"
 <html>
 <head>
+<meta http-equiv=""X-UA-Compatible"" content=""IE10"">
 <style type=""text/css"">
 body {{ 
     background: {Theme.Background};
