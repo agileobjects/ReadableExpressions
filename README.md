@@ -2,11 +2,25 @@
 
 [![NuGet](http://img.shields.io/nuget/v/AgileObjects.ReadableExpressions.svg)](https://www.nuget.org/packages/AgileObjects.ReadableExpressions)
 
-ReadableExpressions is an extension method for the [Expression](https://msdn.microsoft.com/en-us/library/system.linq.expressions.expression.aspx) 
-class and set of [Debugger Visualizers](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers)
-to produce readable, source-code string versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
+ReadableExpressions is set of [Debugger Visualizers](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers)
+and [a NuGet-packaged](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
+[Expression](https://msdn.microsoft.com/en-us/library/system.linq.expressions.expression.aspx) 
+extension method for readable, source-code versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
 
-### Usage
+### Debugger Visualizers
+
+An installer for the Expression Debugger Visualizers can be downloaded from 
+[the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
+
+The visualizer has both Light and Dark themes:
+
+[![Visualizer themes](/docs/Themes.gif)]
+
+...and output can be customised using various options:
+
+[![Visualizer options](/docs/Options.gif)]
+
+### NuGet Package
 
 The extension method is available in [a NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
 targeting [.NETStandard 1.0](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard)+ and 
@@ -92,7 +106,3 @@ string readable = myExpression
     .ToReadableString(c => c.TranslateConstantsUsing(
         (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
 ```
-
-### Debugger Visualizers
-An installer for a set of Debugger Visualizers which use the extension method for Expressions can be downloaded from 
-[the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
