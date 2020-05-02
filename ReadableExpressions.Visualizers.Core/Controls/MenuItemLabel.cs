@@ -6,21 +6,17 @@
 
     internal class MenuItemLabel : Label
     {
-        private static readonly Font _font = new Font(new FontFamily("Arial"), 10);
-
         public MenuItemLabel(
             string text,
             string tooltip,
             int controlWidth,
             VisualizerDialog dialog)
         {
-            Width = MenuWidth - controlWidth;
-            Height = 44;
-            Padding = new Padding(2, 2, 0, 0);
+            Size = new Size(MenuWidth - controlWidth, MenuItemHeight);
 
             dialog.RegisterThemeable(this);
 
-            base.Font = _font;
+            base.Font = MenuItemFont;
             base.TextAlign = ContentAlignment.MiddleLeft;
             base.Text = text;
 

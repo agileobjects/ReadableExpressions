@@ -26,7 +26,7 @@
         {
             private readonly ParameterExpression _parameter;
             private readonly string _parameterName;
-            private TypeNameTranslation _typeNameTranslation;
+            private ITranslation _typeNameTranslation;
 
             protected ParameterTranslationBase(
                 ParameterExpression parameter,
@@ -54,6 +54,16 @@
 
                 TranslationSize += _typeNameTranslation.TranslationSize;
                 FormattingSize += _typeNameTranslation.FormattingSize;
+            }
+
+            public void WithoutTypeNames(ITranslationContext context)
+            {
+                if (_typeNameTranslation != null)
+                {
+                    TranslationSize -= _typeNameTranslation.TranslationSize;
+                    FormattingSize -= _typeNameTranslation.FormattingSize;
+                    _typeNameTranslation = null;
+                }
             }
 
             public void WriteTo(TranslationBuffer buffer)
