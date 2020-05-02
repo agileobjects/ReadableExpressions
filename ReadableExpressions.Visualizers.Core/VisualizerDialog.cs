@@ -9,6 +9,7 @@
     using Controls;
     using Theming;
     using static System.Windows.Forms.SystemInformation;
+    using static DialogConstants;
 
     public class VisualizerDialog : Form
     {
@@ -40,6 +41,14 @@
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
 
+            using (var graphics = CreateGraphics())
+            {
+                WidthFactor = graphics.DpiX / 72;
+                HeightFactor = graphics.DpiY / 72;
+            }
+            
+            MessageBox.Show($"{WidthFactor} x {HeightFactor}");
+
             ToolTip = AddToolTip();
             _viewer = AddViewer();
             _menuStrip = AddMenuStrip();
@@ -56,6 +65,10 @@
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
+
+        internal float WidthFactor { get; }
+        
+        internal float HeightFactor { get; }
 
         internal ToolTip ToolTip { get; }
 

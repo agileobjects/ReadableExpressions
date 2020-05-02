@@ -17,7 +17,10 @@
             _theme = theme;
             _dialog = dialog;
 
-            Size = new Size(ThemeOptionWidth, MenuItemHeight);
+            Size = new SizeF(
+                ThemeOptionWidth * dialog.WidthFactor,
+                MenuItemHeight * dialog.HeightFactor).ToSize();
+
             Checked = theme.Name == dialog.Theme.Name;
 
             dialog.RegisterThemeable(this);

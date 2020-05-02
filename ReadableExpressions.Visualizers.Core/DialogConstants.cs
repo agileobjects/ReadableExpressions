@@ -2,16 +2,20 @@
 {
     using System.Drawing;
     using static System.Drawing.FontStyle;
-    using static System.Drawing.GraphicsUnit;
 
     internal static class DialogConstants
     {
-        public const int MenuWidth = 500;
-        public const int MenuItemHeight = 26;
-        public const int ThemeOptionWidth = 75;
-        public const int SettingCheckBoxWidth = 50;
+        public const int MenuWidth = 300;
+        public const int MenuItemHeight = 16;
+        public const int ThemeOptionWidth = 40;
+        public const int SettingCheckBoxWidth = 30;
 
-        public static readonly Font MenuItemFont =
-            new Font(new FontFamily("Arial"), 16, Regular, Pixel);
+        public static readonly Font MenuItemFont = new Font(
+            new FontFamily("Segoe UI"),
+            10,
+            Regular,
+            GraphicsUnit.Point,
+            1,
+            gdiVerticalFont: false);
     }
 }
