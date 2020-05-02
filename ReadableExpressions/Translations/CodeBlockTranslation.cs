@@ -145,6 +145,9 @@
             return this;
         }
 
+        public IParameterTranslation AsParameterTranslation()
+            => _translation as IParameterTranslation;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_writeBraces)

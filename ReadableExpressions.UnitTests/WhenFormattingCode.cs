@@ -815,6 +815,8 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
 
             var longChainblock = Block(longCallChain.Body, longCallChain.Body);
 
+            var translated = ToReadableString(longChainblock);
+
             const string EXPECTED = @"
 list
     .Select(i => i * 2)
@@ -827,8 +829,6 @@ return list
     .Select(i => i * 3)
     .Select(i => i * 4)
     .ToArray();";
-
-            var translated = ToReadableString(longChainblock);
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -844,15 +844,14 @@ return list
 
             var block = Block(new[] { intVariable }, ifIntEqualsZeroDoNothing);
 
+            var translated = ToReadableString(block);
+
             const string EXPECTED = @"
 int i;
 
 if (i == 0)
 {
 }";
-
-            var translated = ToReadableString(block);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -870,6 +869,8 @@ if (i == 0)
                 ifIntEqualsOneDoNothing,
                 ifIntEqualsOneDoNothing);
 
+            var translated = ToReadableString(block);
+
             const string EXPECTED = @"
 int i;
 
@@ -880,9 +881,6 @@ if (i == 1)
 if (i == 1)
 {
 }";
-
-            var translated = ToReadableString(block);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -907,6 +905,8 @@ if (i == 1)
 
             var block = Block(memoryStreamInit, ifIntEqualsOneDoNothing);
 
+            var translated = ToReadableString(block);
+
             const string EXPECTED = @"
 new MemoryStream
 {
@@ -921,9 +921,6 @@ new MemoryStream
 if (i == 1)
 {
 }";
-
-            var translated = ToReadableString(block);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -953,6 +950,8 @@ if (i == 1)
             var collectionVariable = Variable(typeof(ICollection<int>), "ints");
             var addMethod = collectionVariable.Type.GetPublicInstanceMethod("Add");
             var addMethodCall = Call(collectionVariable, addMethod, tryCatch);
+            
+            var translated = ToReadableString(addMethodCall);
 
             const string EXPECTED = @"
 ints.Add(
@@ -971,9 +970,6 @@ ints.Add(
         return 0;
     }
 })";
-
-            var translated = ToReadableString(addMethodCall);
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

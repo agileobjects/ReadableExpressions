@@ -32,7 +32,7 @@
             _parameterTranslations = new[] { new CodeBlockTranslation(parameter, context) };
             TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
             FormattingSize = parameter.FormattingSize;
-            ParameterCount = 1;
+            Count = 1;
         }
 
         public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
@@ -69,12 +69,12 @@
         private ParameterSetTranslation(
             IMethod method,
             IEnumerable<Expression> parameters,
-            int parameterCount,
+            int count,
             ITranslationContext context)
         {
             _parenthesesMode = ParenthesesMode.Auto;
 
-            if (parameterCount == 0)
+            if (count == 0)
             {
                 _parameterTranslations = Enumerable<CodeBlockTranslation>.EmptyArray;
                 TranslationSize = _openAndCloseParentheses.Length;
@@ -86,10 +86,10 @@
             if (methodProvided && method.IsExtensionMethod)
             {
                 parameters = parameters.Skip(1);
-                --parameterCount;
+                --count;
             }
 
-            ParameterCount = parameterCount;
+            Count = count;
 
             ParameterInfo[] methodParameters;
 
@@ -103,7 +103,7 @@
                 methodParameters = null;
             }
 
-            var hasSingleParameter = ParameterCount == 1;
+            var hasSingleParameter = Count == 1;
             var singleParameterIsMultiLineLambda = false;
             var showParameterTypeNames = context.Settings.ShowLambdaParamTypes;
             var translationSize = 0;
@@ -129,11 +129,11 @@
                     {
                         var parameterIndex = index;
 
-                        if (ParameterCount != parameterCount)
+                        if (Count != count)
                         {
                             // If a parameter is a params array then index will increase
                             // past parameterCount, so adjust here:
-                            parameterIndex -= ParameterCount - parameterCount;
+                            parameterIndex -= Count - count;
                         }
 
                         // ReSharper disable once PossibleNullReferenceException
@@ -150,7 +150,7 @@
                         WithParentheses();
                     }
 
-                    CreateCodeBlock:
+                CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
@@ -168,7 +168,7 @@
                 .ToArray();
 
             _hasSingleMultiStatementLambdaParameter = singleParameterIsMultiLineLambda;
-            TranslationSize = translationSize + (ParameterCount * ", ".Length) + 4;
+            TranslationSize = translationSize + (Count * ", ".Length) + 4;
             FormattingSize = formattingSize;
         }
 
@@ -191,11 +191,11 @@
                         foreach (var paramsArrayValue in paramsArray.Expressions)
                         {
                             yield return paramsArrayValue;
-                            ++ParameterCount;
+                            ++Count;
                         }
                     }
 
-                    --ParameterCount;
+                    --Count;
                     continue;
                 }
 
@@ -265,9 +265,9 @@
 
         public int FormattingSize { get; }
 
-        private int ParameterCount { get; set; }
+        private int Count { get; set; }
 
-        public bool None => ParameterCount == 0;
+        public bool None => Count == 0;
 
         public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];
 
@@ -283,9 +283,24 @@
             return this;
         }
 
+        public ParameterSetTranslation WithoutTypeNames(ITranslationContext context)
+        {
+            var parameters = _parameterTranslations
+                .Filter(p => p.NodeType == Parameter)
+                .Project(p => p.AsParameterTranslation())
+                .Filter(p => p != null);
+
+            foreach (var parameter in parameters)
+            {
+                parameter.WithoutTypeNames(context);
+            }
+
+            return this;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
-            switch (ParameterCount)
+            switch (Count)
             {
                 case 0:
                     buffer.WriteToTranslation(_openAndCloseParentheses);
@@ -321,7 +336,7 @@
                 parameterTranslation.WriteTo(buffer);
                 ++i;
 
-                if (i == ParameterCount)
+                if (i == Count)
                 {
                     break;
                 }
@@ -359,7 +374,7 @@
                 return false;
             }
 
-            return (ParameterCount > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
+            return (Count > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
         }
 
         private enum ParenthesesMode

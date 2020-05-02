@@ -88,7 +88,9 @@
 
             return variablesByType.ToDictionary(
                 grp => (ITranslation)context.GetTranslationFor(grp.Key),
-                grp => new ParameterSetTranslation(grp, context).WithoutParentheses());
+                grp => new ParameterSetTranslation(grp, context)
+                    .WithoutParentheses()
+                    .WithoutTypeNames(context));
         }
 
         private IList<BlockStatementTranslation> GetBlockStatements(
@@ -264,9 +266,12 @@
             {
                 foreach (var parametersByType in _variables)
                 {
-                    parametersByType.Key.WriteTo(buffer);
+                    var parametersType = parametersByType.Key;
+                    var parameters = parametersByType.Value;
+
+                    parametersType.WriteTo(buffer);
                     buffer.WriteSpaceToTranslation();
-                    parametersByType.Value.WriteTo(buffer);
+                    parameters.WriteTo(buffer);
                     buffer.WriteToTranslation(';');
                     buffer.WriteNewLineToTranslation();
                 }
