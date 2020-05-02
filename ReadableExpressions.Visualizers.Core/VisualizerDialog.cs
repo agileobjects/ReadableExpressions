@@ -46,8 +46,6 @@
                 WidthFactor = graphics.DpiX / 72;
                 HeightFactor = graphics.DpiY / 72;
             }
-            
-            MessageBox.Show($"{WidthFactor} x {HeightFactor}");
 
             ToolTip = AddToolTip();
             _viewer = AddViewer();
