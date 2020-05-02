@@ -7,7 +7,7 @@
         protected MenuItemPanelBase(VisualizerDialog dialog)
         {
             FlowDirection = FlowDirection.LeftToRight;
-            Size = DialogConstants.MenuItemSize;
+            Width = DialogConstants.MenuWidth;
             Padding = Padding.Empty;
             Margin = Padding.Empty;
 

@@ -19,7 +19,7 @@
             _optionSetter = optionSetter;
             _dialog = dialog;
 
-            Size = new Size(SettingCheckBoxWidth, MenuItemHeight);
+            Width = SettingCheckBoxWidth;
             CheckAlign = ContentAlignment.MiddleRight;
 
             dialog.RegisterThemeable(this);

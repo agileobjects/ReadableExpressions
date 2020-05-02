@@ -14,7 +14,8 @@
             int controlWidth,
             VisualizerDialog dialog)
         {
-            Size = new Size(MenuWidth - controlWidth, MenuItemHeight);
+            Width = MenuWidth - controlWidth;
+            Padding = new Padding(2, 2, 0, 0);
 
             dialog.RegisterThemeable(this);
 
