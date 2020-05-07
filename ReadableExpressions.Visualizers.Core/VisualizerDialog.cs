@@ -326,13 +326,10 @@ body {{
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _initializableControls.Clear();
-                _themeableControls.Clear();
+            _initializableControls.Clear();
+            _themeableControls.Clear();
 
-                ToolTip.Dispose();
-            }
+            ToolTip.Dispose();
 
             base.Dispose(disposing);
         }
