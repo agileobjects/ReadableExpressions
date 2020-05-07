@@ -3,13 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Text;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Theming;
     using static System.Windows.Forms.SystemInformation;
-    using static DialogConstants;
 
     public class VisualizerDialog : Form
     {
@@ -22,6 +20,7 @@
         private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
+        private readonly List<IInitializeableControl> _initializableControls;
         private readonly int _titleBarHeight;
         private bool _autoSize;
         private string _translation;
@@ -31,6 +30,7 @@
             _translationFactory = translationFactory;
             _renderer = new ExpressionDialogRenderer(this);
             _themeableControls = new List<Control>();
+            _initializableControls = new List<IInitializeableControl>();
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
@@ -58,14 +58,14 @@
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
 
-        internal ExpressionTranslationTheme Theme
+        internal VisualizerDialogTheme Theme
         {
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
 
         internal float WidthFactor { get; }
-        
+
         internal float HeightFactor { get; }
 
         internal ToolTip ToolTip { get; }
@@ -108,7 +108,7 @@
             var viewer = new WebBrowser
             {
                 AllowNavigation = false,
-                Font = new Font(new FontFamily(GenericFontFamilies.Monospace), 13.5f)
+                Font = Settings.Font
             };
 
             var viewerPanel = new Panel
@@ -189,6 +189,11 @@
             _themeableControls.Add(control);
         }
 
+        internal void RegisterInitializable(IInitializeableControl control)
+        {
+            _initializableControls.Add(control);
+        }
+
         internal void UpdateTranslation()
         {
             SetTranslation();
@@ -208,7 +213,7 @@
             SetViewerSize(viewerSize);
         }
 
-        internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
+        internal void OnThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
 
@@ -244,6 +249,11 @@
         {
             if (ViewerUninitialised)
             {
+                foreach (var control in _initializableControls)
+                {
+                    control.Initialize();
+                }
+
                 _viewer.AllowWebBrowserDrop = false;
                 _viewer.ScrollBarsEnabled = false;
                 ViewerUninitialised = false;
@@ -263,8 +273,8 @@
 body {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
-    font-family: '{_viewer.Font.FontFamily.Name}';
-    font-size: 13pt;
+    font-family: '{_viewer.Font.Name}';
+    font-size: {_viewer.Font.SizeInPoints}pt;
     overflow: auto;
 }}
 .kw {{ color: {Theme.Keyword} }}

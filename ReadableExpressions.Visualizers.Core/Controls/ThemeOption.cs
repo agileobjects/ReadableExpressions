@@ -7,11 +7,11 @@
 
     internal class ThemeOption : RadioButton
     {
-        private readonly ExpressionTranslationTheme _theme;
+        private readonly VisualizerDialogTheme _theme;
         private readonly VisualizerDialog _dialog;
 
         public ThemeOption(
-            ExpressionTranslationTheme theme,
+            VisualizerDialogTheme theme,
             VisualizerDialog dialog)
         {
             _theme = theme;

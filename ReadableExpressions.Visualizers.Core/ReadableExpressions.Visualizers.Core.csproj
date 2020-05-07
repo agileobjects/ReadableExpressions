@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="Configuration\VisualizerDialogFont.cs" />
     <Compile Include="Configuration\VisualizerDialogSettings.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
@@ -48,6 +49,12 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\ExplicitGenericParamsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FontFamilySelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FontSelector.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\ImplicitArrayTypeNamesOption.cs">
@@ -86,7 +93,7 @@
     </Compile>
     <Compile Include="Theming\ExpressionDialogRenderer.cs" />
     <Compile Include="Theming\ExpressionDialogColourTable.cs" />
-    <Compile Include="Theming\ExpressionTranslationTheme.cs" />
+    <Compile Include="Theming\VisualizerDialogTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
     <Compile Include="VisualizerDialog.cs">
       <SubType>Form</SubType>

@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Controls
 {
     using static DialogConstants;
-    using static Theming.ExpressionTranslationTheme;
+    using static Theming.VisualizerDialogTheme;
 
     internal class ThemeSelector : MenuItemPanelBase
     {

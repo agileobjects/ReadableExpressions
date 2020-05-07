@@ -40,7 +40,8 @@
 
                 settings = new VisualizerDialogSettings
                 {
-                    Theme = new ExpressionTranslationTheme()
+                    Theme = new VisualizerDialogTheme(),
+                    Font = new VisualizerDialogFont()
                 };
 
                 SetValues(settings, settingsByName);
@@ -58,6 +59,7 @@
             IDictionary<string, string> settingsByName)
         {
             SetThemeValues(settings, settingsByName);
+            SetFontValues(settings, settingsByName);
 
             if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out var value))
             {
@@ -173,6 +175,22 @@
             }
         }
 
+        private static void SetFontValues(
+            VisualizerDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            if (settingsByName.TryGetValue(FontName, out var value))
+            {
+                settings.Font.Name = value;
+            }
+
+            if (settingsByName.TryGetValue(FontSize, out value) &&
+                float.TryParse(value, out var fontSize))
+            {
+                settings.Font.Size = fontSize;
+            }
+        }
+
         public static void Save(VisualizerDialogSettings settings)
         {
             var serialized = Serialize(settings);
@@ -204,6 +222,8 @@
 {ThemeNumeric}: {theme.Numeric}
 {ThemeMethodName}: {theme.MethodName}
 {ThemeComment}: {theme.Comment}
+{FontName}: {settings.Font.Name}
+{FontSize}: {settings.Font.Size}
 {nameof(settings.UseFullyQualifiedTypeNames)}: {settings.UseFullyQualifiedTypeNames}
 {nameof(settings.UseExplicitTypeNames)}: {settings.UseExplicitTypeNames}
 {nameof(settings.UseExplicitGenericParameters)}: {settings.UseExplicitGenericParameters}

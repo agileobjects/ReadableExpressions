@@ -3,9 +3,9 @@
     using System.Drawing;
     using System.Windows.Forms;
 
-    internal class ExpressionTranslationTheme
+    internal class VisualizerDialogTheme
     {
-        public static readonly ExpressionTranslationTheme Dark = new ExpressionTranslationTheme
+        public static readonly VisualizerDialogTheme Dark = new VisualizerDialogTheme
         {
             Name = "Dark",
             Background = "#1E1E1E",
@@ -23,7 +23,7 @@
             Comment = "#57A64A"
         };
 
-        public static readonly ExpressionTranslationTheme Light = new ExpressionTranslationTheme
+        public static readonly VisualizerDialogTheme Light = new VisualizerDialogTheme
         {
             Name = "Light",
             Background = "#FFF",
