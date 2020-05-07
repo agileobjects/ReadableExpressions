@@ -90,14 +90,14 @@
                 return;
             }
 
-            control.ForeColor = ForeColour;
             control.BackColor = MenuColour;
+            control.ForeColor = ForeColour;
         }
 
         public void ApplyTo(ToolStrip toolStrip)
         {
-            toolStrip.ForeColor = ForeColour;
             toolStrip.BackColor = ToolbarColour;
+            toolStrip.ForeColor = ForeColour;
         }
     }
 }

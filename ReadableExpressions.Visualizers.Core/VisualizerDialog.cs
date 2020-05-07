@@ -19,8 +19,8 @@
         private readonly ToolStrip _menuStrip;
         private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
-        private readonly List<Control> _themeableControls;
         private readonly List<IInitializeableControl> _initializableControls;
+        private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
         private bool _autoSize;
         private string _translation;
@@ -29,8 +29,8 @@
         {
             _translationFactory = translationFactory;
             _renderer = new ExpressionDialogRenderer(this);
-            _themeableControls = new List<Control>();
             _initializableControls = new List<IInitializeableControl>();
+            _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
@@ -249,17 +249,17 @@
         {
             if (ViewerUninitialised)
             {
-                foreach (var control in _initializableControls)
-                {
-                    control.Initialize();
-                }
-
                 _viewer.AllowWebBrowserDrop = false;
                 _viewer.ScrollBarsEnabled = false;
                 ViewerUninitialised = false;
             }
 
             SetViewerContent();
+
+            foreach (var control in _initializableControls)
+            {
+                control.Initialize();
+            }
 
             base.OnShown(e);
         }
@@ -323,5 +323,18 @@ body {{
         private void EnableAutoSize() => _autoSize = true;
 
         private void DisableAutoSize() => _autoSize = false;
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _initializableControls.Clear();
+                _themeableControls.Clear();
+
+                ToolTip.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
