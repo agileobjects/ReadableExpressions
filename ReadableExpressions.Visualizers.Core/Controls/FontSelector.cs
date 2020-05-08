@@ -2,7 +2,7 @@
 {
     internal class FontSelector : MenuItemPanelBase
     {
-        public FontSelector(VisualizerDialog dialog)
+        public FontSelector(ILazyMenu menu, VisualizerDialog dialog)
             : base(dialog)
         {
             var label = new MenuItemLabel(
@@ -12,7 +12,7 @@
                 dialog);
 
             Controls.Add(label);
-            Controls.Add(new FontFamilySelector(dialog));
+            Controls.Add(new FontFamilySelector(menu, dialog));
         }
     }
 }

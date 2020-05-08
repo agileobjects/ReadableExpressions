@@ -20,10 +20,12 @@
 
         private Font _font;
 
-        public static implicit operator Font(VisualizerDialogFont font) => font._font;
+        public static implicit operator Font(VisualizerDialogFont font) => font.Font;
 
         public string Name { get; set; }
 
         public float Size { get; set; }
+
+        private Font Font => _font ??= new Font(Name, Size);
     }
 }

@@ -100,14 +100,10 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TranslationHtmlFormatter.cs" />
-    <Compile Include="Controls\VisualizerOptionsMenu.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Controls\VisualizerOptionsMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>

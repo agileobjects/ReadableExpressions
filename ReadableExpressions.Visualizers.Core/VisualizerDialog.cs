@@ -19,7 +19,6 @@
         private readonly ToolStrip _menuStrip;
         private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
-        private readonly List<IInitializeableControl> _initializableControls;
         private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
         private bool _autoSize;
@@ -29,7 +28,6 @@
         {
             _translationFactory = translationFactory;
             _renderer = new ExpressionDialogRenderer(this);
-            _initializableControls = new List<IInitializeableControl>();
             _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
@@ -107,8 +105,7 @@
         {
             var viewer = new WebBrowser
             {
-                AllowNavigation = false,
-                Font = Settings.Font
+                AllowNavigation = false
             };
 
             var viewerPanel = new Panel
@@ -189,11 +186,6 @@
             _themeableControls.Add(control);
         }
 
-        internal void RegisterInitializable(IInitializeableControl control)
-        {
-            _initializableControls.Add(control);
-        }
-
         internal void UpdateTranslation()
         {
             SetTranslation();
@@ -203,12 +195,14 @@
         private void SetTranslation()
         {
             _translation = (string)_translationFactory.Invoke();
+            
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
-            var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
+            var font = (Font)Settings.Font;
+            var textSize = TextRenderer.MeasureText(rawText, font);
 
             var viewerSize = new Size(
                 textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + _viewer.Font.Height);
+                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + font.Height);
 
             SetViewerSize(viewerSize);
         }
@@ -256,11 +250,6 @@
 
             SetViewerContent();
 
-            foreach (var control in _initializableControls)
-            {
-                control.Initialize();
-            }
-
             base.OnShown(e);
         }
 
@@ -270,11 +259,11 @@
 <html>
 <head>
 <style type=""text/css"">
-body {{ 
+pre {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
-    font-family: '{_viewer.Font.Name}';
-    font-size: {_viewer.Font.SizeInPoints}pt;
+    font-family: '{Settings.Font.Name}';
+    font-size: {Settings.Font.Size}pt;
     overflow: auto;
 }}
 .kw {{ color: {Theme.Keyword} }}
@@ -326,7 +315,6 @@ body {{
 
         protected override void Dispose(bool disposing)
         {
-            _initializableControls.Clear();
             _themeableControls.Clear();
 
             ToolTip.Dispose();
