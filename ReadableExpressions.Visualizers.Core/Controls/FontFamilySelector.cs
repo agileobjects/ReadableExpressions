@@ -30,7 +30,7 @@
             DisplayMember = "Name";
 
             dialog.RegisterThemeable(this);
-            menu.RegisterLazyMenuItem(this);
+            menu.RegisterLazyItem(this);
 
             SelectedIndexChanged += (sender, args) =>
             {

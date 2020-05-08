@@ -45,6 +45,7 @@
     <Compile Include="Configuration\VisualizerDialogSettings.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
+    <Compile Include="Configuration\VisualizerDialogSizeSettings.cs" />
     <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -78,6 +79,9 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\QuotedLambdaCommentsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ResizeToMatchCodeSamplesOption.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\SettingCheckBox.cs">

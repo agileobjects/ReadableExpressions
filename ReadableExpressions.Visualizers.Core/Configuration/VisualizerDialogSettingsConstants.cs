@@ -22,5 +22,9 @@
        
         public const string FontName = "Font." + nameof(VisualizerDialogFont.Name);
         public const string FontSize = "Font." + nameof(VisualizerDialogFont.Size);
+       
+        public const string SizeResizeToCode = "Size." + nameof(VisualizerDialogSizeSettings.ResizeToMatchCode);
+        public const string SizeInitialWidth = "Size." + nameof(VisualizerDialogSizeSettings.InitialWidth);
+        public const string SizeInitialHeight = "Size." + nameof(VisualizerDialogSizeSettings.InitialHeight);
     }
 }
