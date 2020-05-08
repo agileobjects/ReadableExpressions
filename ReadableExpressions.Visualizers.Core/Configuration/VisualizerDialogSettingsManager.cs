@@ -41,7 +41,8 @@
                 settings = new VisualizerDialogSettings
                 {
                     Theme = new VisualizerDialogTheme(),
-                    Font = new VisualizerDialogFont()
+                    Font = new VisualizerDialogFont(),
+                    Size = new VisualizerDialogSizeSettings()
                 };
 
                 SetValues(settings, settingsByName);
@@ -60,6 +61,7 @@
         {
             SetThemeValues(settings, settingsByName);
             SetFontValues(settings, settingsByName);
+            SetSizeValues(settings, settingsByName);
 
             if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out var value))
             {
@@ -191,6 +193,28 @@
             }
         }
 
+        private static void SetSizeValues(
+            VisualizerDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            if (settingsByName.TryGetValue(SizeResizeToCode, out var value))
+            {
+                settings.Size.ResizeToMatchCode = IsTrue(value);
+            }
+
+            if (settingsByName.TryGetValue(SizeInitialWidth, out value) &&
+                int.TryParse(value, out var width))
+            {
+                settings.Size.InitialWidth = width;
+            }
+
+            if (settingsByName.TryGetValue(SizeInitialHeight, out value) &&
+                int.TryParse(value, out var height))
+            {
+                settings.Size.InitialHeight = height;
+            }
+        }
+
         public static void Save(VisualizerDialogSettings settings)
         {
             var serialized = Serialize(settings);
@@ -224,6 +248,9 @@
 {ThemeComment}: {theme.Comment}
 {FontName}: {settings.Font.Name}
 {FontSize}: {settings.Font.Size}
+{SizeResizeToCode}: {settings.Size.ResizeToMatchCode}
+{SizeInitialWidth}: {settings.Size.InitialWidth}
+{SizeInitialHeight}: {settings.Size.InitialHeight}
 {nameof(settings.UseFullyQualifiedTypeNames)}: {settings.UseFullyQualifiedTypeNames}
 {nameof(settings.UseExplicitTypeNames)}: {settings.UseExplicitTypeNames}
 {nameof(settings.UseExplicitGenericParameters)}: {settings.UseExplicitGenericParameters}

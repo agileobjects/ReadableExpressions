@@ -17,7 +17,6 @@
         private readonly ExpressionDialogRenderer _renderer;
         private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
-        private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
@@ -46,7 +45,7 @@
             }
 
             ToolTip = AddToolTip();
-            _viewer = AddViewer();
+            Viewer = AddViewer();
             _menuStrip = AddMenuStrip();
             _toolbar = AddToolbar();
 
@@ -65,6 +64,8 @@
         internal float WidthFactor { get; }
 
         internal float HeightFactor { get; }
+
+        internal WebBrowser Viewer { get; }
 
         internal ToolTip ToolTip { get; }
 
@@ -132,7 +133,7 @@
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
             // ReSharper disable PossibleNullReferenceException
-                TranslationHtmlFormatter.Instance.GetRaw(_viewer.Document.Body.InnerHtml));
+                TranslationHtmlFormatter.Instance.GetRaw(Viewer.Document.Body.InnerHtml));
             // ReSharper restore PossibleNullReferenceException
 
             RegisterThemeable(copyButton);
@@ -157,8 +158,8 @@
 
         private void SetViewerSizeLimits()
         {
-            _viewer.MinimumSize = _dialogMinimumSize;
-            _viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
+            Viewer.MinimumSize = _dialogMinimumSize;
+            Viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
         }
 
         private Size GetViewerSizeBasedOn(Size containerSize)
@@ -196,13 +197,24 @@
         {
             _translation = (string)_translationFactory.Invoke();
 
+            if (Settings.Size.UseFixedSize &&
+                Settings.Size.InitialWidth.HasValue &&
+                Settings.Size.InitialHeight.HasValue)
+            {
+                SetViewerSize(new Size(
+                    Settings.Size.InitialWidth.Value,
+                    Settings.Size.InitialHeight.Value));
+
+                return;
+            }
+
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
             var font = (Font)Settings.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
 
             var viewerSize = new Size(
-                textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + font.Height);
+                textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10,
+                textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height);
 
             SetViewerSize(viewerSize);
         }
@@ -234,17 +246,20 @@
 
         protected override void OnResizeEnd(EventArgs e)
         {
+            SetViewerSize(GetViewerSizeBasedOn(Size));
+
             base.OnResizeEnd(e);
 
-            SetViewerSize(GetViewerSizeBasedOn(Size));
+            Settings.Size.UpdateFrom(this);
+            Settings.Save();
         }
 
         protected override void OnShown(EventArgs e)
         {
             if (ViewerUninitialised)
             {
-                _viewer.AllowWebBrowserDrop = false;
-                _viewer.ScrollBarsEnabled = false;
+                Viewer.AllowWebBrowserDrop = false;
+                Viewer.ScrollBarsEnabled = false;
                 ViewerUninitialised = false;
             }
 
@@ -282,14 +297,14 @@ body, pre {{
 </body>
 </html>";
 
-            if (string.IsNullOrEmpty(_viewer.DocumentText))
+            if (string.IsNullOrEmpty(Viewer.DocumentText))
             {
-                _viewer.DocumentText = content;
+                Viewer.DocumentText = content;
                 return;
             }
 
-            _viewer.Navigate("about:blank");
-            _viewer.Document.OpenNew(false).Write(content);
+            Viewer.Navigate("about:blank");
+            Viewer.Document.OpenNew(false).Write(content);
         }
 
         private void SetViewerSize(Size newSize)
@@ -297,14 +312,14 @@ body, pre {{
             EnableAutoSize();
 
             var finalWidth = Math.Min(
-                Math.Max(newSize.Width, _viewer.MinimumSize.Width),
-                _viewer.MaximumSize.Width);
+                Math.Max(newSize.Width, Viewer.MinimumSize.Width),
+                Viewer.MaximumSize.Width);
 
             var finalHeight = Math.Min(
-                Math.Max(newSize.Height, _viewer.MinimumSize.Height),
-                _viewer.MaximumSize.Height);
+                Math.Max(newSize.Height, Viewer.MinimumSize.Height),
+                Viewer.MaximumSize.Height);
 
-            _viewer.Size = new Size(finalWidth, finalHeight);
+            Viewer.Size = new Size(finalWidth, finalHeight);
 
             DisableAutoSize();
         }

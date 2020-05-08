@@ -19,6 +19,8 @@
 
         public VisualizerDialogFont Font { get; set; }
 
+        public VisualizerDialogSizeSettings Size { get; set; }
+
         public bool UseFullyQualifiedTypeNames { get; set; }
 
         public bool UseExplicitTypeNames { get; set; }

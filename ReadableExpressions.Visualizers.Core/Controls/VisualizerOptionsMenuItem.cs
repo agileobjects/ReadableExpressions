@@ -16,6 +16,8 @@
             {
                 new ToolStripControlHost(new ThemeSelector(dialog)),
                 new ToolStripControlHost(new FontSelector(this, dialog)),
+                new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(dialog)),
+                new ToolStripSeparator(),
                 new ToolStripControlHost(new FullyQualifiedTypeNamesOption(dialog)),
                 new ToolStripControlHost(new ExplicitTypeNamesOption(dialog)),
                 new ToolStripControlHost(new ExplicitGenericParamsOption(dialog)),
@@ -40,7 +42,7 @@
             };
         }
 
-        void ILazyMenu.RegisterLazyMenuItem(ILazyMenuItem menuItem) 
+        void ILazyMenu.RegisterLazyItem(ILazyMenuItem menuItem)
             => _lazyMenuItems.Add(menuItem);
     }
 }

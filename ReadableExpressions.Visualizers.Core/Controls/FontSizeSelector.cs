@@ -12,11 +12,11 @@
         public FontSizeSelector(VisualizerDialog dialog)
         {
             _dialog = dialog;
-            
+
             Size = new SizeF(
                 40 * dialog.WidthFactor,
                 MenuItemHeight * dialog.HeightFactor).ToSize();
-            
+
             DropDownStyle = ComboBoxStyle.DropDownList;
 
             Items.AddRange(Enumerable.Range(6, 18).Cast<object>().ToArray());
@@ -27,7 +27,7 @@
 
             SelectedIndexChanged += (sender, args) =>
             {
-                var selector = (FontSizeSelector) sender;
+                var selector = (FontSizeSelector)sender;
                 var fontSize = (int)selector.SelectedItem;
 
                 selector._dialog.Settings.Font.Size = fontSize;

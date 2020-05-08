@@ -2,6 +2,6 @@
 {
     internal interface ILazyMenu
     {
-        void RegisterLazyMenuItem(ILazyMenuItem menuItem);
+        void RegisterLazyItem(ILazyMenuItem menuItem);
     }
 }

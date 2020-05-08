@@ -5,7 +5,7 @@
 
     internal class VisualizerDialogFont
     {
-        private static readonly Font _monospace = new Font(
+        private static readonly Font _default = new Font(
             new FontFamily(GenericFontFamilies.Monospace),
             13f,
             FontStyle.Regular,
@@ -13,12 +13,12 @@
 
         public static readonly VisualizerDialogFont Monospace = new VisualizerDialogFont
         {
-            Name = _monospace.Name,
-            Size = (int)_monospace.SizeInPoints,
-            _font = _monospace
+            Name = _default.Name,
+            Size = (int)_default.SizeInPoints,
+            _font = _default
         };
 
-        private int _size;
+        private int? _size;
         private string _name;
         private Font _font;
 
@@ -26,7 +26,7 @@
 
         public string Name
         {
-            get => _name;
+            get => _name ??= Monospace.Name;
             set
             {
                 _font = null;
@@ -36,7 +36,7 @@
 
         public int Size
         {
-            get => _size;
+            get => _size ??= Monospace.Size;
             set
             {
                 _font = null;
