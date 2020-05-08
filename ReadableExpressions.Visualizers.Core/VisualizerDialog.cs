@@ -195,7 +195,7 @@
         private void SetTranslation()
         {
             _translation = (string)_translationFactory.Invoke();
-            
+
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
             var font = (Font)Settings.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
@@ -259,7 +259,7 @@
 <html>
 <head>
 <style type=""text/css"">
-pre {{ 
+body, pre {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
     font-family: '{Settings.Font.Name}';

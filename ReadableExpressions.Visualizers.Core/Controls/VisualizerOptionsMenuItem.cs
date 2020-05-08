@@ -3,11 +3,6 @@
     using System.Collections.Generic;
     using System.Windows.Forms;
 
-    internal interface ILazyMenu
-    {
-        void RegisterLazyMenuItem(ILazyMenuItem menuItem);
-    }
-
     internal class VisualizerOptionsMenuItem : ToolStripMenuItem, ILazyMenu
     {
         private readonly List<ILazyMenuItem> _lazyMenuItems;

@@ -7,11 +7,6 @@
     using System.Windows.Forms;
     using static DialogConstants;
 
-    internal interface ILazyMenuItem : IDisposable
-    {
-        void Initialize();
-    }
-
     internal class FontFamilySelector : ComboBox, ILazyMenuItem
     {
         private static FontFamily[] _fontFamilies;
@@ -87,8 +82,8 @@
                 case "Droid Sans":
                 case "Fira Code":
                 case "Input":
-                case "Lucidia Console":
-                case "Lucidia Sans Typewriter":
+                case "Lucida Console":
+                case "Lucida Sans Typewriter":
                 case "Microsoft Sans Serif":
                 case "Monoid":
                 case "MS Gothic":

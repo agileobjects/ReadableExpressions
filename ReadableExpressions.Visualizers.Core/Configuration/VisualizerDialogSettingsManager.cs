@@ -185,7 +185,7 @@
             }
 
             if (settingsByName.TryGetValue(FontSize, out value) &&
-                float.TryParse(value, out var fontSize))
+                int.TryParse(value, out var fontSize))
             {
                 settings.Font.Size = fontSize;
             }
