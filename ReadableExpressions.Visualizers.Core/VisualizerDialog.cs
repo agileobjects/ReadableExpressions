@@ -3,13 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Text;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Theming;
     using static System.Windows.Forms.SystemInformation;
-    using static DialogConstants;
 
     public class VisualizerDialog : Form
     {
@@ -58,14 +56,14 @@
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
 
-        internal ExpressionTranslationTheme Theme
+        internal VisualizerDialogTheme Theme
         {
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
 
         internal float WidthFactor { get; }
-        
+
         internal float HeightFactor { get; }
 
         internal ToolTip ToolTip { get; }
@@ -107,8 +105,7 @@
         {
             var viewer = new WebBrowser
             {
-                AllowNavigation = false,
-                Font = new Font(new FontFamily(GenericFontFamilies.Monospace), 13.5f)
+                AllowNavigation = false
             };
 
             var viewerPanel = new Panel
@@ -198,17 +195,19 @@
         private void SetTranslation()
         {
             _translation = (string)_translationFactory.Invoke();
+
             var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
-            var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
+            var font = (Font)Settings.Font;
+            var textSize = TextRenderer.MeasureText(rawText, font);
 
             var viewerSize = new Size(
                 textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + _viewer.Font.Height);
+                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + font.Height);
 
             SetViewerSize(viewerSize);
         }
 
-        internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
+        internal void OnThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
 
@@ -260,11 +259,11 @@
 <html>
 <head>
 <style type=""text/css"">
-body {{ 
+body, pre {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
-    font-family: '{_viewer.Font.FontFamily.Name}';
-    font-size: 13pt;
+    font-family: '{Settings.Font.Name}';
+    font-size: {Settings.Font.Size}pt;
     overflow: auto;
 }}
 .kw {{ color: {Theme.Keyword} }}
@@ -313,5 +312,14 @@ body {{
         private void EnableAutoSize() => _autoSize = true;
 
         private void DisableAutoSize() => _autoSize = false;
+
+        protected override void Dispose(bool disposing)
+        {
+            _themeableControls.Clear();
+
+            ToolTip.Dispose();
+
+            base.Dispose(disposing);
+        }
     }
 }

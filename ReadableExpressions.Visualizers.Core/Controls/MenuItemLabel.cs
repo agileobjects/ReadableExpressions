@@ -13,7 +13,7 @@
             VisualizerDialog dialog)
         {
             Size = new SizeF(
-                (MenuWidth - controlWidth) * dialog.WidthFactor,
+                MenuWidth * dialog.WidthFactor - controlWidth,
                 MenuItemHeight * dialog.HeightFactor).ToSize();
 
             dialog.RegisterThemeable(this);

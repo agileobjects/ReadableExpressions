@@ -6,7 +6,8 @@
     {
         private static readonly VisualizerDialogSettings _default = new VisualizerDialogSettings
         {
-            Theme = ExpressionTranslationTheme.Light
+            Theme = VisualizerDialogTheme.Light,
+            Font = VisualizerDialogFont.Monospace
         };
 
         public static readonly VisualizerDialogSettings Instance = GetInstance();
@@ -14,7 +15,9 @@
         public static VisualizerDialogSettings GetInstance()
             => VisualizerDialogSettingsManager.TryLoad(out var settings) ? settings : _default;
 
-        public ExpressionTranslationTheme Theme { get; set; }
+        public VisualizerDialogTheme Theme { get; set; }
+
+        public VisualizerDialogFont Font { get; set; }
 
         public bool UseFullyQualifiedTypeNames { get; set; }
 
