@@ -9,7 +9,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         public static IEnumerable<string> WithExtension(this string[] resourceNames, string extension)
         {
             return resourceNames
-                .Where(resourceName => Path.GetExtension(resourceName)?.ToLowerInvariant() == "." + extension);
+                .Where(resourceName => Path.GetExtension(resourceName)?.ToLowerInvariant() == extension);
         }
     }
 }

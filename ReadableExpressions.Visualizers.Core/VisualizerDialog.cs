@@ -2,11 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Drawing;
+    using System.Drawing.Drawing2D;
+    using System.IO;
+    using System.Linq;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Theming;
+    using static System.StringComparison;
     using static System.Windows.Forms.SystemInformation;
 
     public class VisualizerDialog : Form
@@ -129,6 +134,30 @@
 
         private ToolStrip AddToolbar()
         {
+            var createIssueButton = new Button
+            {
+                Text = "Anything wrong?",
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                TextAlign = ContentAlignment.MiddleRight,
+                ImageAlign = ContentAlignment.MiddleLeft
+            };
+
+            var gitHubIcon = GetGitHubIcon(createIssueButton);
+            var gitHubIconSize = createIssueButton.Height - 4;
+
+            createIssueButton.Image = new Bitmap(gitHubIcon, gitHubIconSize, gitHubIconSize);
+
+            createIssueButton.Click += (sender, args) => 
+                Process.Start("https://github.com/agileobjects/ReadableExpressions/issues/new");
+
+            RegisterThemeable(createIssueButton);
+
+            var createIssueButtonWrapper = new ToolStripControlHost(createIssueButton)
+            {
+                Alignment = ToolStripItemAlignment.Left,
+                Margin = new Padding(2)
+            };
+
             var copyButton = new Button { Text = "Copy" };
 
             copyButton.Click += (sender, args) => Clipboard.SetText(
@@ -138,12 +167,13 @@
 
             RegisterThemeable(copyButton);
 
-            var buttonWrapper = new ToolStripControlHost(copyButton)
+            var copyButtonWrapper = new ToolStripControlHost(copyButton)
             {
-                Alignment = ToolStripItemAlignment.Right
+                Alignment = ToolStripItemAlignment.Right,
+                Margin = new Padding(2)
             };
 
-            var toolbar = new ToolStrip(buttonWrapper)
+            var toolbar = new ToolStrip(createIssueButtonWrapper, copyButtonWrapper)
             {
                 Dock = DockStyle.Bottom,
                 GripStyle = ToolStripGripStyle.Hidden,
@@ -154,6 +184,38 @@
             Controls.Add(toolbar);
 
             return toolbar;
+        }
+
+        private static Image GetGitHubIcon(Control button)
+        {
+            var imageResourceName = typeof(VisualizerDialog)
+                .Assembly
+                .GetManifestResourceNames()
+                .First(resourceName => Path.GetFileNameWithoutExtension(resourceName).EndsWith("GitHubIcon", Ordinal));
+
+            var imageStream = typeof(VisualizerDialog)
+                .Assembly
+                .GetManifestResourceStream(imageResourceName);
+
+            using (imageStream)
+            using (var image = Image.FromStream(imageStream))
+            {
+                var scaleFactor = (button.Height - 2.0) / image.Height;
+                var newWidth = (int)(image.Width * scaleFactor);
+                var newHeight = (int)(image.Height * scaleFactor);
+
+                var newImage = new Bitmap(newWidth, newHeight);
+                
+                using (var graphics = Graphics.FromImage(newImage))
+                {
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                    graphics.DrawImage(image, new Rectangle(0, 0, newWidth, newHeight));
+                }
+
+                return newImage;
+            }
         }
 
         private void SetViewerSizeLimits()
