@@ -55,7 +55,7 @@
                 return;
             }
 
-            Items.AddRange(_fontFamilies ??= GetFontFamilies());
+            Items.AddRange(_fontFamilies ??= new InstalledFontCollection().Families);
 
             var settingsName = _dialog.Settings.Font.Name;
 
@@ -64,15 +64,23 @@
             _initialized = true;
         }
 
-        private static FontFamily[] GetFontFamilies()
+        private static void WriteFontOption(object sender, DrawItemEventArgs e)
         {
-            return new InstalledFontCollection()
-                .Families
-                .Where(IncludeFontFamily)
-                .ToArray();
+            if (e.Index < 0)
+            {
+                return;
+            }
+
+            var selector = (FontFamilySelector)sender;
+            var fontFamily = (FontFamily)selector.Items[e.Index];
+            var font = new Font(fontFamily, selector.Font.SizeInPoints, GetFontStyle(fontFamily));
+            var fontBrush = new SolidBrush(selector._dialog.Theme.ForeColour);
+
+            e.DrawBackground();
+            e.Graphics.DrawString(font.Name, font, fontBrush, e.Bounds.X, e.Bounds.Y);
         }
 
-        private static bool IncludeFontFamily(FontFamily fontFamily)
+        private static FontStyle GetFontStyle(FontFamily fontFamily)
         {
             switch (fontFamily.Name)
             {
@@ -96,26 +104,10 @@
                 case "Sudo":
                 case "Terminal":
                 case "Ubuntu Mono":
-                    return true;
+                    return FontStyle.Bold;
             }
 
-            return false;
-        }
-
-        private static void WriteFontOption(object sender, DrawItemEventArgs e)
-        {
-            if (e.Index < 0)
-            {
-                return;
-            }
-
-            var selector = (FontFamilySelector)sender;
-            var fontFamily = (FontFamily)selector.Items[e.Index];
-            var font = new Font(fontFamily, selector.Font.SizeInPoints);
-            var fontBrush = new SolidBrush(selector._dialog.Theme.ForeColour);
-
-            e.DrawBackground();
-            e.Graphics.DrawString(font.Name, font, fontBrush, e.Bounds.X, e.Bounds.Y);
+            return FontStyle.Regular;
         }
     }
 }
