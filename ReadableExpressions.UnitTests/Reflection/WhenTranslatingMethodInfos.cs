@@ -1,10 +1,10 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.StaticTranslators
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Reflection
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using NetStandardPolyfills;
-    using Translations.StaticTranslators;
 #if !NET35
     using Xunit;
 #else
@@ -17,7 +17,7 @@
         [Fact]
         public void ShouldTranslateANullMethodInfo()
         {
-            var translated = DefinitionsTranslator.Translate(default(MethodInfo));
+            var translated = default(MethodInfo).ToReadableString();
 
             translated.ShouldBe("[Method not found]");
         }
@@ -29,7 +29,7 @@
                 .GetPublicInstanceProperty(nameof(Helper.PublicInstanceProperty))
                 .GetGetter();
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "public int WhenTranslatingMethodInfos.Helper.PublicInstanceProperty { get; }";
@@ -44,7 +44,7 @@
                 .GetPublicInstanceProperty(nameof(Helper.PublicInstanceProperty))
                 .GetSetter();
 
-            var translated = DefinitionsTranslator.Translate(setter);
+            var translated = setter.ToReadableString();
 
             const string EXPECTED =
                 "public int WhenTranslatingMethodInfos.Helper.PublicInstanceProperty { set; }";
@@ -59,7 +59,7 @@
                 .GetNonPublicInstanceProperty(nameof(Helper.InternalInstanceProperty))
                 .GetGetter(nonPublic: true);
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "internal string WhenTranslatingMethodInfos.Helper.InternalInstanceProperty { get; }";
@@ -74,7 +74,7 @@
                 .GetNonPublicInstanceProperty("ProtectedInstanceProperty")
                 .GetGetter(nonPublic: true);
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "protected string WhenTranslatingMethodInfos.Helper.ProtectedInstanceProperty { get; }";
@@ -89,7 +89,7 @@
                 .GetNonPublicInstanceProperty(nameof(Helper.ProtectedInternalInstanceProperty))
                 .GetGetter(nonPublic: true);
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "protected internal string WhenTranslatingMethodInfos.Helper.ProtectedInternalInstanceProperty { get; }";
@@ -104,7 +104,7 @@
                 .GetNonPublicInstanceProperty("PrivateInstanceProperty")
                 .GetGetter(nonPublic: true);
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "private string WhenTranslatingMethodInfos.Helper.PrivateInstanceProperty { get; }";
@@ -118,7 +118,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterless));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 "public string WhenTranslatingMethodInfos.Helper.InstanceParameterless()";
@@ -132,7 +132,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceVirtualParameterless));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
                 "public virtual string WhenTranslatingMethodInfos.Helper.InstanceVirtualParameterless()";
@@ -147,7 +147,7 @@
                 .GetPublicInstanceProperty(nameof(AbstractHelper.PublicInstanceProperty))
                 .GetGetter();
 
-            var translated = DefinitionsTranslator.Translate(getter);
+            var translated = getter.ToReadableString();
 
             const string EXPECTED =
                 "public abstract int WhenTranslatingMethodInfos.AbstractHelper.PublicInstanceProperty { get; }";
@@ -161,7 +161,7 @@
             var method = typeof(AbstractHelper)
                 .GetPublicInstanceMethod(nameof(AbstractHelper.InstanceAbstractParameterless));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
                 "public abstract string WhenTranslatingMethodInfos.AbstractHelper.InstanceAbstractParameterless()";
@@ -175,7 +175,7 @@
             var method = typeof(AbstractHelper)
                 .GetPublicInstanceMethod(nameof(AbstractHelper.InstanceParameterless));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
                 "public string WhenTranslatingMethodInfos.AbstractHelper.InstanceParameterless()";
@@ -189,7 +189,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceOneParameter));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public int WhenTranslatingMethodInfos.Helper.InstanceOneParameter
@@ -205,7 +205,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceTwoParameters));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public DateTime WhenTranslatingMethodInfos.Helper.InstanceTwoParameters
@@ -222,7 +222,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessSingleGeneric));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 "public Type WhenTranslatingMethodInfos.Helper.InstanceParameterlessSingleGeneric<T>()";
@@ -237,7 +237,7 @@
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessSingleGeneric))
                 .MakeGenericMethod(typeof(Dictionary<,>));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 "public Type WhenTranslatingMethodInfos.Helper.InstanceParameterlessSingleGeneric<Dictionary<TKey, TValue>>()";
@@ -251,7 +251,7 @@
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceThreeParametersTwoGenerics));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public void WhenTranslatingMethodInfos.Helper.InstanceThreeParametersTwoGenerics<T1, T2>
@@ -269,7 +269,7 @@
             var method = typeof(Helper)
                 .GetPublicStaticMethod(nameof(Helper.StaticOutParameter));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public static string WhenTranslatingMethodInfos.Helper.StaticOutParameter
@@ -286,7 +286,7 @@
                 .GetPublicStaticMethod(nameof(Helper.StaticRefParameter))
                 .MakeGenericMethod(typeof(List<List<int>>));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public static void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
@@ -294,6 +294,31 @@
     ref List<List<int>> value
 )";
             translated.ShouldBe(EXPECTED);
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/61
+        [Fact]
+        public void ShouldTranslateAnOpenGenericQueryableExtensionMethod()
+        {
+            var method = typeof(Queryable)
+                .GetPublicStaticMethods("SelectMany")
+                .First(m =>
+                    m.GetParameters().Length == 3 &&
+                    m.GetParameters()[1]
+                        .ParameterType
+                        .GetGenericTypeArguments()[0]
+                        .GetGenericTypeArguments().Length == 3);
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TResult>
+(
+    IQueryable<TSource> source,
+    Expression<Func<TSource, int, IEnumerable<TCollection>>> collectionSelector,
+    Expression<Func<TSource, TCollection, TResult>> resultSelector
+)";
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         #region Helper Classes

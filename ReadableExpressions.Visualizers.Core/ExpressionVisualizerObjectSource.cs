@@ -6,10 +6,12 @@
     using System.Reflection;
     using Configuration;
     using Extensions;
-    using Translations.StaticTranslators;
+    using Translations.Formatting;
 
     public static class ExpressionVisualizerObjectSource
     {
+        private static readonly ITranslationFormatter _htmlFormatter = TranslationHtmlFormatter.Instance;
+
         public static void GetData(
             object target,
             Stream outgoingData,
@@ -31,10 +33,10 @@
                     return Translate(type);
 
                 case MethodInfo method:
-                    return DefinitionsTranslator.Translate(method);
+                    return method.ToReadableString(s => s.FormatUsing(_htmlFormatter));
 
                 case ConstructorInfo ctor:
-                    return DefinitionsTranslator.Translate(ctor);
+                    return ctor.ToReadableString(s => s.FormatUsing(_htmlFormatter));
 
                 default:
                     if (target == null)
@@ -47,13 +49,17 @@
         }
 
         private static string Translate(Type type)
-            => type.GetFriendlyName(GetDialogSettings().Update);
+        {
+            return type.GetFriendlyName(settings => GetDialogSettings()
+                .Update(settings)
+                .FormatUsing(_htmlFormatter));
+        }
 
         private static string Translate(Expression expression)
         {
             return expression.ToReadableString(settings => GetDialogSettings()
                 .Update(settings)
-                .FormatUsing(TranslationHtmlFormatter.Instance));
+                .FormatUsing(_htmlFormatter));
         }
 
         private static VisualizerDialogSettings GetDialogSettings()
