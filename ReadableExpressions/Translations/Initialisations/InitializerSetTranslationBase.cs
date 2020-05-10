@@ -3,7 +3,7 @@
     using System.Collections.Generic;
     using Interfaces;
 
-    internal abstract class InitializerSetTranslationBase<TInitializer> : ITranslatable
+    internal abstract class InitializerSetTranslationBase<TInitializer> : IInitializerSetTranslation
     {
         private readonly IList<ITranslatable> _initializerTranslations;
 
@@ -49,6 +49,8 @@
         public abstract bool ForceWriteToMultipleLines { get; }
 
         private bool WriteToMultipleLines => ForceWriteToMultipleLines || IsLongTranslation;
+
+        public int GetLineCount() => WriteToMultipleLines ? Count + 2 : 1;
 
         public void WriteTo(TranslationBuffer buffer)
         {

@@ -3,8 +3,10 @@
     internal interface ITranslatable
     {
         int TranslationSize { get; }
-        
+
         int FormattingSize { get; }
+
+        int GetLineCount();
 
         void WriteTo(TranslationBuffer buffer);
     }

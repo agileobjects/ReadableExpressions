@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
     using Interfaces;
 
     internal class ListInitializerSetTranslation : InitializerSetTranslationBase<ElementInit>
@@ -41,16 +40,19 @@
                 var translationSize = 0;
                 var formattingSize = 0;
 
-                _translations = init
-                    .Arguments
-                    .ProjectToArray(arg =>
-                    {
-                        var translation = context.GetCodeBlockTranslationFor(arg);
-                        translationSize += translation.TranslationSize;
-                        formattingSize += translation.FormattingSize;
+                var arguments = init.Arguments;
+                var argumentCount = arguments.Count;
 
-                        return translation;
-                    });
+                _translations = new CodeBlockTranslation[argumentCount];
+
+                for (var i = 0; i < argumentCount; ++i)
+                {
+                    var translation = context.GetCodeBlockTranslationFor(arguments[i]);
+                    translationSize += translation.TranslationSize;
+                    formattingSize += translation.FormattingSize;
+
+                    _translations[i] = translation;
+                }
 
                 TranslationSize = translationSize;
                 FormattingSize = formattingSize;
@@ -59,6 +61,11 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount()
+            {
+                throw new System.NotImplementedException();
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {
