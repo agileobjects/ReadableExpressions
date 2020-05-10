@@ -64,6 +64,9 @@
         public Color MenuColour
             => _menuColour ??= ColorTranslator.FromHtml(Menu);
 
+        public string IconSuffix
+            => MenuColour.IsDark() ? "Dark" : null;
+
         public string Keyword { get; set; }
 
         public string Variable { get; set; }
@@ -92,6 +95,11 @@
 
             control.BackColor = MenuColour;
             control.ForeColor = ForeColour;
+
+            if (control is IThemeable themeable)
+            {
+                themeable.Apply(this);
+            }
         }
 
         public void ApplyTo(ToolStrip toolStrip)

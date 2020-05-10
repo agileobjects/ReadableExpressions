@@ -25,7 +25,7 @@
             switch (target)
             {
                 case Expression expression:
-                    return Translate(expression) ?? "default(void)";
+                    return Translate(expression) ?? Translate(Expression.Default(typeof(void)));
 
                 case Type type:
                     return Translate(type);
