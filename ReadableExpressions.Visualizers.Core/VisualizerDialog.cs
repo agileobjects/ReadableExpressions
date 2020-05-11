@@ -159,7 +159,7 @@
 
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => Screen.FromControl(this).Bounds.Size;
+        public override Size MaximumSize => Screen.PrimaryScreen.WorkingArea.Size;
 
         public override string Text => string.Empty;
 
