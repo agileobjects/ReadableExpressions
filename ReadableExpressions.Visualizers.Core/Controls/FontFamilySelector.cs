@@ -9,7 +9,7 @@
 
     internal class FontFamilySelector : ComboBox, ILazyMenuItem
     {
-        private static FontFamily[] _fontFamilies;
+        private static Font[] _fonts;
 
         private readonly VisualizerDialog _dialog;
         private bool _initialized;
@@ -40,9 +40,9 @@
                 }
 
                 var selector = (FontFamilySelector)sender;
-                var fontFamily = (FontFamily)selector.SelectedItem;
+                var font = (Font)selector.SelectedItem;
 
-                selector._dialog.Settings.Font.Name = fontFamily.Name;
+                selector._dialog.Settings.Font.Name = font.Name;
                 selector._dialog.Settings.Save();
                 selector._dialog.UpdateTranslation();
             };
@@ -55,13 +55,21 @@
                 return;
             }
 
-            Items.AddRange(_fontFamilies ??= new InstalledFontCollection().Families);
+            Items.AddRange(_fonts ??= GetFonts());
 
             var settingsName = _dialog.Settings.Font.Name;
 
-            SelectedIndex = Array.FindIndex(_fontFamilies, ff => ff.Name == settingsName);
+            SelectedIndex = Array.FindIndex(_fonts, ff => ff.Name == settingsName);
 
             _initialized = true;
+        }
+
+        private static Font[] GetFonts()
+        {
+            return new InstalledFontCollection()
+                .Families
+                .Select(ff => new Font(ff, 10))
+                .ToArray();
         }
 
         private static void WriteFontOption(object sender, DrawItemEventArgs e)
@@ -72,11 +80,19 @@
             }
 
             var selector = (FontFamilySelector)sender;
-            var fontFamily = (FontFamily)selector.Items[e.Index];
-            var font = new Font(fontFamily, selector.Font.SizeInPoints, GetFontStyle(fontFamily));
-            var fontBrush = new SolidBrush(selector._dialog.Theme.ForeColour);
+            var font = (Font)selector.Items[e.Index];
+            var theme = selector._dialog.Theme;
+            var fontBrush = theme.ForeColourBrush;
 
-            e.DrawBackground();
+            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            {
+                e.Graphics.FillRectangle(theme.MenuHighlightColourBrush, e.Bounds);
+            }
+            else
+            {
+                e.DrawBackground();
+            }
+
             e.Graphics.DrawString(font.Name, font, fontBrush, e.Bounds.X, e.Bounds.Y);
         }
 

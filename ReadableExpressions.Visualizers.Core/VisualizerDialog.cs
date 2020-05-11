@@ -15,7 +15,7 @@
         private static readonly Size _dialogMinimumSize = new Size(530, 125);
 
         private readonly Func<object> _translationFactory;
-        private readonly ExpressionDialogRenderer _renderer;
+        private readonly VisualizerDialogRenderer _renderer;
         private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
         private readonly ToolStrip _toolbar;
@@ -27,7 +27,7 @@
         public VisualizerDialog(Func<object> translationFactory)
         {
             _translationFactory = translationFactory;
-            _renderer = new ExpressionDialogRenderer(this);
+            _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;

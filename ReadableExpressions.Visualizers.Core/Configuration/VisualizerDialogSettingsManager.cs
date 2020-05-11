@@ -106,75 +106,64 @@
             VisualizerDialogSettings settings,
             IDictionary<string, string> settingsByName)
         {
+            var defaultTheme = settings.Theme;
+
             if (settingsByName.TryGetValue(ThemeName, out var value))
             {
                 settings.Theme.Name = value;
+
+                switch (value)
+                {
+                    case "Light":
+                        defaultTheme = VisualizerDialogTheme.Light;
+                        break;
+
+                    case "Dark":
+                        defaultTheme = VisualizerDialogTheme.Dark;
+                        break;
+                }
             }
 
-            if (settingsByName.TryGetValue(ThemeBackground, out value))
-            {
-                settings.Theme.Background = value;
-            }
+            settings.Theme.Background = settingsByName.TryGetValue(ThemeBackground, out value)
+                ? value : defaultTheme.Background;
 
-            if (settingsByName.TryGetValue(ThemeDefault, out value))
-            {
-                settings.Theme.Default = value;
-            }
+            settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
+                ? value : defaultTheme.Default;
 
-            if (settingsByName.TryGetValue(ThemeToolbar, out value))
-            {
-                settings.Theme.Toolbar = value;
-            }
+            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value) 
+                ? value : defaultTheme.Toolbar;
 
-            if (settingsByName.TryGetValue(ThemeMenu, out value))
-            {
-                settings.Theme.Menu = value;
-            }
+            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value) 
+                ? value : defaultTheme.Menu;
 
-            if (settingsByName.TryGetValue(ThemeKeyword, out value))
-            {
-                settings.Theme.Keyword = value;
-            }
+            settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
 
-            if (settingsByName.TryGetValue(ThemeVariable, out value))
-            {
-                settings.Theme.Variable = value;
-            }
+            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value) 
+                ? value : defaultTheme.Keyword;
 
-            if (settingsByName.TryGetValue(ThemeTypeName, out value))
-            {
-                settings.Theme.TypeName = value;
-            }
+            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value) 
+                ? value : defaultTheme.Variable;
 
-            if (settingsByName.TryGetValue(ThemeInterfaceName, out value))
-            {
-                settings.Theme.InterfaceName = value;
-            }
+            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value) 
+                ? value : defaultTheme.TypeName;
 
-            if (settingsByName.TryGetValue(ThemeCommandStatement, out value))
-            {
-                settings.Theme.CommandStatement = value;
-            }
+            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value) 
+                ? value : defaultTheme.InterfaceName;
 
-            if (settingsByName.TryGetValue(ThemeText, out value))
-            {
-                settings.Theme.Text = value;
-            }
+            settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
+                ? value : defaultTheme.CommandStatement;
 
-            if (settingsByName.TryGetValue(ThemeNumeric, out value))
-            {
-                settings.Theme.Numeric = value;
-            }
+            settings.Theme.Text = settingsByName.TryGetValue(ThemeText, out value)
+                ? value : defaultTheme.Text;
 
-            if (settingsByName.TryGetValue(ThemeMethodName, out value))
-            {
-                settings.Theme.MethodName = value;
-            }
+            settings.Theme.Numeric = settingsByName.TryGetValue(ThemeNumeric, out value)
+                ? value : defaultTheme.Numeric;
 
-            if (settingsByName.TryGetValue(ThemeComment, out value))
-            {
-                settings.Theme.Comment = value;
-            }
+            settings.Theme.MethodName = settingsByName.TryGetValue(ThemeMethodName, out value)
+                ? value : defaultTheme.MethodName;
+
+            settings.Theme.Comment = settingsByName.TryGetValue(ThemeComment, out value)
+                ? value : defaultTheme.Comment;
         }
 
         private static void SetFontValues(
@@ -237,6 +226,7 @@
 {ThemeDefault}: {theme.Default}
 {ThemeToolbar}: {theme.Toolbar}
 {ThemeMenu}: {theme.Menu}
+{ThemeMenuHighlight}: {theme.MenuHighlight}
 {ThemeKeyword}: {theme.Keyword}
 {ThemeVariable}: {theme.Variable}
 {ThemeTypeName}: {theme.TypeName}
