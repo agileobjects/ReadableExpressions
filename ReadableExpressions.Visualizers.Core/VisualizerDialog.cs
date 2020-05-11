@@ -13,6 +13,7 @@
     using Theming;
     using static System.StringComparison;
     using static System.Windows.Forms.SystemInformation;
+    using static DialogConstants;
 
     public class VisualizerDialog : Form
     {
@@ -20,7 +21,6 @@
 
         private readonly Func<object> _translationFactory;
         private readonly ExpressionDialogRenderer _renderer;
-        private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
@@ -37,8 +37,6 @@
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-
-            _dialogMaximumSize = GetDialogMaximumSize();
 
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
@@ -75,15 +73,6 @@
         internal ToolTip ToolTip { get; }
 
         internal bool ViewerUninitialised { get; private set; }
-
-        private Size GetDialogMaximumSize()
-        {
-            var screenSize = Screen.FromControl(this).Bounds.Size;
-
-            return new Size(
-                Convert.ToInt32(screenSize.Width * .9),
-                Convert.ToInt32(screenSize.Height * .8));
-        }
 
         private ToolTip AddToolTip()
         {
@@ -221,7 +210,7 @@
         private void SetViewerSizeLimits()
         {
             Viewer.MinimumSize = _dialogMinimumSize;
-            Viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
+            Viewer.MaximumSize = GetViewerSizeBasedOn(MaximumSize);
         }
 
         private Size GetViewerSizeBasedOn(Size containerSize)
@@ -233,7 +222,7 @@
 
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => _dialogMaximumSize;
+        public override Size MaximumSize => Screen.FromControl(this).Bounds.Size;
 
         public override string Text => string.Empty;
 
@@ -306,11 +295,36 @@
             return base.ProcessDialogKey(keyData);
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+            
+            // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
+            if (m.Msg == SystemCommand)
+            {
+                var eventId = m.WParam.ToInt32() & 0xFFF0;
+
+                switch (eventId)
+                {
+                    case WindowMaximise:
+                    case WindowMinimise:
+                    case WindowToggle:
+                        HandleResize();
+                        break;
+                }
+            }
+        }
+
         protected override void OnResizeEnd(EventArgs e)
         {
-            SetViewerSize(GetViewerSizeBasedOn(Size));
-
             base.OnResizeEnd(e);
+
+            HandleResize();
+        }
+
+        private void HandleResize()
+        {
+            SetViewerSize(GetViewerSizeBasedOn(Size));
 
             Settings.Size.UpdateFrom(this);
             Settings.Save();
