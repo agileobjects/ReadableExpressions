@@ -3,11 +3,11 @@
     using System.Drawing;
     using System.Windows.Forms;
 
-    internal class ExpressionDialogColourTable : ProfessionalColorTable
+    internal class VisualizerDialogColourTable : ProfessionalColorTable
     {
         private readonly VisualizerDialog _dialog;
 
-        public ExpressionDialogColourTable(VisualizerDialog dialog)
+        public VisualizerDialogColourTable(VisualizerDialog dialog)
         {
             _dialog = dialog;
         }

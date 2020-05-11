@@ -41,15 +41,34 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="Configuration\VisualizerDialogFont.cs" />
     <Compile Include="Configuration\VisualizerDialogSettings.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
+    <Compile Include="Configuration\VisualizerDialogSizeSettings.cs" />
+    <Compile Include="Controls\CopyButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\ExplicitGenericParamsOption.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\FeedbackButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FontFamilySelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FontSelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FontSizeSelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\ILazyMenu.cs" />
+    <Compile Include="Controls\ILazyMenuItem.cs" />
     <Compile Include="Controls\ImplicitArrayTypeNamesOption.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -68,6 +87,9 @@
     <Compile Include="Controls\QuotedLambdaCommentsOption.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\ResizeToMatchCodeSamplesOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\SettingCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -84,28 +106,32 @@
     <Compile Include="Controls\MenuItemLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Theming\ExpressionDialogRenderer.cs" />
-    <Compile Include="Theming\ExpressionDialogColourTable.cs" />
-    <Compile Include="Theming\ExpressionTranslationTheme.cs" />
+    <Compile Include="Theming\VisualizerDialogRenderer.cs" />
+    <Compile Include="Theming\VisualizerDialogColourTable.cs" />
+    <Compile Include="Theming\GraphicsExtensions.cs" />
+    <Compile Include="Theming\IThemeable.cs" />
+    <Compile Include="Theming\VisualizerDialogTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
     <Compile Include="VisualizerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TranslationHtmlFormatter.cs" />
-    <Compile Include="Controls\VisualizerOptionsMenu.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Controls\VisualizerOptionsMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj">
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>
       <Name>ReadableExpressions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\GitHubIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\GitHubIconDark.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

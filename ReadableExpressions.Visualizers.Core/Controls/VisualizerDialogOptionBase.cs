@@ -2,7 +2,6 @@
 {
     using System;
     using System.Windows.Forms;
-    using static DialogConstants;
 
     internal abstract class VisualizerDialogOptionBase : MenuItemPanelBase
     {
@@ -16,8 +15,8 @@
             VisualizerDialog dialog)
             : base(dialog)
         {
-            var label = new MenuItemLabel(labelText, labelTooltip, SettingCheckBoxWidth, dialog);
             _checkBox = new SettingCheckBox(isChecked, optionSetter, dialog);
+            var label = new MenuItemLabel(labelText, labelTooltip, _checkBox.Width, dialog);
 
             label.Click += (sender, args) =>
             {

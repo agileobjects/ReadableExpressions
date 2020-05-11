@@ -9,8 +9,10 @@
             IDialogVisualizerService windowService,
             IVisualizerObjectProvider objectProvider)
         {
-            windowService.ShowDialog(
-                new VisualizerDialog(objectProvider.GetObject));
+            using (var dialog = new VisualizerDialog(objectProvider.GetObject))
+            {
+                windowService.ShowDialog(dialog);
+            }
         }
     }
 }

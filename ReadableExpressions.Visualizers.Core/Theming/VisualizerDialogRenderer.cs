@@ -3,31 +3,31 @@
     using System.Drawing;
     using System.Windows.Forms;
 
-    internal class ExpressionDialogRenderer : ToolStripProfessionalRenderer
+    internal class VisualizerDialogRenderer : ToolStripProfessionalRenderer
     {
         private readonly VisualizerDialog _dialog;
 
-        public ExpressionDialogRenderer(VisualizerDialog dialog)
-            : base(new ExpressionDialogColourTable(dialog))
+        public VisualizerDialogRenderer(VisualizerDialog dialog)
+            : base(new VisualizerDialogColourTable(dialog))
         {
             _dialog = dialog;
         }
 
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
-            var backgroundColor = e.Item.Selected && e.Item.Text == "Options"
-                ? _dialog.Theme.MenuColour
-                : _dialog.Theme.ToolbarColour;
+            var backgroundBrush = e.Item.Selected && e.Item.Text == "Options"
+                ? _dialog.Theme.MenuColourBrush
+                : _dialog.Theme.ToolbarColourBrush;
 
             e.Graphics.FillRectangle(
-                new SolidBrush(backgroundColor),
+                backgroundBrush,
                 new Rectangle(Point.Empty, e.Item.Size));
         }
 
         protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
         {
             e.Graphics.FillRectangle(
-                new SolidBrush(_dialog.Theme.MenuColour),
+                _dialog.Theme.MenuColourBrush,
                 new Rectangle(Point.Empty, e.Item.Size));
         }
     }

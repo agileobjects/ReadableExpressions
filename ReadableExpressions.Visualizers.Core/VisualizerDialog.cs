@@ -3,11 +3,11 @@
     using System;
     using System.Collections.Generic;
     using System.Drawing;
-    using System.Drawing.Text;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Theming;
+    using Translations.Formatting;
     using static System.Windows.Forms.SystemInformation;
     using static DialogConstants;
 
@@ -16,10 +16,8 @@
         private static readonly Size _dialogMinimumSize = new Size(530, 125);
 
         private readonly Func<object> _translationFactory;
-        private readonly ExpressionDialogRenderer _renderer;
-        private readonly Size _dialogMaximumSize;
+        private readonly VisualizerDialogRenderer _renderer;
         private readonly ToolStrip _menuStrip;
-        private readonly WebBrowser _viewer;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
@@ -29,14 +27,12 @@
         public VisualizerDialog(Func<object> translationFactory)
         {
             _translationFactory = translationFactory;
-            _renderer = new ExpressionDialogRenderer(this);
+            _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-
-            _dialogMaximumSize = GetDialogMaximumSize();
 
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
@@ -48,7 +44,7 @@
             }
 
             ToolTip = AddToolTip();
-            _viewer = AddViewer();
+            Viewer = AddViewer();
             _menuStrip = AddMenuStrip();
             _toolbar = AddToolbar();
 
@@ -58,28 +54,23 @@
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
 
-        internal ExpressionTranslationTheme Theme
+        internal VisualizerDialogTheme Theme
         {
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
 
+        internal ITranslationFormatter Formatter => TranslationHtmlFormatter.Instance;
+
         internal float WidthFactor { get; }
-        
+
         internal float HeightFactor { get; }
+
+        internal WebBrowser Viewer { get; }
 
         internal ToolTip ToolTip { get; }
 
         internal bool ViewerUninitialised { get; private set; }
-
-        private Size GetDialogMaximumSize()
-        {
-            var screenSize = Screen.FromControl(this).Bounds.Size;
-
-            return new Size(
-                Convert.ToInt32(screenSize.Width * .9),
-                Convert.ToInt32(screenSize.Height * .8));
-        }
 
         private ToolTip AddToolTip()
         {
@@ -107,8 +98,7 @@
         {
             var viewer = new WebBrowser
             {
-                AllowNavigation = false,
-                Font = new Font(new FontFamily(GenericFontFamilies.Monospace), 13.5f)
+                AllowNavigation = false
             };
 
             var viewerPanel = new Panel
@@ -131,21 +121,17 @@
 
         private ToolStrip AddToolbar()
         {
-            var copyButton = new Button { Text = "Copy" };
+            var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
+            {
+                Alignment = ToolStripItemAlignment.Left
+            };
 
-            copyButton.Click += (sender, args) => Clipboard.SetText(
-            // ReSharper disable PossibleNullReferenceException
-                TranslationHtmlFormatter.Instance.GetRaw(_viewer.Document.Body.InnerHtml));
-            // ReSharper restore PossibleNullReferenceException
-
-            RegisterThemeable(copyButton);
-
-            var buttonWrapper = new ToolStripControlHost(copyButton)
+            var copyButton = new ToolStripControlHost(new CopyButton(this))
             {
                 Alignment = ToolStripItemAlignment.Right
             };
 
-            var toolbar = new ToolStrip(buttonWrapper)
+            var toolbar = new ToolStrip(feedbackButton, copyButton)
             {
                 Dock = DockStyle.Bottom,
                 GripStyle = ToolStripGripStyle.Hidden,
@@ -160,8 +146,8 @@
 
         private void SetViewerSizeLimits()
         {
-            _viewer.MinimumSize = _dialogMinimumSize;
-            _viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
+            Viewer.MinimumSize = _dialogMinimumSize;
+            Viewer.MaximumSize = GetViewerSizeBasedOn(MaximumSize);
         }
 
         private Size GetViewerSizeBasedOn(Size containerSize)
@@ -173,7 +159,7 @@
 
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => _dialogMaximumSize;
+        public override Size MaximumSize => Screen.PrimaryScreen.WorkingArea.Size;
 
         public override string Text => string.Empty;
 
@@ -198,17 +184,45 @@
         private void SetTranslation()
         {
             _translation = (string)_translationFactory.Invoke();
-            var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
-            var textSize = TextRenderer.MeasureText(rawText, _viewer.Font);
 
-            var viewerSize = new Size(
-                textSize.Width + _viewer.Padding.Left + _viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + _viewer.Padding.Top + _viewer.Padding.Bottom + _viewer.Font.Height);
+            var rawText = Formatter.GetRaw(_translation);
+            var font = (Font)Settings.Font;
+            var textSize = TextRenderer.MeasureText(rawText, font);
 
-            SetViewerSize(viewerSize);
+            var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
+            int height;
+
+            var saveNewSize = false;
+
+            if (Settings.Size.UseFixedSize &&
+                Settings.Size.InitialWidth.HasValue &&
+                Settings.Size.InitialHeight.HasValue)
+            {
+                if (Settings.Size.InitialWidth.Value > width)
+                {
+                    width = Settings.Size.InitialWidth.Value;
+                }
+                else
+                {
+                    saveNewSize = true;
+                }
+
+                height = Settings.Size.InitialHeight.Value;
+            }
+            else
+            {
+                height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
+            }
+
+            SetViewerSize(new Size(width, height));
+
+            if (saveNewSize)
+            {
+                SaveNewSize();
+            }
         }
 
-        internal void OnThemeChanged(ExpressionTranslationTheme newTheme)
+        internal void OnThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
 
@@ -233,19 +247,51 @@
             return base.ProcessDialogKey(keyData);
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
+            if (m.Msg == SystemCommand)
+            {
+                var eventId = m.WParam.ToInt32() & 0xFFF0;
+
+                switch (eventId)
+                {
+                    case WindowMaximise:
+                    case WindowMinimise:
+                    case WindowToggle:
+                        HandleResize();
+                        break;
+                }
+            }
+        }
+
         protected override void OnResizeEnd(EventArgs e)
         {
             base.OnResizeEnd(e);
 
+            HandleResize();
+        }
+
+        private void HandleResize()
+        {
             SetViewerSize(GetViewerSizeBasedOn(Size));
+            SaveNewSize();
+        }
+
+        private void SaveNewSize()
+        {
+            Settings.Size.UpdateFrom(this);
+            Settings.Save();
         }
 
         protected override void OnShown(EventArgs e)
         {
             if (ViewerUninitialised)
             {
-                _viewer.AllowWebBrowserDrop = false;
-                _viewer.ScrollBarsEnabled = false;
+                Viewer.AllowWebBrowserDrop = false;
+                Viewer.ScrollBarsEnabled = false;
                 ViewerUninitialised = false;
             }
 
@@ -260,11 +306,11 @@
 <html>
 <head>
 <style type=""text/css"">
-body {{ 
+body, pre {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
-    font-family: '{_viewer.Font.FontFamily.Name}';
-    font-size: 13pt;
+    font-family: '{Settings.Font.Name}';
+    font-size: {Settings.Font.Size}pt;
     overflow: auto;
 }}
 .kw {{ color: {Theme.Keyword} }}
@@ -283,14 +329,14 @@ body {{
 </body>
 </html>";
 
-            if (string.IsNullOrEmpty(_viewer.DocumentText))
+            if (string.IsNullOrEmpty(Viewer.DocumentText))
             {
-                _viewer.DocumentText = content;
+                Viewer.DocumentText = content;
                 return;
             }
 
-            _viewer.Navigate("about:blank");
-            _viewer.Document.OpenNew(false).Write(content);
+            Viewer.Navigate("about:blank");
+            Viewer.Document.OpenNew(false).Write(content);
         }
 
         private void SetViewerSize(Size newSize)
@@ -298,14 +344,14 @@ body {{
             EnableAutoSize();
 
             var finalWidth = Math.Min(
-                Math.Max(newSize.Width, _viewer.MinimumSize.Width),
-                _viewer.MaximumSize.Width);
+                Math.Max(newSize.Width, Viewer.MinimumSize.Width),
+                Viewer.MaximumSize.Width);
 
             var finalHeight = Math.Min(
-                Math.Max(newSize.Height, _viewer.MinimumSize.Height),
-                _viewer.MaximumSize.Height);
+                Math.Max(newSize.Height, Viewer.MinimumSize.Height),
+                Viewer.MaximumSize.Height);
 
-            _viewer.Size = new Size(finalWidth, finalHeight);
+            Viewer.Size = new Size(finalWidth, finalHeight);
 
             DisableAutoSize();
         }
@@ -313,5 +359,14 @@ body {{
         private void EnableAutoSize() => _autoSize = true;
 
         private void DisableAutoSize() => _autoSize = false;
+
+        protected override void Dispose(bool disposing)
+        {
+            _themeableControls.Clear();
+
+            ToolTip.Dispose();
+
+            base.Dispose(disposing);
+        }
     }
 }

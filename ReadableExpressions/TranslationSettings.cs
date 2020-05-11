@@ -17,7 +17,7 @@
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
             HideImplicitlyTypedArrayTypes = true;
-            Formatter = NullTranslationFormatter.Insance;
+            Formatter = NullTranslationFormatter.Instance;
         }
 
         /// <summary>
