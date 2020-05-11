@@ -152,6 +152,13 @@
 
             public int FormattingSize { get; }
 
+            public int GetLineCount()
+            {
+                return Math.Max(
+                    _testedValueTranslation.GetLineCount(),
+                    _testedTypeNameTranslation.GetLineCount());
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 _testedValueTranslation.WriteTo(buffer);
@@ -201,6 +208,13 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount()
+            {
+                return Math.Max(
+                    _castTypeNameTranslation.GetLineCount(),
+                    _castValueTranslation.GetLineCount());
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {

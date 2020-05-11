@@ -130,6 +130,11 @@
 
         public bool IsTerminated => true;
 
+        public int GetLineCount()
+        {
+            throw new NotImplementedException();
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteKeywordToTranslation("try");
@@ -187,6 +192,8 @@
 
             public int FormattingSize { get; }
 
+            public int GetLineCount() => _catchBodyTranslation.GetLineCount() + 1;
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteKeywordToTranslation("catch");
@@ -223,6 +230,8 @@
                 public virtual int TranslationSize { get; }
 
                 public virtual int FormattingSize { get; }
+
+                public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 
                 public virtual void WriteTo(TranslationBuffer buffer)
                 {
@@ -271,6 +280,8 @@
                 public int TranslationSize { get; }
 
                 public int FormattingSize => _exceptionTypeTranslation.FormattingSize;
+
+                public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 
                 public void WriteTo(TranslationBuffer buffer)
                 {

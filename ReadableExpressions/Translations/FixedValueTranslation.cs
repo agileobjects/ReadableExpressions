@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Formatting;
     using Interfaces;
 
@@ -42,6 +43,8 @@
         public int TranslationSize => _value.Length;
         
         public int FormattingSize => 0;
+
+        public int GetLineCount() => _value.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)
             => buffer.WriteToTranslation(_value, _tokenType);

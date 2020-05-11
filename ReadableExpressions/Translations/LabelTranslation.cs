@@ -74,6 +74,8 @@
 
         public bool HasGoto => !_labelHasNoValue;
 
+        public int GetLineCount() => _labelValueTranslation?.GetLineCount() ?? 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_labelIsNamed)

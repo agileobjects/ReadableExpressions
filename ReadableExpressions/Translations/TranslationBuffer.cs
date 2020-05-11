@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-#if DEBUG
+#if DEBUG && NET40
     using System.Diagnostics;
 #endif
     using System.Text;

@@ -95,6 +95,8 @@
 
         public int FormattingSize { get; }
 
+        public int GetLineCount() => _subject?.GetLineCount() ?? 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_subject != null)

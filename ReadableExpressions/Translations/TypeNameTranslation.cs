@@ -77,6 +77,8 @@
             return this;
         }
 
+        public int GetLineCount() => 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_isObject)

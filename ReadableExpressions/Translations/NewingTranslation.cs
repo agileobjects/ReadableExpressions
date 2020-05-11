@@ -2,14 +2,14 @@
 {
     using System;
     using System.Linq;
-    using System.Reflection;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Reflection;
     using NetStandardPolyfills;
+    using Interfaces;
 
     internal static class NewingTranslation
     {

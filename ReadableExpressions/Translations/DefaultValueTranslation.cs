@@ -55,6 +55,9 @@
 
         public bool IsEmpty { get; }
 
+        public int GetLineCount()
+            => _typeCanBeNull ? 1 : _typeNameTranslation?.GetLineCount() ?? 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_typeCanBeNull)

@@ -11,7 +11,6 @@
 #if NET35
     using Extensions;
 #endif
-    using Formatting;
     using Interfaces;
     using static Formatting.TokenType;
 
@@ -60,11 +59,13 @@
 
         public int FormattingSize { get; }
 
+        public int GetLineCount() => _subjectTranslation.GetLineCount();
+
         public void WriteTo(TranslationBuffer buffer)
         {
             _subjectTranslation.WriteTo(buffer);
             buffer.WriteDotToTranslation();
-            buffer.WriteToTranslation(_subjectMethodName, TokenType.MethodName);
+            buffer.WriteToTranslation(_subjectMethodName, MethodName);
         }
     }
 }

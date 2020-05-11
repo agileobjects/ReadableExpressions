@@ -39,6 +39,9 @@
         
         public int FormattingSize { get; }
 
+        public int GetLineCount() 
+            => (_thrownItemTranslation?.GetLineCount() + 1).GetValueOrDefault();
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteKeywordToTranslation(_throw);

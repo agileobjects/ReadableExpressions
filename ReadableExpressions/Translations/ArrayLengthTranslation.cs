@@ -29,6 +29,8 @@
 
         public int FormattingSize => _operand.FormattingSize;
 
+        public int GetLineCount() => _operand.GetLineCount();
+
         public void WriteTo(TranslationBuffer buffer)
         {
             _operand.WriteTo(buffer);

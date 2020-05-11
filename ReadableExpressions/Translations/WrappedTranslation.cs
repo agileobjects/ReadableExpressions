@@ -32,6 +32,8 @@
 
         public bool IsTerminated => _translation.IsTerminated();
 
+        public int GetLineCount() => _translation.GetLineCount();
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteToTranslation(_prefix);

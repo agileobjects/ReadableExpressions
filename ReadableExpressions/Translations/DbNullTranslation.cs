@@ -25,6 +25,8 @@
 
         public int FormattingSize { get; }
 
+        public int GetLineCount() => 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteTypeNameToTranslation("DBNull");

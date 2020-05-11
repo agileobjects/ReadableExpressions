@@ -261,6 +261,8 @@
 
             public int FormattingSize => _typeNameTranslation.FormattingSize;
 
+            public int GetLineCount() => 1;
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 _typeNameTranslation.WriteTo(buffer);
@@ -309,6 +311,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount() => 1;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -393,6 +397,8 @@
 
             public bool IsTerminated => true;
 
+            public int GetLineCount() => _lambdaTranslation.GetLineCount();
+
             public void WriteTo(TranslationBuffer buffer) => _lambdaTranslation.WriteTo(buffer);
         }
 
@@ -440,6 +446,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount() => 1;
 
             public void WriteTo(TranslationBuffer buffer)
             {

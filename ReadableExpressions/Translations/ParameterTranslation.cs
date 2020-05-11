@@ -66,6 +66,8 @@
                 }
             }
 
+            public int GetLineCount() => _typeNameTranslation?.GetLineCount() ?? 1;
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 if (_typeNameTranslation != null)

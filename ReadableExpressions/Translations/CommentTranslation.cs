@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Formatting;
     using Interfaces;
 
@@ -28,6 +29,8 @@
         public int FormattingSize { get; }
 
         public bool IsTerminated => true;
+
+        public int GetLineCount() => _comment.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)
             => buffer.WriteToTranslation(_comment, TokenType.Comment);
