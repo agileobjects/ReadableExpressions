@@ -10,6 +10,7 @@
         public const string ThemeDefault = _theme + "." + nameof(VisualizerDialogTheme.Default);
         public const string ThemeToolbar = _theme + "." + nameof(VisualizerDialogTheme.Toolbar);
         public const string ThemeMenu = _theme + "." + nameof(VisualizerDialogTheme.Menu);
+        public const string ThemeMenuHighlight = _theme + "." + nameof(VisualizerDialogTheme.MenuHighlight);
         public const string ThemeKeyword = _theme + "." + nameof(VisualizerDialogTheme.Keyword);
         public const string ThemeVariable = _theme + "." + nameof(VisualizerDialogTheme.Variable);
         public const string ThemeTypeName = _theme + "." + nameof(VisualizerDialogTheme.TypeName);

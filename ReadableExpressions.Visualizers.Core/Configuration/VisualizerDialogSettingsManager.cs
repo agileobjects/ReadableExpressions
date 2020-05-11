@@ -106,74 +106,101 @@
             VisualizerDialogSettings settings,
             IDictionary<string, string> settingsByName)
         {
+            var defaultTheme = settings.Theme;
+
             if (settingsByName.TryGetValue(ThemeName, out var value))
             {
                 settings.Theme.Name = value;
+
+                switch (value)
+                {
+                    case "Light":
+                        defaultTheme = VisualizerDialogTheme.Light;
+                        break;
+
+                    case "Dark":
+                        defaultTheme = VisualizerDialogTheme.Dark;
+                        break;
+                }
             }
 
-            if (settingsByName.TryGetValue(ThemeBackground, out value))
+            settings.Theme.Background = settingsByName.TryGetValue(ThemeBackground, out value)
+                ? value : defaultTheme.Background;
+
+            settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
+                ? value : defaultTheme.Default;
+
+            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value) 
+                ? value : defaultTheme.Toolbar;
+
+            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value) 
+                ? value : defaultTheme.Menu;
+
+            settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
+
+            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value) 
+                ? value : defaultTheme.Keyword;
+
+            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value) 
+                ? value : defaultTheme.Variable;
+
+            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value) 
+                ? value : defaultTheme.TypeName;
+
+            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value) 
+                ? value : defaultTheme.InterfaceName;
+
+            settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
+                ? value : defaultTheme.CommandStatement;
+
+            settings.Theme.Text = settingsByName.TryGetValue(ThemeText, out value)
+                ? value : defaultTheme.Text;
+
+            settings.Theme.Numeric = settingsByName.TryGetValue(ThemeNumeric, out value)
+                ? value : defaultTheme.Numeric;
+
+            settings.Theme.MethodName = settingsByName.TryGetValue(ThemeMethodName, out value)
+                ? value : defaultTheme.MethodName;
+
+            settings.Theme.Comment = settingsByName.TryGetValue(ThemeComment, out value)
+                ? value : defaultTheme.Comment;
+        }
+
+        private static void SetFontValues(
+            VisualizerDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            if (settingsByName.TryGetValue(FontName, out var value))
             {
-                settings.Theme.Background = value;
+                settings.Font.Name = value;
             }
 
-            if (settingsByName.TryGetValue(ThemeDefault, out value))
+            if (settingsByName.TryGetValue(FontSize, out value) &&
+                int.TryParse(value, out var fontSize))
             {
-                settings.Theme.Default = value;
+                settings.Font.Size = fontSize;
+            }
+        }
+
+        private static void SetSizeValues(
+            VisualizerDialogSettings settings,
+            IDictionary<string, string> settingsByName)
+        {
+            if (settingsByName.TryGetValue(SizeResizeToCode, out var value))
+            {
+                settings.Size.ResizeToMatchCode = IsTrue(value);
             }
 
-            if (settingsByName.TryGetValue(ThemeToolbar, out value))
+            if (settingsByName.TryGetValue(SizeInitialWidth, out value) &&
+                int.TryParse(value, out var width))
             {
-                settings.Theme.Toolbar = value;
+                settings.Size.InitialWidth = width;
             }
 
-            if (settingsByName.TryGetValue(ThemeMenu, out value))
+            if (settingsByName.TryGetValue(SizeInitialHeight, out value) &&
+                int.TryParse(value, out var height))
             {
-                settings.Theme.Menu = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeKeyword, out value))
-            {
-                settings.Theme.Keyword = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeVariable, out value))
-            {
-                settings.Theme.Variable = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeTypeName, out value))
-            {
-                settings.Theme.TypeName = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeInterfaceName, out value))
-            {
-                settings.Theme.InterfaceName = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeCommandStatement, out value))
-            {
-                settings.Theme.CommandStatement = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeText, out value))
-            {
-                settings.Theme.Text = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeNumeric, out value))
-            {
-                settings.Theme.Numeric = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeMethodName, out value))
-            {
-                settings.Theme.MethodName = value;
-            }
-
-            if (settingsByName.TryGetValue(ThemeComment, out value))
-            {
-                settings.Theme.Comment = value;
+                settings.Size.InitialHeight = height;
             }
         }
 
@@ -237,6 +264,7 @@
 {ThemeDefault}: {theme.Default}
 {ThemeToolbar}: {theme.Toolbar}
 {ThemeMenu}: {theme.Menu}
+{ThemeMenuHighlight}: {theme.MenuHighlight}
 {ThemeKeyword}: {theme.Keyword}
 {ThemeVariable}: {theme.Variable}
 {ThemeTypeName}: {theme.TypeName}

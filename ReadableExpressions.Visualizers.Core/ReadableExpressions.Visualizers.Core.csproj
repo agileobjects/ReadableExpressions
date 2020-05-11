@@ -46,10 +46,16 @@
     <Compile Include="Configuration\VisualizerDialogSettingsConstants.cs" />
     <Compile Include="Configuration\VisualizerDialogSettingsManager.cs" />
     <Compile Include="Configuration\VisualizerDialogSizeSettings.cs" />
+    <Compile Include="Controls\CopyButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Controls\DeclareOutParamsInlineOption.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\ExplicitGenericParamsOption.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\FeedbackButton.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Controls\FontFamilySelector.cs">
@@ -102,6 +108,10 @@
     </Compile>
     <Compile Include="Theming\ExpressionDialogRenderer.cs" />
     <Compile Include="Theming\ExpressionDialogColourTable.cs" />
+    <Compile Include="Theming\VisualizerDialogRenderer.cs" />
+    <Compile Include="Theming\VisualizerDialogColourTable.cs" />
+    <Compile Include="Theming\GraphicsExtensions.cs" />
+    <Compile Include="Theming\IThemeable.cs" />
     <Compile Include="Theming\VisualizerDialogTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
     <Compile Include="VisualizerDialog.cs">
@@ -118,6 +128,12 @@
       <Project>{147ddcce-cdd3-4dd0-8ba3-d3f2f239e161}</Project>
       <Name>ReadableExpressions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\GitHubIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Controls\GitHubIconDark.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -33,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         {
             return _thisAssembly
                 .GetManifestResourceNames()
-                .WithExtension("vsixmanifest")
+                .WithExtension(".vsixmanifest")
                 .First();
         }
 
@@ -149,7 +149,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
                 visualizers = _thisAssembly
                     .GetManifestResourceNames()
-                    .WithExtension("dll")
+                    .WithExtension(".dll")
                     .Select(visualizerResourceName => new Visualizer(Log, _thisAssemblyVersion, VsixManifest, visualizerResourceName))
                     .SelectMany(visualizer => registryData.GetInstallableVisualizersFor(visualizer))
                     .ToArray();

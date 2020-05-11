@@ -4,7 +4,7 @@
 
     internal class NullTranslationFormatter : ITranslationFormatter
     {
-        public static readonly ITranslationFormatter Insance = new NullTranslationFormatter();
+        public static readonly ITranslationFormatter Instance = new NullTranslationFormatter();
 
         public string GetRaw(string formatted) => formatted;
 

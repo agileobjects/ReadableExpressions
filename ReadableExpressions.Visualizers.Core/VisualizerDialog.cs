@@ -7,6 +7,7 @@
     using Configuration;
     using Controls;
     using Theming;
+    using Translations.Formatting;
     using static System.Windows.Forms.SystemInformation;
 
     public class VisualizerDialog : Form
@@ -14,8 +15,7 @@
         private static readonly Size _dialogMinimumSize = new Size(530, 125);
 
         private readonly Func<object> _translationFactory;
-        private readonly ExpressionDialogRenderer _renderer;
-        private readonly Size _dialogMaximumSize;
+        private readonly VisualizerDialogRenderer _renderer;
         private readonly ToolStrip _menuStrip;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
@@ -26,14 +26,12 @@
         public VisualizerDialog(Func<object> translationFactory)
         {
             _translationFactory = translationFactory;
-            _renderer = new ExpressionDialogRenderer(this);
+            _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
-
-            _dialogMaximumSize = GetDialogMaximumSize();
 
             var screenRectangle = RectangleToScreen(ClientRectangle);
             _titleBarHeight = screenRectangle.Top - Top;
@@ -61,6 +59,8 @@
             private set => Settings.Theme = value;
         }
 
+        internal ITranslationFormatter Formatter => TranslationHtmlFormatter.Instance;
+
         internal float WidthFactor { get; }
 
         internal float HeightFactor { get; }
@@ -70,15 +70,6 @@
         internal ToolTip ToolTip { get; }
 
         internal bool ViewerUninitialised { get; private set; }
-
-        private Size GetDialogMaximumSize()
-        {
-            var screenSize = Screen.FromControl(this).Bounds.Size;
-
-            return new Size(
-                Convert.ToInt32(screenSize.Width * .9),
-                Convert.ToInt32(screenSize.Height * .8));
-        }
 
         private ToolTip AddToolTip()
         {
@@ -129,21 +120,17 @@
 
         private ToolStrip AddToolbar()
         {
-            var copyButton = new Button { Text = "Copy" };
+            var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
+            {
+                Alignment = ToolStripItemAlignment.Left
+            };
 
-            copyButton.Click += (sender, args) => Clipboard.SetText(
-            // ReSharper disable PossibleNullReferenceException
-                TranslationHtmlFormatter.Instance.GetRaw(Viewer.Document.Body.InnerHtml));
-            // ReSharper restore PossibleNullReferenceException
-
-            RegisterThemeable(copyButton);
-
-            var buttonWrapper = new ToolStripControlHost(copyButton)
+            var copyButton = new ToolStripControlHost(new CopyButton(this))
             {
                 Alignment = ToolStripItemAlignment.Right
             };
 
-            var toolbar = new ToolStrip(buttonWrapper)
+            var toolbar = new ToolStrip(feedbackButton, copyButton)
             {
                 Dock = DockStyle.Bottom,
                 GripStyle = ToolStripGripStyle.Hidden,
@@ -159,7 +146,7 @@
         private void SetViewerSizeLimits()
         {
             Viewer.MinimumSize = _dialogMinimumSize;
-            Viewer.MaximumSize = GetViewerSizeBasedOn(_dialogMaximumSize);
+            Viewer.MaximumSize = GetViewerSizeBasedOn(MaximumSize);
         }
 
         private Size GetViewerSizeBasedOn(Size containerSize)
@@ -171,7 +158,7 @@
 
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => _dialogMaximumSize;
+        public override Size MaximumSize => Screen.PrimaryScreen.WorkingArea.Size;
 
         public override string Text => string.Empty;
 
@@ -197,26 +184,41 @@
         {
             _translation = (string)_translationFactory.Invoke();
 
+            var rawText = Formatter.GetRaw(_translation);
+            var font = (Font)Settings.Font;
+            var textSize = TextRenderer.MeasureText(rawText, font);
+
+            var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
+            int height;
+
+            var saveNewSize = false;
+
             if (Settings.Size.UseFixedSize &&
                 Settings.Size.InitialWidth.HasValue &&
                 Settings.Size.InitialHeight.HasValue)
             {
-                SetViewerSize(new Size(
-                    Settings.Size.InitialWidth.Value,
-                    Settings.Size.InitialHeight.Value));
+                if (Settings.Size.InitialWidth.Value > width)
+                {
+                    width = Settings.Size.InitialWidth.Value;
+                }
+                else
+                {
+                    saveNewSize = true;
+                }
 
-                return;
+                height = Settings.Size.InitialHeight.Value;
+            }
+            else
+            {
+                height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
             }
 
-            var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
-            var font = (Font)Settings.Font;
-            var textSize = TextRenderer.MeasureText(rawText, font);
+            SetViewerSize(new Size(width, height));
 
-            var viewerSize = new Size(
-                textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height);
-
-            SetViewerSize(viewerSize);
+            if (saveNewSize)
+            {
+                SaveNewSize();
+            }
         }
 
         internal void OnThemeChanged(VisualizerDialogTheme newTheme)
@@ -244,12 +246,43 @@
             return base.ProcessDialogKey(keyData);
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            base.WndProc(ref m);
+
+            // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
+            if (m.Msg == SystemCommand)
+            {
+                var eventId = m.WParam.ToInt32() & 0xFFF0;
+
+                switch (eventId)
+                {
+                    case WindowMaximise:
+                    case WindowMinimise:
+                    case WindowToggle:
+                        HandleResize();
+                        break;
+                }
+            }
+        }
+
         protected override void OnResizeEnd(EventArgs e)
         {
             SetViewerSize(GetViewerSizeBasedOn(Size));
 
             base.OnResizeEnd(e);
 
+            HandleResize();
+        }
+
+        private void HandleResize()
+        {
+            SetViewerSize(GetViewerSizeBasedOn(Size));
+            SaveNewSize();
+        }
+
+        private void SaveNewSize()
+        {
             Settings.Size.UpdateFrom(this);
             Settings.Save();
         }
