@@ -7,6 +7,7 @@
     using System.Reflection;
     using System.Text;
     using System.Text.RegularExpressions;
+    using Core;
     using Microsoft.Win32;
 
     internal class Visualizer : IDisposable
@@ -14,7 +15,6 @@
         private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
 
         private readonly Action<string> _logger;
-        private readonly Version _version;
         private readonly string _vsixManifest;
         private RegistryKey _registryKey;
         private string _vsExePath;
@@ -24,10 +24,9 @@
 
         public Visualizer(
             Action<string> logger,
-            FileVersionInfo version,
             string vsixManifest,
             string resourceName)
-            : this(logger, new Version(version.FileVersion), vsixManifest, resourceName, GetVsVersionNumber(resourceName))
+            : this(logger, vsixManifest, resourceName, GetVsVersionNumber(resourceName))
         {
         }
 
@@ -50,13 +49,11 @@
 
         private Visualizer(
             Action<string> logger,
-            Version version,
             string vsixManifest,
             string resourceName,
             int vsVersionNumber)
         {
             _logger = logger;
-            _version = version;
             _vsixManifest = vsixManifest;
             ResourceName = resourceName;
             VsVersionNumber = vsVersionNumber;
@@ -167,7 +164,7 @@
             {
                 if (Version.TryParse(versionDirectory.Name, out var directoryVersion))
                 {
-                    if (directoryVersion != _version)
+                    if (directoryVersion != VersionNumber.Version)
                     {
                         Log("Deleting previous manifest version directory " + versionDirectory.FullName);
                         versionDirectory.Delete(recursive: true);
@@ -211,7 +208,7 @@
 
         public Visualizer With(RegistryKey registryKey, string vsInstallPath)
         {
-            return new Visualizer(_logger, _version, _vsixManifest, ResourceName, VsVersionNumber)
+            return new Visualizer(_logger, _vsixManifest, ResourceName, VsVersionNumber)
             {
                 _registryKey = registryKey,
                 VsInstallDirectory = vsInstallPath,

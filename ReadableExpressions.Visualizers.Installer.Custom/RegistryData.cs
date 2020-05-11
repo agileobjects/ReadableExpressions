@@ -2,22 +2,20 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using Core;
     using Microsoft.Win32;
 
     internal class RegistryData : IDisposable
     {
-        private readonly FileVersionInfo _thisAssemblyVersion;
         private readonly RegistryKey _msMachineKey;
         private readonly RegistryKey _vsPre2017MachineKey;
         private readonly string[] _vsPre2017KeyNames;
         private readonly VsPost2015Data[] _vsPost2015Data;
 
-        public RegistryData(FileVersionInfo thisAssemblyVersion)
+        public RegistryData()
         {
-            _thisAssemblyVersion = thisAssemblyVersion;
             const string REGISTRY_KEY = @"SOFTWARE\Microsoft";
 
             _msMachineKey = Registry.LocalMachine.OpenSubKey(REGISTRY_KEY);
@@ -148,14 +146,14 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             }
         }
 
-        private string GetPathToExtensions(string vsInstallPath)
+        private static string GetPathToExtensions(string vsInstallPath)
         {
             return Path.Combine(
                 vsInstallPath,
                 "Extensions",
-                _thisAssemblyVersion.CompanyName,
-                _thisAssemblyVersion.ProductName,
-                _thisAssemblyVersion.FileVersion);
+                VersionNumber.CompanyName,
+                VersionNumber.ProductName,
+                VersionNumber.FileVersion);
         }
 
         public void Dispose()

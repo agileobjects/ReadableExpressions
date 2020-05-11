@@ -30,6 +30,7 @@
             _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
+            base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;

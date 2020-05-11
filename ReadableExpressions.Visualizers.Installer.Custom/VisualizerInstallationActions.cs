@@ -7,14 +7,12 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System.Linq;
     using System.Reflection;
     using System.Windows.Forms;
+    using Core;
     using Microsoft.Deployment.WindowsInstaller;
 
     public class VisualizerInstallationActions
     {
         private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
-
-        // ReSharper disable once AssignNullToNotNullAttribute
-        private static readonly FileVersionInfo _thisAssemblyVersion = FileVersionInfo.GetVersionInfo(_thisAssembly.Location);
 
         private static readonly Lazy<string> _vsixManifestResourceNameLoader;
         private static readonly Lazy<string> _vsixManifestLoader;
@@ -45,8 +43,8 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             {
                 return streamReader
                     .ReadToEnd()
-                    .Replace("$version$", _thisAssemblyVersion.FileVersion)
-                    .Replace("$author$", _thisAssemblyVersion.CompanyName);
+                    .Replace("$version$", VersionNumber.FileVersion)
+                    .Replace("$author$", VersionNumber.CompanyName);
             }
         }
 
@@ -138,7 +136,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
         private static bool NoVisualizersToInstall(out IEnumerable<Visualizer> visualizers, out string errorMessage)
         {
-            using (var registryData = new RegistryData(_thisAssemblyVersion))
+            using (var registryData = new RegistryData())
             {
                 if (registryData.NoVisualStudio)
                 {
@@ -150,7 +148,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 visualizers = _thisAssembly
                     .GetManifestResourceNames()
                     .WithExtension(".dll")
-                    .Select(visualizerResourceName => new Visualizer(Log, _thisAssemblyVersion, VsixManifest, visualizerResourceName))
+                    .Select(visualizerResourceName => new Visualizer(Log, VsixManifest, visualizerResourceName))
                     .SelectMany(visualizer => registryData.GetInstallableVisualizersFor(visualizer))
                     .ToArray();
 
