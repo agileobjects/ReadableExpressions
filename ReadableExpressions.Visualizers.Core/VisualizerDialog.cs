@@ -190,7 +190,7 @@
             var textSize = TextRenderer.MeasureText(rawText, font);
 
             var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
-            var height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
+            int height;
 
             var saveNewSize = false;
 
@@ -207,14 +207,11 @@
                     saveNewSize = true;
                 }
 
-                if (Settings.Size.InitialHeight.Value > height)
-                {
-                    height = Settings.Size.InitialHeight.Value;
-                }
-                else
-                {
-                    saveNewSize = true;
-                }
+                height = Settings.Size.InitialHeight.Value;
+            }
+            else
+            {
+                height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
             }
 
             SetViewerSize(new Size(width, height));
