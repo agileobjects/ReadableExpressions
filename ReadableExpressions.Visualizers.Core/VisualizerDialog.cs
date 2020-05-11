@@ -17,7 +17,6 @@
 
         private readonly Func<object> _translationFactory;
         private readonly VisualizerDialogRenderer _renderer;
-        private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
@@ -186,26 +185,44 @@
         {
             _translation = (string)_translationFactory.Invoke();
 
-            if (Settings.Size.UseFixedSize &&
-                Settings.Size.InitialWidth.HasValue &&
-                Settings.Size.InitialHeight.HasValue)
-            {
-                SetViewerSize(new Size(
-                    Settings.Size.InitialWidth.Value,
-                    Settings.Size.InitialHeight.Value));
-
-                return;
-            }
-
             var rawText = Formatter.GetRaw(_translation);
             var font = (Font)Settings.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
 
-            var viewerSize = new Size(
-                textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10,
-                textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height);
+            var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
+            var height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
 
-            SetViewerSize(viewerSize);
+            var saveNewSize = false;
+
+            if (Settings.Size.UseFixedSize &&
+                Settings.Size.InitialWidth.HasValue &&
+                Settings.Size.InitialHeight.HasValue)
+            {
+                if (Settings.Size.InitialWidth.Value > width)
+                {
+                    width = Settings.Size.InitialWidth.Value;
+                }
+                else
+                {
+                    saveNewSize = true;
+                }
+
+                if (Settings.Size.InitialHeight.Value > height)
+                {
+                    height = Settings.Size.InitialHeight.Value;
+                }
+                else
+                {
+                    saveNewSize = true;
+                }
+            }
+
+            SetViewerSize(new Size(width, height));
+
+            if (saveNewSize)
+            {
+                SaveNewSize();
+            }
         }
 
         internal void OnThemeChanged(VisualizerDialogTheme newTheme)
@@ -236,7 +253,7 @@
         protected override void WndProc(ref Message m)
         {
             base.WndProc(ref m);
-            
+
             // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
             if (m.Msg == SystemCommand)
             {
@@ -263,7 +280,11 @@
         private void HandleResize()
         {
             SetViewerSize(GetViewerSizeBasedOn(Size));
+            SaveNewSize();
+        }
 
+        private void SaveNewSize()
+        {
             Settings.Size.UpdateFrom(this);
             Settings.Save();
         }

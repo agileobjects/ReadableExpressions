@@ -22,7 +22,9 @@
 
         internal static string GetFriendlyName(this Type type, TranslationSettings translationSettings)
         {
-            var buffer = new TranslationBuffer((type.FullName ?? type.ToString()).Length);
+            var buffer = new TranslationBuffer(
+                translationSettings.Formatter,
+                (type.FullName ?? type.ToString()).Length);
 
             buffer.WriteFriendlyName(type, translationSettings);
 

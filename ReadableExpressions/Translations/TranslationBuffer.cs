@@ -22,7 +22,7 @@
 
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
-            Formatter = formatter;
+            Formatter = formatter ?? NullTranslationFormatter.Instance;
 #if DEBUG && NET40
             if (AppDomain.CurrentDomain.IsFullyTrusted)
             {
