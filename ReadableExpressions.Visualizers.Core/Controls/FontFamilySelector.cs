@@ -82,9 +82,9 @@
             var selector = (FontFamilySelector)sender;
             var font = (Font)selector.Items[e.Index];
             var theme = selector._dialog.Theme;
-            var fontBrush = theme.ForeColourBrush;
+            var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
-            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
+            if (isSelected)
             {
                 e.Graphics.FillRectangle(theme.MenuHighlightColourBrush, e.Bounds);
             }
@@ -93,12 +93,16 @@
                 e.DrawBackground();
             }
 
+            var fontBrush = isSelected || IsCommonCodingFont(font)
+                ? theme.ForeColourBrush
+                : theme.ForeLowlightColourBrush;
+
             e.Graphics.DrawString(font.Name, font, fontBrush, e.Bounds.X, e.Bounds.Y);
         }
 
-        private static FontStyle GetFontStyle(FontFamily fontFamily)
+        private static bool IsCommonCodingFont(Font font)
         {
-            switch (fontFamily.Name)
+            switch (font.Name)
             {
                 case "Consolas":
                 case "Courier":
@@ -120,10 +124,10 @@
                 case "Sudo":
                 case "Terminal":
                 case "Ubuntu Mono":
-                    return FontStyle.Bold;
+                    return true;
             }
 
-            return FontStyle.Regular;
+            return false;
         }
     }
 }

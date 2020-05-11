@@ -45,6 +45,7 @@
 
         private Color? _foreColour;
         private Brush _foreColourBrush;
+        private Brush _foreLowlightColourBrush;
         private Color? _toolbarColour;
         private Brush _toolbarColourBrush;
         private Color? _menuColour;
@@ -63,6 +64,10 @@
 
         public Brush ForeColourBrush
             => _foreColourBrush ??= new SolidBrush(ForeColour);
+
+        public Brush ForeLowlightColourBrush
+            => _foreLowlightColourBrush ??= new SolidBrush(
+                ForeColour.ChangeBrightness(ForeColour.IsDark() ? 0.5f : -0.4f));
 
         public string Toolbar { get; set; }
 
