@@ -114,6 +114,7 @@
     <Compile Include="Theming\IThemeable.cs" />
     <Compile Include="Theming\VisualizerDialogTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
+    <Compile Include="VersionNumber.cs" />
     <Compile Include="VisualizerDialog.cs">
       <SubType>Form</SubType>
     </Compile>
