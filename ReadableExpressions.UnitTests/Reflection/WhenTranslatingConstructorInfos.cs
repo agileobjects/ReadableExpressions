@@ -1,10 +1,9 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.StaticTranslators
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Reflection
 {
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using NetStandardPolyfills;
-    using Translations.StaticTranslators;
 #if !NET35
     using Xunit;
 #else
@@ -17,7 +16,7 @@
         [Fact]
         public void ShouldTranslateANullCtorInfo()
         {
-            var translated = DefinitionsTranslator.Translate(default(ConstructorInfo));
+            var translated = default(ConstructorInfo).ToReadableString();
 
             translated.ShouldBe("[Constructor not found]");
         }
@@ -28,7 +27,7 @@
             var ctor = typeof(Helper)
                 .GetPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper()");
         }
@@ -39,7 +38,7 @@
             var ctor = typeof(AbstractHelper)
                 .GetNonPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("protected WhenTranslatingConstructorInfos.AbstractHelper()");
         }
@@ -50,7 +49,7 @@
             var ctor = typeof(SealedInternalHelper)
                 .GetNonPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("internal WhenTranslatingConstructorInfos.SealedInternalHelper()");
         }
@@ -61,7 +60,7 @@
             var ctor = typeof(Helper)
                 .GetPublicInstanceConstructor(typeof(int));
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper
@@ -77,7 +76,7 @@
             var ctor = typeof(Helper)
                 .GetPublicInstanceConstructor(typeof(DateTime), typeof(int));
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper
@@ -94,7 +93,7 @@
             var ctor = typeof(Helper<>)
                 .GetPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T>()");
         }
@@ -105,7 +104,7 @@
             var ctor = typeof(Helper<Dictionary<int, string>>)
                 .GetPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<Dictionary<int, string>>()");
         }
@@ -116,7 +115,7 @@
             var method = typeof(Helper<,>)
                 .GetPublicInstanceConstructor();
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T1, T2>()");
         }
@@ -127,7 +126,7 @@
             var method = typeof(Helper<DateTime, TimeSpan>)
                 .GetPublicInstanceConstructor(typeof(int), typeof(Func<int, DateTime>), typeof(TimeSpan));
 
-            var translated = DefinitionsTranslator.Translate(method);
+            var translated = method.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>
@@ -145,7 +144,7 @@
             var ctor = typeof(Helper)
                 .GetPublicInstanceConstructor(typeof(DateTime).MakeByRefType());
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper
@@ -161,7 +160,7 @@
             var ctor = typeof(Helper)
                 .GetPublicInstanceConstructor(typeof(object).MakeByRefType());
 
-            var translated = DefinitionsTranslator.Translate(ctor);
+            var translated = ctor.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper

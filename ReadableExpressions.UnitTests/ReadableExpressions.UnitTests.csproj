@@ -119,10 +119,10 @@
     <Compile Include="Extensions\WhenGettingAParentExpressionNode.cs" />
     <Compile Include="Extensions\WhenGettingFriendlyNames.cs" />
     <Compile Include="ShouldExtensions.cs" />
-    <Compile Include="StaticTranslators\WhenTranslatingTypes.cs" />
-    <Compile Include="StaticTranslators\WhenTranslatingConstructorInfos.cs" />
+    <Compile Include="Reflection\WhenTranslatingTypes.cs" />
+    <Compile Include="Reflection\WhenTranslatingConstructorInfos.cs" />
     <Compile Include="TestClassBase.cs" />
-    <Compile Include="StaticTranslators\WhenTranslatingMethodInfos.cs" />
+    <Compile Include="Reflection\WhenTranslatingMethodInfos.cs" />
     <Compile Include="WhenFormattingCodeAsHtml.cs" />
     <Compile Include="WhenTranslatingVariableNames.cs" />
     <Compile Include="WhenUsingPartialTrust.cs" />

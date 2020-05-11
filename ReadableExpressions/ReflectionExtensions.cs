@@ -1,30 +1,36 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.StaticTranslators
+﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
     using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
-    using static Formatting.TokenType;
+    using Translations;
+    using Translations.Formatting;
+    using static Translations.Formatting.TokenType;
 
     /// <summary>
-    /// Translates reflection objects into readable strings. Used to provide visualizations.
+    /// Provides reflection translation extension methods.
     /// </summary>
-    public static class DefinitionsTranslator
+    public static class ReflectionExtensions
     {
         /// <summary>
-        /// Translates the given <paramref name="type"/> into a readable string.
+        /// Translates this <paramref name="type"/> into a readable string.
         /// </summary>
         /// <param name="type">The Type to translate.</param>
-        /// <returns>A readable string version of the given <paramref name="type"/>.</returns>
-        public static string Translate(Type type)
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="type"/>.</returns>
+        public static string ToReadableString(
+            this Type type, 
+            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
         {
             if (type == null)
             {
                 return "[Type not found]";
             }
 
-            var buffer = new TranslationBuffer(type.ToString().Length);
+            var formatter = configuration.GetTranslationFormatter();
+            var buffer = new TranslationBuffer(formatter, type.ToString().Length);
 
             WriteModifiersToTranslation(type, buffer);
 
@@ -34,18 +40,22 @@
         }
 
         /// <summary>
-        /// Translates the given <paramref name="ctor"/> into a readable string.
+        /// Translates this <paramref name="ctor"/> into a readable string.
         /// </summary>
         /// <param name="ctor">The ConstructorInfo to translate.</param>
-        /// <returns>A readable string version of the given <paramref name="ctor"/>.</returns>
-        public static string Translate(ConstructorInfo ctor)
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="ctor"/>.</returns>
+        public static string ToReadableString(
+            this ConstructorInfo ctor, 
+            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
         {
             if (ctor == null)
             {
                 return "[Constructor not found]";
             }
 
-            var buffer = new TranslationBuffer(ctor.ToString().Length);
+            var formatter = configuration.GetTranslationFormatter();
+            var buffer = new TranslationBuffer(formatter, ctor.ToString().Length);
 
             WriteAccessibilityToTranslation(ctor, buffer);
 
@@ -57,18 +67,22 @@
         }
 
         /// <summary>
-        /// Translates the given <paramref name="method"/> into a readable string.
+        /// Translates this <paramref name="method"/> into a readable string.
         /// </summary>
         /// <param name="method">The MethodInfo to translate.</param>
-        /// <returns>A readable string version of the given <paramref name="method"/>.</returns>
-        public static string Translate(MethodInfo method)
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="method"/>.</returns>
+        public static string ToReadableString(
+            this MethodInfo method, 
+            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
         {
             if (method == null)
             {
                 return "[Method not found]";
             }
-
-            var buffer = new TranslationBuffer(method.ToString().Length);
+            
+            var formatter = configuration.GetTranslationFormatter();
+            var buffer = new TranslationBuffer(formatter, method.ToString().Length);
 
             WriteModifiersToTranslation(method, buffer);
 
@@ -103,6 +117,13 @@
             WriteParametersToTranslation(method, buffer);
 
             return buffer.GetContent();
+        }
+
+        private static ITranslationFormatter GetTranslationFormatter(
+            this Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration)
+        {
+            return (configuration?.Invoke(new TranslationFormattingSettings()) ?? TranslationFormattingSettings.Default)
+                .Formatter;
         }
 
         private static void WriteModifiersToTranslation(Type type, TranslationBuffer buffer)
@@ -240,7 +261,9 @@
             }
         }
 
-        private static void WriteGenericArgumentsToTranslation(IList<Type> genericArguments, TranslationBuffer buffer)
+        private static void WriteGenericArgumentsToTranslation(
+            IList<Type> genericArguments, 
+            TranslationBuffer buffer)
         {
             var genericArgumentTypes = genericArguments;
 

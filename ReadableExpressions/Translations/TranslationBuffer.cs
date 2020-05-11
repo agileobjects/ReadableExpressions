@@ -11,19 +11,18 @@
 
     internal class TranslationBuffer : ITranslationQuery
     {
-        private readonly ITranslationFormatter _formatter;
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
         public TranslationBuffer(int estimatedSize)
-            : this(NullTranslationFormatter.Insance, estimatedSize)
+            : this(NullTranslationFormatter.Instance, estimatedSize)
         {
         }
 
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
-            _formatter = formatter;
+            Formatter = formatter;
 #if DEBUG && NET40
             if (AppDomain.CurrentDomain.IsFullyTrusted)
             {
@@ -32,6 +31,8 @@
 #endif
             _content = new StringBuilder(estimatedSize);
         }
+
+        public ITranslationFormatter Formatter { get; }
 
         #region ITranslationQuery
 
@@ -193,7 +194,7 @@
         private void WriteToTranslation(char character, TokenType tokenType)
         {
             WriteIndentIfRequired();
-            _formatter.WriteFormatted(character, Write, Write, tokenType);
+            Formatter.WriteFormatted(character, Write, Write, tokenType);
         }
 
         private void Write(char character) => _content.Append(character);
@@ -210,7 +211,7 @@
 
             if (tokenType != Default)
             {
-                _formatter.WriteFormatted(stringValue, Write, tokenType);
+                Formatter.WriteFormatted(stringValue, Write, tokenType);
                 return;
             }
 
@@ -222,7 +223,7 @@
         public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
-            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
+            Formatter.WriteFormatted(intValue, Write, Write, Numeric);
         }
 
         private void Write(int intValue) => _content.Append(intValue);
@@ -230,7 +231,7 @@
         public void WriteToTranslation(long longValue)
         {
             WriteIndentIfRequired();
-            _formatter.WriteFormatted(longValue, Write, Write, Numeric);
+            Formatter.WriteFormatted(longValue, Write, Write, Numeric);
         }
 
         private void Write(long longValue) => _content.Append(longValue);

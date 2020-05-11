@@ -18,7 +18,7 @@
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
         public static string GetFriendlyName(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => GetFriendlyName(type, GetTranslationSettings(configuration));
+            => GetFriendlyName(type, configuration.GetTranslationSettings());
 
         internal static string GetFriendlyName(this Type type, TranslationSettings translationSettings)
         {
@@ -47,7 +47,7 @@
                 else
                 {
                     // An open generic parameter Type:
-                    buffer.WriteToTranslation(type.Name);
+                    buffer.WriteToTranslation(type.Name, InterfaceName);
                 }
 
                 return;

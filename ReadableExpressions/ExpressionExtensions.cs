@@ -45,14 +45,14 @@
                 return null;
             }
 
-            var settings = GetTranslationSettings(configuration);
+            var settings = configuration.GetTranslationSettings();
             var translation = new TranslationTree(expression, settings);
 
             return translation.GetTranslation();
         }
 
         internal static TranslationSettings GetTranslationSettings(
-            Func<TranslationSettings, TranslationSettings> configuration)
+            this Func<TranslationSettings, TranslationSettings> configuration)
         {
             return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;
         }
