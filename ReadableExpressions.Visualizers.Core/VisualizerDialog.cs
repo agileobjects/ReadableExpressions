@@ -2,16 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Drawing;
-    using System.Drawing.Drawing2D;
-    using System.IO;
-    using System.Linq;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Theming;
-    using static System.StringComparison;
+    using Translations.Formatting;
     using static System.Windows.Forms.SystemInformation;
     using static DialogConstants;
 
@@ -20,7 +16,8 @@
         private static readonly Size _dialogMinimumSize = new Size(530, 125);
 
         private readonly Func<object> _translationFactory;
-        private readonly ExpressionDialogRenderer _renderer;
+        private readonly VisualizerDialogRenderer _renderer;
+        private readonly Size _dialogMaximumSize;
         private readonly ToolStrip _menuStrip;
         private readonly ToolStrip _toolbar;
         private readonly List<Control> _themeableControls;
@@ -31,7 +28,7 @@
         public VisualizerDialog(Func<object> translationFactory)
         {
             _translationFactory = translationFactory;
-            _renderer = new ExpressionDialogRenderer(this);
+            _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
             StartPosition = FormStartPosition.CenterScreen;
@@ -63,6 +60,8 @@
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
+
+        internal ITranslationFormatter Formatter => TranslationHtmlFormatter.Instance;
 
         internal float WidthFactor { get; }
 
@@ -123,46 +122,17 @@
 
         private ToolStrip AddToolbar()
         {
-            var createIssueButton = new Button
+            var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
             {
-                Text = "Anything wrong?",
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                TextAlign = ContentAlignment.MiddleRight,
-                ImageAlign = ContentAlignment.MiddleLeft
+                Alignment = ToolStripItemAlignment.Left
             };
 
-            var gitHubIcon = GetGitHubIcon(createIssueButton);
-            var gitHubIconSize = createIssueButton.Height - 4;
-
-            createIssueButton.Image = new Bitmap(gitHubIcon, gitHubIconSize, gitHubIconSize);
-
-            createIssueButton.Click += (sender, args) => 
-                Process.Start("https://github.com/agileobjects/ReadableExpressions/issues/new");
-
-            RegisterThemeable(createIssueButton);
-
-            var createIssueButtonWrapper = new ToolStripControlHost(createIssueButton)
+            var copyButton = new ToolStripControlHost(new CopyButton(this))
             {
-                Alignment = ToolStripItemAlignment.Left,
-                Margin = new Padding(2)
+                Alignment = ToolStripItemAlignment.Right
             };
 
-            var copyButton = new Button { Text = "Copy" };
-
-            copyButton.Click += (sender, args) => Clipboard.SetText(
-            // ReSharper disable PossibleNullReferenceException
-                TranslationHtmlFormatter.Instance.GetRaw(Viewer.Document.Body.InnerHtml));
-            // ReSharper restore PossibleNullReferenceException
-
-            RegisterThemeable(copyButton);
-
-            var copyButtonWrapper = new ToolStripControlHost(copyButton)
-            {
-                Alignment = ToolStripItemAlignment.Right,
-                Margin = new Padding(2)
-            };
-
-            var toolbar = new ToolStrip(createIssueButtonWrapper, copyButtonWrapper)
+            var toolbar = new ToolStrip(feedbackButton, copyButton)
             {
                 Dock = DockStyle.Bottom,
                 GripStyle = ToolStripGripStyle.Hidden,
@@ -173,38 +143,6 @@
             Controls.Add(toolbar);
 
             return toolbar;
-        }
-
-        private static Image GetGitHubIcon(Control button)
-        {
-            var imageResourceName = typeof(VisualizerDialog)
-                .Assembly
-                .GetManifestResourceNames()
-                .First(resourceName => Path.GetFileNameWithoutExtension(resourceName).EndsWith("GitHubIcon", Ordinal));
-
-            var imageStream = typeof(VisualizerDialog)
-                .Assembly
-                .GetManifestResourceStream(imageResourceName);
-
-            using (imageStream)
-            using (var image = Image.FromStream(imageStream))
-            {
-                var scaleFactor = (button.Height - 2.0) / image.Height;
-                var newWidth = (int)(image.Width * scaleFactor);
-                var newHeight = (int)(image.Height * scaleFactor);
-
-                var newImage = new Bitmap(newWidth, newHeight);
-                
-                using (var graphics = Graphics.FromImage(newImage))
-                {
-                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                    graphics.DrawImage(image, new Rectangle(0, 0, newWidth, newHeight));
-                }
-
-                return newImage;
-            }
         }
 
         private void SetViewerSizeLimits()
@@ -259,7 +197,7 @@
                 return;
             }
 
-            var rawText = TranslationHtmlFormatter.Instance.GetRaw(_translation);
+            var rawText = Formatter.GetRaw(_translation);
             var font = (Font)Settings.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
 
