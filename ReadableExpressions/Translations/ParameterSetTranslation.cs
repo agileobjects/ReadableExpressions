@@ -150,7 +150,7 @@
                         WithParentheses();
                     }
 
-                CreateCodeBlock:
+                    CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
@@ -425,6 +425,18 @@
 
             public int FormattingSize { get; }
 
+            public int GetLineCount()
+            {
+                var parameterLineCount = _parameterTranslation.GetLineCount();
+
+                if (_declareParameterInline && _typeNameTranslation != null)
+                {
+                    parameterLineCount += _typeNameTranslation.GetLineCount();
+                }
+
+                return parameterLineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteKeywordToTranslation(_out);
@@ -465,6 +477,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount() => _parameterTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

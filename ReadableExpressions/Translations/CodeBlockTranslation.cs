@@ -14,6 +14,7 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _translation;
+        private bool _isEmptyTranslation;
         private readonly ITranslationContext _context;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
@@ -25,6 +26,7 @@
         {
             NodeType = translation.NodeType;
             _translation = translation;
+            _isEmptyTranslation = translation is IPotentialEmptyTranslatable empty && empty.IsEmpty;
             _context = context;
             _startOnNewLine = true;
             _writeBraces = IsMultiStatement = translation.IsMultiStatement();
@@ -148,6 +150,23 @@
         public IParameterTranslation AsParameterTranslation()
             => _translation as IParameterTranslation;
 
+        public int GetLineCount()
+        {
+            if (_isEmptyTranslation)
+            {
+                return _writeBraces ? _startOnNewLine ? 3 : 2 : 0;
+            }
+
+            var translationLineCount = _translation.GetLineCount();
+
+            if (_writeBraces)
+            {
+                translationLineCount += _startOnNewLine ? 3 : 2;
+            }
+
+            return translationLineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_writeBraces)
@@ -190,7 +209,7 @@
 
         private bool WriteEmptyCodeBlock(TranslationBuffer buffer)
         {
-            if ((_translation is IPotentialEmptyTranslatable emptyTranslatable) && emptyTranslatable.IsEmpty)
+            if (_isEmptyTranslation)
             {
                 buffer.WriteClosingBraceToTranslation(startOnNewLine: false);
                 return true;
