@@ -140,6 +140,23 @@
         protected override bool IsMultiStatement()
             => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
 
+        public int GetLineCount()
+        {
+            var targetLineCount = _targetTranslation.GetLineCount();
+            var valueLineCount = _valueTranslation.GetLineCount();
+
+            var lineCount = (targetLineCount == 1)
+                ? (valueLineCount == 1) ? 1 : targetLineCount
+                : (valueLineCount == 1) ? 1 : valueLineCount;
+
+            if (IsCheckedOperation && IsMultiStatement())
+            {
+                lineCount += 2;
+            }
+
+            return lineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);

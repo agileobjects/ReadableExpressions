@@ -298,6 +298,45 @@
             return this;
         }
 
+        public int GetLineCount()
+        {
+            switch (Count)
+            {
+                case 0:
+                    return 1;
+
+                case 1:
+                    return _parameterTranslations[0].GetLineCount();
+            }
+
+            var lineCount = 1;
+            var writeParametersOnNewLines = WriteParametersOnNewLines();
+
+            for (var i = 0; ;)
+            {
+                var parameterLineCount = _parameterTranslations[i].GetLineCount();
+
+                if (parameterLineCount > 1)
+                {
+                    lineCount += parameterLineCount - 1;
+                }
+
+                if (writeParametersOnNewLines)
+                {
+                    lineCount += 1;
+                }
+
+                ++i;
+
+                if (i == Count)
+                {
+                    break;
+                }
+            }
+
+            return lineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             switch (Count)

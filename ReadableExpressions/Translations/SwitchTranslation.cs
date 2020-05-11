@@ -13,6 +13,7 @@
         private readonly ITranslation _valueTranslation;
         private readonly ITranslation[][] _caseTestValueTranslations;
         private readonly ITranslation[] _caseTranslations;
+        private readonly int _casesCount;
         private readonly ITranslation _defaultCaseTranslation;
 
         public SwitchTranslation(SwitchExpression switchStatement, ITranslationContext context)
@@ -22,10 +23,10 @@
 
             var translationSize = _valueTranslation.TranslationSize;
             var formattingSize = _valueTranslation.FormattingSize;
-            var caseCount = switchStatement.Cases.Count;
+            _casesCount = switchStatement.Cases.Count;
 
-            _caseTestValueTranslations = new ITranslation[caseCount][];
-            _caseTranslations = new ITranslation[caseCount];
+            _caseTestValueTranslations = new ITranslation[_casesCount][];
+            _caseTranslations = new ITranslation[_casesCount];
 
             for (var i = 0; ;)
             {
@@ -54,7 +55,7 @@
 
                 ++i;
 
-                if (i == caseCount)
+                if (i == _casesCount)
                 {
                     break;
                 }
@@ -85,13 +86,38 @@
 
         public bool IsTerminated => true;
 
+        public int GetLineCount()
+        {
+            var lineCount = 3;
+
+            for (int i = 0, l = _casesCount - 1; ; ++i)
+            {
+                lineCount += _caseTestValueTranslations[i].Length;
+                lineCount += _caseTranslations[i].GetLineCount();
+
+                if (i == l)
+                {
+                    break;
+                }
+
+                lineCount += 1;
+            }
+
+            if (_defaultCaseTranslation != null)
+            {
+                lineCount += _defaultCaseTranslation.GetLineCount() + 2;
+            }
+
+            return lineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteControlStatementToTranslation("switch ");
             _valueTranslation.WriteInParentheses(buffer);
             buffer.WriteOpeningBraceToTranslation();
 
-            for (int i = 0, l = _caseTranslations.Length - 1; ; ++i)
+            for (int i = 0, l = _casesCount - 1; ; ++i)
             {
                 var caseTestValueTranslations = _caseTestValueTranslations[i];
 
