@@ -38,6 +38,8 @@
 
         public int FormattingSize => _quotedLambdaTranslation.FormattingSize;
 
+        public int GetLineCount() => _quotedLambdaTranslation.GetLineCount() + 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteNewLineToTranslation();

@@ -69,8 +69,15 @@
             public Type Type => typeof(bool);
 
             public int TranslationSize { get; }
-            
+
             public int FormattingSize { get; }
+
+            public int GetLineCount()
+            {
+                return
+                    _binaryConditionLeftTranslation.GetLineCount() +
+                    _binaryConditionRightTranslation.GetLineCount();
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {

@@ -1,12 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Interfaces;
 
     internal class NewArrayTranslation : ITranslation

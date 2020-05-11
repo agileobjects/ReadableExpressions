@@ -34,6 +34,8 @@
 
         public bool IsTerminated => true;
 
+        public int GetLineCount() => _loopBodyTranslation.GetLineCount() + 1;
+
         public void WriteTo(TranslationBuffer buffer)
         {
             buffer.WriteControlStatementToTranslation("while ");

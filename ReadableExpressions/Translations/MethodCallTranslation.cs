@@ -338,7 +338,9 @@
 
                 for (int i = 0, l = _explicitGenericArguments.Length; ;)
                 {
-                    _explicitGenericArguments[i++].WriteTo(buffer);
+                    _explicitGenericArguments[i].WriteTo(buffer);
+
+                    ++i;
 
                     if (i == l)
                     {
