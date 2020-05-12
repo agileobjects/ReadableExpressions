@@ -106,8 +106,6 @@
     <Compile Include="Controls\MenuItemLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Theming\ExpressionDialogRenderer.cs" />
-    <Compile Include="Theming\ExpressionDialogColourTable.cs" />
     <Compile Include="Theming\VisualizerDialogRenderer.cs" />
     <Compile Include="Theming\VisualizerDialogColourTable.cs" />
     <Compile Include="Theming\GraphicsExtensions.cs" />

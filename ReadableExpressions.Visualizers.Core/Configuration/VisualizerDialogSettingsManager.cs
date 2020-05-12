@@ -130,24 +130,24 @@
             settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
                 ? value : defaultTheme.Default;
 
-            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value) 
+            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value)
                 ? value : defaultTheme.Toolbar;
 
-            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value) 
+            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value)
                 ? value : defaultTheme.Menu;
 
             settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
 
-            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value) 
+            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value)
                 ? value : defaultTheme.Keyword;
 
-            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value) 
+            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value)
                 ? value : defaultTheme.Variable;
 
-            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value) 
+            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value)
                 ? value : defaultTheme.TypeName;
 
-            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value) 
+            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value)
                 ? value : defaultTheme.InterfaceName;
 
             settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
@@ -164,44 +164,6 @@
 
             settings.Theme.Comment = settingsByName.TryGetValue(ThemeComment, out value)
                 ? value : defaultTheme.Comment;
-        }
-
-        private static void SetFontValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
-        {
-            if (settingsByName.TryGetValue(FontName, out var value))
-            {
-                settings.Font.Name = value;
-            }
-
-            if (settingsByName.TryGetValue(FontSize, out value) &&
-                int.TryParse(value, out var fontSize))
-            {
-                settings.Font.Size = fontSize;
-            }
-        }
-
-        private static void SetSizeValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
-        {
-            if (settingsByName.TryGetValue(SizeResizeToCode, out var value))
-            {
-                settings.Size.ResizeToMatchCode = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(SizeInitialWidth, out value) &&
-                int.TryParse(value, out var width))
-            {
-                settings.Size.InitialWidth = width;
-            }
-
-            if (settingsByName.TryGetValue(SizeInitialHeight, out value) &&
-                int.TryParse(value, out var height))
-            {
-                settings.Size.InitialHeight = height;
-            }
         }
 
         private static void SetFontValues(

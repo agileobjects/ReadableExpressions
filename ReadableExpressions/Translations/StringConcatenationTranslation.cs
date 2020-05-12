@@ -66,20 +66,7 @@
         public int FormattingSize { get; }
 
         public int GetLineCount()
-        {
-            var lineCount = 0;
-
-            for (var i = 0; i < _operandCount; ++i)
-            {
-                var operandLineCount = _operandTranslations[i].GetLineCount();
-
-                lineCount += (operandLineCount > 1)
-                    ? operandLineCount - 1 : operandLineCount;
-
-            }
-
-            return lineCount;
-        }
+            => _operandTranslations.GetLineCount(_operandCount);
 
         public void WriteTo(TranslationBuffer buffer)
         {

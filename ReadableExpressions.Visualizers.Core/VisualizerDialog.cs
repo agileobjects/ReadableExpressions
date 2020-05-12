@@ -9,6 +9,7 @@
     using Theming;
     using Translations.Formatting;
     using static System.Windows.Forms.SystemInformation;
+    using static DialogConstants;
 
     public class VisualizerDialog : Form
     {

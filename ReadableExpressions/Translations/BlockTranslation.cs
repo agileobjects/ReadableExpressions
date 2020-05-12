@@ -74,6 +74,11 @@
             BlockExpression block,
             ITranslationContext context)
         {
+            if (block.Variables.Count == 0)
+            {
+                return EmptyDictionary<ITranslation, ParameterSetTranslation>.Instance;
+            }
+
             var variablesByType = block
                 .Variables
                 .Except(context.InlineOutputVariables)
@@ -260,6 +265,18 @@
             return this;
         }
 
+        public int GetLineCount()
+        {
+            var lineCount = _variables.Count;
+
+            for (var i = 0; i < _statementCount; ++i)
+            {
+                lineCount += _statements[i].GetLineCount();
+            }
+
+            return lineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_hasVariables)
@@ -377,6 +394,20 @@
 
             public virtual bool HasGoto => _writeReturnKeyword || _statementTranslation.HasGoto();
 
+            public int GetLineCount()
+            {
+                var lineCount =
+                    (_writeBlankLineBefore ? 1 : 0) +
+                     _statementTranslation.GetLineCount();
+
+                if (UseFinalBlankLine)
+                {
+                    lineCount += 1;
+                }
+
+                return lineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
@@ -392,7 +423,7 @@
 
                 WriteStatementTo(buffer);
 
-                if ((_suppressBlankLineAfter == false) && WriteBlankLineAfter())
+                if (UseFinalBlankLine)
                 {
                     buffer.WriteNewLineToTranslation();
                 }
@@ -407,6 +438,9 @@
                     buffer.WriteToTranslation(';');
                 }
             }
+
+            private bool UseFinalBlankLine
+                => (_suppressBlankLineAfter == false) && WriteBlankLineAfter();
 
             public virtual bool WriteBlankLineAfter()
             {

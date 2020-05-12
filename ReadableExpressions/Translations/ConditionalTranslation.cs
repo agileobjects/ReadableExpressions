@@ -121,6 +121,8 @@
                 return codeBlockTranslation;
             }
 
+            public abstract int GetLineCount();
+
             public abstract void WriteTo(TranslationBuffer buffer);
 
             protected void WriteIfStatement(TranslationBuffer buffer)
@@ -146,6 +148,9 @@
 
             public bool IsTerminated => true;
 
+            public override int GetLineCount()
+                => TestTranslation.GetLineCount() + IfTrueTranslation.GetLineCount();
+
             public override void WriteTo(TranslationBuffer buffer) => WriteIfStatement(buffer);
         }
 
@@ -153,6 +158,7 @@
         {
             private readonly ITranslationContext _context;
             private readonly Action<TranslationBuffer, ITranslationContext> _translationWriter;
+            private readonly Func<int> _lineCounter;
 
             public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
@@ -162,14 +168,48 @@
                     context)
             {
                 _context = context;
+
                 if (this.ExceedsLengthThreshold())
                 {
                     _translationWriter = WriteMultiLineTernary;
+                    _lineCounter = GetSingleLineTernaryLineCount;
                 }
                 else
                 {
                     _translationWriter = WriteSingleLineTernary;
+                    _lineCounter = GetMultiLineTernaryLineCount;
                 }
+            }
+
+            public override int GetLineCount() => _lineCounter.Invoke();
+
+            private int GetSingleLineTernaryLineCount()
+            {
+                var lineCount = TestTranslation.GetLineCount();
+
+                var ifTrueLineCount = IfTrueTranslation.GetLineCount();
+
+                if (ifTrueLineCount > 1)
+                {
+                    lineCount += ifTrueLineCount - 1;
+                }
+
+                var ifFalseLineCount = IfFalseTranslation.GetLineCount();
+
+                if (ifFalseLineCount > 1)
+                {
+                    lineCount += ifFalseLineCount - 1;
+                }
+
+                return lineCount;
+            }
+
+            private int GetMultiLineTernaryLineCount()
+            {
+                return
+                    TestTranslation.GetLineCount() +
+                    IfTrueTranslation.GetLineCount() +
+                    IfFalseTranslation.GetLineCount();
             }
 
             public override void WriteTo(TranslationBuffer buffer)
@@ -217,6 +257,15 @@
             {
             }
 
+            public override int GetLineCount()
+            {
+                return
+                    TestTranslation.GetLineCount() +
+                    IfTrueTranslation.GetLineCount() + 
+                    1 + // for space after the if statement
+                    IfFalseTranslation.GetLineCount();
+            }
+
             public override void WriteTo(TranslationBuffer buffer)
             {
                 WriteIfStatement(buffer);
@@ -255,6 +304,14 @@
                 => conditional.IfFalse.NodeType == ExpressionType.Conditional;
 
             public bool IsTerminated => true;
+
+            public override int GetLineCount()
+            {
+                return
+                    TestTranslation.GetLineCount() +
+                    IfTrueTranslation.GetLineCount() + 
+                    IfFalseTranslation.GetLineCount(); 
+            }
 
             public override void WriteTo(TranslationBuffer buffer)
             {

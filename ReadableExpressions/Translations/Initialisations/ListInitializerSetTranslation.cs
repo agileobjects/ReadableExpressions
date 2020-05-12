@@ -34,6 +34,7 @@
         private class MultiArgumentInitializerTranslation : ITranslatable
         {
             private readonly IList<CodeBlockTranslation> _translations;
+            private readonly int _argumentCount;
 
             public MultiArgumentInitializerTranslation(ElementInit init, ITranslationContext context)
             {
@@ -41,11 +42,11 @@
                 var formattingSize = 0;
 
                 var arguments = init.Arguments;
-                var argumentCount = arguments.Count;
+                _argumentCount = arguments.Count;
 
-                _translations = new CodeBlockTranslation[argumentCount];
+                _translations = new CodeBlockTranslation[_argumentCount];
 
-                for (var i = 0; i < argumentCount; ++i)
+                for (var i = 0; i < _argumentCount; ++i)
                 {
                     var translation = context.GetCodeBlockTranslationFor(arguments[i]);
                     translationSize += translation.TranslationSize;
@@ -63,15 +64,11 @@
             public int FormattingSize { get; }
 
             public int GetLineCount()
-            {
-                throw new System.NotImplementedException();
-            }
+                => _translations.GetLineCount(_argumentCount);
 
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteToTranslation("{ ");
-
-                var argumentCount = _translations.Count;
 
                 for (var i = 0; ;)
                 {
@@ -79,7 +76,7 @@
 
                     ++i;
 
-                    if (i == argumentCount)
+                    if (i == _argumentCount)
                     {
                         break;
                     }

@@ -50,7 +50,12 @@
 
         private bool WriteToMultipleLines => ForceWriteToMultipleLines || IsLongTranslation;
 
-        public int GetLineCount() => WriteToMultipleLines ? Count + 2 : 1;
+        public int GetLineCount()
+        {
+            return
+                (WriteToMultipleLines ? 1 : 0) +
+                _initializerTranslations.GetLineCount(Count);
+        }
 
         public void WriteTo(TranslationBuffer buffer)
         {

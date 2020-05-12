@@ -60,10 +60,24 @@
         public Type Type => _newingTranslation.Type;
 
         public int TranslationSize { get; }
-        
+
         public int FormattingSize { get; }
 
         protected InitializerSetTranslationBase<TInitializer> InitializerTranslations { get; }
+
+        public int GetLineCount()
+        {
+            var lineCount = _newingTranslation.GetLineCount();
+
+            var initializersLineCount = InitializerTranslations.GetLineCount();
+
+            if (initializersLineCount > 1)
+            {
+                lineCount += initializersLineCount - 1;
+            }
+
+            return lineCount;
+        }
 
         public void WriteTo(TranslationBuffer buffer)
         {
