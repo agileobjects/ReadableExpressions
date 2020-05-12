@@ -42,6 +42,7 @@
         {
             private readonly string _typeName;
             private readonly ParameterInfo[] _ctorParameters;
+            private readonly int _ctorParameterCount;
 
             public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
                 : base(newing, context)
@@ -49,6 +50,7 @@
                 Type = newing.Type;
                 _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(Type) ?? string.Empty;
                 _ctorParameters = newing.Constructor.GetParameters();
+                _ctorParameterCount = _ctorParameters.Length;
 
                 TranslationSize =
                     _typeName.Length +
@@ -58,7 +60,7 @@
 
                 FormattingSize =
                     context.GetKeywordFormattingSize() +
-                    context.GetVariableFormattingSize() * _ctorParameters.Length;
+                    context.GetVariableFormattingSize() * _ctorParameterCount;
             }
 
             public Type Type { get; }
@@ -67,19 +69,45 @@
 
             public int FormattingSize { get; }
 
+            public int GetLineCount()
+            {
+                switch (_ctorParameterCount)
+                {
+                    case 0:
+                        return 1;
+
+                    case 1:
+                        return Parameters[0].GetLineCount();
+                }
+
+                var lineCount = 1;
+
+                for (var i = 0; i < _ctorParameterCount; ++i)
+                {
+                    var parameterLineCount = Parameters[i].GetLineCount();
+
+                    if (parameterLineCount > 1)
+                    {
+                        lineCount += parameterLineCount - 1;
+                    }
+                }
+
+                return lineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteNewToTranslation();
 
                 if (_typeName.Length != 0)
                 {
-                    buffer.WriteToTranslation(_typeName);
+                    buffer.WriteTypeNameToTranslation(_typeName);
                     buffer.WriteSpaceToTranslation();
                 }
 
                 buffer.WriteToTranslation("{ ");
 
-                if (_ctorParameters.Length != 0)
+                if (_ctorParameterCount != 0)
                 {
                     for (var i = 0; ;)
                     {
@@ -89,7 +117,7 @@
 
                         ++i;
 
-                        if (i == _ctorParameters.Length)
+                        if (i == _ctorParameterCount)
                         {
                             break;
                         }
@@ -130,6 +158,13 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetLineCount()
+            {
+                return Parameters.None
+                    ? _typeNameTranslation.GetLineCount()
+                    : Parameters.GetLineCount();
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {
