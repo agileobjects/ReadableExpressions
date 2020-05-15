@@ -15,11 +15,6 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationBuffer(int estimatedSize)
-            : this(NullTranslationFormatter.Instance, estimatedSize)
-        {
-        }
-
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
             Formatter = formatter ?? NullTranslationFormatter.Instance;

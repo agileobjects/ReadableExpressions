@@ -4,6 +4,8 @@
 
     internal interface IInitializerSetTranslation : ITranslatable
     {
+        int Count { get; }
+
         bool IsLongTranslation { get; set; }
     }
 }
