@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
+    using static Constants;
 
     internal class CodeBlockTranslation :
         ITranslation,
@@ -14,7 +15,7 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _translation;
-        private bool _isEmptyTranslation;
+        private readonly bool _isEmptyTranslation;
         private readonly ITranslationContext _context;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
@@ -149,6 +150,35 @@
 
         public IParameterTranslation AsParameterTranslation()
             => _translation as IParameterTranslation;
+
+        public int GetIndentSize()
+        {
+            if (_isEmptyTranslation)
+            {
+                return 0;
+            }
+
+            var indentSize = _translation.GetIndentSize();
+
+            if (_indentContents || _writeBraces)
+            {
+                var translationIndentSize = _translation.GetLineCount() * IndentLength;
+
+                indentSize += translationIndentSize;
+
+                if (_writeBraces)
+                {
+                    indentSize += 2 * IndentLength;
+
+                    if (_indentContents)
+                    {
+                        indentSize += translationIndentSize;
+                    }
+                }
+            }
+
+            return indentSize;
+        }
 
         public int GetLineCount()
         {

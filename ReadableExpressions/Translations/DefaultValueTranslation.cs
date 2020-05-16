@@ -55,6 +55,9 @@
 
         public bool IsEmpty { get; }
 
+        public int GetIndentSize()
+            => _typeCanBeNull ? 0 : _typeNameTranslation?.GetIndentSize() ?? 0;
+
         public int GetLineCount()
             => _typeCanBeNull ? 1 : _typeNameTranslation?.GetLineCount() ?? 1;
 

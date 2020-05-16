@@ -31,13 +31,13 @@
                 var userTranslation = context.Settings.ConstantExpressionValueFactory(constant.Type, constant.Value);
 
                 return (userTranslation == null)
-                    ? NullTranslation(constant.Type)
-                    : FixedValueTranslation(userTranslation, constant.Type);
+                    ? NullTranslation(constant.Type, context)
+                    : FixedValueTranslation(userTranslation, constant.Type, context);
             }
 
             if (constant.Value == null)
             {
-                return NullTranslation(constant.Type);
+                return NullTranslation(constant.Type, context);
             }
 
             if (constant.Type.IsEnum())
@@ -54,27 +54,39 @@
 
             if (valueType.IsPrimitive() || valueType.IsValueType())
             {
-                return FixedValueTranslation(constant.Value, valueType);
+                return FixedValueTranslation(constant.Value, valueType, context);
             }
 
             return context.GetTranslationFor(valueType).WithNodeType(Constant);
         }
 
-        private static ITranslation FixedValueTranslation(ConstantExpression constant, TokenType tokenType = TokenType.Default)
-            => FixedValueTranslation(constant.Value, constant.Type, tokenType);
+        private static ITranslation FixedValueTranslation(
+            ConstantExpression constant, 
+            ITranslationContext context,
+            TokenType tokenType = TokenType.Default)
+        {
+            return FixedValueTranslation(constant.Value, constant.Type, context, tokenType);
+        }
 
-        private static ITranslation FixedValueTranslation(object value, Type type, TokenType tokenType = TokenType.Default)
-            => FixedValueTranslation(value.ToString(), type, tokenType);
+        private static ITranslation FixedValueTranslation(
+            object value, 
+            Type type,
+            ITranslationContext context,
+            TokenType tokenType = TokenType.Default)
+        {
+            return FixedValueTranslation(value.ToString(), type, tokenType, context);
+        }
 
-        private static ITranslation NullTranslation(Type type)
-            => FixedValueTranslation("null", type, Keyword);
+        private static ITranslation NullTranslation(Type type, ITranslationContext context) 
+            => FixedValueTranslation("null", type, Keyword, context);
 
         private static ITranslation FixedValueTranslation(
             string value,
             Type type,
-            TokenType tokenType)
+            TokenType tokenType,
+            ITranslationContext context)
         {
-            return new FixedValueTranslation(Constant, value, type, tokenType);
+            return new FixedValueTranslation(Constant, value, type, tokenType, context);
         }
 
         private static bool TryTranslateFromTypeCode(
@@ -90,14 +102,15 @@
                     translation = FixedValueTranslation(
                         constant.Value.ToString().ToLowerInvariant(),
                         type,
-                        Keyword);
+                        Keyword,
+                        context);
 
                     return true;
 
                 case NetStandardTypeCode.Char:
                     var character = (char)constant.Value;
                     var value = "'" + (character == '\0' ? @"\0" : character.ToString()) + "'";
-                    translation = FixedValueTranslation(value, type, Text);
+                    translation = FixedValueTranslation(value, type, Text, context);
                     return true;
 
                 case NetStandardTypeCode.DateTime:
@@ -113,25 +126,25 @@
                     return true;
 
                 case NetStandardTypeCode.Decimal:
-                    translation = GetDecimalTranslation(constant);
+                    translation = GetDecimalTranslation(constant, context);
                     return true;
 
                 case NetStandardTypeCode.Double:
-                    translation = GetDoubleTranslation(constant);
+                    translation = GetDoubleTranslation(constant, context);
                     return true;
 
                 case NetStandardTypeCode.Int64:
-                    translation = GetLongTranslation(constant);
+                    translation = GetLongTranslation(constant, context);
                     return true;
 
                 case NetStandardTypeCode.Int32:
-                    translation = FixedValueTranslation(constant, Numeric);
+                    translation = FixedValueTranslation(constant, context, Numeric);
                     return true;
 
                 case NetStandardTypeCode.Object:
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
-                        TryGetRegexTranslation(constant, out translation) ||
+                        TryGetRegexTranslation(constant, context, out translation) ||
                         TryTranslateDefault<Guid>(constant, context, out translation) ||
                         TimeSpanConstantTranslation.TryCreate(constant, context, out translation))
                     {
@@ -141,7 +154,7 @@
                     break;
 
                 case NetStandardTypeCode.Single:
-                    translation = GetFloatTranslation(constant);
+                    translation = GetFloatTranslation(constant, context);
                     return true;
 
                 case NetStandardTypeCode.String:
@@ -154,7 +167,7 @@
                     }
 
                     stringValue = "\"" + stringValue.Replace("\"", "\\\"") + "\"";
-                    translation = FixedValueTranslation(stringValue, typeof(string), Text);
+                    translation = FixedValueTranslation(stringValue, typeof(string), Text, context);
                     return true;
             }
 
@@ -177,7 +190,9 @@
             return true;
         }
 
-        private static ITranslation GetDecimalTranslation(ConstantExpression constant)
+        private static ITranslation GetDecimalTranslation(
+            ConstantExpression constant,
+            ITranslationContext context)
         {
             var value = (decimal)constant.Value;
 
@@ -185,10 +200,12 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture);
 
-            return FixedValueTranslation(stringValue + "m", constant.Type, Numeric);
+            return FixedValueTranslation(stringValue + "m", constant.Type, Numeric, context);
         }
 
-        private static ITranslation GetDoubleTranslation(ConstantExpression constant)
+        private static ITranslation GetDoubleTranslation(
+            ConstantExpression constant,
+            ITranslationContext context)
         {
             var value = (double)constant.Value;
 
@@ -196,10 +213,12 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture);
 
-            return FixedValueTranslation(stringValue + "d", constant.Type, Numeric);
+            return FixedValueTranslation(stringValue + "d", constant.Type, Numeric, context);
         }
 
-        private static ITranslation GetFloatTranslation(ConstantExpression constant)
+        private static ITranslation GetFloatTranslation(
+            ConstantExpression constant,
+            ITranslationContext context)
         {
             var value = (float)constant.Value;
 
@@ -207,11 +226,15 @@
                 ? value.ToString("0")
                 : value.ToString(CurrentCulture);
 
-            return FixedValueTranslation(stringValue + "f", constant.Type, Numeric);
+            return FixedValueTranslation(stringValue + "f", constant.Type, Numeric, context);
         }
 
-        private static ITranslation GetLongTranslation(ConstantExpression constant)
-            => FixedValueTranslation((long)constant.Value + "L", constant.Type, Numeric);
+        private static ITranslation GetLongTranslation(
+            ConstantExpression constant,
+            ITranslationContext context)
+        {
+            return FixedValueTranslation((long) constant.Value + "L", constant.Type, Numeric, context);
+        }
 
         private static bool TryGetTypeTranslation(
             ConstantExpression constant,
@@ -228,7 +251,10 @@
             return false;
         }
 
-        private static bool TryGetRegexTranslation(ConstantExpression constant, out ITranslation translation)
+        private static bool TryGetRegexTranslation(
+            ConstantExpression constant,
+            ITranslationContext context, 
+            out ITranslation translation)
         {
             if (constant.Type != typeof(Regex))
             {
@@ -236,7 +262,7 @@
                 return false;
             }
 
-            translation = FixedValueTranslation(constant);
+            translation = FixedValueTranslation(constant, context);
             translation = new WrappedTranslation("Regex /* ", translation, " */");
             return true;
         }
@@ -261,7 +287,9 @@
 
             public int FormattingSize => _typeNameTranslation.FormattingSize;
 
-            public int GetLineCount() => 1;
+            public int GetIndentSize() => _typeNameTranslation.GetIndentSize();
+
+            public int GetLineCount() => _typeNameTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -311,6 +339,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => 0;
 
             public int GetLineCount() => 1;
 
@@ -397,6 +427,8 @@
 
             public bool IsTerminated => true;
 
+            public int GetIndentSize() => _lambdaTranslation.GetIndentSize();
+
             public int GetLineCount() => _lambdaTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer) => _lambdaTranslation.WriteTo(buffer);
@@ -446,6 +478,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => 0;
 
             public int GetLineCount() => 1;
 

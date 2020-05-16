@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
+    using static Constants;
 
     internal static class ConditionTranslation
     {
@@ -27,7 +28,7 @@
         }
 
         private static bool IsMultiLineBinary(Expression condition, ITranslatable conditionTranslation)
-            => conditionTranslation.ExceedsLengthThreshold() && IsRelevantBinary(condition);
+            => IsRelevantBinary(condition) && conditionTranslation.ExceedsLengthThreshold();
 
         private static bool IsRelevantBinary(Expression condition)
         {
@@ -72,11 +73,17 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                return _binaryConditionLeftTranslation.GetIndentSize() +
+                       _binaryConditionRightTranslation.GetIndentSize() + 
+                       _binaryConditionRightTranslation.GetLineCount() * IndentLength;
+            }
+
             public int GetLineCount()
             {
-                return
-                    _binaryConditionLeftTranslation.GetLineCount() +
-                    _binaryConditionRightTranslation.GetLineCount();
+                return _binaryConditionLeftTranslation.GetLineCount() +
+                       _binaryConditionRightTranslation.GetLineCount();
             }
 
             public void WriteTo(TranslationBuffer buffer)

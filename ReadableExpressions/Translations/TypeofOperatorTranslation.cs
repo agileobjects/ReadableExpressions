@@ -27,6 +27,8 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize() => _typeNameTranslation.GetIndentSize();
+
         public int GetLineCount() => _typeNameTranslation.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)

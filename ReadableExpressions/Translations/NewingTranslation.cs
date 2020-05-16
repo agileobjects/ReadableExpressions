@@ -69,6 +69,32 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                switch (_ctorParameterCount)
+                {
+                    case 0:
+                        return 0;
+
+                    case 1:
+                        return Parameters[0].GetIndentSize();
+                }
+
+                var indentSize = 0;
+
+                for (var i = 0; ;)
+                {
+                    indentSize += Parameters[i].GetIndentSize();
+
+                    ++i;
+
+                    if (i == _ctorParameterCount)
+                    {
+                        return indentSize;
+                    }
+                }
+            }
+
             public int GetLineCount()
             {
                 switch (_ctorParameterCount)
@@ -133,7 +159,6 @@
         private class StandardNewingTranslation : NewingTranslationBase, ITranslation
         {
             private readonly ITranslation _typeNameTranslation;
-            private readonly bool _omitParenthesesIfParameterless;
 
             public StandardNewingTranslation(
                 NewExpression newing,
@@ -141,11 +166,19 @@
                 bool omitParenthesesIfParameterless)
                 : base(newing, context)
             {
-                _omitParenthesesIfParameterless = omitParenthesesIfParameterless;
                 _typeNameTranslation = context.GetTranslationFor(newing.Type).WithObjectTypeName();
 
+                if (omitParenthesesIfParameterless && Parameters.None)
+                {
+                    Parameters.WithoutParentheses();
+                }
+                else
+                {
+                    Parameters.WithParentheses();
+                }
+
                 TranslationSize =
-                    "new ()".Length +
+                    "new ".Length +
                     _typeNameTranslation.TranslationSize +
                      Parameters.TranslationSize;
 
@@ -159,6 +192,13 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                return Parameters.None
+                    ? _typeNameTranslation.GetIndentSize()
+                    : Parameters.GetIndentSize();
+            }
+
             public int GetLineCount()
             {
                 return Parameters.None
@@ -170,13 +210,7 @@
             {
                 buffer.WriteNewToTranslation();
                 _typeNameTranslation.WriteTo(buffer);
-
-                if (_omitParenthesesIfParameterless && Parameters.None)
-                {
-                    return;
-                }
-
-                Parameters.WithParentheses().WriteTo(buffer);
+                Parameters.WriteTo(buffer);
             }
 
             public Type Type => _typeNameTranslation.Type;

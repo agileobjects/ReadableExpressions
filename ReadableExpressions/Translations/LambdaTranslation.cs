@@ -44,6 +44,12 @@
 
         public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
 
+        public int GetIndentSize()
+        {
+            return _parameters.GetIndentSize() +
+                   _bodyTranslation.GetIndentSize();
+        }
+
         public int GetLineCount()
         {
             var parametersLineCount = _parameters.GetLineCount();

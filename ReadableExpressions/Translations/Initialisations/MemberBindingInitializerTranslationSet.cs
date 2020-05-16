@@ -63,6 +63,13 @@
 
             public int FormattingSize => _initializerSetTranslation.FormattingSize;
 
+            public int GetIndentSize()
+            {
+                _initializerSetTranslation.IsLongTranslation = _parent.IsLongTranslation;
+
+                return _initializerSetTranslation.GetIndentSize();
+            }
+
             public int GetLineCount()
             {
                 var isLongBindingsSet = _parent.IsLongTranslation;
@@ -104,6 +111,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize => _valueTranslation.FormattingSize;
+
+            public int GetIndentSize() => _valueTranslation.GetIndentSize();
 
             public int GetLineCount() => _valueTranslation.GetLineCount();
 

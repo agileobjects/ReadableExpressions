@@ -181,7 +181,7 @@
                     return DynamicTranslation.For((DynamicExpression)expression, this);
 
                 case Extension:
-                    return new FixedValueTranslation(expression);
+                    return new FixedValueTranslation(expression, this);
 
                 case Goto:
                     return GotoTranslation.For((GotoExpression)expression, this);
@@ -249,14 +249,14 @@
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
             }
 
-            return new FixedValueTranslation(expression);
+            return new FixedValueTranslation(expression, this);
         }
 
         #endregion
 
         public string GetTranslation()
         {
-            var estimatedSize = _root.TranslationSize + _root.FormattingSize;
+            var estimatedSize = _root.TranslationSize + _root.FormattingSize + _root.GetIndentSize();
             var buffer = new TranslationBuffer(_settings.Formatter, estimatedSize);
 
             _root.WriteTo(buffer);

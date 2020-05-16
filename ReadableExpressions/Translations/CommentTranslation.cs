@@ -30,6 +30,8 @@
 
         public bool IsTerminated => true;
 
+        public int GetIndentSize() => 0;
+
         public int GetLineCount() => _comment.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)

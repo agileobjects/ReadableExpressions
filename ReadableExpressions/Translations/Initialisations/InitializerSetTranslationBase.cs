@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using Interfaces;
+    using static Constants;
 
     internal abstract class InitializerSetTranslationBase<TInitializer> : IInitializerSetTranslation
     {
@@ -13,7 +14,7 @@
             Count = initializersCount;
             _initializerTranslations = new ITranslatable[initializersCount];
 
-            var translationSize = 0;
+            var translationSize = 4;
             var formattingSize = 0;
 
             for (var i = 0; ;)
@@ -30,6 +31,8 @@
                 {
                     break;
                 }
+
+                translationSize += 2; // For ', '
             }
 
             TranslationSize = translationSize;
@@ -50,11 +53,50 @@
 
         private bool WriteToMultipleLines => ForceWriteToMultipleLines || IsLongTranslation;
 
-        public int GetLineCount()
+        public int GetIndentSize()
         {
-            return
-                (WriteToMultipleLines ? 1 : 0) +
-                _initializerTranslations.GetLineCount(Count);
+            var writeToMultipleLines = WriteToMultipleLines;
+            var indentSize = writeToMultipleLines ? 0 : 2;
+
+            for (var i = 0; ;)
+            {
+                var initializerTranslation = _initializerTranslations[i];
+                var initializerIndentSize = initializerTranslation.GetIndentSize();
+
+                if (writeToMultipleLines)
+                {
+                    initializerIndentSize += initializerTranslation.GetLineCount() * IndentLength;
+                }
+
+                indentSize += initializerIndentSize;
+
+                ++i;
+
+                if (i == Count)
+                {
+                    return indentSize;
+                }
+            }
+        }
+
+        public int GetLineCount() 
+            => WriteToMultipleLines ? GetMultiLineCount() : _initializerTranslations.GetLineCount(Count);
+
+        private int GetMultiLineCount()
+        {
+            var lineCount = 2; // for { and }
+
+            for (var i = 0;;)
+            {
+                lineCount += _initializerTranslations[i].GetLineCount();
+
+                ++i;
+
+                if (i == Count)
+                {
+                    return lineCount;
+                }
+            }
         }
 
         public void WriteTo(TranslationBuffer buffer)

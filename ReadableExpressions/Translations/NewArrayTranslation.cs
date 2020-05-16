@@ -54,6 +54,33 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize()
+        {
+            var indentSize = _typeNameTranslation.GetIndentSize();
+
+            switch (_boundTranslationCount)
+            {
+                case 0:
+                    return indentSize;
+
+                case 1:
+                    return indentSize + _boundTranslations[0].GetIndentSize();
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        indentSize += _boundTranslations[i].GetIndentSize();
+
+                        ++i;
+
+                        if (i == _boundTranslationCount)
+                        {
+                            return indentSize;
+                        }
+                    }
+            }
+        }
+
         public int GetLineCount()
         {
             var lineCount = _typeNameTranslation.GetLineCount();
@@ -63,7 +90,7 @@
                 return lineCount;
             }
 
-            for (var i = 0; i < _boundTranslationCount; ++i)
+            for (var i = 0; ;)
             {
                 var boundLineCount = _boundTranslations[i].GetLineCount();
 
@@ -71,9 +98,14 @@
                 {
                     lineCount += boundLineCount - 1;
                 }
-            }
 
-            return lineCount;
+                ++i;
+
+                if (i == _boundTranslationCount)
+                {
+                    return lineCount;
+                }
+            }
         }
 
         public void WriteTo(TranslationBuffer buffer)

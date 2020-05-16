@@ -48,6 +48,8 @@
 
         public int FormattingSize => _negatedValue.FormattingSize;
 
+        public int GetIndentSize() => _negatedValue.GetIndentSize();
+
         public int GetLineCount() => _negatedValue.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)

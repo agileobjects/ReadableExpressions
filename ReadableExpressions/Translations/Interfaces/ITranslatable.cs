@@ -6,6 +6,8 @@
 
         int FormattingSize { get; }
 
+        int GetIndentSize();
+
         int GetLineCount();
 
         void WriteTo(TranslationBuffer buffer);

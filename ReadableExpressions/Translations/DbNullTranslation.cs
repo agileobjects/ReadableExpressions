@@ -25,6 +25,8 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize() => 0;
+
         public int GetLineCount() => 1;
 
         public void WriteTo(TranslationBuffer buffer)

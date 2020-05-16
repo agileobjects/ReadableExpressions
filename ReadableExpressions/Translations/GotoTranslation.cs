@@ -61,6 +61,8 @@
 
             public bool IsTerminated => true;
 
+            public int GetIndentSize() => 0;
+
             public int GetLineCount() => 1;
 
             public void WriteTo(TranslationBuffer buffer)
@@ -92,6 +94,8 @@
 
             public bool IsTerminated => true;
 
+            public int GetIndentSize() => 0;
+
             public int GetLineCount() => 1;
 
             public void WriteTo(TranslationBuffer buffer)
@@ -104,7 +108,7 @@
 
         private class ReturnValueTranslation : ITranslation
         {
-            private readonly CodeBlockTranslation _returnValueTranslation;
+            private readonly ITranslation _returnValueTranslation;
 
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
@@ -120,6 +124,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => _returnValueTranslation.GetIndentSize();
 
             public int GetLineCount() => _returnValueTranslation.GetLineCount();
 

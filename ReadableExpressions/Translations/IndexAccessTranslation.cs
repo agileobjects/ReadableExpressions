@@ -64,6 +64,9 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize() 
+            => _subject.GetIndentSize() + _parameters.GetIndentSize();
+
         public int GetLineCount()
         {
             var subjectLineCount = _subject.GetLineCount();

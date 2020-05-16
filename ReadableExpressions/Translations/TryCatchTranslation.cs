@@ -19,6 +19,7 @@
         private readonly bool _isNonVoidTryCatch;
         private readonly ITranslatable _bodyTranslation;
         private readonly IList<ITranslatable> _catchBlockTranslations;
+        private readonly int _catchBlockCount;
         private readonly bool _hasFault;
         private readonly ITranslatable _faultTranslation;
         private readonly bool _hasFinally;
@@ -33,12 +34,18 @@
 
             _catchBlockTranslations = GetCatchBlockTranslations(
                 tryCatchFinally.Handlers,
+                out _catchBlockCount,
                 out var catchBlockTranslationsSize,
                 out var catchBlocksFormattingSize,
                 context);
 
             var translationSize = _bodyTranslation.TranslationSize + catchBlockTranslationsSize;
-            var formattingSize = _bodyTranslation.FormattingSize + catchBlocksFormattingSize;
+            var keywordFormattingSize = context.GetKeywordFormattingSize();
+            
+            var formattingSize = 
+                keywordFormattingSize + // <- for the 'try'
+               _bodyTranslation.FormattingSize + 
+                catchBlocksFormattingSize;
 
             _hasFault = tryCatchFinally.Fault != null;
 
@@ -46,7 +53,7 @@
             {
                 _faultTranslation = GetReturnableBlockTranslation(tryCatchFinally.Fault, context);
                 translationSize += _faultTranslation.TranslationSize;
-                formattingSize += context.GetKeywordFormattingSize();
+                formattingSize += keywordFormattingSize;
             }
 
             _hasFinally = tryCatchFinally.Finally != null;
@@ -55,7 +62,7 @@
             {
                 _finallyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Finally, context);
                 translationSize += _finallyTranslation.TranslationSize;
-                formattingSize += context.GetKeywordFormattingSize();
+                formattingSize += keywordFormattingSize;
             }
 
             TranslationSize = translationSize;
@@ -84,17 +91,19 @@
 
         private static IList<ITranslatable> GetCatchBlockTranslations(
             IList<CatchBlock> catchBlocks,
+            out int catchBlockCount,
             out int catchBlockTranslationsSize,
             out int catchBlocksFormattingSize,
             ITranslationContext context)
         {
-            if (catchBlocks.Count == 0)
+            catchBlockCount = catchBlocks.Count;
+
+            if (catchBlockCount == 0)
             {
                 catchBlockTranslationsSize = catchBlocksFormattingSize = 0;
                 return Enumerable<ITranslatable>.EmptyArray;
             }
 
-            var catchBlockCount = catchBlocks.Count;
             var catchBlockTranslations = new ITranslatable[catchBlockCount];
 
             catchBlockTranslationsSize = catchBlocksFormattingSize = 0;
@@ -130,9 +139,88 @@
 
         public bool IsTerminated => true;
 
+        public int GetIndentSize()
+        {
+            var indentSize = _bodyTranslation.GetIndentSize();
+
+            switch (_catchBlockCount)
+            {
+                case 0:
+                    break;
+
+                case 1:
+                    indentSize += _catchBlockTranslations[0].GetIndentSize();
+                    break;
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        indentSize += _catchBlockTranslations[i].GetIndentSize();
+
+                        ++i;
+
+                        if (i == _catchBlockCount)
+                        {
+                            break;
+                        }
+                    }
+
+                    break;
+            }
+
+            if (_hasFault)
+            {
+                indentSize += _faultTranslation.GetIndentSize();
+            }
+
+            if (_hasFinally)
+            {
+                indentSize += _finallyTranslation.GetIndentSize();
+            }
+
+            return indentSize;
+        }
+
         public int GetLineCount()
         {
-            throw new NotImplementedException();
+            var lineCount = _bodyTranslation.GetLineCount() + 1;
+
+            switch (_catchBlockCount)
+            {
+                case 0:
+                    break;
+
+                case 1:
+                    lineCount += _catchBlockTranslations[0].GetLineCount() + 1;
+                    break;
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        lineCount += _catchBlockTranslations[i].GetLineCount() + 1;
+
+                        ++i;
+
+                        if (i == _catchBlockCount)
+                        {
+                            break;
+                        }
+                    }
+
+                    break;
+            }
+
+            if (_hasFault)
+            {
+                lineCount += _faultTranslation.GetLineCount() + 2;
+            }
+
+            if (_hasFinally)
+            {
+                lineCount += _finallyTranslation.GetLineCount() + 2;
+            }
+
+            return lineCount;
         }
 
         public void WriteTo(TranslationBuffer buffer)
@@ -140,10 +228,29 @@
             buffer.WriteKeywordToTranslation("try");
             _bodyTranslation.WriteTo(buffer);
 
-            for (int i = 0, l = _catchBlockTranslations.Count; i < l; ++i)
+            switch (_catchBlockCount)
             {
-                buffer.WriteNewLineToTranslation();
-                _catchBlockTranslations[i].WriteTo(buffer);
+                case 0:
+                    break;
+
+                case 1:
+                    _catchBlockTranslations[0].WriteTo(buffer);
+                    break;
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        _catchBlockTranslations[i].WriteTo(buffer);
+
+                        ++i;
+
+                        if (i == _catchBlockCount)
+                        {
+                            break;
+                        }
+                    }
+
+                    break;
             }
 
             if (_hasFault)
@@ -192,10 +299,13 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize() => _catchBodyTranslation.GetIndentSize();
+
             public int GetLineCount() => _catchBodyTranslation.GetLineCount() + 1;
 
             public void WriteTo(TranslationBuffer buffer)
             {
+                buffer.WriteNewLineToTranslation();
                 buffer.WriteKeywordToTranslation("catch");
                 _exceptionClause?.WriteTo(buffer);
                 _catchBodyTranslation.WriteTo(buffer);
@@ -230,6 +340,8 @@
                 public virtual int TranslationSize { get; }
 
                 public virtual int FormattingSize { get; }
+
+                public int GetIndentSize() => _exceptionTypeTranslation.GetIndentSize();
 
                 public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 
@@ -280,6 +392,8 @@
                 public int TranslationSize { get; }
 
                 public int FormattingSize => _exceptionTypeTranslation.FormattingSize;
+
+                public int GetIndentSize() => _exceptionTypeTranslation.GetIndentSize();
 
                 public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 

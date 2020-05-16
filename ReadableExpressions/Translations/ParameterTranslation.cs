@@ -66,6 +66,8 @@
                 }
             }
 
+            public int GetIndentSize() => _typeNameTranslation?.GetIndentSize() ?? 0;
+
             public int GetLineCount() => _typeNameTranslation?.GetLineCount() ?? 1;
 
             public void WriteTo(TranslationBuffer buffer)

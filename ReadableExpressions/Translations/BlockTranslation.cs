@@ -49,6 +49,7 @@
             if (!_hasVariables)
             {
                 TranslationSize = statementTranslationsSize;
+                FormattingSize = statementsFormattingSize;
                 return;
             }
 
@@ -127,10 +128,12 @@
                         ? new BlockStatementTranslation(expression, context)
                         : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
 
-                    translations[statementIndex++] = statementTranslation;
+                    translations[statementIndex] = statementTranslation;
                     statementTranslationsSize += statementTranslation.TranslationSize;
                     statementsFormattingSize += statementTranslation.FormattingSize;
                     hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
+
+                    ++statementIndex;
 
                     if (statementIndex == 1)
                     {
@@ -265,16 +268,38 @@
             return this;
         }
 
+        public int GetIndentSize()
+        {
+            var indentSize = 0;
+
+            for (var i = 0; ;)
+            {
+                indentSize += _statements[i].GetIndentSize();
+
+                ++i;
+
+                if (i == _statementCount)
+                {
+                    return indentSize;
+                }
+            }
+        }
+
         public int GetLineCount()
         {
             var lineCount = _variables.Count;
 
-            for (var i = 0; i < _statementCount; ++i)
+            for (var i = 0; ;)
             {
                 lineCount += _statements[i].GetLineCount();
-            }
 
-            return lineCount;
+                ++i;
+
+                if (i == _statementCount)
+                {
+                    return lineCount;
+                }
+            }
         }
 
         public void WriteTo(TranslationBuffer buffer)
@@ -393,6 +418,8 @@
             public void WriteReturnKeyword() => _writeReturnKeyword = true;
 
             public virtual bool HasGoto => _writeReturnKeyword || _statementTranslation.HasGoto();
+
+            public int GetIndentSize() => _statementTranslation.GetIndentSize();
 
             public int GetLineCount()
             {

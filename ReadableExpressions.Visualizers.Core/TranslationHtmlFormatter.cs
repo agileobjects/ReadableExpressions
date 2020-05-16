@@ -10,7 +10,7 @@
         public static readonly ITranslationFormatter Instance = new TranslationHtmlFormatter();
 
         private static readonly Regex _htmlMatcher = new Regex("<[^>]+>", Compiled);
-        private static readonly int _formattingSize = "<span class=\"kw\"></span>".Length - 2;
+        private static readonly int _formattingSize = "<span class=\"kw\"></span>".Length;
 
         public string GetRaw(string formatted)
         {

@@ -36,8 +36,6 @@
             _initializerTranslations = initializerTranslations;
             TranslationSize = newingTranslation.TranslationSize + initializerTranslations.TranslationSize;
             FormattingSize = newingTranslation.FormattingSize + initializerTranslations.FormattingSize;
-
-            initializerTranslations.IsLongTranslation = TranslationSize > 40;
         }
 
         protected static bool InitHasNoInitializers(
@@ -64,8 +62,18 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize()
+        {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
+            return _newingTranslation.GetIndentSize() +
+                   _initializerTranslations.GetIndentSize();
+        }
+
         public int GetLineCount()
         {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
             var lineCount = _newingTranslation.GetLineCount();
 
             var initializersLineCount = _initializerTranslations.GetLineCount();
@@ -80,6 +88,8 @@
 
         public void WriteTo(TranslationBuffer buffer)
         {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
             _newingTranslation.WriteTo(buffer);
             _initializerTranslations.WriteTo(buffer);
         }

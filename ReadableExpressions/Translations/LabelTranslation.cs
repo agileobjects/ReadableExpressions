@@ -18,7 +18,7 @@
         private readonly string _labelName;
         private readonly bool _labelIsNamed;
         private readonly bool _labelHasNoValue;
-        private readonly CodeBlockTranslation _labelValueTranslation;
+        private readonly ITranslatable _labelValueTranslation;
 
         public LabelTranslation(LabelExpression label, ITranslationContext context)
         {
@@ -73,6 +73,8 @@
         public bool IsEmpty { get; }
 
         public bool HasGoto => !_labelHasNoValue;
+
+        public int GetIndentSize() => _labelValueTranslation?.GetIndentSize() ?? 0;
 
         public int GetLineCount() => _labelValueTranslation?.GetLineCount() ?? 1;
 

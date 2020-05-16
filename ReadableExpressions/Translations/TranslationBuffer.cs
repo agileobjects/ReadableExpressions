@@ -11,6 +11,7 @@
 
     internal class TranslationBuffer : ITranslationQuery
     {
+        private readonly int _estimatedSize;
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
@@ -18,6 +19,8 @@
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
             Formatter = formatter ?? NullTranslationFormatter.Instance;
+            _estimatedSize = estimatedSize;
+
 #if DEBUG && NET40
             if (AppDomain.CurrentDomain.IsFullyTrusted)
             {
@@ -251,7 +254,9 @@
 #if DEBUG && NET40
             if (AppDomain.CurrentDomain.IsFullyTrusted)
             {
-                Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+                Debug.Assert(
+                    _estimatedSize >= _content.Length,
+                    $"TranslationBuffer: estimated: {_estimatedSize}, actual " + _content.Length);
             }
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;

@@ -65,6 +65,23 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize()
+        {
+            var indentSize = 0;
+
+            for (var i = 0; ;)
+            {
+                indentSize += _operandTranslations[i].GetIndentSize();
+
+                ++i;
+
+                if (i == _operandCount)
+                {
+                    return indentSize;
+                }
+            }
+        }
+
         public int GetLineCount()
             => _operandTranslations.GetLineCount(_operandCount);
 

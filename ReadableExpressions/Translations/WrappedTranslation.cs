@@ -32,6 +32,8 @@
 
         public bool IsTerminated => _translation.IsTerminated();
 
+        public int GetIndentSize() => _translation.GetIndentSize();
+
         public int GetLineCount() => _translation.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)

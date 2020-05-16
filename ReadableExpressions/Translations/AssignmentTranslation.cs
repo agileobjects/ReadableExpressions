@@ -4,11 +4,15 @@
     using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+#endif
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Constants;
 
     internal class AssignmentTranslation :
         CheckedOperationTranslationBase,
@@ -139,6 +143,22 @@
 
         protected override bool IsMultiStatement()
             => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
+
+        public int GetIndentSize()
+        {
+            var indentSize =
+                _targetTranslation.GetIndentSize() +
+                _valueTranslation.GetIndentSize();
+
+            if (IsCheckedOperation && IsMultiStatement())
+            {
+                indentSize +=
+                    _targetTranslation.GetLineCount() * IndentLength +
+                    _valueTranslation.GetLineCount() * IndentLength;
+            }
+
+            return indentSize;
+        }
 
         public int GetLineCount()
         {
