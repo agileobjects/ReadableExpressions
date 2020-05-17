@@ -19,7 +19,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs" Link="CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,7 +57,7 @@
     <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(SolutionDir)\$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" InternalizeExcludeAssemblies="@(InternalizeExcludeAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
   </Target>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="CopyToVsDebuggers" AfterTargets="Build">
     <Exec Command="xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netcoreapp&quot; /Y" />
   </Target>  
 
