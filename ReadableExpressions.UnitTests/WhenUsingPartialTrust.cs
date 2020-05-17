@@ -1,8 +1,7 @@
-﻿#if !NET35
+﻿#if FEATURE_PARTIAL_TRUST
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
-    using System.Linq.Expressions;
     using System.Security;
     using System.Security.Policy;
     using Microsoft.CSharp.RuntimeBinder;

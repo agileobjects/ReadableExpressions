@@ -43,6 +43,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>ClsCompliant.cs</Link>
+    </Compile>
     <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
       <Link>CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
