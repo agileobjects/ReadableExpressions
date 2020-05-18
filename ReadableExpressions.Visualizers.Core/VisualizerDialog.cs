@@ -51,6 +51,8 @@
 
             SetViewerSizeLimits();
             SetTranslation();
+
+            Resize += (sender, args) => ((VisualizerDialog)sender).HandleResize();
         }
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
@@ -266,15 +268,6 @@
                         break;
                 }
             }
-        }
-
-        protected override void OnResizeEnd(EventArgs e)
-        {
-            SetViewerSize(GetViewerSizeBasedOn(Size));
-
-            base.OnResizeEnd(e);
-
-            HandleResize();
         }
 
         private void HandleResize()
