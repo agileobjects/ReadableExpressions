@@ -334,9 +334,7 @@ string.Join(
     ""0"",
     ""]"")";
 #endif
-
             translated.ShouldBe(EXPECTED.TrimStart());
-
         }
 
         [Fact]

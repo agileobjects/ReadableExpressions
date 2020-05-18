@@ -43,14 +43,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
-      <Link>CommonVisualizerAssemblyInfo.cs</Link>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
     </Compile>
-    <Compile Include="RegistryData.cs" />
+    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="VisualizerAssembly.cs" />
+    <Compile Include="VisualizerInstallerFactory.cs" />
     <Compile Include="VisualizerInstallationActions.cs" />
     <Compile Include="EmbeddedResourceExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Visualizer.cs" />
+    <Compile Include="VisualizerInstaller.cs" />
+    <Compile Include="VsixManifest.cs" />
+    <Compile Include="VsixManifestInstaller.cs" />
     <Compile Include="VsPost2015Data.cs" />
     <EmbeddedResource Include="extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -72,6 +78,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.NetCore.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.NetCore.dll</Link>
     </EmbeddedResource>
     <Content Include="CustomAction.config" />
   </ItemGroup>
