@@ -23,7 +23,7 @@
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
     <Company>AgileObjects Ltd</Company>
-    <Title>ReadableExpressions</Title>
+    <Title>AgileObjects.ReadableExpressions</Title>
     <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -55,13 +55,19 @@
     <DefineConstants>$(DefineConstants);NET_STANDARD</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.0" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">

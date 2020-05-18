@@ -559,14 +559,19 @@ if (WhenFormattingCode.JoinStrings(
         public void ShouldNotRemoveParenthesesFromACastObjectChainedMethodCall()
         {
             var intArrayConverter = CreateLambda(
-                (IList<int> ints) => ((int[])ints).ToString().Split(','));
+                (IList<int> ints) => ((int[])ints)
+                    .ToString()
+                    .Split(new[] { ',' }, 3, StringSplitOptions.RemoveEmptyEntries));
 
             var stringArrayVariable = Variable(typeof(string[]), "strings");
             var assignment = Assign(stringArrayVariable, intArrayConverter.Body);
 
             var translated = ToReadableString(assignment);
 
-            translated.ShouldBe("strings = ((int[])ints).ToString().Split(',')");
+            translated.ShouldBe(
+                "strings = ((int[])ints)" +
+                    ".ToString()" +
+                    ".Split(new[] { ',' }, 3, StringSplitOptions.RemoveEmptyEntries)");
         }
 
         [Fact]
@@ -950,7 +955,7 @@ if (i == 1)
             var collectionVariable = Variable(typeof(ICollection<int>), "ints");
             var addMethod = collectionVariable.Type.GetPublicInstanceMethod("Add");
             var addMethodCall = Call(collectionVariable, addMethod, tryCatch);
-            
+
             var translated = ToReadableString(addMethodCall);
 
             const string EXPECTED = @"

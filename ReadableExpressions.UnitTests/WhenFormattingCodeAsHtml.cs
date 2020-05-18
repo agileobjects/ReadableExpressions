@@ -1,22 +1,16 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿#if FEATURE_HTML
+namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Linq.Expressions;
     using NetStandardPolyfills;
     using Visualizers.Core;
-#if !NET35
-    using System.Linq.Expressions;
     using Xunit;
     using static System.Linq.Expressions.Expression;
-#else
-    using Microsoft.Scripting.Ast;
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
 
-    [NUnit.Framework.TestFixture]
-#endif
     public class WhenFormattingCodeAsHtml : TestClassBase
     {
         [Fact]
@@ -247,3 +241,4 @@ Two:
         #endregion
     }
 }
+#endif

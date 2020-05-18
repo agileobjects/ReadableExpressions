@@ -117,8 +117,8 @@
         protected abstract void WriteInterfaceName(string name);
 
         private void WriteGenericTypeName(
-            Type type, 
-            int numberOfParameters, 
+            Type type,
+            int numberOfParameters,
             IList<Type> typeArguments)
         {
             var isAnonType =
@@ -169,7 +169,7 @@
         protected abstract void WriteTypeName(Type type);
 
         protected abstract void WriteTypeArgumentNameSeparator();
-        
+
         protected abstract void WriteTypeArgumentNameSuffix();
 
         protected virtual void WriteTypeNamePrefix(Type genericType)
