@@ -8,7 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		NuGetPack.bat = NuGetPack.bat
 		README.md = README.md
-		VersionInfo.cs = VersionInfo.cs
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests", "ReadableExpressions.UnitTests\ReadableExpressions.UnitTests.csproj", "{A7BAC212-DA6C-4473-8043-006FF6967922}"
@@ -41,7 +40,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Core.NetCore", "ReadableExpressions.Visualizers.Core.NetCore\ReadableExpressions.Visualizers.Core.NetCore.csproj", "{5511EF78-C82A-441B-B842-29C1CC1400AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Vs16.NetCore", "ReadableExpressions.Visualizers.Vs16.NetCore\ReadableExpressions.Visualizers.Vs16.NetCore.csproj", "{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Vs16.NetCore", "ReadableExpressions.Visualizers.Vs16.NetCore\ReadableExpressions.Visualizers.Vs16.NetCore.csproj", "{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Console.NetCore", "ReadableExpressions.Visualizers.Console.NetCore\ReadableExpressions.Visualizers.Console.NetCore.csproj", "{F679DB41-C60F-48C0-8D22-50390238A5A1}"
 EndProject
