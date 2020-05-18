@@ -62,6 +62,10 @@
 
         public int FormattingSize => _operandTranslation.FormattingSize;
 
+        public int GetIndentSize() => _operandTranslation.GetIndentSize();
+
+        public int GetLineCount() => _operandTranslation.GetLineCount();
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_operatorIsSuffix == false)

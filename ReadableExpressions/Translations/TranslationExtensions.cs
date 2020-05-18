@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -28,6 +29,31 @@
 
         public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
             => context.Settings.Formatter.GetFormattingSize(tokenType);
+
+        public static int GetLineCount<TTranslatable>(
+            this IList<TTranslatable> translations,
+            int translationsCount)
+            where TTranslatable : ITranslatable
+        {
+            var lineCount = 1;
+
+            for (var i = 0; ;)
+            {
+                var translationLineCount = translations[i].GetLineCount();
+
+                if (translationLineCount > 1)
+                {
+                    lineCount += translationLineCount - 1;
+                }
+
+                ++i;
+
+                if (i == translationsCount)
+                {
+                    return lineCount;
+                }
+            }
+        }
 
         public static bool IsMultiStatement(this ITranslation translation)
         {
@@ -104,7 +130,7 @@
         }
 
         public static void WriteInParenthesesIfRequired(
-            this ITranslation translation, 
+            this ITranslation translation,
             TranslationBuffer buffer,
             ITranslationContext context)
         {

@@ -28,15 +28,16 @@
 
             WriteTypeNamePrefix(genericType);
 
-            for (var i = types.Count; ;)
+            for (var i = types.Count - 1; ;)
             {
-                WriteClosedGenericTypeName(types[--i], ref typeGenericTypeArguments);
+                WriteClosedGenericTypeName(types[i], ref typeGenericTypeArguments);
 
                 if (i == 0)
                 {
                     return;
                 }
 
+                --i;
                 WriteNestedTypeNamesSeparator();
             }
         }
@@ -147,9 +148,11 @@
 
             for (var i = 0; ;)
             {
-                var typeArgument = typeArguments[i++];
+                var typeArgument = typeArguments[i];
 
                 WriteTypeName(typeArgument);
+
+                ++i;
 
                 if (i == typeArguments.Count)
                 {

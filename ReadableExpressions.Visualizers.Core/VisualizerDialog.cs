@@ -270,6 +270,8 @@
 
         protected override void OnResizeEnd(EventArgs e)
         {
+            SetViewerSize(GetViewerSizeBasedOn(Size));
+
             base.OnResizeEnd(e);
 
             HandleResize();

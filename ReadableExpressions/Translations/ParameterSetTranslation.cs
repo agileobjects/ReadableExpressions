@@ -17,6 +17,7 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Constants;
 
     internal class ParameterSetTranslation : ITranslatable
     {
@@ -261,7 +262,7 @@
             return allArgumentTypesMatch;
         }
 
-        public int TranslationSize { get; }
+        public int TranslationSize { get; private set; }
 
         public int FormattingSize { get; }
 
@@ -280,6 +281,7 @@
         public ParameterSetTranslation WithoutParentheses()
         {
             _parenthesesMode = ParenthesesMode.Never;
+            TranslationSize -= 2;
             return this;
         }
 
@@ -298,12 +300,88 @@
             return this;
         }
 
+        public int GetIndentSize()
+        {
+            switch (Count)
+            {
+                case 0:
+                    return 0;
+
+                case 1:
+                    return _parameterTranslations[0].GetIndentSize();
+            }
+
+            var indentSize = 0;
+            var writeParametersOnNewLines = WriteParametersOnNewLines();
+
+            for (var i = 0; ;)
+            {
+                var parameter = _parameterTranslations[i];
+                var parameterIndentSize = parameter.GetIndentSize();
+
+                if (writeParametersOnNewLines)
+                {
+                    parameterIndentSize += parameter.GetLineCount() * IndentLength;
+                }
+
+                indentSize += parameterIndentSize;
+
+                ++i;
+
+                if (i == Count)
+                {
+                    return indentSize;
+                }
+            }
+        }
+
+        public int GetLineCount()
+        {
+            switch (Count)
+            {
+                case 0:
+                    return 1;
+
+                case 1:
+                    return _parameterTranslations[0].GetLineCount();
+            }
+
+            var lineCount = 1;
+            var writeParametersOnNewLines = WriteParametersOnNewLines();
+
+            for (var i = 0; ;)
+            {
+                var parameterLineCount = _parameterTranslations[i].GetLineCount();
+
+                if (parameterLineCount > 1)
+                {
+                    lineCount += parameterLineCount - 1;
+                }
+
+                if (writeParametersOnNewLines)
+                {
+                    lineCount += 1;
+                }
+
+                ++i;
+
+                if (i == Count)
+                {
+                    return lineCount;
+                }
+            }
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             switch (Count)
             {
                 case 0:
-                    buffer.WriteToTranslation(_openAndCloseParentheses);
+                    if (_parenthesesMode != ParenthesesMode.Never)
+                    {
+                        buffer.WriteToTranslation(_openAndCloseParentheses);
+                    }
+
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.Always):
@@ -425,6 +503,30 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                var indentSize = _parameterTranslation.GetIndentSize();
+
+                if (_typeNameTranslation != null)
+                {
+                    indentSize += _typeNameTranslation.GetIndentSize();
+                }
+
+                return indentSize;
+            }
+
+            public int GetLineCount()
+            {
+                var parameterLineCount = _parameterTranslation.GetLineCount();
+
+                if (_declareParameterInline && _typeNameTranslation != null)
+                {
+                    parameterLineCount += _typeNameTranslation.GetLineCount();
+                }
+
+                return parameterLineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteKeywordToTranslation(_out);
@@ -465,6 +567,10 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => _parameterTranslation.GetIndentSize();
+
+            public int GetLineCount() => _parameterTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

@@ -12,6 +12,7 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Constants;
 
     internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
@@ -130,6 +131,52 @@
 
         public int FormattingSize { get; }
 
+        public int GetIndentSize()
+        {
+            var indentSize = 
+                _leftOperandTranslation.GetIndentSize() + 
+                _rightOperandTranslation.GetIndentSize();
+
+            if (IsCheckedOperation && IsMultiStatement())
+            {
+                indentSize +=
+                    _leftOperandTranslation.GetLineCount() * IndentLength +
+                    _rightOperandTranslation.GetLineCount() * IndentLength;
+            }
+
+            return indentSize;
+        }
+
+        public int GetLineCount()
+        {
+            var isMultiStatement = IsMultiStatement();
+            var lineCount = IsCheckedOperation && isMultiStatement ? 2 : 1;
+
+            var leftOperandLineCount = _leftOperandTranslation.GetLineCount();
+
+            if (isMultiStatement)
+            {
+                lineCount += leftOperandLineCount;
+            }
+            else if (leftOperandLineCount > 1)
+            {
+                lineCount = leftOperandLineCount - 1;
+            }
+
+            var rightOperandLineCount = _rightOperandTranslation.GetLineCount();
+
+            if (isMultiStatement)
+            {
+                lineCount += rightOperandLineCount;
+            }
+            else if (rightOperandLineCount > 1)
+            {
+                lineCount = rightOperandLineCount - 1;
+            }
+
+            return lineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
@@ -205,6 +252,10 @@
             public int TranslationSize { get; }
 
             public int FormattingSize => _operandTranslation.FormattingSize;
+
+            public int GetIndentSize() => _operandTranslation.GetIndentSize();
+
+            public int GetLineCount() => _operandTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

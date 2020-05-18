@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
     using Interfaces;
 
     internal class ListInitializerSetTranslation : InitializerSetTranslationBase<ElementInit>
@@ -35,22 +34,26 @@
         private class MultiArgumentInitializerTranslation : ITranslatable
         {
             private readonly IList<CodeBlockTranslation> _translations;
+            private readonly int _argumentCount;
 
             public MultiArgumentInitializerTranslation(ElementInit init, ITranslationContext context)
             {
                 var translationSize = 0;
                 var formattingSize = 0;
 
-                _translations = init
-                    .Arguments
-                    .ProjectToArray(arg =>
-                    {
-                        var translation = context.GetCodeBlockTranslationFor(arg);
-                        translationSize += translation.TranslationSize;
-                        formattingSize += translation.FormattingSize;
+                var arguments = init.Arguments;
+                _argumentCount = arguments.Count;
 
-                        return translation;
-                    });
+                _translations = new CodeBlockTranslation[_argumentCount];
+
+                for (var i = 0; i < _argumentCount; ++i)
+                {
+                    var translation = context.GetCodeBlockTranslationFor(arguments[i]);
+                    translationSize += translation.TranslationSize;
+                    formattingSize += translation.FormattingSize;
+
+                    _translations[i] = translation;
+                }
 
                 TranslationSize = translationSize;
                 FormattingSize = formattingSize;
@@ -60,11 +63,29 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                var indentSize = 0;
+
+                for (var i = 0; ;)
+                {
+                    indentSize += _translations[i].GetIndentSize();
+
+                    ++i;
+
+                    if (i == _argumentCount)
+                    {
+                        return indentSize;
+                    }
+                }
+            }
+
+            public int GetLineCount()
+                => _translations.GetLineCount(_argumentCount);
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteToTranslation("{ ");
-
-                var argumentCount = _translations.Count;
 
                 for (var i = 0; ;)
                 {
@@ -72,7 +93,7 @@
 
                     ++i;
 
-                    if (i == argumentCount)
+                    if (i == _argumentCount)
                     {
                         break;
                     }

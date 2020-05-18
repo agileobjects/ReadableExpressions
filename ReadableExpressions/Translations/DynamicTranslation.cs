@@ -40,7 +40,8 @@
                 ExpressionType.Dynamic,
                 args.OperationDescription,
                 dynamicExpression.Type,
-                TokenType.Default);
+                TokenType.Default,
+                context);
         }
 
         private class DynamicTranslationArgs

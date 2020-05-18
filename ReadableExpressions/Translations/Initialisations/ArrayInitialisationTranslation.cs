@@ -90,6 +90,10 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize() => _emptyArrayNewing.GetIndentSize();
+
+            public int GetLineCount() => _emptyArrayNewing.GetLineCount();
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteNewToTranslation();
@@ -113,6 +117,10 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize() => 0;
+
+            public int GetLineCount() => 1;
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteKeywordToTranslation("new");
@@ -135,6 +143,10 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => _emptyArrayNewing.GetIndentSize();
+
+            public int GetLineCount() => _emptyArrayNewing.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

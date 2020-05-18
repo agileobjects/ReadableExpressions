@@ -100,6 +100,19 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                return _operandTranslation.GetIndentSize() +
+                       _typeNameTranslation.GetIndentSize();
+            }
+
+            public int GetLineCount()
+            {
+                return Math.Max(
+                    _operandTranslation.GetLineCount(),
+                    _typeNameTranslation.GetLineCount());
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 _operandTranslation.WriteTo(buffer);

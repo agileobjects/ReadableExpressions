@@ -152,6 +152,19 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                return _testedValueTranslation.GetIndentSize() +
+                       _testedTypeNameTranslation.GetIndentSize();
+            }
+
+            public int GetLineCount()
+            {
+                return Math.Max(
+                    _testedValueTranslation.GetLineCount(),
+                    _testedTypeNameTranslation.GetLineCount());
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 _testedValueTranslation.WriteTo(buffer);
@@ -190,8 +203,14 @@
                     _castValueTranslation = _castValueTranslation.WithParentheses();
                 }
 
-                TranslationSize = _castTypeNameTranslation.TranslationSize + _castValueTranslation.TranslationSize;
-                FormattingSize = _castTypeNameTranslation.FormattingSize + _castValueTranslation.FormattingSize;
+                TranslationSize = 
+                    _castTypeNameTranslation.TranslationSize + 
+                    2 + // <- for ()
+                    _castValueTranslation.TranslationSize;
+                
+                FormattingSize = 
+                    _castTypeNameTranslation.FormattingSize + 
+                    _castValueTranslation.FormattingSize;
             }
 
             public ExpressionType NodeType { get; }
@@ -201,6 +220,19 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize()
+            {
+                return _castTypeNameTranslation.GetIndentSize() +
+                       _castValueTranslation.GetIndentSize();
+            }
+
+            public int GetLineCount()
+            {
+                return Math.Max(
+                    _castTypeNameTranslation.GetLineCount(),
+                    _castValueTranslation.GetLineCount());
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {

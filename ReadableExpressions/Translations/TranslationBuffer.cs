@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-#if DEBUG
+#if DEBUG && NET40
     using System.Diagnostics;
 #endif
     using System.Text;
@@ -11,24 +11,19 @@
 
     internal class TranslationBuffer : ITranslationQuery
     {
+#if DEBUG && NET40
+        private readonly int _estimatedSize;
+#endif
         private readonly StringBuilder _content;
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationBuffer(int estimatedSize)
-            : this(NullTranslationFormatter.Instance, estimatedSize)
-        {
-        }
-
         public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
         {
-            Formatter = formatter ?? NullTranslationFormatter.Instance;
 #if DEBUG && NET40
-            if (AppDomain.CurrentDomain.IsFullyTrusted)
-            {
-                Debug.WriteLine("TranslationBuffer: created with size " + estimatedSize);
-            }
+            _estimatedSize = estimatedSize;
 #endif
+            Formatter = formatter ?? NullTranslationFormatter.Instance;
             _content = new StringBuilder(estimatedSize);
         }
 
@@ -84,9 +79,9 @@
             var newlineEncountered = false;
             var finalCharacter = substring[substringLength - 1];
 
-            for (var i = _content.Length; i > 0;)
+            for (var i = _content.Length - 1; i > 0;)
             {
-                var contentCharacter = _content[--i];
+                var contentCharacter = _content[i];
 
                 if (contentCharacter == '\n')
                 {
@@ -95,12 +90,14 @@
                         return false;
                     }
 
+                    --i;
                     newlineEncountered = true;
                     continue;
                 }
 
                 if (char.IsWhiteSpace(contentCharacter))
                 {
+                    --i;
                     continue;
                 }
 
@@ -111,10 +108,14 @@
 
                 for (var j = substringLength - 2; j > -1;)
                 {
-                    if (_content[--i] != substring[j--])
+                    --i;
+
+                    if (_content[i] != substring[j])
                     {
                         return false;
                     }
+
+                    --j;
                 }
 
                 return true;
@@ -132,9 +133,9 @@
 
             var newlineEncountered = false;
 
-            for (var i = _content.Length; i > 0;)
+            for (var i = _content.Length - 1; i > 0;)
             {
-                var contentCharacter = _content[--i];
+                var contentCharacter = _content[i];
 
                 if (contentCharacter == '\n')
                 {
@@ -143,12 +144,14 @@
                         return true;
                     }
 
+                    --i;
                     newlineEncountered = true;
                     continue;
                 }
 
                 if (char.IsWhiteSpace(contentCharacter))
                 {
+                    --i;
                     continue;
                 }
 
@@ -256,7 +259,9 @@
 #if DEBUG && NET40
             if (AppDomain.CurrentDomain.IsFullyTrusted)
             {
-                Debug.WriteLine("TranslationBuffer: final size " + _content.Length);
+                Debug.WriteIf(
+                    _estimatedSize >= _content.Length,
+                    $"TranslationBuffer: estimated: {_estimatedSize}, actual " + _content.Length);
             }
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;

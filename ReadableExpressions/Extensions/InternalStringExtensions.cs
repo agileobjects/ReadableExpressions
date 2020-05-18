@@ -1,12 +1,18 @@
 namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System;
     using System.Collections.Generic;
 #if NET35
     using System.Linq;
 #endif
+    using static System.StringSplitOptions;
 
     internal static class InternalStringExtensions
     {
+        private static readonly string[] _newLines = { Environment.NewLine };
+
+        public static int GetLineCount(this string value) => value.Split(_newLines, None).Length;
+
         public static string ToPascalCase(this string value)
             => char.ToUpperInvariant(value[0]) + value.Substring(1);
 

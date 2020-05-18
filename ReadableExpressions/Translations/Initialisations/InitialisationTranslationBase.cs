@@ -12,11 +12,12 @@
     internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
         private readonly ITranslation _newingTranslation;
+        private readonly IInitializerSetTranslation _initializerTranslations;
 
         protected InitialisationTranslationBase(
             ExpressionType initType,
             NewExpression newing,
-            InitializerSetTranslationBase<TInitializer> initializerTranslations,
+            IInitializerSetTranslation initializerTranslations,
             ITranslationContext context)
             : this(
                 initType,
@@ -28,15 +29,13 @@
         protected InitialisationTranslationBase(
             ExpressionType initType,
             ITranslation newingTranslation,
-            InitializerSetTranslationBase<TInitializer> initializerTranslations)
+            IInitializerSetTranslation initializerTranslations)
         {
             NodeType = initType;
             _newingTranslation = newingTranslation;
-            InitializerTranslations = initializerTranslations;
+            _initializerTranslations = initializerTranslations;
             TranslationSize = newingTranslation.TranslationSize + initializerTranslations.TranslationSize;
             FormattingSize = newingTranslation.FormattingSize + initializerTranslations.FormattingSize;
-
-            initializerTranslations.IsLongTranslation = TranslationSize > 40;
         }
 
         protected static bool InitHasNoInitializers(
@@ -60,15 +59,39 @@
         public Type Type => _newingTranslation.Type;
 
         public int TranslationSize { get; }
-        
+
         public int FormattingSize { get; }
 
-        protected InitializerSetTranslationBase<TInitializer> InitializerTranslations { get; }
+        public int GetIndentSize()
+        {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
+            return _newingTranslation.GetIndentSize() +
+                   _initializerTranslations.GetIndentSize();
+        }
+
+        public int GetLineCount()
+        {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
+            var lineCount = _newingTranslation.GetLineCount();
+
+            var initializersLineCount = _initializerTranslations.GetLineCount();
+
+            if (initializersLineCount > 1)
+            {
+                lineCount += initializersLineCount - 1;
+            }
+
+            return lineCount;
+        }
 
         public void WriteTo(TranslationBuffer buffer)
         {
+            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+
             _newingTranslation.WriteTo(buffer);
-            InitializerTranslations.WriteTo(buffer);
+            _initializerTranslations.WriteTo(buffer);
         }
     }
 }

@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Formatting;
     using Interfaces;
 
@@ -14,12 +15,13 @@
         private readonly string _value;
         private readonly TokenType _tokenType;
 
-        public FixedValueTranslation(Expression expression)
+        public FixedValueTranslation(Expression expression, ITranslationContext context)
             : this(
                 expression.NodeType,
                 expression.ToString(),
                 expression.Type,
-                TokenType.Default)
+                TokenType.Default,
+                context)
         {
         }
 
@@ -27,12 +29,14 @@
             ExpressionType expressionType,
             string value,
             Type type,
-            TokenType tokenType)
+            TokenType tokenType,
+            ITranslationContext context)
         {
             NodeType = expressionType;
             Type = type;
             _value = value;
             _tokenType = tokenType;
+            FormattingSize = context.GetFormattingSize(tokenType);
         }
 
         public ExpressionType NodeType { get; }
@@ -41,7 +45,11 @@
 
         public int TranslationSize => _value.Length;
         
-        public int FormattingSize => 0;
+        public int FormattingSize { get; }
+
+        public int GetIndentSize() => 0;
+
+        public int GetLineCount() => _value.GetLineCount();
 
         public void WriteTo(TranslationBuffer buffer)
             => buffer.WriteToTranslation(_value, _tokenType);

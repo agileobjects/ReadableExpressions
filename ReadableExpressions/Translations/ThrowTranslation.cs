@@ -36,8 +36,13 @@
         public Type Type { get; }
 
         public int TranslationSize { get; }
-        
+
         public int FormattingSize { get; }
+
+        public int GetIndentSize() => _thrownItemTranslation?.GetIndentSize() ?? 0;
+
+        public int GetLineCount()
+            => (_thrownItemTranslation?.GetLineCount() + 1).GetValueOrDefault();
 
         public void WriteTo(TranslationBuffer buffer)
         {

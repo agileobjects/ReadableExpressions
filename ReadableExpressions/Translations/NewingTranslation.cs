@@ -2,14 +2,14 @@
 {
     using System;
     using System.Linq;
-    using System.Reflection;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Reflection;
     using NetStandardPolyfills;
+    using Interfaces;
 
     internal static class NewingTranslation
     {
@@ -42,6 +42,7 @@
         {
             private readonly string _typeName;
             private readonly ParameterInfo[] _ctorParameters;
+            private readonly int _ctorParameterCount;
 
             public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
                 : base(newing, context)
@@ -49,6 +50,7 @@
                 Type = newing.Type;
                 _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(Type) ?? string.Empty;
                 _ctorParameters = newing.Constructor.GetParameters();
+                _ctorParameterCount = _ctorParameters.Length;
 
                 TranslationSize =
                     _typeName.Length +
@@ -58,7 +60,7 @@
 
                 FormattingSize =
                     context.GetKeywordFormattingSize() +
-                    context.GetVariableFormattingSize() * _ctorParameters.Length;
+                    context.GetVariableFormattingSize() * _ctorParameterCount;
             }
 
             public Type Type { get; }
@@ -67,19 +69,71 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                switch (_ctorParameterCount)
+                {
+                    case 0:
+                        return 0;
+
+                    case 1:
+                        return Parameters[0].GetIndentSize();
+                }
+
+                var indentSize = 0;
+
+                for (var i = 0; ;)
+                {
+                    indentSize += Parameters[i].GetIndentSize();
+
+                    ++i;
+
+                    if (i == _ctorParameterCount)
+                    {
+                        return indentSize;
+                    }
+                }
+            }
+
+            public int GetLineCount()
+            {
+                switch (_ctorParameterCount)
+                {
+                    case 0:
+                        return 1;
+
+                    case 1:
+                        return Parameters[0].GetLineCount();
+                }
+
+                var lineCount = 1;
+
+                for (var i = 0; i < _ctorParameterCount; ++i)
+                {
+                    var parameterLineCount = Parameters[i].GetLineCount();
+
+                    if (parameterLineCount > 1)
+                    {
+                        lineCount += parameterLineCount - 1;
+                    }
+                }
+
+                return lineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteNewToTranslation();
 
                 if (_typeName.Length != 0)
                 {
-                    buffer.WriteToTranslation(_typeName);
+                    buffer.WriteTypeNameToTranslation(_typeName);
                     buffer.WriteSpaceToTranslation();
                 }
 
                 buffer.WriteToTranslation("{ ");
 
-                if (_ctorParameters.Length != 0)
+                if (_ctorParameterCount != 0)
                 {
                     for (var i = 0; ;)
                     {
@@ -89,7 +143,7 @@
 
                         ++i;
 
-                        if (i == _ctorParameters.Length)
+                        if (i == _ctorParameterCount)
                         {
                             break;
                         }
@@ -105,7 +159,6 @@
         private class StandardNewingTranslation : NewingTranslationBase, ITranslation
         {
             private readonly ITranslation _typeNameTranslation;
-            private readonly bool _omitParenthesesIfParameterless;
 
             public StandardNewingTranslation(
                 NewExpression newing,
@@ -113,11 +166,19 @@
                 bool omitParenthesesIfParameterless)
                 : base(newing, context)
             {
-                _omitParenthesesIfParameterless = omitParenthesesIfParameterless;
                 _typeNameTranslation = context.GetTranslationFor(newing.Type).WithObjectTypeName();
 
+                if (omitParenthesesIfParameterless && Parameters.None)
+                {
+                    Parameters.WithoutParentheses();
+                }
+                else
+                {
+                    Parameters.WithParentheses();
+                }
+
                 TranslationSize =
-                    "new ()".Length +
+                    "new ".Length +
                     _typeNameTranslation.TranslationSize +
                      Parameters.TranslationSize;
 
@@ -131,17 +192,25 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize()
+            {
+                return Parameters.None
+                    ? _typeNameTranslation.GetIndentSize()
+                    : Parameters.GetIndentSize();
+            }
+
+            public int GetLineCount()
+            {
+                return Parameters.None
+                    ? _typeNameTranslation.GetLineCount()
+                    : Parameters.GetLineCount();
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteNewToTranslation();
                 _typeNameTranslation.WriteTo(buffer);
-
-                if (_omitParenthesesIfParameterless && Parameters.None)
-                {
-                    return;
-                }
-
-                Parameters.WithParentheses().WriteTo(buffer);
+                Parameters.WriteTo(buffer);
             }
 
             public Type Type => _typeNameTranslation.Type;
