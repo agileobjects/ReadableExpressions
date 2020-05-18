@@ -188,7 +188,7 @@
                 return;
             }
 #if NETSTANDARD
-            if (typeInfo.IsNestedAssembly)
+            if (typeInfo.IsNestedFamORAssem)
 #else
             if (type.IsNestedFamORAssem)
 #endif
@@ -197,7 +197,7 @@
                 return;
             }
 #if NETSTANDARD
-            if (typeInfo.IsNestedAssembly)
+            if (typeInfo.IsNestedFamily)
 #else
             if (type.IsNestedFamily)
 #endif

@@ -2,12 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Interfaces;
 
     internal class IndexAccessTranslation : ITranslation
     {
@@ -63,6 +63,24 @@
         public int TranslationSize { get; }
 
         public int FormattingSize { get; }
+
+        public int GetIndentSize() 
+            => _subject.GetIndentSize() + _parameters.GetIndentSize();
+
+        public int GetLineCount()
+        {
+            var subjectLineCount = _subject.GetLineCount();
+            var parametersLineCount = _parameters.GetLineCount();
+
+            if (subjectLineCount == 1)
+            {
+                return parametersLineCount > 1 ? parametersLineCount : 1;
+            }
+
+            return parametersLineCount > 1
+                ? subjectLineCount + parametersLineCount - 1
+                : subjectLineCount;
+        }
 
         public void WriteTo(TranslationBuffer buffer)
         {

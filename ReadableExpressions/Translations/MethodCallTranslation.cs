@@ -18,6 +18,7 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Constants;
 
     internal static class MethodCallTranslation
     {
@@ -207,6 +208,31 @@
 
             public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
 
+            public int GetIndentSize()
+            {
+                var indentSize = _subjectTranslation.GetIndentSize();
+
+                indentSize += _isPartOfMethodCallChain 
+                    ? _methodInvocationTranslation.GetLineCount() * IndentLength 
+                    : _methodInvocationTranslation.GetLineCount();
+
+                return indentSize;
+            }
+
+            public int GetLineCount()
+            {
+                var lineCount = 
+                    _subjectTranslation.GetLineCount() + 
+                    _methodInvocationTranslation.GetLineCount();
+
+                if (_isPartOfMethodCallChain)
+                {
+                    ++lineCount;
+                }
+
+                return lineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 _subjectTranslation.WriteInParenthesesIfRequired(buffer, _context);
@@ -232,16 +258,19 @@
             private readonly IMethod _method;
             private readonly ParameterSetTranslation _parameters;
             private readonly ITranslatable[] _explicitGenericArguments;
+            private readonly int _explicitGenericArgumentCount;
 
             public MethodInvocationTranslation(IMethod method, ParameterSetTranslation parameters, ITranslationContext context)
             {
                 _method = method;
                 _parameters = parameters;
                 _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
+                _explicitGenericArgumentCount = _explicitGenericArguments.Length;
+                
                 TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
 
                 FormattingSize =
-                    _explicitGenericArguments.Length * context.GetTypeNameFormattingSize() +
+                    _explicitGenericArgumentCount * context.GetTypeNameFormattingSize() +
                      parameters.FormattingSize;
             }
 
@@ -320,6 +349,10 @@
 
             public int FormattingSize { get; }
 
+            public int GetIndentSize() => _parameters.GetIndentSize();
+
+            public int GetLineCount() => _parameters.GetLineCount();
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteToTranslation(_method.Name, TokenType.MethodName);
@@ -329,18 +362,20 @@
 
             private void WriteGenericArgumentNamesIfNecessary(TranslationBuffer buffer)
             {
-                if (_explicitGenericArguments.Length == 0)
+                if (_explicitGenericArgumentCount == 0)
                 {
                     return;
                 }
 
                 buffer.WriteToTranslation('<');
 
-                for (int i = 0, l = _explicitGenericArguments.Length; ;)
+                for (var i = 0; ;)
                 {
-                    _explicitGenericArguments[i++].WriteTo(buffer);
+                    _explicitGenericArguments[i].WriteTo(buffer);
 
-                    if (i == l)
+                    ++i;
+
+                    if (i == _explicitGenericArgumentCount)
                     {
                         break;
                     }

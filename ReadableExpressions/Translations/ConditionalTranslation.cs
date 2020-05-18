@@ -8,6 +8,7 @@
 #endif
     using Extensions;
     using Interfaces;
+    using static Constants;
 
     internal static class ConditionalTranslation
     {
@@ -121,6 +122,10 @@
                 return codeBlockTranslation;
             }
 
+            public abstract int GetIndentSize();
+
+            public abstract int GetLineCount();
+
             public abstract void WriteTo(TranslationBuffer buffer);
 
             protected void WriteIfStatement(TranslationBuffer buffer)
@@ -146,13 +151,18 @@
 
             public bool IsTerminated => true;
 
+            public override int GetIndentSize()
+                => TestTranslation.GetIndentSize() + IfTrueTranslation.GetIndentSize();
+
+            public override int GetLineCount()
+                => TestTranslation.GetLineCount() + IfTrueTranslation.GetLineCount();
+
             public override void WriteTo(TranslationBuffer buffer) => WriteIfStatement(buffer);
         }
 
         private class TernaryTranslation : ConditionalTranslationBase
         {
             private readonly ITranslationContext _context;
-            private readonly Action<TranslationBuffer, ITranslationContext> _translationWriter;
 
             public TernaryTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
@@ -162,31 +172,78 @@
                     context)
             {
                 _context = context;
-                if (this.ExceedsLengthThreshold())
+            }
+
+            public override int GetIndentSize()
+            {
+                return this.ExceedsLengthThreshold()
+                    ? GetMultiLineTernaryIndentSize()
+                    : GetSingleLineTernaryIndentSize();
+            }
+
+            private int GetMultiLineTernaryIndentSize()
+            {
+                return GetSingleLineTernaryIndentSize() +
+                       IfTrueTranslation.GetLineCount() * IndentLength +
+                       IfFalseTranslation.GetLineCount() * IndentLength;
+            }
+
+            private int GetSingleLineTernaryIndentSize()
+            {
+                return TestTranslation.GetLineCount() +
+                       IfTrueTranslation.GetIndentSize() +
+                       IfFalseTranslation.GetIndentSize();
+            }
+
+            public override int GetLineCount()
+            {
+                return this.ExceedsLengthThreshold()
+                    ? GetMultiLineTernaryLineCount()
+                    : GetSingleLineTernaryLineCount();
+            }
+
+            private int GetMultiLineTernaryLineCount()
+            {
+                return TestTranslation.GetLineCount() +
+                       IfTrueTranslation.GetLineCount() +
+                       IfFalseTranslation.GetLineCount();
+            }
+
+            private int GetSingleLineTernaryLineCount()
+            {
+                var lineCount = TestTranslation.GetLineCount();
+
+                var ifTrueLineCount = IfTrueTranslation.GetLineCount();
+
+                if (ifTrueLineCount > 1)
                 {
-                    _translationWriter = WriteMultiLineTernary;
+                    lineCount += ifTrueLineCount - 1;
                 }
-                else
+
+                var ifFalseLineCount = IfFalseTranslation.GetLineCount();
+
+                if (ifFalseLineCount > 1)
                 {
-                    _translationWriter = WriteSingleLineTernary;
+                    lineCount += ifFalseLineCount - 1;
                 }
+
+                return lineCount;
             }
 
             public override void WriteTo(TranslationBuffer buffer)
-                => _translationWriter.Invoke(buffer, _context);
-
-            private void WriteSingleLineTernary(TranslationBuffer buffer, ITranslationContext context)
             {
-                TestTranslation.WriteInParenthesesIfRequired(buffer, context);
-                buffer.WriteToTranslation(" ? ");
-                IfTrueTranslation.WriteTo(buffer);
-                buffer.WriteToTranslation(" : ");
-                IfFalseTranslation.WriteTo(buffer);
+                if (this.ExceedsLengthThreshold())
+                {
+                    WriteMultiLineTernary(buffer);
+                    return;
+                }
+
+                WriteSingleLineTernary(buffer);
             }
 
-            private void WriteMultiLineTernary(TranslationBuffer buffer, ITranslationContext context)
+            private void WriteMultiLineTernary(TranslationBuffer buffer)
             {
-                TestTranslation.WriteInParenthesesIfRequired(buffer, context);
+                TestTranslation.WriteInParenthesesIfRequired(buffer, _context);
 
                 buffer.WriteNewLineToTranslation();
                 buffer.Indent();
@@ -200,6 +257,15 @@
                 IfFalseTranslation.WriteTo(buffer);
 
                 buffer.Unindent();
+            }
+
+            private void WriteSingleLineTernary(TranslationBuffer buffer)
+            {
+                TestTranslation.WriteInParenthesesIfRequired(buffer, _context);
+                buffer.WriteToTranslation(" ? ");
+                IfTrueTranslation.WriteTo(buffer);
+                buffer.WriteToTranslation(" : ");
+                IfFalseTranslation.WriteTo(buffer);
             }
         }
 
@@ -215,6 +281,21 @@
                     context.GetCodeBlockTranslationFor(conditional.IfFalse).WithoutBraces(),
                     context)
             {
+            }
+
+            public override int GetIndentSize()
+            {
+                return TestTranslation.GetIndentSize() +
+                       IfTrueTranslation.GetIndentSize() +
+                       IfFalseTranslation.GetIndentSize();
+            }
+
+            public override int GetLineCount()
+            {
+                return TestTranslation.GetLineCount() +
+                       IfTrueTranslation.GetLineCount() +
+                       1 + // for space after the if statement
+                       IfFalseTranslation.GetLineCount();
             }
 
             public override void WriteTo(TranslationBuffer buffer)
@@ -255,6 +336,20 @@
                 => conditional.IfFalse.NodeType == ExpressionType.Conditional;
 
             public bool IsTerminated => true;
+
+            public override int GetIndentSize()
+            {
+                return TestTranslation.GetIndentSize() +
+                       IfTrueTranslation.GetIndentSize() +
+                       IfFalseTranslation.GetIndentSize();
+            }
+
+            public override int GetLineCount()
+            {
+                return TestTranslation.GetLineCount() +
+                       IfTrueTranslation.GetLineCount() +
+                       IfFalseTranslation.GetLineCount();
+            }
 
             public override void WriteTo(TranslationBuffer buffer)
             {

@@ -1,4 +1,4 @@
-﻿#if !NET35
+﻿#if FEATURE_DYNAMIC
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;

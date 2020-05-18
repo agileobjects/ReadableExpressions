@@ -29,6 +29,40 @@
             translated.ShouldBe("i = default(int)");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/65
+        [Fact]
+        public void ShouldTranslateAPropertyAssignment()
+        {
+            var arg1 = Parameter(typeof(PublicInt), "myClass");
+            var arg2 = Parameter(typeof(PublicInt), "myclass");
+
+            var arg1Value = Property(arg1, "Value");
+            var arg2Value = Property(arg2, "Value");
+
+            var assignArg1ValueToArg2 = Assign(arg1Value, arg2Value);
+
+            var assignmentBlock = Block(assignArg1ValueToArg2, assignArg1ValueToArg2);
+            var assignAndReturn = Block(assignmentBlock, arg1);
+
+            var assignmentLambda = Lambda<Func<PublicInt, PublicInt, PublicInt>>(
+                assignAndReturn,
+                arg1,
+                arg2);
+
+            var translated = ToReadableString(assignmentLambda);
+
+            const string EXPECTED = @"
+(myClass, myclass) =>
+{
+    myClass.Value = myclass.Value;
+    myClass.Value = myclass.Value;
+
+    return myClass;
+}";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         [Fact]
         public void ShouldTranslateAnAdditionAssignment()
         {
@@ -635,7 +669,7 @@ result =
             var defaultInt = Default(typeof(int));
 
             var intTryParse = Call(
-                typeof(int).GetPublicStaticMethod("TryParse", parameterCount: 2),
+                typeof(int).GetPublicStaticMethod("TryParse", typeof(string), typeof(int).MakeByRefType()),
                 Condition(
                     objectNotNull,
                     Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
@@ -676,7 +710,7 @@ num =
 
             var longTryParse = Call(
                 null,
-                typeof(long).GetPublicStaticMethod("TryParse", parameterCount: 2),
+                typeof(long).GetPublicStaticMethod("TryParse", typeof(string), typeof(long).MakeByRefType()),
                 Call(objectVariable, typeof(object).GetPublicInstanceMethod("ToString")),
                 longValue);
 
@@ -723,6 +757,8 @@ number =
 
             translated.ShouldBe("ext = " + value);
         }
+
+        #region Helper Members
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
         {
@@ -773,5 +809,12 @@ number =
 
             return valueConditional;
         }
+
+        private class PublicInt
+        {
+            public int Value { get; set; }
+        }
+
+        #endregion
     }
 }

@@ -1,12 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 {
     using System.Collections.Generic;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Interfaces;
 
     internal class MemberBindingInitializerTranslationSet : InitializerSetTranslationBase<MemberBinding>
     {
@@ -20,10 +20,20 @@
             switch (binding.BindingType)
             {
                 case MemberBindingType.MemberBinding:
-                    return new MemberBindingTranslation((MemberMemberBinding)binding, this, context);
+                    var memberBinding = (MemberMemberBinding)binding;
+
+                    return new BindingsTranslation(
+                        this,
+                        memberBinding.Member.Name,
+                        new MemberBindingInitializerTranslationSet(memberBinding.Bindings, context));
 
                 case MemberBindingType.ListBinding:
-                    return new ListBindingTranslation((MemberListBinding)binding, this, context);
+                    var listBinding = (MemberListBinding)binding;
+
+                    return new BindingsTranslation(
+                        this,
+                        listBinding.Member.Name,
+                        new ListInitializerSetTranslation(listBinding.Initializers, context));
 
                 default:
                     return new AssignmentBindingTranslation((MemberAssignment)binding, context);
@@ -32,65 +42,57 @@
 
         public override bool ForceWriteToMultipleLines => false;
 
-        private class MemberBindingTranslation : ITranslatable
+        public class BindingsTranslation : ITranslatable
         {
-            private readonly string _memberName;
-            private readonly MemberBindingInitializerTranslationSet _bindingTranslations;
-            private readonly MemberBindingInitializerTranslationSet _parent;
+            private readonly IInitializerSetTranslation _parent;
+            private readonly string _subjectName;
+            private readonly IInitializerSetTranslation _initializerSetTranslation;
 
-            public MemberBindingTranslation(
-                MemberMemberBinding memberBinding,
-                MemberBindingInitializerTranslationSet parent,
-                ITranslationContext context)
+            public BindingsTranslation(
+                IInitializerSetTranslation parent,
+                string subjectName,
+                IInitializerSetTranslation initializerSetTranslation)
             {
-                _memberName = memberBinding.Member.Name;
-                _bindingTranslations = new MemberBindingInitializerTranslationSet(memberBinding.Bindings, context);
                 _parent = parent;
-                TranslationSize = _memberName.Length + 2 + _bindingTranslations.TranslationSize;
+                _subjectName = subjectName;
+                _initializerSetTranslation = initializerSetTranslation;
+                TranslationSize = subjectName.Length + 2 + initializerSetTranslation.TranslationSize;
             }
 
             public int TranslationSize { get; }
 
-            public int FormattingSize => _bindingTranslations.FormattingSize;
+            public int FormattingSize => _initializerSetTranslation.FormattingSize;
+
+            public int GetIndentSize()
+            {
+                _initializerSetTranslation.IsLongTranslation = _parent.IsLongTranslation;
+
+                return _initializerSetTranslation.GetIndentSize();
+            }
+
+            public int GetLineCount()
+            {
+                var isLongBindingsSet = _parent.IsLongTranslation;
+
+                _initializerSetTranslation.IsLongTranslation = isLongBindingsSet;
+
+                var bindingsLineCount = _initializerSetTranslation.GetLineCount();
+
+                if (isLongBindingsSet)
+                {
+                    ++bindingsLineCount;
+                }
+
+                return bindingsLineCount;
+            }
 
             public void WriteTo(TranslationBuffer buffer)
             {
-                _bindingTranslations.IsLongTranslation = _parent.IsLongTranslation;
+                _initializerSetTranslation.IsLongTranslation = _parent.IsLongTranslation;
 
-                buffer.WriteToTranslation(_memberName);
+                buffer.WriteToTranslation(_subjectName);
                 buffer.WriteToTranslation(" =");
-                _bindingTranslations.WriteTo(buffer);
-            }
-        }
-
-        private class ListBindingTranslation : ITranslatable
-        {
-            private readonly string _memberName;
-            private readonly ListInitializerSetTranslation _initializerTranslations;
-            private readonly MemberBindingInitializerTranslationSet _parent;
-
-            public ListBindingTranslation(
-                MemberListBinding listBinding,
-                MemberBindingInitializerTranslationSet parent,
-                ITranslationContext context)
-            {
-                _memberName = listBinding.Member.Name;
-                _initializerTranslations = new ListInitializerSetTranslation(listBinding.Initializers, context);
-                _parent = parent;
-                TranslationSize = _memberName.Length + 2 + _initializerTranslations.TranslationSize;
-            }
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize => _initializerTranslations.FormattingSize;
-
-            public void WriteTo(TranslationBuffer buffer)
-            {
-                _initializerTranslations.IsLongTranslation = _parent.IsLongTranslation;
-
-                buffer.WriteToTranslation(_memberName);
-                buffer.WriteToTranslation(" =");
-                _initializerTranslations.WriteTo(buffer);
+                _initializerSetTranslation.WriteTo(buffer);
             }
         }
 
@@ -109,6 +111,10 @@
             public int TranslationSize { get; }
 
             public int FormattingSize => _valueTranslation.FormattingSize;
+
+            public int GetIndentSize() => _valueTranslation.GetIndentSize();
+
+            public int GetLineCount() => _valueTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

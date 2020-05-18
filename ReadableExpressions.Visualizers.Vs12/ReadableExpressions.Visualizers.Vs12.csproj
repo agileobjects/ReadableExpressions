@@ -42,8 +42,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
     <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
-      <Link>CommonVisualizerAssemblyInfo.cs</Link>
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Vs12ExpressionVisualizerObjectSource.cs" />
     <Compile Include="Vs12ExpressionVisualizer.cs" />

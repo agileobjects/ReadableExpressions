@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
+    using static Constants;
 
     internal class CodeBlockTranslation :
         ITranslation,
@@ -14,6 +15,7 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _translation;
+        private readonly bool _isEmptyTranslation;
         private readonly ITranslationContext _context;
         private bool _ensureTerminated;
         private bool _ensureReturnKeyword;
@@ -25,6 +27,7 @@
         {
             NodeType = translation.NodeType;
             _translation = translation;
+            _isEmptyTranslation = translation is IPotentialEmptyTranslatable empty && empty.IsEmpty;
             _context = context;
             _startOnNewLine = true;
             _writeBraces = IsMultiStatement = translation.IsMultiStatement();
@@ -148,6 +151,52 @@
         public IParameterTranslation AsParameterTranslation()
             => _translation as IParameterTranslation;
 
+        public int GetIndentSize()
+        {
+            if (_isEmptyTranslation)
+            {
+                return 0;
+            }
+
+            var indentSize = _translation.GetIndentSize();
+
+            if (_indentContents || _writeBraces)
+            {
+                var translationIndentSize = _translation.GetLineCount() * IndentLength;
+
+                indentSize += translationIndentSize;
+
+                if (_writeBraces)
+                {
+                    indentSize += 2 * IndentLength;
+
+                    if (_indentContents)
+                    {
+                        indentSize += translationIndentSize;
+                    }
+                }
+            }
+
+            return indentSize;
+        }
+
+        public int GetLineCount()
+        {
+            if (_isEmptyTranslation)
+            {
+                return _writeBraces ? _startOnNewLine ? 3 : 2 : 0;
+            }
+
+            var translationLineCount = _translation.GetLineCount();
+
+            if (_writeBraces)
+            {
+                translationLineCount += _startOnNewLine ? 3 : 2;
+            }
+
+            return translationLineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_writeBraces)
@@ -190,7 +239,7 @@
 
         private bool WriteEmptyCodeBlock(TranslationBuffer buffer)
         {
-            if ((_translation is IPotentialEmptyTranslatable emptyTranslatable) && emptyTranslatable.IsEmpty)
+            if (_isEmptyTranslation)
             {
                 buffer.WriteClosingBraceToTranslation(startOnNewLine: false);
                 return true;

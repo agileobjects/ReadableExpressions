@@ -30,6 +30,7 @@
             _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
+            base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -50,6 +51,8 @@
 
             SetViewerSizeLimits();
             SetTranslation();
+
+            Resize += (sender, args) => ((VisualizerDialog)sender).HandleResize();
         }
 
         internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
@@ -265,13 +268,6 @@
                         break;
                 }
             }
-        }
-
-        protected override void OnResizeEnd(EventArgs e)
-        {
-            base.OnResizeEnd(e);
-
-            HandleResize();
         }
 
         private void HandleResize()

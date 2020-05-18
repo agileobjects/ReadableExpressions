@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;FEATURE_CLS_COMPLIANT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8</LangVersion>
@@ -28,7 +28,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;FEATURE_CLS_COMPLIANT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <LangVersion>8</LangVersion>
@@ -40,6 +40,9 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
     <Compile Include="CommonVisualizerAssemblyInfo.cs" />
     <Compile Include="Configuration\VisualizerDialogFont.cs" />
     <Compile Include="Configuration\VisualizerDialogSettings.cs" />
@@ -112,6 +115,7 @@
     <Compile Include="Theming\IThemeable.cs" />
     <Compile Include="Theming\VisualizerDialogTheme.cs" />
     <Compile Include="ExpressionVisualizerObjectSource.cs" />
+    <Compile Include="VersionNumber.cs" />
     <Compile Include="VisualizerDialog.cs">
       <SubType>Form</SubType>
     </Compile>

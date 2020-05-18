@@ -44,6 +44,27 @@
 
         public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
 
+        public int GetIndentSize()
+        {
+            return _parameters.GetIndentSize() +
+                   _bodyTranslation.GetIndentSize();
+        }
+
+        public int GetLineCount()
+        {
+            var parametersLineCount = _parameters.GetLineCount();
+            var bodyLineCount = _bodyTranslation.GetLineCount();
+
+            if (parametersLineCount == 1)
+            {
+                return bodyLineCount > 1 ? bodyLineCount : 1;
+            }
+
+            return bodyLineCount > 1
+                ? parametersLineCount + bodyLineCount - 1
+                : parametersLineCount;
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             _parameters.WriteTo(buffer);

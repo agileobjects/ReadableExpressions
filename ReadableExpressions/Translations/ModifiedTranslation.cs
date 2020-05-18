@@ -37,6 +37,10 @@
 
         public bool IsTerminated => _baseTranslatable.IsTerminated();
 
+        public int GetIndentSize() => _baseTranslatable.GetIndentSize();
+
+        public int GetLineCount() => _baseTranslatable.GetLineCount();
+
         public void WriteTo(TranslationBuffer buffer) => _baseTranslatable.WriteTo(buffer);
     }
 }

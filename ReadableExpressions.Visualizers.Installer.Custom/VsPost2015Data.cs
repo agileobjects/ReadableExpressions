@@ -8,7 +8,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
     internal class VsPost2015Data : IDisposable
     {
-        private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>
+        private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>(2)
         {
             [2017] = "15.0",
             [2019] = "16.0"
@@ -21,10 +21,10 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             using (var capabilitiesKey = post2015Key.OpenSubKey("Capabilities"))
             {
                 VsFullVersionNumber = GetVsFullVersion(capabilitiesKey);
-                InstallPath = GetInstallPath(capabilitiesKey);
+                InstallDirectory = GetInstallPath(capabilitiesKey);
             }
 
-            IsValid = (VsFullVersionNumber != null) && (InstallPath != null);
+            IsValid = (VsFullVersionNumber != null) && (InstallDirectory != null);
         }
 
         #region Setup
@@ -81,7 +81,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
         public string VsFullVersionNumber { get; }
 
-        public string InstallPath { get; }
+        public string InstallDirectory { get; }
 
         public bool IsValid { get; }
 

@@ -8,7 +8,7 @@
 #endif
     using Interfaces;
 
-    internal class QuotedLambdaTranslation : ITranslation
+    internal class QuotedLambdaTranslation : ITranslation 
     {
         private readonly ITranslation _quotedLambdaTranslation;
 
@@ -37,6 +37,10 @@
         public int TranslationSize => _quotedLambdaTranslation.TranslationSize;
 
         public int FormattingSize => _quotedLambdaTranslation.FormattingSize;
+
+        public int GetIndentSize() => _quotedLambdaTranslation.GetIndentSize();
+
+        public int GetLineCount() => _quotedLambdaTranslation.GetLineCount() + 1;
 
         public void WriteTo(TranslationBuffer buffer)
         {

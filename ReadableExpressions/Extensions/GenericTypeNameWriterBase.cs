@@ -28,15 +28,16 @@
 
             WriteTypeNamePrefix(genericType);
 
-            for (var i = types.Count; ;)
+            for (var i = types.Count - 1; ;)
             {
-                WriteClosedGenericTypeName(types[--i], ref typeGenericTypeArguments);
+                WriteClosedGenericTypeName(types[i], ref typeGenericTypeArguments);
 
                 if (i == 0)
                 {
                     return;
                 }
 
+                --i;
                 WriteNestedTypeNamesSeparator();
             }
         }
@@ -117,8 +118,8 @@
         protected abstract void WriteInterfaceName(string name);
 
         private void WriteGenericTypeName(
-            Type type, 
-            int numberOfParameters, 
+            Type type,
+            int numberOfParameters,
             IList<Type> typeArguments)
         {
             var isAnonType =
@@ -147,9 +148,11 @@
 
             for (var i = 0; ;)
             {
-                var typeArgument = typeArguments[i++];
+                var typeArgument = typeArguments[i];
 
                 WriteTypeName(typeArgument);
+
+                ++i;
 
                 if (i == typeArguments.Count)
                 {
@@ -169,7 +172,7 @@
         protected abstract void WriteTypeName(Type type);
 
         protected abstract void WriteTypeArgumentNameSeparator();
-        
+
         protected abstract void WriteTypeArgumentNameSuffix();
 
         protected virtual void WriteTypeNamePrefix(Type genericType)

@@ -49,6 +49,7 @@
             if (!_hasVariables)
             {
                 TranslationSize = statementTranslationsSize;
+                FormattingSize = statementsFormattingSize;
                 return;
             }
 
@@ -74,6 +75,11 @@
             BlockExpression block,
             ITranslationContext context)
         {
+            if (block.Variables.Count == 0)
+            {
+                return EmptyDictionary<ITranslation, ParameterSetTranslation>.Instance;
+            }
+
             var variablesByType = block
                 .Variables
                 .Except(context.InlineOutputVariables)
@@ -122,10 +128,12 @@
                         ? new BlockStatementTranslation(expression, context)
                         : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
 
-                    translations[statementIndex++] = statementTranslation;
+                    translations[statementIndex] = statementTranslation;
                     statementTranslationsSize += statementTranslation.TranslationSize;
                     statementsFormattingSize += statementTranslation.FormattingSize;
                     hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
+
+                    ++statementIndex;
 
                     if (statementIndex == 1)
                     {
@@ -260,6 +268,40 @@
             return this;
         }
 
+        public int GetIndentSize()
+        {
+            var indentSize = 0;
+
+            for (var i = 0; ;)
+            {
+                indentSize += _statements[i].GetIndentSize();
+
+                ++i;
+
+                if (i == _statementCount)
+                {
+                    return indentSize;
+                }
+            }
+        }
+
+        public int GetLineCount()
+        {
+            var lineCount = _variables.Count;
+
+            for (var i = 0; ;)
+            {
+                lineCount += _statements[i].GetLineCount();
+
+                ++i;
+
+                if (i == _statementCount)
+                {
+                    return lineCount;
+                }
+            }
+        }
+
         public void WriteTo(TranslationBuffer buffer)
         {
             if (_hasVariables)
@@ -377,6 +419,22 @@
 
             public virtual bool HasGoto => _writeReturnKeyword || _statementTranslation.HasGoto();
 
+            public int GetIndentSize() => _statementTranslation.GetIndentSize();
+
+            public int GetLineCount()
+            {
+                var lineCount =
+                    (_writeBlankLineBefore ? 1 : 0) +
+                     _statementTranslation.GetLineCount();
+
+                if (UseFinalBlankLine)
+                {
+                    lineCount += 1;
+                }
+
+                return lineCount;
+            }
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
@@ -392,7 +450,7 @@
 
                 WriteStatementTo(buffer);
 
-                if ((_suppressBlankLineAfter == false) && WriteBlankLineAfter())
+                if (UseFinalBlankLine)
                 {
                     buffer.WriteNewLineToTranslation();
                 }
@@ -407,6 +465,9 @@
                     buffer.WriteToTranslation(';');
                 }
             }
+
+            private bool UseFinalBlankLine
+                => (_suppressBlankLineAfter == false) && WriteBlankLineAfter();
 
             public virtual bool WriteBlankLineAfter()
             {

@@ -47,7 +47,7 @@
             {
                 Type = @goto.Type;
                 _statement = statement;
-                TranslationSize = statement.Length + 1; // <- for the ';'
+                TranslationSize = statement.Length + ";".Length;
                 FormattingSize = context.GetControlStatementFormattingSize();
             }
 
@@ -60,6 +60,10 @@
             public int FormattingSize { get; }
 
             public bool IsTerminated => true;
+
+            public int GetIndentSize() => 0;
+
+            public int GetLineCount() => 1;
 
             public void WriteTo(TranslationBuffer buffer)
             {
@@ -76,7 +80,7 @@
             {
                 Type = @goto.Type;
                 _labelName = @goto.Target.Name;
-                TranslationSize = "goto ".Length + _labelName.Length + 1; // <- for the ';'
+                TranslationSize = "goto ".Length + _labelName.Length + ";".Length;
                 FormattingSize = context.GetControlStatementFormattingSize();
             }
 
@@ -90,6 +94,10 @@
 
             public bool IsTerminated => true;
 
+            public int GetIndentSize() => 0;
+
+            public int GetLineCount() => 1;
+
             public void WriteTo(TranslationBuffer buffer)
             {
                 buffer.WriteControlStatementToTranslation("goto ");
@@ -100,7 +108,7 @@
 
         private class ReturnValueTranslation : ITranslation
         {
-            private readonly CodeBlockTranslation _returnValueTranslation;
+            private readonly ITranslation _returnValueTranslation;
 
             public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
             {
@@ -116,6 +124,10 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public int GetIndentSize() => _returnValueTranslation.GetIndentSize();
+
+            public int GetLineCount() => _returnValueTranslation.GetLineCount();
 
             public void WriteTo(TranslationBuffer buffer)
             {

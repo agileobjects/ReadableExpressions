@@ -15,16 +15,16 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     
-    <AssemblyVersion>2.4.0.0</AssemblyVersion>
-    <FileVersion>2.4.0.0</FileVersion>
-    <VersionPrefix>2.4.0</VersionPrefix>
-    <Version>2.4.0</Version>
+    <AssemblyVersion>2.4.1.0</AssemblyVersion>
+    <FileVersion>2.4.1.0</FileVersion>
+    <VersionPrefix>2.4.1</VersionPrefix>
+    <Version>2.4.1</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
     <Company>AgileObjects Ltd</Company>
-    <Title>ReadableExpressions</Title>
-    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NETStandard 1.0+ and .NET 3.5+.</Description>
+    <Title>AgileObjects.ReadableExpressions</Title>
+    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NET 3.5+ and .NET Standard 1.0+</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
@@ -32,13 +32,7 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Support for using full type names instead of 'var'
-- Support for declaring out parameter variables inline
-- Support for showing types of implicitly-typed arrays
-- Support for showing lambda parameter types
-- Support for custom translation formatting
-- Fixing translation of null-terminating characters, re: #43
-- Fixing translation of property getter and setter methods in abstract classes
+    <PackageReleaseNotes>- Updating to NetStandardPolyfills v1.4.1
 - Performance improvements
     </PackageReleaseNotes>
   </PropertyGroup>
@@ -55,13 +49,19 @@
     <DefineConstants>$(DefineConstants);NET_STANDARD</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.0" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">

@@ -130,24 +130,24 @@
             settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
                 ? value : defaultTheme.Default;
 
-            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value) 
+            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value)
                 ? value : defaultTheme.Toolbar;
 
-            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value) 
+            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value)
                 ? value : defaultTheme.Menu;
 
             settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
 
-            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value) 
+            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value)
                 ? value : defaultTheme.Keyword;
 
-            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value) 
+            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value)
                 ? value : defaultTheme.Variable;
 
-            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value) 
+            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value)
                 ? value : defaultTheme.TypeName;
 
-            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value) 
+            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value)
                 ? value : defaultTheme.InterfaceName;
 
             settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
