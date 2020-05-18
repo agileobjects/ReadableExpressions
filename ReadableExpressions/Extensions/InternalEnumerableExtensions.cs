@@ -67,12 +67,17 @@
 
             foreach (var item in first)
             {
-                combined[index++] = item;
+                combined[index] = item;
+
+                ++index;
             }
 
             for (var i = 0; i < secondCount;)
             {
-                combined[index++] = second[i++];
+                combined[index] = second[i];
+                
+                ++index;
+                ++i;
             }
 
             return combined;
