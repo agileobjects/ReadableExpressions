@@ -3,56 +3,25 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
     using System.Windows.Forms;
-    using Core;
     using Microsoft.Deployment.WindowsInstaller;
 
     public class VisualizerInstallationActions
     {
-        private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
+        private static readonly Assembly _thisAssembly = typeof(VisualizerAssembly).Assembly;
 
-        private static readonly Lazy<string> _vsixManifestResourceNameLoader;
-        private static readonly Lazy<string> _vsixManifestLoader;
+        private static readonly Lazy<VsixManifest> _vsixManifestLoader;
 
         private static Session _session;
 
         static VisualizerInstallationActions()
         {
-            _vsixManifestResourceNameLoader = new Lazy<string>(GetVsixManifestResourceName);
-            _vsixManifestLoader = new Lazy<string>(GetVsixManifest);
+            _vsixManifestLoader = new Lazy<VsixManifest>(() => new VsixManifest());
         }
 
-        #region Setup
-
-        private static string GetVsixManifestResourceName()
-        {
-            return _thisAssembly
-                .GetManifestResourceNames()
-                .WithExtension(".vsixmanifest")
-                .First();
-        }
-
-        private static string GetVsixManifest()
-        {
-            using (var resourceStream = _thisAssembly.GetManifestResourceStream(VsixManifestResourceName))
-            // ReSharper disable once AssignNullToNotNullAttribute
-            using (var streamReader = new StreamReader(resourceStream))
-            {
-                return streamReader
-                    .ReadToEnd()
-                    .Replace("$version$", VersionNumber.FileVersion)
-                    .Replace("$author$", VersionNumber.CompanyName);
-            }
-        }
-
-        #endregion
-
-        private static string VsixManifestResourceName => _vsixManifestResourceNameLoader.Value;
-
-        private static string VsixManifest => _vsixManifestLoader.Value;
+        private static VsixManifest VsixManifest => _vsixManifestLoader.Value;
 
         [CustomAction]
         public static ActionResult Install(Session session)
@@ -66,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             {
                 Log("Starting...");
 
-                if (NoVisualizersToInstall(out var visualizers, out var errorMessage))
+                if (NoVisualizersToInstall(out var installers, out var errorMessage))
                 {
                     MessageBox.Show(
                         errorMessage,
@@ -77,13 +46,13 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
                 var installed = new List<string> { "Installed visualizers for:" };
 
-                foreach (var visualizer in visualizers)
+                foreach (var installer in installers)
                 {
-                    Log("Installing visualizer " + visualizer.ResourceName + "...");
-                    visualizer.Uninstall();
-                    visualizer.Install();
+                    Log("Installing visualizer " + installer.ResourceName + "...");
+                    installer.Uninstall();
+                    installer.Install();
 
-                    installed.Add(" - Visual Studio " + visualizer.VsFullVersionNumber);
+                    installed.Add(" - Visual Studio " + installer.VsId);
                 }
 
                 MessageBox.Show(
@@ -115,11 +84,11 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 #endif
             try
             {
-                if (TryGetVisualizers(out var visualizers))
+                if (TryGetVisualizers(out var installers))
                 {
-                    foreach (var visualizer in visualizers)
+                    foreach (var installer in installers)
                     {
-                        visualizer.Uninstall();
+                        installer.Uninstall();
                     }
                 }
             }
@@ -131,25 +100,27 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             return ActionResult.Success;
         }
 
-        private static bool TryGetVisualizers(out IEnumerable<Visualizer> visualizers)
-            => NoVisualizersToInstall(out visualizers, out _) != true;
+        private static bool TryGetVisualizers(out IEnumerable<VisualizerInstaller> installers)
+            => NoVisualizersToInstall(out installers, out _) != true;
 
-        private static bool NoVisualizersToInstall(out IEnumerable<Visualizer> visualizers, out string errorMessage)
+        private static bool NoVisualizersToInstall(
+            out IEnumerable<VisualizerInstaller> installers, 
+            out string errorMessage)
         {
-            using (var registryData = new RegistryData())
+            using (var installerFactory = new VisualizerInstallerFactory(Log, VsixManifest))
             {
-                if (registryData.NoVisualStudio)
+                if (installerFactory.NoVisualStudio)
                 {
-                    visualizers = Enumerable.Empty<Visualizer>();
-                    errorMessage = registryData.ErrorMessage;
+                    installers = Enumerable.Empty<VisualizerInstaller>();
+                    errorMessage = installerFactory.ErrorMessage;
                     return true;
                 }
 
-                visualizers = _thisAssembly
+                installers = _thisAssembly
                     .GetManifestResourceNames()
                     .WithExtension(".dll")
-                    .Select(visualizerResourceName => new Visualizer(Log, VsixManifest, visualizerResourceName))
-                    .SelectMany(visualizer => registryData.GetInstallableVisualizersFor(visualizer))
+                    .Select(visualizerResourceName => new VisualizerAssembly(Log, visualizerResourceName))
+                    .SelectMany(visualizer => installerFactory.GetInstallersFor(visualizer))
                     .ToArray();
 
                 errorMessage = null;

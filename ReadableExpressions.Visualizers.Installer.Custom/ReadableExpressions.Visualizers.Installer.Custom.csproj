@@ -49,11 +49,14 @@
     <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
       <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="RegistryData.cs" />
+    <Compile Include="VisualizerAssembly.cs" />
+    <Compile Include="VisualizerInstallerFactory.cs" />
     <Compile Include="VisualizerInstallationActions.cs" />
     <Compile Include="EmbeddedResourceExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Visualizer.cs" />
+    <Compile Include="VisualizerInstaller.cs" />
+    <Compile Include="VsixManifest.cs" />
+    <Compile Include="VsixManifestInstaller.cs" />
     <Compile Include="VsPost2015Data.cs" />
     <EmbeddedResource Include="extension.vsixmanifest">
       <SubType>Designer</SubType>
