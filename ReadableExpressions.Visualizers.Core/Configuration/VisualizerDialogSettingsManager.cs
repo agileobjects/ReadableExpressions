@@ -10,8 +10,8 @@
     internal static class VisualizerDialogSettingsManager
     {
         private static readonly string _settingsFolderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-            "AppData", "Local", "Microsoft", "VisualStudio");
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft", "VisualStudio");
 
         private static readonly string _settingsFilePath = Path.Combine(
             _settingsFolderPath,

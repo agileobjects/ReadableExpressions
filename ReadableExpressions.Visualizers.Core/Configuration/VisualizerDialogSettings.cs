@@ -7,7 +7,8 @@
         private static readonly VisualizerDialogSettings _default = new VisualizerDialogSettings
         {
             Theme = VisualizerDialogTheme.Light,
-            Font = VisualizerDialogFont.Monospace
+            Font = VisualizerDialogFont.Monospace,
+            Size = new VisualizerDialogSizeSettings()
         };
 
         public static readonly VisualizerDialogSettings Instance = GetInstance();
