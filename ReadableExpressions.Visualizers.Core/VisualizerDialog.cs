@@ -69,11 +69,9 @@
 
         internal float HeightFactor { get; }
 
-        internal WebBrowser Viewer { get; }
+        internal VisualizerViewer Viewer { get; }
 
         internal ToolTip ToolTip { get; }
-
-        internal bool ViewerUninitialised { get; private set; }
 
         private ToolTip AddToolTip()
         {
@@ -97,29 +95,13 @@
             return menuStrip;
         }
 
-        private WebBrowser AddViewer()
+        private VisualizerViewer AddViewer()
         {
-            var viewer = new WebBrowser
-            {
-                AllowNavigation = false
-            };
+            var viewerPanel = new VisualizerViewerPanel(this);
 
-            var viewerPanel = new Panel
-            {
-                Dock = DockStyle.Fill,
-                AutoSize = true
-            };
-
-            viewerPanel.Controls.Add(viewer);
             Controls.Add(viewerPanel);
 
-            viewer.Resize += (sender, arg) => viewerPanel.Size = ((Control)sender).Size;
-
-            RegisterThemeable(viewer);
-            RegisterThemeable(viewerPanel);
-
-            ViewerUninitialised = true;
-            return viewer;
+            return viewerPanel.Viewer;
         }
 
         private ToolStrip AddToolbar()
@@ -181,7 +163,7 @@
         internal void UpdateTranslation()
         {
             SetTranslation();
-            SetViewerContent();
+            Viewer.SetContent(_translation);
         }
 
         private void SetTranslation()
@@ -234,9 +216,9 @@
                 newTheme.ApplyTo(control);
             }
 
-            Settings.Save();
+            Viewer.SetTheme(newTheme);
 
-            SetViewerContent();
+            Settings.Save();
         }
 
         protected override bool ProcessDialogKey(Keys keyData)
@@ -284,77 +266,19 @@
 
         protected override void OnShown(EventArgs e)
         {
-            if (ViewerUninitialised)
-            {
-                Viewer.AllowWebBrowserDrop = false;
-                Viewer.ScrollBarsEnabled = false;
-                ViewerUninitialised = false;
-            }
-
-            SetViewerContent();
+            Viewer.HandleShown(_translation);
 
             base.OnShown(e);
         }
 
-        private void SetViewerContent()
-        {
-            var content = $@"
-<html>
-<head>
-<style type=""text/css"">
-body, pre {{ 
-    background: {Theme.Background};
-    color: {Theme.Default}; 
-    font-family: '{Settings.Font.Name}';
-    font-size: {Settings.Font.Size}pt;
-    overflow: auto;
-}}
-.kw {{ color: {Theme.Keyword} }}
-.vb {{ color: {Theme.Variable} }}
-.tn {{ color: {Theme.TypeName} }}
-.in {{ color: {Theme.InterfaceName} }}
-.cs {{ color: {Theme.CommandStatement} }}
-.tx {{ color: {Theme.Text} }}
-.nm {{ color: {Theme.Numeric} }}
-.mn {{ color: {Theme.MethodName} }}
-.cm {{ color: {Theme.Comment} }}
-</style>
-</head>
-<body>
-    <pre>{_translation}</pre>
-</body>
-</html>";
-
-            if (string.IsNullOrEmpty(Viewer.DocumentText))
-            {
-                Viewer.DocumentText = content;
-                return;
-            }
-
-            Viewer.Navigate("about:blank");
-            Viewer.Document.OpenNew(false).Write(content);
-        }
-
         private void SetViewerSize(Size newSize)
         {
-            EnableAutoSize();
+            _autoSize = true;
 
-            var finalWidth = Math.Min(
-                Math.Max(newSize.Width, Viewer.MinimumSize.Width),
-                Viewer.MaximumSize.Width);
+            Viewer.SetSize(newSize);
 
-            var finalHeight = Math.Min(
-                Math.Max(newSize.Height, Viewer.MinimumSize.Height),
-                Viewer.MaximumSize.Height);
-
-            Viewer.Size = new Size(finalWidth, finalHeight);
-
-            DisableAutoSize();
+            _autoSize = false;
         }
-
-        private void EnableAutoSize() => _autoSize = true;
-
-        private void DisableAutoSize() => _autoSize = false;
 
         protected override void Dispose(bool disposing)
         {

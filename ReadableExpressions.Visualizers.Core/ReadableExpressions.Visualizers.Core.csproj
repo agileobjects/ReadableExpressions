@@ -105,6 +105,12 @@
     <Compile Include="Controls\VisualizerDialogOptionBase.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Controls\VisualizerViewer.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Controls\VisualizerViewerPanel.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DialogConstants.cs" />
     <Compile Include="Controls\MenuItemLabel.cs">
       <SubType>Component</SubType>
