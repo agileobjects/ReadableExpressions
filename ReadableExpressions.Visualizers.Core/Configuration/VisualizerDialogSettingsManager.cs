@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
     using System.IO;
     using System.Linq;
     using Theming;
@@ -9,16 +10,29 @@
 
     internal static class VisualizerDialogSettingsManager
     {
-        private static readonly string _settingsFolderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft", "VisualStudio");
-
-        private static readonly string _settingsFilePath = Path.Combine(
-            _settingsFolderPath,
-            "ReadableExpressions.yml");
+        private static readonly string _settingsFilePath;
 
         private static readonly string[] _newLines = { Environment.NewLine };
         private static readonly char[] _colons = { ':' };
+
+        private static readonly BackgroundWorker _saveWorker;
+
+        static VisualizerDialogSettingsManager()
+        {
+            var settingsFolderPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft", "VisualStudio");
+
+            if (!Directory.Exists(settingsFolderPath))
+            {
+                Directory.CreateDirectory(settingsFolderPath);
+            }
+
+            _settingsFilePath = Path.Combine(settingsFolderPath, "ReadableExpressions.yml");
+
+            _saveWorker = new BackgroundWorker();
+            _saveWorker.DoWork += Save;
+        }
 
         public static bool TryLoad(out VisualizerDialogSettings settings)
         {
@@ -205,13 +219,13 @@
         }
 
         public static void Save(VisualizerDialogSettings settings)
-        {
-            var serialized = Serialize(settings);
+            => _saveWorker.RunWorkerAsync(settings);
 
-            if (!Directory.Exists(_settingsFolderPath))
-            {
-                Directory.CreateDirectory(_settingsFolderPath);
-            }
+        private static void Save(object sender, DoWorkEventArgs args)
+        {
+            var settings = (VisualizerDialogSettings)args.Argument;
+
+            var serialized = Serialize(settings);
 
             File.WriteAllText(_settingsFilePath, serialized);
         }
