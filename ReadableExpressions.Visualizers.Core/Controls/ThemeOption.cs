@@ -33,7 +33,7 @@
             {
                 var option = (ThemeOption)sender;
 
-                if (option._dialog.ViewerUninitialised)
+                if (option._dialog.Viewer.Uninitialised)
                 {
                     return;
                 }

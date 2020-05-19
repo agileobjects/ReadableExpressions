@@ -30,9 +30,9 @@
                 var selector = (FontSizeSelector)sender;
                 var fontSize = (int)selector.SelectedItem;
 
+                selector._dialog.Viewer.SetFontSize(fontSize);
                 selector._dialog.Settings.Font.Size = fontSize;
                 selector._dialog.Settings.Save();
-                selector._dialog.UpdateTranslation();
             };
         }
     }

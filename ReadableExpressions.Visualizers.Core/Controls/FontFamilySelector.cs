@@ -42,9 +42,9 @@
                 var selector = (FontFamilySelector)sender;
                 var font = (Font)selector.SelectedItem;
 
+                selector._dialog.Viewer.SetFontFamily(font.Name);
                 selector._dialog.Settings.Font.Name = font.Name;
                 selector._dialog.Settings.Save();
-                selector._dialog.UpdateTranslation();
             };
         }
 
