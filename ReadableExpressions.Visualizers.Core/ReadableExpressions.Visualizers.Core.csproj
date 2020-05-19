@@ -70,7 +70,6 @@
     <Compile Include="Controls\FontSizeSelector.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Controls\ILazyMenu.cs" />
     <Compile Include="Controls\ILazyMenuItem.cs" />
     <Compile Include="Controls\ImplicitArrayTypeNamesOption.cs">
       <SubType>Component</SubType>

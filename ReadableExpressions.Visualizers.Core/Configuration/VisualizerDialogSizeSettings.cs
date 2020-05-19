@@ -15,8 +15,11 @@
 
         public int? InitialHeight { get; set; }
 
-        public void UpdateFrom(VisualizerDialog dialog)
+        public bool UpdateFrom(VisualizerDialog dialog)
         {
+            var currentInitialWidth = InitialWidth;
+            var currentInitialHeight = InitialHeight;
+
             if (ResizeToMatchCode)
             {
                 InitialWidth = null;
@@ -27,6 +30,9 @@
                 InitialWidth = dialog.Viewer.Width;
                 InitialHeight = dialog.Viewer.Height;
             }
+
+            return InitialWidth != currentInitialWidth ||
+                   InitialHeight != currentInitialHeight;
         }
     }
 }

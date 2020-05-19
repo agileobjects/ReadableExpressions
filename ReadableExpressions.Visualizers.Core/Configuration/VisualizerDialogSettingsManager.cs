@@ -219,7 +219,9 @@
         }
 
         public static void Save(VisualizerDialogSettings settings)
-            => _saveWorker.RunWorkerAsync(settings);
+        {
+            _saveWorker.RunWorkerAsync(settings);
+        }
 
         private static void Save(object sender, DoWorkEventArgs args)
         {

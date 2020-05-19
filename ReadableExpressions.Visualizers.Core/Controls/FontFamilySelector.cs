@@ -7,14 +7,13 @@
     using System.Windows.Forms;
     using static DialogConstants;
 
-    internal class FontFamilySelector : ComboBox, ILazyMenuItem
+    internal class FontFamilySelector : ComboBox
     {
         private static Font[] _fonts;
 
         private readonly VisualizerDialog _dialog;
-        private bool _initialized;
 
-        public FontFamilySelector(ILazyMenu menu, VisualizerDialog dialog)
+        public FontFamilySelector(VisualizerDialog dialog)
         {
             _dialog = dialog;
 
@@ -29,16 +28,16 @@
 
             DisplayMember = "Name";
 
+            Items.AddRange(_fonts ??= GetFonts());
+
+            var settingsName = _dialog.Settings.Font.Name;
+
+            base.SelectedIndex = Array.FindIndex(_fonts, ff => ff.Name == settingsName);
+
             dialog.RegisterThemeable(this);
-            menu.RegisterLazyItem(this);
 
             SelectedIndexChanged += (sender, args) =>
             {
-                if (!_initialized)
-                {
-                    return;
-                }
-
                 var selector = (FontFamilySelector)sender;
                 var font = (Font)selector.SelectedItem;
 
@@ -46,22 +45,6 @@
                 selector._dialog.Settings.Font.Name = font.Name;
                 selector._dialog.Settings.Save();
             };
-        }
-
-        public void Initialize()
-        {
-            if (_initialized)
-            {
-                return;
-            }
-
-            Items.AddRange(_fonts ??= GetFonts());
-
-            var settingsName = _dialog.Settings.Font.Name;
-
-            SelectedIndex = Array.FindIndex(_fonts, ff => ff.Name == settingsName);
-
-            _initialized = true;
         }
 
         private static Font[] GetFonts()

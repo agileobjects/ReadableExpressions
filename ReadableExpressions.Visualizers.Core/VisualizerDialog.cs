@@ -2,8 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.ComponentModel;
     using System.Drawing;
+    using System.Linq;
     using System.Windows.Forms;
     using Configuration;
     using Controls;
@@ -53,6 +53,9 @@
             SetViewerSizeLimits();
             SetTranslation();
 
+            Application.Idle += LazyLoadMenus;
+
+            Shown += (sender, args) => ((VisualizerDialog)sender).Viewer.HandleShown(_translation);
             Resize += (sender, args) => ((VisualizerDialog)sender).HandleResize();
         }
 
@@ -163,8 +166,14 @@
 
         internal void UpdateTranslation()
         {
+            var currentTranslation = _translation;
+
             SetTranslation();
-            Viewer.SetContent(_translation);
+
+            if (_translation != currentTranslation)
+            {
+                Viewer.SetContent(_translation);
+            }
         }
 
         private void SetTranslation()
@@ -261,15 +270,22 @@
 
         private void SaveNewSize()
         {
-            Settings.Size.UpdateFrom(this);
-            Settings.Save();
+            if (Settings.Size.UpdateFrom(this))
+            {
+                Settings.Save();
+            }
         }
 
-        protected override void OnShown(EventArgs e)
+        private void LazyLoadMenus(object sender, EventArgs args)
         {
-            Viewer.HandleShown(_translation);
+            var lazyLoadMenus = _menuStrip.Items.OfType<ILazyMenuItem>();
 
-            base.OnShown(e);
+            foreach (var menu in lazyLoadMenus)
+            {
+                menu.Initialize();
+            }
+
+            Application.Idle -= LazyLoadMenus;
         }
 
         private void SetViewerSize(Size newSize)

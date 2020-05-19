@@ -2,10 +2,10 @@
 {
     internal class FontSelector : MenuItemPanelBase
     {
-        public FontSelector(ILazyMenu menu, VisualizerDialog dialog)
+        public FontSelector(VisualizerDialog dialog)
             : base(dialog)
         {
-            var fontFamilySelector = new FontFamilySelector(menu, dialog);
+            var fontFamilySelector = new FontFamilySelector(dialog);
             var fontSizeSelector = new FontSizeSelector(dialog);
 
             var label = new MenuItemLabel(

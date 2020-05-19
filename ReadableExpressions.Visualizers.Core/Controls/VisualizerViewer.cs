@@ -10,7 +10,6 @@
         private readonly Panel _parent;
         private readonly VisualizerDialog _dialog;
         private bool _initialised;
-        private HtmlElement _translation;
 
         public VisualizerViewer(Panel parent, VisualizerDialog dialog)
         {
@@ -28,9 +27,6 @@
         }
 
         public bool Uninitialised => !_initialised;
-
-        private HtmlElement Translation
-            => _translation ??= Document.GetElementById("translation");
 
         public void HandleShown(string translation)
         {
@@ -74,7 +70,7 @@ body, pre {{
 .cm {{ color: {theme.Comment} }}
 </style>
 </head>
-<body>
+<body scroll=""no"">
     <pre id=""translation"">{translation}</pre>
     <script type=""text/javascript"">
         function setFontFamily(ff) {{
@@ -166,7 +162,10 @@ body, pre {{
         }
 
         public void SetContent(string translation)
-            => Translation.InnerHtml = translation;
+        {
+            Document.GetElementById("translation").OuterHtml = 
+                $"<pre id=\"translation\">{translation}</pre>";
+        }
 
         public void SetTheme(VisualizerDialogTheme theme)
         {

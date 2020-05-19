@@ -1,48 +1,53 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Controls
 {
-    using System.Collections.Generic;
     using System.Windows.Forms;
 
-    internal class VisualizerOptionsMenuItem : ToolStripMenuItem, ILazyMenu
+    internal class VisualizerOptionsMenuItem : ToolStripMenuItem, ILazyMenuItem
     {
-        private readonly List<ILazyMenuItem> _lazyMenuItems;
+        private readonly VisualizerDialog _dialog;
+        private bool _initialized;
 
         public VisualizerOptionsMenuItem(VisualizerDialog dialog)
             : base("Options")
         {
-            _lazyMenuItems = new List<ILazyMenuItem>();
-
-            DropDownItems.AddRange(new ToolStripItem[]
-            {
-                new ToolStripControlHost(new ThemeSelector(dialog)),
-                new ToolStripControlHost(new FontSelector(this, dialog)),
-                new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(dialog)),
-                new ToolStripSeparator(),
-                new ToolStripControlHost(new FullyQualifiedTypeNamesOption(dialog)),
-                new ToolStripControlHost(new ExplicitTypeNamesOption(dialog)),
-                new ToolStripControlHost(new ExplicitGenericParamsOption(dialog)),
-                new ToolStripControlHost(new DeclareOutParamsInlineOption(dialog)),
-                new ToolStripControlHost(new ImplicitArrayTypeNamesOption(dialog)),
-                new ToolStripControlHost(new LambdaParameterTypeNamesOption(dialog)),
-                new ToolStripControlHost(new QuotedLambdaCommentsOption(dialog))
-            });
-
+            _dialog = dialog;
             ((ToolStripDropDownMenu)DropDown).ShowImageMargin = false;
 
             dialog.RegisterThemeable(DropDown);
 
             DropDownOpening += (sender, args) =>
-            {
-                var menuItem = (VisualizerOptionsMenuItem)sender;
-
-                foreach (var lazyMenuItem in menuItem._lazyMenuItems)
-                {
-                    lazyMenuItem.Initialize();
-                }
-            };
+                ((VisualizerOptionsMenuItem)sender).Populate();
         }
 
-        void ILazyMenu.RegisterLazyItem(ILazyMenuItem menuItem)
-            => _lazyMenuItems.Add(menuItem);
+        public void Populate()
+        {
+            if (_initialized)
+            {
+                return;
+            }
+
+            _initialized = true;
+
+            DropDown.SuspendLayout();
+
+            DropDownItems.AddRange(new ToolStripItem[]
+            {
+                new ToolStripControlHost(new ThemeSelector(_dialog)),
+                new ToolStripControlHost(new FontSelector(_dialog)),
+                new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(_dialog)),
+                new ToolStripSeparator(),
+                new ToolStripControlHost(new FullyQualifiedTypeNamesOption(_dialog)),
+                new ToolStripControlHost(new ExplicitTypeNamesOption(_dialog)),
+                new ToolStripControlHost(new ExplicitGenericParamsOption(_dialog)),
+                new ToolStripControlHost(new DeclareOutParamsInlineOption(_dialog)),
+                new ToolStripControlHost(new ImplicitArrayTypeNamesOption(_dialog)),
+                new ToolStripControlHost(new LambdaParameterTypeNamesOption(_dialog)),
+                new ToolStripControlHost(new QuotedLambdaCommentsOption(_dialog))
+            });
+
+            DropDown.ResumeLayout();
+        }
+
+        void ILazyMenuItem.Initialize() => Populate();
     }
 }
