@@ -2,16 +2,23 @@
 {
     using Theming;
 
-    internal class VisualizerDialogSettings
+    public class VisualizerDialogSettings
     {
-        private static readonly VisualizerDialogSettings _default = new VisualizerDialogSettings
-        {
-            Theme = VisualizerDialogTheme.Light,
-            Font = VisualizerDialogFont.Monospace,
-            Size = new VisualizerDialogSizeSettings()
-        };
+        public static readonly VisualizerDialogSettings Instance;
 
-        public static readonly VisualizerDialogSettings Instance = GetInstance();
+        private static readonly VisualizerDialogSettings _default;
+
+        static VisualizerDialogSettings()
+        {
+            _default = new VisualizerDialogSettings
+            {
+                Theme = VisualizerDialogTheme.Light,
+                Font = VisualizerDialogFont.Monospace,
+                Size = new VisualizerDialogSizeSettings()
+            };
+
+            Instance = GetInstance();
+        }
 
         public static VisualizerDialogSettings GetInstance()
             => VisualizerDialogSettingsManager.TryLoad(out var settings) ? settings : _default;

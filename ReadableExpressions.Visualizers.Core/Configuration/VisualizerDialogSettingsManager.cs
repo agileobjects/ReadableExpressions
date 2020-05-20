@@ -8,7 +8,7 @@
     using Theming;
     using static VisualizerDialogSettingsConstants;
 
-    internal static class VisualizerDialogSettingsManager
+    public static class VisualizerDialogSettingsManager
     {
         private static readonly string _settingsFilePath;
 

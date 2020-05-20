@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>net40;netstandard2.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
-    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Core</AssemblyName>
-    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Core</RootNamespace>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.ObjectSource</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.ObjectSource</RootNamespace>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -15,17 +15,17 @@
     <NoWarn>0649;1701;1702</NoWarn>
     <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 

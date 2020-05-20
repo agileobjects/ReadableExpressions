@@ -54,7 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core.NetCore\ReadableExpressions.Visualizers.Core.NetCore.csproj" />
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 

@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Vs16.NetCore</AssemblyName>
-    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers</RootNamespace>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.NetCore</RootNamespace>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -19,13 +19,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
       <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core.NetCore\ReadableExpressions.Visualizers.Core.NetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,14 +36,18 @@
     <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Dialog.NetCore\ReadableExpressions.Visualizers.Dialog.NetCore.csproj" />
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj" />
+  </ItemGroup>
+
   <Target Name="ILRepack" AfterTargets="Build">
     <PropertyGroup>
       <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
     </PropertyGroup>
     <ItemGroup>
-      <InputAssemblies Include="AgileObjects.NetStandardPolyfills.dll" />
-      <InputAssemblies Include="AgileObjects.ReadableExpressions.Visualizers.Core.NetCore.dll" />
-      <InputAssemblies Include="AgileObjects.ReadableExpressions.dll" />
+      <InputAssemblies Include="AgileObjects.ReadableExpressions.Visualizers.Dialog.NetCore.dll" />
+      <InputAssemblies Include="$(AssemblyName).dll" />
     </ItemGroup>
     <ItemGroup>
       <!-- Do not internalize any types inside this assembly -->
@@ -58,7 +58,7 @@
   </Target>
 
   <Target Name="CopyToVsDebuggers" AfterTargets="Build">
-    <Exec Command="xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netcoreapp&quot; /Y" />
+    <Exec Command="xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
   </Target>  
 
 </Project>

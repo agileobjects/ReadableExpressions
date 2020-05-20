@@ -84,12 +84,6 @@
     </EmbeddedResource>
     <Content Include="CustomAction.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
-      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
-      <Name>ReadableExpressions.Visualizers.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(WixCATargetsPath)" Condition=" '$(WixCATargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.CA.targets" Condition=" '$(WixCATargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.CA.targets') " />

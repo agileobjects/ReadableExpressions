@@ -45,18 +45,12 @@
     <Compile Include="..\ClsCompliant.cs">
       <Link>Properties\ClsCompliant.cs</Link>
     </Compile>
-    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
       <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Vs10ExpressionVisualizerObjectSource.cs" />
     <Compile Include="Vs10ExpressionVisualizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
-      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
-      <Name>ReadableExpressions.ExpressionVisualizer</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

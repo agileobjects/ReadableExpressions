@@ -3,20 +3,25 @@
     using System.Drawing;
     using System.Drawing.Text;
 
-    internal class VisualizerDialogFont
+    public class VisualizerDialogFont
     {
-        private static readonly Font _default = new Font(
-            new FontFamily(GenericFontFamilies.Monospace),
-            13f,
-            FontStyle.Regular,
-            GraphicsUnit.Point);
+        public static readonly VisualizerDialogFont Monospace;
 
-        public static readonly VisualizerDialogFont Monospace = new VisualizerDialogFont
+        static VisualizerDialogFont()
         {
-            Name = _default.Name,
-            Size = (int)_default.SizeInPoints,
-            _font = _default
-        };
+            var monospace = new Font(
+                new FontFamily(GenericFontFamilies.Monospace),
+                13f,
+                FontStyle.Regular,
+                GraphicsUnit.Point);
+
+            Monospace = new VisualizerDialogFont
+            {
+                Name = monospace.Name,
+                Size = 13,
+                _font = monospace
+            };
+        }
 
         private int? _size;
         private string _name;

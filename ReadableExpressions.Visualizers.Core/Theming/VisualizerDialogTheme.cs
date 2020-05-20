@@ -1,9 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Theming
 {
     using System.Drawing;
-    using System.Windows.Forms;
 
-    internal class VisualizerDialogTheme
+    public class VisualizerDialogTheme
     {
         public static readonly VisualizerDialogTheme Dark = new VisualizerDialogTheme
         {
@@ -113,28 +112,5 @@
         public string MethodName { get; set; }
 
         public string Comment { get; set; }
-
-        public void ApplyTo(Control control)
-        {
-            if (control is ToolStrip toolStrip && !(toolStrip is ToolStripDropDown))
-            {
-                ApplyTo(toolStrip);
-                return;
-            }
-
-            control.BackColor = MenuColour;
-            control.ForeColor = ForeColour;
-
-            if (control is IThemeable themeable)
-            {
-                themeable.Apply(this);
-            }
-        }
-
-        public void ApplyTo(ToolStrip toolStrip)
-        {
-            toolStrip.BackColor = ToolbarColour;
-            toolStrip.ForeColor = ForeColour;
-        }
     }
 }

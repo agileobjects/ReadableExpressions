@@ -1,0 +1,12 @@
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.NetCore
+{
+    using System.IO;
+    using Microsoft.VisualStudio.DebuggerVisualizers;
+    using ObjectSource;
+
+    public class Vs16NetCoreExpressionVisualizerObjectSource : VisualizerObjectSource
+    {
+        public override void GetData(object target, Stream outgoingData) 
+            => ExpressionVisualizerObjectSource.GetData(target, outgoingData, Serialize);
+    }
+}

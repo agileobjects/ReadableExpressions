@@ -50,11 +50,5 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
-      <Project>{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}</Project>
-      <Name>ReadableExpressions.Visualizers.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

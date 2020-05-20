@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Dialog.NetCore</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Dialog</RootNamespace>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>0649;1701;1702</NoWarn>
+    <DebugType>full</DebugType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ReadableExpressions.Visualizers.Dialog\**\*.cs" Exclude="..\ReadableExpressions.Visualizers.Dialog\obj\**\*.cs;">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
+    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIcon.png">
+      <Link>Controls\GitHubIcon.png</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIconDark.png">
+      <Link>Controls\GitHubIconDark.png</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

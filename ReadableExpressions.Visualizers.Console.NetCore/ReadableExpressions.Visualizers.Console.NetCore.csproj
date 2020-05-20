@@ -5,8 +5,4 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core.NetCore\ReadableExpressions.Visualizers.Core.NetCore.csproj" />
-  </ItemGroup>
-
 </Project>
