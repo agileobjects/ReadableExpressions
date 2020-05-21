@@ -56,12 +56,12 @@
 
         public void Install(string visualizersDirectory)
         {
-            var installPath = GetVisualizerInstallPath(visualizersDirectory);
+            var visualizerInstallPath = GetVisualizerInstallPath(visualizersDirectory);
 
             using (var resourceStream = GetResourceStream(VisualizerResourceName))
-            using (var visualizerFileStream = File.OpenWrite(installPath))
+            using (var visualizerFileStream = File.OpenWrite(visualizerInstallPath))
             {
-                Log("Writing visualizer to " + installPath);
+                Log("Writing visualizer to " + visualizerInstallPath);
                 // ReSharper disable once PossibleNullReferenceException
                 resourceStream.CopyTo(visualizerFileStream);
             }
@@ -100,7 +100,7 @@
             var netStandardSubDirectories = Directory
                 .EnumerateDirectories(visualizersDirectory)
                 .Select(path => new DirectoryInfo(path))
-                .Where(dir => 
+                .Where(dir =>
                     dir.Name.Equals("net2.0", OrdinalIgnoreCase) ||
                     dir.Name.StartsWith("netstandard", OrdinalIgnoreCase));
 
@@ -114,21 +114,19 @@
 
         public void Uninstall(string visualizersDirectory)
         {
-            var installPath = GetVisualizerInstallPath(visualizersDirectory);
+            var visualizerInstallPath = GetVisualizerInstallPath(visualizersDirectory);
 
-            if (File.Exists(installPath))
+            DeleteIfExists(visualizerInstallPath);
+
+            var objectSourceInstallDirectories = GetObjectSourceInstallDirectories(visualizersDirectory);
+
+            foreach (var objectSourceInstallDirectory in objectSourceInstallDirectories)
             {
-                File.Delete(installPath);
-            }
+                var objectSourceInstallPath = GetObjectSourceInstallPath(objectSourceInstallDirectory);
+                DeleteIfExists(objectSourceInstallPath);
 
-            var objectSourceInstallPaths = GetObjectSourceInstallPaths(visualizersDirectory);
-
-            foreach (var objectSourceInstallPath in objectSourceInstallPaths)
-            {
-                if (File.Exists(objectSourceInstallPath))
-                {
-                    File.Delete(objectSourceInstallPath);
-                }
+                var legacyVisualizerInstallPath = GetVisualizerInstallPath(objectSourceInstallDirectory);
+                DeleteIfExists(legacyVisualizerInstallPath);
             }
         }
 
@@ -137,6 +135,14 @@
 
         private string GetObjectSourceInstallPath(string objectSourceDirectory)
             => Path.Combine(objectSourceDirectory, _objectSourceResourceFileName);
+
+        private void DeleteIfExists(string filePath)
+        {
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
 
         private void Log(string message) => _logger.Invoke(message);
     }
