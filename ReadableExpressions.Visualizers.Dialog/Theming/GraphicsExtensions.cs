@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Theming
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Theming
 {
     using System.Drawing;
 

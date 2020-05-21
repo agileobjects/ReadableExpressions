@@ -8,7 +8,7 @@
         private readonly VisualizerDialog _dialog;
 
         public VisualizerDialogRenderer(VisualizerDialog dialog)
-            : base(new VisualizerDialogColourTable(dialog))
+            : base(dialog.ColourTable)
         {
             _dialog = dialog;
         }
@@ -16,8 +16,8 @@
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
             var backgroundBrush = e.Item.Selected && e.Item.Text == "Options"
-                ? _dialog.Theme.MenuColourBrush
-                : _dialog.Theme.ToolbarColourBrush;
+                ? _dialog.ColourTable.MenuColourBrush
+                : _dialog.ColourTable.ToolbarColourBrush;
 
             e.Graphics.FillRectangle(
                 backgroundBrush,
@@ -27,7 +27,7 @@
         protected override void OnRenderButtonBackground(ToolStripItemRenderEventArgs e)
         {
             e.Graphics.FillRectangle(
-                _dialog.Theme.MenuColourBrush,
+                _dialog.ColourTable.MenuColourBrush,
                 new Rectangle(Point.Empty, e.Item.Size));
         }
     }

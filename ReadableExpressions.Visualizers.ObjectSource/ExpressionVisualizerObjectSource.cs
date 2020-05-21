@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.ObjectSource
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -58,6 +59,8 @@
 
         private static string Translate(Expression expression)
         {
+            Debug.WriteLine("Translating: " + expression);
+
             return expression.ToReadableString(settings => GetDialogSettings()
                 .Update(settings)
                 .FormatUsing(_htmlFormatter));

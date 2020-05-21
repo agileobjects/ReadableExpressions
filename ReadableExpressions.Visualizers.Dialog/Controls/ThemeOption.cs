@@ -40,7 +40,7 @@
 
                 if (Checked && (option == this))
                 {
-                    option._dialog.OnThemeChanged(option._theme);
+                    option._dialog.HandleThemeChanged(option._theme);
                 }
             };
         }

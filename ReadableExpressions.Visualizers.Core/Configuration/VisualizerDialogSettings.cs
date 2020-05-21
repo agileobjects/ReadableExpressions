@@ -13,7 +13,7 @@
             _default = new VisualizerDialogSettings
             {
                 Theme = VisualizerDialogTheme.Light,
-                Font = VisualizerDialogFont.Monospace,
+                Font = VisualizerDialogFontSettings.Monospace,
                 Size = new VisualizerDialogSizeSettings()
             };
 
@@ -25,7 +25,7 @@
 
         public VisualizerDialogTheme Theme { get; set; }
 
-        public VisualizerDialogFont Font { get; set; }
+        public VisualizerDialogFontSettings Font { get; set; }
 
         public VisualizerDialogSizeSettings Size { get; set; }
 

@@ -1,7 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Theming
 {
-    using System.Drawing;
-
     public class VisualizerDialogTheme
     {
         public static readonly VisualizerDialogTheme Dark = new VisualizerDialogTheme
@@ -42,58 +40,17 @@
             Comment = "#008000"
         };
 
-        private Color? _foreColour;
-        private Brush _foreColourBrush;
-        private Brush _foreLowlightColourBrush;
-        private Color? _toolbarColour;
-        private Brush _toolbarColourBrush;
-        private Color? _menuColour;
-        private Brush _menuColourBrush;
-        private Color? _menuHighlightColour;
-        private Brush _menuHighlightColourBrush;
-
         public string Name { get; set; }
 
         public string Background { get; set; }
 
         public string Default { get; set; }
 
-        public Color ForeColour
-            => _foreColour ??= ColorTranslator.FromHtml(Default);
-
-        public Brush ForeColourBrush
-            => _foreColourBrush ??= new SolidBrush(ForeColour);
-
-        public Brush ForeLowlightColourBrush
-            => _foreLowlightColourBrush ??= new SolidBrush(
-                ForeColour.ChangeBrightness(ForeColour.IsDark() ? 0.5f : -0.4f));
-
         public string Toolbar { get; set; }
-
-        public Color ToolbarColour
-            => _toolbarColour ??= ColorTranslator.FromHtml(Toolbar);
-
-        public Brush ToolbarColourBrush
-            => _toolbarColourBrush ??= new SolidBrush(ToolbarColour);
 
         public string Menu { get; set; }
 
-        public Color MenuColour
-            => _menuColour ??= ColorTranslator.FromHtml(Menu);
-
-        public Brush MenuColourBrush
-            => _menuColourBrush ??= new SolidBrush(MenuColour);
-
         public string MenuHighlight { get; set; }
-
-        public Color MenuHighlightColour
-            => _menuHighlightColour ??= ColorTranslator.FromHtml(MenuHighlight);
-
-        public Brush MenuHighlightColourBrush
-            => _menuHighlightColourBrush ??= new SolidBrush(MenuHighlightColour);
-
-        public string IconSuffix
-            => MenuColour.IsDark() ? "Dark" : null;
 
         public string Keyword { get; set; }
 

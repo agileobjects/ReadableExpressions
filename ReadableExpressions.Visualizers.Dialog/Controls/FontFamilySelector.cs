@@ -41,7 +41,7 @@
                 var selector = (FontFamilySelector)sender;
                 var font = (Font)selector.SelectedItem;
 
-                selector._dialog.Viewer.SetFontFamily(font.Name);
+                selector._dialog.Viewer.SetFontFamily(font);
                 selector._dialog.Settings.Font.Name = font.Name;
                 selector._dialog.Settings.Save();
             };
@@ -64,12 +64,12 @@
 
             var selector = (FontFamilySelector)sender;
             var font = (Font)selector.Items[e.Index];
-            var theme = selector._dialog.Theme;
+            var colourTable = selector._dialog.ColourTable;
             var isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
             if (isSelected)
             {
-                e.Graphics.FillRectangle(theme.MenuHighlightColourBrush, e.Bounds);
+                e.Graphics.FillRectangle(colourTable.MenuHighlightColourBrush, e.Bounds);
             }
             else
             {
@@ -77,8 +77,8 @@
             }
 
             var fontBrush = isSelected || IsCommonCodingFont(font)
-                ? theme.ForeColourBrush
-                : theme.ForeLowlightColourBrush;
+                ? colourTable.ForeColourBrush
+                : colourTable.ForeLowlightColourBrush;
 
             e.Graphics.DrawString(font.Name, font, fontBrush, e.Bounds.X, e.Bounds.Y);
         }

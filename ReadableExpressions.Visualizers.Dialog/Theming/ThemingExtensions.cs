@@ -1,31 +1,34 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Theming
 {
     using System.Windows.Forms;
-    using Core.Theming;
 
     internal static class ThemingExtensions
     {
-        public static void ApplyTo(this VisualizerDialogTheme theme, Control control)
+        public static void ApplyTo(
+            this VisualizerDialogColourTable colourTable, 
+            Control control)
         {
             if (control is ToolStrip toolStrip && !(toolStrip is ToolStripDropDown))
             {
-                theme.ApplyTo(toolStrip);
+                colourTable.ApplyTo(toolStrip);
                 return;
             }
 
-            control.BackColor = theme.MenuColour;
-            control.ForeColor = theme.ForeColour;
+            control.BackColor = colourTable.MenuColour;
+            control.ForeColor = colourTable.ForeColour;
 
             if (control is IThemeable themeable)
             {
-                themeable.Apply(theme);
+                themeable.Apply(colourTable);
             }
         }
 
-        public static void ApplyTo(this VisualizerDialogTheme theme, ToolStrip toolStrip)
+        public static void ApplyTo(
+            this VisualizerDialogColourTable colourTable, 
+            ToolStrip toolStrip)
         {
-            toolStrip.BackColor = theme.ToolbarColour;
-            toolStrip.ForeColor = theme.ForeColour;
+            toolStrip.BackColor = colourTable.ToolbarColour;
+            toolStrip.ForeColor = colourTable.ForeColour;
         }
     }
 }

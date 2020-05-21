@@ -17,6 +17,9 @@
             _dialog = dialog;
             AllowNavigation = false;
 
+            var font = _dialog.Settings.Font;
+            base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
+
             Resize += (sender, args) =>
             {
                 var viewer = (VisualizerViewer)sender;
@@ -45,7 +48,6 @@
 
         private void SetInitialContent(string translation)
         {
-            var font = _dialog.Settings.Font;
             var theme = _dialog.Theme;
 
             var content = $@"
@@ -55,8 +57,8 @@
 body, pre {{ 
     background: {theme.Background};
     color: {theme.Default}; 
-    font-family: '{font.Name}';
-    font-size: {font.Size}pt;
+    font-family: '{Font.Name}';
+    font-size: {Font.Size}pt;
     overflow: auto;
 }}
 .kw {{ color: {theme.Keyword} }}
@@ -188,11 +190,17 @@ body, pre {{
             Document.InvokeScript("setTheme", args);
         }
 
-        public void SetFontFamily(string newFontFamily) 
-            => Document.InvokeScript("setFontFamily", new object[] { newFontFamily });
+        public void SetFontFamily(Font newFont)
+        {
+            Font = newFont;
+            Document.InvokeScript("setFontFamily", new object[] { newFont.Name });
+        }
 
-        public void SetFontSize(int newFontSize) 
-            => Document.InvokeScript("setFontSize", new object[] { newFontSize });
+        public void SetFontSize(int newFontSize)
+        {
+            Font = new Font(Font.Name, newFontSize, GraphicsUnit.Point);
+            Document.InvokeScript("setFontSize", new object[] { newFontSize });
+        }
 
         public void SetSize(Size newSize)
         {

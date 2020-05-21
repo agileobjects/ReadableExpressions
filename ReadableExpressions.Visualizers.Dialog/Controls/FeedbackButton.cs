@@ -6,7 +6,6 @@
     using System.IO;
     using System.Linq;
     using System.Windows.Forms;
-    using Core.Theming;
     using Theming;
     using static System.StringComparison;
 
@@ -30,14 +29,17 @@
                 Process.Start("https://github.com/agileobjects/ReadableExpressions/issues/new");
         }
 
-        private void SetGitHubIcon(VisualizerDialogTheme theme)
+        void IThemeable.Apply(VisualizerDialogColourTable colourTable) 
+            => SetGitHubIcon(colourTable);
+
+        private void SetGitHubIcon(VisualizerDialogColourTable colourTable)
         {
             var imageResourceName = typeof(VisualizerDialog)
                 .Assembly
                 .GetManifestResourceNames()
                 .First(resourceName => Path
                     .GetFileNameWithoutExtension(resourceName)
-                    .EndsWith($"GitHubIcon{theme.IconSuffix}", Ordinal));
+                    .EndsWith($"GitHubIcon{colourTable.IconSuffix}", Ordinal));
 
             var imageStream = typeof(VisualizerDialog)
                 .Assembly
@@ -45,7 +47,7 @@
 
             using (imageStream)
 
-            // ReSharper disable once AssignNullToNotNullAttribute
+                // ReSharper disable once AssignNullToNotNullAttribute
             using (var image = Image.FromStream(imageStream))
             {
                 var scaleFactor = _imageHeight / image.Height;
@@ -64,11 +66,6 @@
 
                 Image = newImage;
             }
-        }
-
-        void IThemeable.Apply(VisualizerDialogTheme theme)
-        {
-            SetGitHubIcon(theme);
         }
     }
 }

@@ -29,6 +29,7 @@
         public VisualizerDialog(Func<object> translationFactory)
         {
             _translationFactory = translationFactory;
+            ColourTable = new VisualizerDialogColourTable(this);
             _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
@@ -68,6 +69,8 @@
         }
 
         internal TranslationViewModel ViewModel { get; }
+        
+        internal VisualizerDialogColourTable ColourTable { get; }
 
         internal VisualizerDialogSettings Settings => ViewModel.Settings;
 
@@ -168,7 +171,7 @@
 
         internal void RegisterThemeable(Control control)
         {
-            Theme.ApplyTo(control);
+            ColourTable.ApplyTo(control);
             _themeableControls.Add(control);
         }
 
@@ -189,7 +192,7 @@
             ViewModel.Translation = (string)_translationFactory.Invoke();
 
             var rawText = ViewModel.TranslationRaw;
-            var font = (Font)Settings.Font;
+            var font = Viewer.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
 
             var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
@@ -225,13 +228,13 @@
             }
         }
 
-        internal void OnThemeChanged(VisualizerDialogTheme newTheme)
+        internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
 
             foreach (var control in _themeableControls)
             {
-                newTheme.ApplyTo(control);
+                ColourTable.ApplyTo(control);
             }
 
             Viewer.SetTheme(newTheme);
