@@ -2,23 +2,30 @@
 {
     using Theming;
 
-    internal class VisualizerDialogSettings
+    public class VisualizerDialogSettings
     {
-        private static readonly VisualizerDialogSettings _default = new VisualizerDialogSettings
-        {
-            Theme = VisualizerDialogTheme.Light,
-            Font = VisualizerDialogFont.Monospace,
-            Size = new VisualizerDialogSizeSettings()
-        };
+        public static readonly VisualizerDialogSettings Instance;
 
-        public static readonly VisualizerDialogSettings Instance = GetInstance();
+        private static readonly VisualizerDialogSettings _default;
+
+        static VisualizerDialogSettings()
+        {
+            _default = new VisualizerDialogSettings
+            {
+                Theme = VisualizerDialogTheme.Light,
+                Font = VisualizerDialogFontSettings.Monospace,
+                Size = new VisualizerDialogSizeSettings()
+            };
+
+            Instance = GetInstance();
+        }
 
         public static VisualizerDialogSettings GetInstance()
             => VisualizerDialogSettingsManager.TryLoad(out var settings) ? settings : _default;
 
         public VisualizerDialogTheme Theme { get; set; }
 
-        public VisualizerDialogFont Font { get; set; }
+        public VisualizerDialogFontSettings Font { get; set; }
 
         public VisualizerDialogSizeSettings Size { get; set; }
 
@@ -35,46 +42,6 @@
         public bool ShowLambdaParameterTypeNames { get; set; }
 
         public bool ShowQuotedLambdaComments { get; set; }
-
-        public TranslationSettings Update(TranslationSettings settings)
-        {
-            if (UseFullyQualifiedTypeNames)
-            {
-                settings = settings.UseFullyQualifiedTypeNames;
-            }
-
-            if (UseExplicitTypeNames)
-            {
-                settings = settings.UseExplicitTypeNames;
-            }
-
-            if (UseExplicitGenericParameters)
-            {
-                settings = settings.UseExplicitGenericParameters;
-            }
-
-            if (DeclareOutputParametersInline)
-            {
-                settings = settings.DeclareOutputParametersInline;
-            }
-
-            if (ShowImplicitArrayTypes)
-            {
-                settings = settings.ShowImplicitArrayTypes;
-            }
-
-            if (ShowLambdaParameterTypeNames)
-            {
-                settings = settings.ShowLambdaParameterTypes;
-            }
-
-            if (ShowQuotedLambdaComments)
-            {
-                settings = settings.ShowQuotedLambdaComments;
-            }
-
-            return settings;
-        }
 
         public void Save() => VisualizerDialogSettingsManager.Save(this);
     }

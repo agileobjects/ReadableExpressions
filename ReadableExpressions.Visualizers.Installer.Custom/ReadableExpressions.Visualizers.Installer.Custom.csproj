@@ -46,7 +46,7 @@
     <Compile Include="..\ClsCompliant.cs">
       <Link>Properties\ClsCompliant.cs</Link>
     </Compile>
-    <Compile Include="..\ReadableExpressions.Visualizers.Core\CommonVisualizerAssemblyInfo.cs">
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
       <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="VisualizerAssembly.cs" />
@@ -79,15 +79,38 @@
     <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.NetCore.dll">
-      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.NetCore.dll</Link>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll</Link>
     </EmbeddedResource>
     <Content Include="CustomAction.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
-      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
+      <Project>{3a04a9a4-f0c8-4a49-a23d-f3bf6e39cb13}</Project>
       <Name>ReadableExpressions.Visualizers.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Dialog\ReadableExpressions.Visualizers.Dialog.csproj">
+      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
+      <Name>ReadableExpressions.Visualizers.Dialog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj">
+      <Project>{93181e6e-3953-4711-affe-99aa62e5ab29}</Project>
+      <Name>ReadableExpressions.Visualizers.ObjectSource</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

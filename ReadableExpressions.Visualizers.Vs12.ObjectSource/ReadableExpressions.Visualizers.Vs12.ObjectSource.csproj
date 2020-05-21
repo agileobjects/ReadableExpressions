@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers</RootNamespace>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>0649;1701;1702</NoWarn>
+    <DebugType>full</DebugType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Microsoft.VisualStudio.DebuggerVisualizers">
+      <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Common7\IDE\ReferenceAssemblies\v2.0\Microsoft.VisualStudio.DebuggerVisualizers.dll</HintPath>
+    </Reference>
+    <PackageReference Include="ILMerge" Version="2.14.1208" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.ObjectSource.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
+  </Target>
+
+</Project>

@@ -1,14 +1,16 @@
 ﻿namespace ReadableExpressions.Visualizers.Console.NetCore
 {
     using System;
-    using AgileObjects.ReadableExpressions.Visualizers.Core;
+    using System.Linq.Expressions;
 
     public class Program
     {
         [STAThread]
         public static void Main(string[] args)
         {
-            new VisualizerDialog(() => "default(void)").ShowDialog();
+            var def = Expression.Default(typeof(int));
+
+            Console.WriteLine(def);
         }
     }
 }

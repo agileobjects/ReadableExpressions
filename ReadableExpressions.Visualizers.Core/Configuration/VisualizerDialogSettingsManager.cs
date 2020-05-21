@@ -3,12 +3,13 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using Theming;
     using static VisualizerDialogSettingsConstants;
 
-    internal static class VisualizerDialogSettingsManager
+    public static class VisualizerDialogSettingsManager
     {
         private static readonly string _settingsFilePath;
 
@@ -36,6 +37,8 @@
 
         public static bool TryLoad(out VisualizerDialogSettings settings)
         {
+            Debug.WriteLine("VisualizerDialogSettingsManager: TryLoad starting...");
+
             try
             {
                 if (!File.Exists(_settingsFilePath))
@@ -43,6 +46,8 @@
                     settings = null;
                     return false;
                 }
+
+                Debug.WriteLine("VisualizerDialogSettingsManager: Loading file...");
 
                 var settingsByName = File
                     .ReadAllText(_settingsFilePath)
@@ -55,9 +60,11 @@
                 settings = new VisualizerDialogSettings
                 {
                     Theme = new VisualizerDialogTheme(),
-                    Font = new VisualizerDialogFont(),
+                    Font = new VisualizerDialogFontSettings(),
                     Size = new VisualizerDialogSizeSettings()
                 };
+                
+                Debug.WriteLine("VisualizerDialogSettingsManager: Setting values...");
 
                 SetValues(settings, settingsByName);
                 return true;

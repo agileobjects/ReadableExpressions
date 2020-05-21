@@ -104,7 +104,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             => NoVisualizersToInstall(out installers, out _) != true;
 
         private static bool NoVisualizersToInstall(
-            out IEnumerable<VisualizerInstaller> installers, 
+            out IEnumerable<VisualizerInstaller> installers,
             out string errorMessage)
         {
             using (var installerFactory = new VisualizerInstallerFactory(Log, VsixManifest))
@@ -119,6 +119,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 installers = _thisAssembly
                     .GetManifestResourceNames()
                     .WithExtension(".dll")
+                    .Where(IsNotObjectSourceAssembly)
                     .Select(visualizerResourceName => new VisualizerAssembly(Log, visualizerResourceName))
                     .SelectMany(visualizer => installerFactory.GetInstallersFor(visualizer))
                     .ToArray();
@@ -127,6 +128,9 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 return false;
             }
         }
+
+        private static bool IsNotObjectSourceAssembly(string visualizerResourceName)
+            => !visualizerResourceName.Contains("ObjectSource");
 
         private static void Log(string message) => _session?.Log(message);
     }

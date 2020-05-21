@@ -6,8 +6,6 @@
     {
         public static readonly ITranslationFormatter Instance = new NullTranslationFormatter();
 
-        public string GetRaw(string formatted) => formatted;
-
         public int GetFormattingSize(TokenType tokenType) => 0;
 
         public void WriteFormatted(string value, Action<string> stringWriter, TokenType type)
