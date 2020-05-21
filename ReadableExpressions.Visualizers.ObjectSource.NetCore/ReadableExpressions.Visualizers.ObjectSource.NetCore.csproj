@@ -1,0 +1,59 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.ObjectSource.NetCore</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.ObjectSource</RootNamespace>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>0649;1701;1702</NoWarn>
+    <DebugType>full</DebugType>
+    <IsPackable>false</IsPackable>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ReadableExpressions.Visualizers.ObjectSource\**\*.cs" Exclude="..\ReadableExpressions.Visualizers.ObjectSource\obj\**\*.cs;">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack.MSBuild.Task" Version="2.0.13" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
+    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
+  </ItemGroup>
+
+  <!--<Target Name="ILRepack" AfterTargets="Build">
+    <PropertyGroup>
+      <WorkingDirectory>$(MSBuildThisFileDirectory)bin\$(Configuration)\$(TargetFramework)</WorkingDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <InputAssemblies Include="AgileObjects.NetStandardPolyfills.dll" />
+      <InputAssemblies Include="AgileObjects.ReadableExpressions.dll" />
+      <InputAssemblies Include="AgileObjects.ReadableExpressions.Visualizers.Core.dll" />
+      <InputAssemblies Include="$(AssemblyName).dll" />
+    </ItemGroup>
+    <Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
+    <ILRepack OutputType="$(OutputType)" MainAssembly="$(AssemblyName).dll" OutputAssembly="$(SolutionDir)\$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" WorkingDirectory="$(WorkingDirectory)" />
+  </Target>
+
+  <Target Name="CopyToVsDebuggers" AfterTargets="Build">
+    <Exec Command="xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netcoreapp&quot; /Y" />
+  </Target>-->
+
+</Project>

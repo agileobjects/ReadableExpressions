@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers
 {
-    using System.Windows.Forms;
-    using Core;
+    using Dialog;
     using Microsoft.VisualStudio.DebuggerVisualizers;
 
     public class Vs16ExpressionVisualizer : DialogDebuggerVisualizer
@@ -10,8 +9,6 @@
             IDialogVisualizerService windowService,
             IVisualizerObjectProvider objectProvider)
         {
-            MessageBox.Show("This is .NET Framework!");
-
             using (var dialog = new VisualizerDialog(objectProvider.GetObject))
             {
                 windowService.ShowDialog(dialog);

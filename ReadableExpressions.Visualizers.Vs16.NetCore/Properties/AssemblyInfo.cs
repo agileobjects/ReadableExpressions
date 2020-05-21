@@ -72,3 +72,4 @@ using AgileObjects.ReadableExpressions.Visualizers.NetCore;
 [assembly: DebuggerVisualizer(typeof(Vs16NetCoreExpressionVisualizer), typeof(Vs16NetCoreExpressionVisualizerObjectSource), Target = typeof(Action<,,,,,,,,,,,,>), Description = "ReadableExpressions Visualizer (.NET Core)")]
 [assembly: DebuggerVisualizer(typeof(Vs16NetCoreExpressionVisualizer), typeof(Vs16NetCoreExpressionVisualizerObjectSource), Target = typeof(Action<,,,,,,,,,,,,,>), Description = "ReadableExpressions Visualizer (.NET Core)")]
 [assembly: DebuggerVisualizer(typeof(Vs16NetCoreExpressionVisualizer), typeof(Vs16NetCoreExpressionVisualizerObjectSource), Target = typeof(Action<,,,,,,,,,,,,,,>), Description = "ReadableExpressions Visualizer (.NET Core)")]
+

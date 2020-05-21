@@ -18,12 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\ClsCompliant.cs">
-      <Link>Properties\ClsCompliant.cs</Link>
-    </Compile>
-    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
-      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
-    </Compile>
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
   </ItemGroup>
 
   <ItemGroup>

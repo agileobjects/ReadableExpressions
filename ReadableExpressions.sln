@@ -36,17 +36,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visuali
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests.NetCore3.1", "ReadableExpressions.UnitTests.NetCore3.1\ReadableExpressions.UnitTests.NetCore3.1.csproj", "{35177AF2-C17C-4C32-A2B4-838584CA86F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Vs16.NetCore", "ReadableExpressions.Visualizers.Vs16.NetCore\ReadableExpressions.Visualizers.Vs16.NetCore.csproj", "{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Console.NetCore", "ReadableExpressions.Visualizers.Console.NetCore\ReadableExpressions.Visualizers.Console.NetCore.csproj", "{F679DB41-C60F-48C0-8D22-50390238A5A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Dialog", "ReadableExpressions.Visualizers.Dialog\ReadableExpressions.Visualizers.Dialog.csproj", "{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Dialog", "ReadableExpressions.Visualizers.Dialog\ReadableExpressions.Visualizers.Dialog.csproj", "{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Dialog.NetCore", "ReadableExpressions.Visualizers.Dialog.NetCore\ReadableExpressions.Visualizers.Dialog.NetCore.csproj", "{90E7122B-BD56-496B-AA21-D716A02541EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.ObjectSource", "ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj", "{93181E6E-3953-4711-AFFE-99AA62E5AB29}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.ObjectSource", "ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj", "{93181E6E-3953-4711-AFFE-99AA62E5AB29}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Core", "ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj", "{3A04A9A4-F0C8-4A49-A23D-F3BF6E39CB13}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Visualizers.Core", "ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj", "{3A04A9A4-F0C8-4A49-A23D-F3BF6E39CB13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Vs16.ObjectSource", "ReadableExpressions.Visualizers.Vs16.ObjectSource\ReadableExpressions.Visualizers.Vs16.ObjectSource.csproj", "{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,14 +144,6 @@ Global
 		{35177AF2-C17C-4C32-A2B4-838584CA86F2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{35177AF2-C17C-4C32-A2B4-838584CA86F2}.Release|x86.ActiveCfg = Release|Any CPU
 		{35177AF2-C17C-4C32-A2B4-838584CA86F2}.Release|x86.Build.0 = Release|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Debug|x86.Build.0 = Debug|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Release|x86.ActiveCfg = Release|Any CPU
-		{E65E235C-C47C-4860-AD1D-FAB275AF4AA9}.Release|x86.Build.0 = Release|Any CPU
 		{F679DB41-C60F-48C0-8D22-50390238A5A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F679DB41-C60F-48C0-8D22-50390238A5A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F679DB41-C60F-48C0-8D22-50390238A5A1}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -170,14 +160,6 @@ Global
 		{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}.Release|x86.ActiveCfg = Release|Any CPU
 		{1DF26474-08FC-45BB-A0C3-7634BD0B6C0F}.Release|x86.Build.0 = Release|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Debug|x86.Build.0 = Debug|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Release|x86.ActiveCfg = Release|Any CPU
-		{90E7122B-BD56-496B-AA21-D716A02541EF}.Release|x86.Build.0 = Release|Any CPU
 		{93181E6E-3953-4711-AFFE-99AA62E5AB29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{93181E6E-3953-4711-AFFE-99AA62E5AB29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93181E6E-3953-4711-AFFE-99AA62E5AB29}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -194,6 +176,14 @@ Global
 		{3A04A9A4-F0C8-4A49-A23D-F3BF6E39CB13}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3A04A9A4-F0C8-4A49-A23D-F3BF6E39CB13}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A04A9A4-F0C8-4A49-A23D-F3BF6E39CB13}.Release|x86.Build.0 = Release|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Debug|x86.Build.0 = Debug|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Release|x86.ActiveCfg = Release|Any CPU
+		{4BF1ADEF-3ACF-4519-B9B0-11A7C5EABDEC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

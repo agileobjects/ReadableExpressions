@@ -18,12 +18,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\CommonVisualizerAssemblyInfo.cs">
-      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\ClsCompliant.cs">
-      <Link>Properties\ClsCompliant.cs</Link>
-    </Compile>
+    <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIcon.png">
+      <Link>Controls\GitHubIcon.png</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIconDark.png">
+      <Link>Controls\GitHubIconDark.png</Link>
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
@@ -35,15 +40,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIcon.png">
-      <Link>Controls\GitHubIcon.png</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\ReadableExpressions.Visualizers.Dialog\Controls\GitHubIconDark.png">
-      <Link>Controls\GitHubIconDark.png</Link>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>
