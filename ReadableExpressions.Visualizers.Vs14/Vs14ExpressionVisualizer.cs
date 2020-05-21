@@ -1,6 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers
 {
-    using Core;
+    using Dialog;
     using Microsoft.VisualStudio.DebuggerVisualizers;
 
     public class Vs14ExpressionVisualizer : DialogDebuggerVisualizer

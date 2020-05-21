@@ -1,8 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers
 {
     using System.IO;
-    using Core;
     using Microsoft.VisualStudio.DebuggerVisualizers;
+    using ObjectSource;
 
     public class Vs14ExpressionVisualizerObjectSource : VisualizerObjectSource
     {
