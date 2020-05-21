@@ -231,6 +231,8 @@
         internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
+            
+            ColourTable.HandleThemeChanged();
 
             foreach (var control in _themeableControls)
             {

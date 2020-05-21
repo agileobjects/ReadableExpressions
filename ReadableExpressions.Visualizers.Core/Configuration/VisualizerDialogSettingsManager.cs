@@ -16,7 +16,7 @@
         private static readonly string[] _newLines = { Environment.NewLine };
         private static readonly char[] _colons = { ':' };
 
-        private static readonly BackgroundWorker _saveWorker;
+        private static readonly object _saveLock = new object();
 
         static VisualizerDialogSettingsManager()
         {
@@ -30,9 +30,6 @@
             }
 
             _settingsFilePath = Path.Combine(settingsFolderPath, "ReadableExpressions.yml");
-
-            _saveWorker = new BackgroundWorker();
-            _saveWorker.DoWork += Save;
         }
 
         public static bool TryLoad(out VisualizerDialogSettings settings)
@@ -63,7 +60,7 @@
                     Font = new VisualizerDialogFontSettings(),
                     Size = new VisualizerDialogSizeSettings()
                 };
-                
+
                 Debug.WriteLine("VisualizerDialogSettingsManager: Setting values...");
 
                 SetValues(settings, settingsByName);
@@ -227,7 +224,9 @@
 
         public static void Save(VisualizerDialogSettings settings)
         {
-            _saveWorker.RunWorkerAsync(settings);
+            var saveWorker = new BackgroundWorker();
+            saveWorker.DoWork += Save;
+            saveWorker.RunWorkerAsync(settings);
         }
 
         private static void Save(object sender, DoWorkEventArgs args)
@@ -236,7 +235,10 @@
 
             var serialized = Serialize(settings);
 
-            File.WriteAllText(_settingsFilePath, serialized);
+            lock (_saveLock)
+            {
+                File.WriteAllText(_settingsFilePath, serialized);
+            }
         }
 
         private static string Serialize(VisualizerDialogSettings settings)

@@ -24,6 +24,19 @@
 
         private VisualizerDialogTheme Theme => _dialog.Theme;
 
+        public void HandleThemeChanged()
+        {
+            _foreColour = null;
+            _foreColourBrush = null;
+            _foreLowlightColourBrush = null;
+            _toolbarColour = null;
+            _toolbarColourBrush = null;
+            _menuColour = null;
+            _menuColourBrush = null;
+            _menuHighlightColour = null;
+            _menuHighlightColourBrush = null;
+        }
+
         public override Color ToolStripBorder => ForeColour;
 
         public override Color ToolStripDropDownBackground => MenuColour;
