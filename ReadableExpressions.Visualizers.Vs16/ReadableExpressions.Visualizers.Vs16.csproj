@@ -23,18 +23,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions.Visualizers.Dialog\ReadableExpressions.Visualizers.Dialog.csproj" />
-    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="Microsoft.VisualStudio.DebuggerVisualizers">
       <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\ReferenceAssemblies\v2.0\Microsoft.VisualStudio.DebuggerVisualizers.dll</HintPath>
     </Reference>
-    <Reference Include="System.Windows.Forms" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Dialog.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
+    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Dialog.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
   </Target>
 
 </Project>

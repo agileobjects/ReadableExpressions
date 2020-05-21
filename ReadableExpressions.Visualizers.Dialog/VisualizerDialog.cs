@@ -6,13 +6,11 @@
     using System.Linq;
     using System.Windows.Forms;
     using Configuration;
-    using Core.Configuration;
     using Controls;
     using Core;
-    using Core.Formatting;
+    using Core.Configuration;
     using Core.Theming;
     using Theming;
-    using Translations.Formatting;
     using static System.Windows.Forms.SystemInformation;
     using static DialogConstants;
 
@@ -27,7 +25,6 @@
         private readonly List<Control> _themeableControls;
         private readonly int _titleBarHeight;
         private bool _autoSize;
-        private string _translation;
 
         public VisualizerDialog(Func<object> translationFactory)
         {
@@ -49,6 +46,8 @@
                 HeightFactor = graphics.DpiY / 72;
             }
 
+            ViewModel = new TranslationViewModel();
+
             ToolTip = AddToolTip();
             Viewer = AddViewer();
             _menuStrip = AddMenuStrip();
@@ -59,19 +58,24 @@
 
             Application.Idle += LazyLoadMenus;
 
-            Shown += (sender, args) => ((VisualizerDialog)sender).Viewer.HandleShown(_translation);
+            Shown += (sender, args) =>
+            {
+                var dialog = (VisualizerDialog)sender;
+                dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
+            };
+
             Resize += (sender, args) => ((VisualizerDialog)sender).HandleResize();
         }
 
-        internal VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
+        internal TranslationViewModel ViewModel { get; }
+
+        internal VisualizerDialogSettings Settings => ViewModel.Settings;
 
         internal VisualizerDialogTheme Theme
         {
             get => Settings.Theme;
             private set => Settings.Theme = value;
         }
-
-        internal ITranslationFormatter Formatter => TranslationHtmlFormatter.Instance;
 
         internal float WidthFactor { get; }
 
@@ -170,21 +174,21 @@
 
         internal void UpdateTranslation()
         {
-            var currentTranslation = _translation;
+            var currentTranslation = ViewModel.Translation;
 
             SetTranslation();
 
-            if (_translation != currentTranslation)
+            if (ViewModel.Translation != currentTranslation)
             {
-                Viewer.SetContent(_translation);
+                Viewer.SetContent(ViewModel.Translation);
             }
         }
 
         private void SetTranslation()
         {
-            _translation = (string)_translationFactory.Invoke();
+            ViewModel.Translation = (string)_translationFactory.Invoke();
 
-            var rawText = Formatter.GetRaw(_translation);
+            var rawText = ViewModel.TranslationRaw;
             var font = (Font)Settings.Font;
             var textSize = TextRenderer.MeasureText(rawText, font);
 

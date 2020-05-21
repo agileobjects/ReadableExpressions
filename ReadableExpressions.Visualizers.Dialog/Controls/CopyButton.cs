@@ -19,12 +19,7 @@
             Click += (sender, args) =>
             {
                 var copyButton = (CopyButton)sender;
-
-                // ReSharper disable PossibleNullReferenceException
-                var viewerContent = copyButton._dialog.Viewer.Document.Body.InnerHtml;
-                // ReSharper restore PossibleNullReferenceException
-
-                var unformatted = copyButton._dialog.Formatter.GetRaw(viewerContent);
+                var unformatted = copyButton._dialog.Viewer.GetContentRaw();
 
                 Clipboard.SetText(unformatted);
             };

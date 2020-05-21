@@ -43,46 +43,6 @@
 
         public bool ShowQuotedLambdaComments { get; set; }
 
-        public TranslationSettings Update(TranslationSettings settings)
-        {
-            if (UseFullyQualifiedTypeNames)
-            {
-                settings = settings.UseFullyQualifiedTypeNames;
-            }
-
-            if (UseExplicitTypeNames)
-            {
-                settings = settings.UseExplicitTypeNames;
-            }
-
-            if (UseExplicitGenericParameters)
-            {
-                settings = settings.UseExplicitGenericParameters;
-            }
-
-            if (DeclareOutputParametersInline)
-            {
-                settings = settings.DeclareOutputParametersInline;
-            }
-
-            if (ShowImplicitArrayTypes)
-            {
-                settings = settings.ShowImplicitArrayTypes;
-            }
-
-            if (ShowLambdaParameterTypeNames)
-            {
-                settings = settings.ShowLambdaParameterTypes;
-            }
-
-            if (ShowQuotedLambdaComments)
-            {
-                settings = settings.ShowQuotedLambdaComments;
-            }
-
-            return settings;
-        }
-
         public void Save() => VisualizerDialogSettingsManager.Save(this);
     }
 }

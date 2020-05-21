@@ -161,11 +161,12 @@ body, pre {{
             DocumentText = content;
         }
 
-        public void SetContent(string translation)
-        {
-            Document.GetElementById("translation").OuterHtml = 
-                $"<pre id=\"translation\">{translation}</pre>";
-        }
+        public string GetContentRaw() => TranslationElement.InnerText;
+
+        public void SetContent(string translation) 
+            => TranslationElement.OuterHtml = $"<pre id=\"translation\">{translation}</pre>";
+
+        private HtmlElement TranslationElement => Document.GetElementById("translation");
 
         public void SetTheme(VisualizerDialogTheme theme)
         {

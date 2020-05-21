@@ -5,8 +5,8 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using Core.Configuration;
-    using Core.Formatting;
     using Extensions;
+    using Formatting;
     using Translations.Formatting;
 
     public static class ExpressionVisualizerObjectSource

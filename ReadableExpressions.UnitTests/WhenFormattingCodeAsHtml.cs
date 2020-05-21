@@ -7,7 +7,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.Linq;
     using System.Linq.Expressions;
     using NetStandardPolyfills;
-    using Visualizers.Core.Formatting;
+    using Visualizers.ObjectSource.Formatting;
     using Xunit;
     using static System.Linq.Expressions.Expression;
 

@@ -1,24 +1,13 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Formatting
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.ObjectSource.Formatting
 {
     using System;
-    using System.Text.RegularExpressions;
     using Translations.Formatting;
-    using static System.Text.RegularExpressions.RegexOptions;
 
     public class TranslationHtmlFormatter : ITranslationFormatter
     {
         public static readonly ITranslationFormatter Instance = new TranslationHtmlFormatter();
 
-        private static readonly Regex _htmlMatcher = new Regex("<[^>]+>", Compiled);
         private static readonly int _formattingSize = "<span class=\"kw\"></span>".Length;
-
-        public string GetRaw(string formatted)
-        {
-            return _htmlMatcher
-                .Replace(formatted, string.Empty)
-                .Replace("&lt;", "<")
-                .Replace("&gt;", ">");
-        }
 
         public int GetFormattingSize(TokenType tokenType) => _formattingSize;
 
