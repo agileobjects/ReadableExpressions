@@ -8,15 +8,6 @@
     public interface ITranslationFormatter
     {
         /// <summary>
-        /// Gets the raw, unformatted version of the given <paramref name="formatted"/> text.
-        /// </summary>
-        /// <param name="formatted">The formatted text for which to retrieve the raw version.</param>
-        /// <returns>
-        /// The raw, unformatted version of the given <paramref name="formatted"/> text.
-        /// </returns>
-        string GetRaw(string formatted);
-
-        /// <summary>
         /// Gets the number of characters required for formatting for the given <paramref name="tokenType"/>.
         /// </summary>
         /// <param name="tokenType">

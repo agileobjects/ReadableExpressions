@@ -2,26 +2,40 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using Theming;
     using static VisualizerDialogSettingsConstants;
 
-    internal static class VisualizerDialogSettingsManager
+    public static class VisualizerDialogSettingsManager
     {
-        private static readonly string _settingsFolderPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft", "VisualStudio");
-
-        private static readonly string _settingsFilePath = Path.Combine(
-            _settingsFolderPath,
-            "ReadableExpressions.yml");
+        private static readonly string _settingsFilePath;
 
         private static readonly string[] _newLines = { Environment.NewLine };
         private static readonly char[] _colons = { ':' };
 
+        private static readonly object _saveLock = new object();
+
+        static VisualizerDialogSettingsManager()
+        {
+            var settingsFolderPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Microsoft", "VisualStudio");
+
+            if (!Directory.Exists(settingsFolderPath))
+            {
+                Directory.CreateDirectory(settingsFolderPath);
+            }
+
+            _settingsFilePath = Path.Combine(settingsFolderPath, "ReadableExpressions.yml");
+        }
+
         public static bool TryLoad(out VisualizerDialogSettings settings)
         {
+            Debug.WriteLine("VisualizerDialogSettingsManager: TryLoad starting...");
+
             try
             {
                 if (!File.Exists(_settingsFilePath))
@@ -29,6 +43,8 @@
                     settings = null;
                     return false;
                 }
+
+                Debug.WriteLine("VisualizerDialogSettingsManager: Loading file...");
 
                 var settingsByName = File
                     .ReadAllText(_settingsFilePath)
@@ -41,9 +57,11 @@
                 settings = new VisualizerDialogSettings
                 {
                     Theme = new VisualizerDialogTheme(),
-                    Font = new VisualizerDialogFont(),
+                    Font = new VisualizerDialogFontSettings(),
                     Size = new VisualizerDialogSizeSettings()
                 };
+
+                Debug.WriteLine("VisualizerDialogSettingsManager: Setting values...");
 
                 SetValues(settings, settingsByName);
                 return true;
@@ -206,14 +224,21 @@
 
         public static void Save(VisualizerDialogSettings settings)
         {
+            var saveWorker = new BackgroundWorker();
+            saveWorker.DoWork += Save;
+            saveWorker.RunWorkerAsync(settings);
+        }
+
+        private static void Save(object sender, DoWorkEventArgs args)
+        {
+            var settings = (VisualizerDialogSettings)args.Argument;
+
             var serialized = Serialize(settings);
 
-            if (!Directory.Exists(_settingsFolderPath))
+            lock (_saveLock)
             {
-                Directory.CreateDirectory(_settingsFolderPath);
+                File.WriteAllText(_settingsFilePath, serialized);
             }
-
-            File.WriteAllText(_settingsFilePath, serialized);
         }
 
         private static string Serialize(VisualizerDialogSettings settings)

@@ -1,6 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Configuration
 {
-    internal class VisualizerDialogSizeSettings
+    public class VisualizerDialogSizeSettings
     {
         public VisualizerDialogSizeSettings()
         {
@@ -14,19 +14,5 @@
         public int? InitialWidth { get; set; }
 
         public int? InitialHeight { get; set; }
-
-        public void UpdateFrom(VisualizerDialog dialog)
-        {
-            if (ResizeToMatchCode)
-            {
-                InitialWidth = null;
-                InitialHeight = null;
-            }
-            else
-            {
-                InitialWidth = dialog.Viewer.Width;
-                InitialHeight = dialog.Viewer.Height;
-            }
-        }
     }
 }
