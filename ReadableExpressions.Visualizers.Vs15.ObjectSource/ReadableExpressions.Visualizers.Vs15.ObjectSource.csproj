@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>8.0</LangVersion>
-    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource</AssemblyName>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.Visualizers</RootNamespace>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Compile Include="..\CommonVisualizerAssemblyInfo.cs" Link="Properties\CommonVisualizerAssemblyInfo.cs" />
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,13 +29,13 @@
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="Microsoft.VisualStudio.DebuggerVisualizers">
-      <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\ReferenceAssemblies\v2.0\Microsoft.VisualStudio.DebuggerVisualizers.dll</HintPath>
+      <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\ReferenceAssemblies\v2.0\Microsoft.VisualStudio.DebuggerVisualizers.dll</HintPath>
     </Reference>
     <PackageReference Include="ILMerge" Version="2.14.1208" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.ObjectSource.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\net2.0&quot; /Y&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netstandard2.0&quot; /Y" />
+    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.ObjectSource.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
   </Target>
 
 </Project>

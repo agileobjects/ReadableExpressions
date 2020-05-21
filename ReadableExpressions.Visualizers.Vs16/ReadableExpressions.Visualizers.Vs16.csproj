@@ -30,6 +30,7 @@
     <Reference Include="Microsoft.VisualStudio.DebuggerVisualizers">
       <HintPath>..\..\..\..\Program Files (x86)\Microsoft Visual Studio\2019\Professional\Common7\IDE\ReferenceAssemblies\v2.0\Microsoft.VisualStudio.DebuggerVisualizers.dll</HintPath>
     </Reference>
+    <PackageReference Include="ILMerge" Version="2.14.1208" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
