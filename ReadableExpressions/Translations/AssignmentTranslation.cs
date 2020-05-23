@@ -27,10 +27,17 @@
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
             : this(
                 assignment.NodeType,
-                context.GetCodeBlockTranslationFor(assignment.Left),
+                GetTargetTranslation(assignment.Left, context),
                 assignment.Right,
                 context)
         {
+        }
+
+        private static ITranslation GetTargetTranslation(Expression target, ITranslationContext context)
+        {
+            return (target.NodeType == Parameter)
+                ? context.GetTranslationFor(target)
+                : context.GetCodeBlockTranslationFor(target);
         }
 
         public AssignmentTranslation(

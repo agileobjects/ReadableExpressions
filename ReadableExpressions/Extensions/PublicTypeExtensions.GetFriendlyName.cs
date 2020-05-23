@@ -3,6 +3,7 @@
     using System;
     using NetStandardPolyfills;
     using Translations;
+    using Translations.Formatting;
     using static ExpressionExtensions;
     using static Translations.Formatting.TokenType;
 
@@ -18,12 +19,19 @@
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
         public static string GetFriendlyName(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => GetFriendlyName(type, configuration.GetTranslationSettings());
+        {
+            var settings = configuration.GetTranslationSettings();
 
-        internal static string GetFriendlyName(this Type type, TranslationSettings translationSettings)
+            return GetFriendlyName(type, settings, settings.Formatter);
+        }
+
+        internal static string GetFriendlyName(
+            this Type type, 
+            TranslationSettings translationSettings,
+            ITranslationFormatter formatter)
         {
             var buffer = new TranslationBuffer(
-                translationSettings.Formatter,
+                formatter,
                 (type.FullName ?? type.ToString()).Length);
 
             buffer.WriteFriendlyName(type, translationSettings);

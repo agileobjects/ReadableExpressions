@@ -33,6 +33,28 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             translated.ShouldBe("<span class=\"kw\">new </span><span class=\"tn\">Object</span>()");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/74
+        [Fact]
+        public void ShouldFormatAnUnnamedAnonymousTypeVariableAssignment()
+        {
+            var anonType = new { ValueBool = default(bool), ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(bool), typeof(int));
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, Constant(true), Constant(1001));
+            var variable = Variable(anonType);
+            var assignment = Assign(variable, creation);
+
+            var translated = ToReadableHtmlString(assignment);
+
+            translated.ShouldBe(
+                "<span class=\"vb\">anonymousType_Bool_Int</span> = <span class=\"kw\">new </span>" +
+                "{ " +
+                    "ValueBool = <span class=\"kw\">true</span>, " +
+                    "ValueInt = <span class=\"nm\">1001</span> " +
+                "}");
+        }
+
         [Fact]
         public void ShouldFormatAnAssignment()
         {
