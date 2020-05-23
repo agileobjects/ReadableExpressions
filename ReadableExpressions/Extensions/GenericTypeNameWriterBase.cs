@@ -7,9 +7,10 @@
     internal abstract class GenericTypeNameWriterBase
     {
         public void WriteGenericTypeName(Type genericType)
-        {
-            var typeGenericTypeArguments = genericType.GetGenericTypeArguments();
+            => WriteGenericTypeName(genericType, genericType.GetGenericTypeArguments());
 
+        public void WriteGenericTypeName(Type genericType, Type[] typeGenericTypeArguments)
+        {
             if (!genericType.IsNested)
             {
                 WriteTypeNamePrefix(genericType);
@@ -97,7 +98,7 @@
 
             typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
 
-        WriteName:
+            WriteName:
             WriteGenericTypeName(genericType, numberOfParameters, typeArguments);
         }
 
@@ -122,9 +123,7 @@
             int numberOfParameters,
             IList<Type> typeArguments)
         {
-            var isAnonType =
-                 type.Name.StartsWith('<') &&
-                (type.Name.IndexOf("AnonymousType", StringComparison.Ordinal)) != -1;
+            var isAnonType = type.IsAnonymous();
 
             if (isAnonType && TryWriteCustomAnonTypeName(type))
             {
