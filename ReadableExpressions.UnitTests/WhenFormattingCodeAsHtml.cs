@@ -49,9 +49,9 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             translated.ShouldBe(
                 "<span class=\"vb\">anonymousType_Bool_Int</span> = <span class=\"kw\">new </span>" +
-                "{" +
-                    "<span class=\"mn\">ValueBool</span> = <span class=\"kw\">true</span>, " +
-                    "<span class=\"mn\">ValueInt</span> = <span class=\"nm\">1001</span> " +
+                "{ " +
+                    "ValueBool = <span class=\"kw\">true</span>, " +
+                    "ValueInt = <span class=\"nm\">1001</span> " +
                 "}");
         }
 
