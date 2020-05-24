@@ -43,6 +43,8 @@
                 settings = settings.ShowQuotedLambdaComments;
             }
 
+            settings.IndentUsing(dialogSettings.Indent);
+
             return settings;
         }
     }

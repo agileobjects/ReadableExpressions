@@ -260,7 +260,7 @@
         public string GetTranslation()
         {
             var estimatedSize = _root.TranslationSize + _root.FormattingSize + _root.GetIndentSize();
-            var buffer = new TranslationBuffer(_settings.Formatter, estimatedSize);
+            var buffer = new TranslationBuffer(_settings, estimatedSize);
 
             _root.WriteTo(buffer);
 

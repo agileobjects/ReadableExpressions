@@ -6,7 +6,6 @@
     using Extensions;
     using NetStandardPolyfills;
     using Translations;
-    using Translations.Formatting;
     using static Translations.Formatting.TokenType;
 
     /// <summary>
@@ -29,8 +28,8 @@
                 return "[Type not found]";
             }
 
-            var formatter = configuration.GetTranslationFormatter();
-            var buffer = new TranslationBuffer(formatter, type.ToString().Length);
+            var settings = configuration.GetBufferSettings();
+            var buffer = new TranslationBuffer(settings, type.ToString().Length);
 
             WriteModifiersToTranslation(type, buffer);
 
@@ -54,8 +53,8 @@
                 return "[Constructor not found]";
             }
 
-            var formatter = configuration.GetTranslationFormatter();
-            var buffer = new TranslationBuffer(formatter, ctor.ToString().Length);
+            var settings = configuration.GetBufferSettings();
+            var buffer = new TranslationBuffer(settings, ctor.ToString().Length);
 
             WriteAccessibilityToTranslation(ctor, buffer);
 
@@ -81,8 +80,8 @@
                 return "[Method not found]";
             }
             
-            var formatter = configuration.GetTranslationFormatter();
-            var buffer = new TranslationBuffer(formatter, method.ToString().Length);
+            var settings = configuration.GetBufferSettings();
+            var buffer = new TranslationBuffer(settings, method.ToString().Length);
 
             WriteModifiersToTranslation(method, buffer);
 
@@ -119,11 +118,10 @@
             return buffer.GetContent();
         }
 
-        private static ITranslationFormatter GetTranslationFormatter(
+        private static ITranslationBufferSettings GetBufferSettings(
             this Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration)
         {
-            return (configuration?.Invoke(new TranslationFormattingSettings()) ?? TranslationFormattingSettings.Default)
-                .Formatter;
+            return configuration?.Invoke(new TranslationFormattingSettings()) ?? TranslationFormattingSettings.Default;
         }
 
         private static void WriteModifiersToTranslation(Type type, TranslationBuffer buffer)

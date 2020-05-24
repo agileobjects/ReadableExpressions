@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.ComponentModel;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using Theming;
@@ -34,8 +33,6 @@
 
         public static bool TryLoad(out VisualizerDialogSettings settings)
         {
-            Debug.WriteLine("VisualizerDialogSettingsManager: TryLoad starting...");
-
             try
             {
                 if (!File.Exists(_settingsFilePath))
@@ -44,15 +41,13 @@
                     return false;
                 }
 
-                Debug.WriteLine("VisualizerDialogSettingsManager: Loading file...");
-
                 var settingsByName = File
                     .ReadAllText(_settingsFilePath)
                     .Split(_newLines, StringSplitOptions.RemoveEmptyEntries)
                     .Select(line => line.Split(_colons, count: 2))
                     .ToDictionary(
                         keyValue => keyValue.FirstOrDefault()?.Trim(),
-                        keyValue => keyValue.LastOrDefault()?.Trim());
+                        keyValue => keyValue.LastOrDefault()?.Substring(1));
 
                 settings = new VisualizerDialogSettings
                 {
@@ -60,8 +55,6 @@
                     Font = new VisualizerDialogFontSettings(),
                     Size = new VisualizerDialogSizeSettings()
                 };
-
-                Debug.WriteLine("VisualizerDialogSettingsManager: Setting values...");
 
                 SetValues(settings, settingsByName);
                 return true;
@@ -81,7 +74,12 @@
             SetFontValues(settings, settingsByName);
             SetSizeValues(settings, settingsByName);
 
-            if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out var value))
+            if (settingsByName.TryGetValue(nameof(settings.Indent), out var value))
+            {
+                settings.Indent = value;
+            }
+
+            if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out value))
             {
                 settings.UseFullyQualifiedTypeNames = IsTrue(value);
             }
@@ -190,7 +188,7 @@
         {
             if (settingsByName.TryGetValue(FontName, out var value))
             {
-                settings.Font.Name = value;
+                settings.Font.Name = value.Trim();
             }
 
             if (settingsByName.TryGetValue(FontSize, out value) &&
@@ -266,6 +264,7 @@
 {SizeResizeToCode}: {settings.Size.ResizeToMatchCode}
 {SizeInitialWidth}: {settings.Size.InitialWidth}
 {SizeInitialHeight}: {settings.Size.InitialHeight}
+{nameof(settings.Indent)}: {settings.Indent}
 {nameof(settings.UseFullyQualifiedTypeNames)}: {settings.UseFullyQualifiedTypeNames}
 {nameof(settings.UseExplicitTypeNames)}: {settings.UseExplicitTypeNames}
 {nameof(settings.UseExplicitGenericParameters)}: {settings.UseExplicitGenericParameters}

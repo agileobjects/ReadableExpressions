@@ -12,7 +12,6 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class AssignmentTranslation :
         CheckedOperationTranslationBase,
@@ -20,6 +19,7 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _targetTranslation;
+        private readonly TranslationSettings _settings;
         private readonly string _operator;
         private readonly ITranslation _valueTranslation;
         private bool _suppressSpaceBeforeValue;
@@ -49,6 +49,7 @@
         {
             NodeType = nodeType;
             _targetTranslation = targetTranslation;
+            _settings = context.Settings;
             _operator = GetOperatorOrNull(nodeType);
             _valueTranslation = GetValueTranslation(value, context);
             TranslationSize = GetTranslationSize();
@@ -160,8 +161,8 @@
             if (IsCheckedOperation && IsMultiStatement())
             {
                 indentSize +=
-                    _targetTranslation.GetLineCount() * IndentLength +
-                    _valueTranslation.GetLineCount() * IndentLength;
+                    _targetTranslation.GetLineCount() * _settings.IndentLength +
+                    _valueTranslation.GetLineCount() * _settings.IndentLength;
             }
 
             return indentSize;

@@ -33,6 +33,7 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
     <PackageReleaseNotes>- Wrapping long anonymous type translations
+- Support for using custom indents
 - Fixing formatted primitive variable names, re: #74
 - Performance improvements
     </PackageReleaseNotes>

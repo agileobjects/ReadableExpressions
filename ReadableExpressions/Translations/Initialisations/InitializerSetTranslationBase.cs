@@ -2,14 +2,16 @@
 {
     using System.Collections.Generic;
     using Interfaces;
-    using static Constants;
 
     internal abstract class InitializerSetTranslationBase<TInitializer> : IInitializerSetTranslation
     {
+        private readonly TranslationSettings _settings;
         private readonly IList<ITranslatable> _initializerTranslations;
 
         protected InitializerSetTranslationBase(IList<TInitializer> initializers, ITranslationContext context)
         {
+            _settings = context.Settings;
+
             var initializersCount = initializers.Count;
             Count = initializersCount;
             _initializerTranslations = new ITranslatable[initializersCount];
@@ -57,6 +59,7 @@
         {
             var writeToMultipleLines = WriteToMultipleLines;
             var indentSize = writeToMultipleLines ? 0 : 2;
+            var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
             {
@@ -65,7 +68,7 @@
 
                 if (writeToMultipleLines)
                 {
-                    initializerIndentSize += initializerTranslation.GetLineCount() * IndentLength;
+                    initializerIndentSize += initializerTranslation.GetLineCount() * indentLength;
                 }
 
                 indentSize += initializerIndentSize;

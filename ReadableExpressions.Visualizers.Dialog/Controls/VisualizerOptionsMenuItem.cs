@@ -34,6 +34,7 @@
             {
                 new ToolStripControlHost(new ThemeSelector(_dialog)),
                 new ToolStripControlHost(new FontSelector(_dialog)),
+                new ToolStripControlHost(new IndentSelector(_dialog)),
                 new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(_dialog)),
                 new ToolStripSeparator(),
                 new ToolStripControlHost(new FullyQualifiedTypeNamesOption(_dialog)),

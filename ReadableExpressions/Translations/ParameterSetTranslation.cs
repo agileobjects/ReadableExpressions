@@ -17,19 +17,20 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class ParameterSetTranslation : ITranslatable
     {
         private const int _splitArgumentsThreshold = 3;
         private const string _openAndCloseParentheses = "()";
 
+        private readonly TranslationSettings _settings;
         private readonly IList<CodeBlockTranslation> _parameterTranslations;
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
         public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
+            _settings = context.Settings;
             _parameterTranslations = new[] { new CodeBlockTranslation(parameter, context) };
             TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
             FormattingSize = parameter.FormattingSize;
@@ -73,6 +74,7 @@
             int count,
             ITranslationContext context)
         {
+            _settings = context.Settings;
             _parenthesesMode = ParenthesesMode.Auto;
 
             if (count == 0)
@@ -313,6 +315,7 @@
 
             var indentSize = 0;
             var writeParametersOnNewLines = WriteParametersOnNewLines();
+            var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
             {
@@ -321,7 +324,7 @@
 
                 if (writeParametersOnNewLines)
                 {
-                    parameterIndentSize += parameter.GetLineCount() * IndentLength;
+                    parameterIndentSize += parameter.GetLineCount() * indentLength;
                 }
 
                 indentSize += parameterIndentSize;

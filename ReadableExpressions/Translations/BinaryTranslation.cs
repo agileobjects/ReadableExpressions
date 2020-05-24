@@ -12,7 +12,6 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
@@ -139,9 +138,11 @@
 
             if (IsCheckedOperation && IsMultiStatement())
             {
+                var indentLength = _context.Settings.IndentLength;
+
                 indentSize +=
-                    _leftOperandTranslation.GetLineCount() * IndentLength +
-                    _rightOperandTranslation.GetLineCount() * IndentLength;
+                    _leftOperandTranslation.GetLineCount() * indentLength +
+                    _rightOperandTranslation.GetLineCount() * indentLength;
             }
 
             return indentSize;

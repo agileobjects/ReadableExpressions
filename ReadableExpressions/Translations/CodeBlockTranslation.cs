@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal class CodeBlockTranslation :
         ITranslation,
@@ -162,13 +161,14 @@
 
             if (_indentContents || _writeBraces)
             {
-                var translationIndentSize = _translation.GetLineCount() * IndentLength;
+                var indentLength = _context.Settings.IndentLength;
+                var translationIndentSize = _translation.GetLineCount() * indentLength;
 
                 indentSize += translationIndentSize;
 
                 if (_writeBraces)
                 {
-                    indentSize += 2 * IndentLength;
+                    indentSize += 2 * indentLength;
 
                     if (_indentContents)
                     {

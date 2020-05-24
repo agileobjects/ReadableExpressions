@@ -32,6 +32,7 @@
         {
             var buffer = new TranslationBuffer(
                 formatter,
+                translationSettings.Indent,
                 (type.FullName ?? type.ToString()).Length);
 
             buffer.WriteFriendlyName(type, translationSettings);

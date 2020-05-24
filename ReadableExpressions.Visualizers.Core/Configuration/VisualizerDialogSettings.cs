@@ -29,6 +29,8 @@
 
         public VisualizerDialogSizeSettings Size { get; set; }
 
+        public string Indent { get; set; } = "    ";
+
         public bool UseFullyQualifiedTypeNames { get; set; }
 
         public bool UseExplicitTypeNames { get; set; }

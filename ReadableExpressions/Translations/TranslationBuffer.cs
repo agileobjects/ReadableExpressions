@@ -9,8 +9,17 @@
     using Interfaces;
     using static Formatting.TokenType;
 
+    internal interface ITranslationBufferSettings
+    {
+        ITranslationFormatter Formatter { get; }
+
+        string Indent { get; }
+    }
+
     internal class TranslationBuffer : ITranslationQuery
     {
+        private readonly ITranslationFormatter _formatter;
+        private readonly string _indent;
 #if DEBUG && NET40
         private readonly int _estimatedSize;
 #endif
@@ -18,16 +27,24 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationBuffer(ITranslationFormatter formatter, int estimatedSize)
+        public TranslationBuffer(ITranslationBufferSettings settings, int estimatedSize)
+            : this(settings.Formatter, settings.Indent, estimatedSize)
         {
+        }
+
+        public TranslationBuffer(
+            ITranslationFormatter formatter,
+            string indent,
+            int estimatedSize)
+        {
+            _formatter = formatter ?? NullTranslationFormatter.Instance;
+            _indent = indent;
 #if DEBUG && NET40
             _estimatedSize = estimatedSize;
 #endif
-            Formatter = formatter ?? NullTranslationFormatter.Instance;
             _content = new StringBuilder(estimatedSize);
         }
 
-        public ITranslationFormatter Formatter { get; }
 
         #region ITranslationQuery
 
@@ -173,7 +190,7 @@
 
         public void Indent()
         {
-            _currentIndent += Constants.Indent.Length;
+            ++_currentIndent;
 
             if (_writeIndent == false)
             {
@@ -181,10 +198,7 @@
             }
         }
 
-        public void Unindent()
-        {
-            _currentIndent -= Constants.Indent.Length;
-        }
+        public void Unindent() => --_currentIndent;
 
         public void WriteNewLineToTranslation()
         {
@@ -202,7 +216,7 @@
         private void WriteToTranslation(char character, TokenType tokenType)
         {
             WriteIndentIfRequired();
-            Formatter.WriteFormatted(character, Write, Write, tokenType);
+            _formatter.WriteFormatted(character, Write, Write, tokenType);
         }
 
         private void Write(char character) => _content.Append(character);
@@ -219,7 +233,7 @@
 
             if (tokenType != Default)
             {
-                Formatter.WriteFormatted(stringValue, Write, tokenType);
+                _formatter.WriteFormatted(stringValue, Write, tokenType);
                 return;
             }
 
@@ -231,7 +245,7 @@
         public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
-            Formatter.WriteFormatted(intValue, Write, Write, Numeric);
+            _formatter.WriteFormatted(intValue, Write, Write, Numeric);
         }
 
         private void Write(int intValue) => _content.Append(intValue);
@@ -239,7 +253,7 @@
         public void WriteToTranslation(long longValue)
         {
             WriteIndentIfRequired();
-            Formatter.WriteFormatted(longValue, Write, Write, Numeric);
+            _formatter.WriteFormatted(longValue, Write, Write, Numeric);
         }
 
         private void Write(long longValue) => _content.Append(longValue);
@@ -254,7 +268,11 @@
         {
             if (_writeIndent)
             {
-                _content.Append(' ', _currentIndent);
+                for (var i = 0; i < _currentIndent; ++i)
+                {
+                    _content.Append(_indent);
+                }
+
                 _writeIndent = false;
             }
         }

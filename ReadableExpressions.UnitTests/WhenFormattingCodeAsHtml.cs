@@ -248,12 +248,45 @@ Two:
                 "<span class=\"kw\">ref </span><span class=\"vb\">value</span>)");
         }
 
+        [Fact]
+        public void ShouldSupportCustomIndentsUsingTabs()
+        {
+            var anonType = new { String1 = default(string), String2 = default(string), String3 = default(string) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(string), typeof(string));
+
+            var longArgument = Constant("My, what a long argument value!");
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, longArgument, longArgument, longArgument);
+
+            const string INDENT = "\t";
+
+            var translated = ToReadableHtmlString(creation, s => s.IndentUsing(INDENT));
+
+            var expected = @$"
+<span class=""kw"">new </span>
+{{
+{INDENT}String1 = <span class=""tx"">""My, what a long argument value!""</span>,
+{INDENT}String2 = <span class=""tx"">""My, what a long argument value!""</span>,
+{INDENT}String3 = <span class=""tx"">""My, what a long argument value!""</span>
+}}".TrimStart();
+
+            translated.ShouldBe(expected);
+        }
+
         #region Helper Members
 
-        private static string ToReadableHtmlString(Expression expression)
+        private static string ToReadableHtmlString(
+            Expression expression,
+            Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            return expression.ToReadableString(settings => settings
-                .FormatUsing(TranslationHtmlFormatter.Instance));
+            return expression.ToReadableString(settings =>
+            {
+                configuration?.Invoke(settings);
+
+                return settings
+                    .FormatUsing(TranslationHtmlFormatter.Instance);
+            });
         }
 
         private class Address

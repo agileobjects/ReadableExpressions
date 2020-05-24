@@ -2,14 +2,9 @@
 {
     public class VisualizerDialogSizeSettings
     {
-        public VisualizerDialogSizeSettings()
-        {
-            ResizeToMatchCode = true;
-        }
-
         public bool UseFixedSize => !ResizeToMatchCode;
 
-        public bool ResizeToMatchCode { get; set; }
+        public bool ResizeToMatchCode { get; set; } = true;
 
         public int? InitialWidth { get; set; }
 
