@@ -8,7 +8,6 @@
 #endif
     using Extensions;
     using Interfaces;
-    using static Constants;
 
     internal static class ConditionalTranslation
     {
@@ -183,9 +182,11 @@
 
             private int GetMultiLineTernaryIndentSize()
             {
+                var indentLength = _context.Settings.IndentLength;
+
                 return GetSingleLineTernaryIndentSize() +
-                       IfTrueTranslation.GetLineCount() * IndentLength +
-                       IfFalseTranslation.GetLineCount() * IndentLength;
+                       IfTrueTranslation.GetLineCount() * indentLength +
+                       IfFalseTranslation.GetLineCount() * indentLength;
             }
 
             private int GetSingleLineTernaryIndentSize()

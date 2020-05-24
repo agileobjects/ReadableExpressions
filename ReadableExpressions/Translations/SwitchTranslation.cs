@@ -7,13 +7,13 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private const string _switch = "switch ";
         private const string _case = "case ";
 
+        private readonly TranslationSettings _settings;
         private readonly ITranslation _valueTranslation;
         private readonly ITranslation[][] _caseTestValueTranslations;
         private readonly ITranslation[] _caseTranslations;
@@ -22,6 +22,7 @@
 
         public SwitchTranslation(SwitchExpression switchStatement, ITranslationContext context)
         {
+            _settings = context.Settings;
             Type = switchStatement.Type;
             _valueTranslation = context.GetTranslationFor(switchStatement.SwitchValue);
 
@@ -120,17 +121,18 @@
         public int GetIndentSize()
         {
             var indentSize = 0;
+            var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
             {
-                indentSize += _caseTestValueTranslations[i].Length * IndentLength;
+                indentSize += _caseTestValueTranslations[i].Length * indentLength;
 
                 var caseTranslation = _caseTranslations[i];
-                indentSize += caseTranslation.GetLineCount() * IndentLength * 2;
+                indentSize += caseTranslation.GetLineCount() * indentLength * 2;
 
                 if (WriteBreak(caseTranslation))
                 {
-                    indentSize += IndentLength * 2;
+                    indentSize += indentLength * 2;
                 }
 
                 ++i;
@@ -143,12 +145,12 @@
 
             if (_defaultCaseTranslation != null)
             {
-                indentSize += IndentLength;
-                indentSize += _defaultCaseTranslation.GetLineCount() * IndentLength * 2;
+                indentSize += indentLength;
+                indentSize += _defaultCaseTranslation.GetLineCount() * indentLength * 2;
 
                 if (WriteBreak(_defaultCaseTranslation))
                 {
-                    indentSize += IndentLength * 2;
+                    indentSize += indentLength * 2;
                 }
             }
 

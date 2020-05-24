@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal static class ConditionTranslation
     {
@@ -77,7 +76,7 @@
             {
                 return _binaryConditionLeftTranslation.GetIndentSize() +
                        _binaryConditionRightTranslation.GetIndentSize() + 
-                       _binaryConditionRightTranslation.GetLineCount() * IndentLength;
+                       _binaryConditionRightTranslation.GetLineCount() * _context.Settings.IndentLength;
             }
 
             public int GetLineCount()

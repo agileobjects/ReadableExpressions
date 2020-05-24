@@ -201,6 +201,30 @@ value = threeIntsFunc.Invoke(
         }
 
         [Fact]
+        public void ShouldSupportCustomIndentsUsingSpaces()
+        {
+            var anonType = new { String1 = default(string), String2 = default(string), String3 = default(string) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(string), typeof(string));
+
+            var longArgument = Constant("My, what a long argument value!");
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, longArgument, longArgument, longArgument);
+
+            var translated = ToReadableString(creation, s => s.IndentUsing("  "));
+
+            const string EXPECTED = @"
+new 
+{
+  String1 = ""My, what a long argument value!"",
+  String2 = ""My, what a long argument value!"",
+  String3 = ""My, what a long argument value!""
+}";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldDeclareAVariableIfUsedBeforeInitialisation()
         {
             var nameVariable = Variable(typeof(string), "name");

@@ -18,7 +18,6 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal static class MethodCallTranslation
     {
@@ -213,7 +212,7 @@
                 var indentSize = _subjectTranslation.GetIndentSize();
 
                 indentSize += _isPartOfMethodCallChain 
-                    ? _methodInvocationTranslation.GetLineCount() * IndentLength 
+                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength 
                     : _methodInvocationTranslation.GetLineCount();
 
                 return indentSize;
