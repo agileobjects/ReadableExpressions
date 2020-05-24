@@ -79,14 +79,14 @@
             }
         }
 
-        public int GetLineCount() 
+        public int GetLineCount()
             => WriteToMultipleLines ? GetMultiLineCount() : _initializerTranslations.GetLineCount(Count);
 
         private int GetMultiLineCount()
         {
             var lineCount = 2; // for { and }
 
-            for (var i = 0;;)
+            for (var i = 0; ;)
             {
                 lineCount += _initializerTranslations[i].GetLineCount();
 
@@ -107,7 +107,12 @@
             }
             else
             {
-                buffer.WriteToTranslation(" { ");
+                if (!buffer.TranslationQuery(q => q.TranslationEndsWith(' ')))
+                {
+                    buffer.WriteSpaceToTranslation();
+                }
+
+                buffer.WriteToTranslation("{ ");
             }
 
             for (var i = 0; ;)

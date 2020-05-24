@@ -58,7 +58,12 @@
 
                 if (char.IsWhiteSpace(contentCharacter))
                 {
-                    continue;
+                    if (contentCharacter != character)
+                    {
+                        continue;
+                    }
+
+                    return true;
                 }
 
                 return contentCharacter == character;

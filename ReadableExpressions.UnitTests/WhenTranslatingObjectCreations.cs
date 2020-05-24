@@ -129,6 +129,33 @@ new MemoryStream
         }
 
         [Fact]
+        public void ShouldTranslateANewAonymousTypeExpressionWithAMultiLineCtorValue()
+        {
+            var writeBlah = CreateLambda(() => Console.WriteLine("Blah"));
+            var read = CreateLambda<long>(() => Console.Read());
+
+            var anonType = new { LongValue = default(long) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(long));
+            var valueBlock = Block(writeBlah.Body, writeBlah.Body, read.Body);
+            var newAnonType = New(constructor, valueBlock);
+
+            var translated = ToReadableString(newAnonType);
+
+            const string EXPECTED = @"
+new 
+{
+    LongValue = 
+    {
+        Console.WriteLine(""Blah"");
+        Console.WriteLine(""Blah"");
+
+        return (long)Console.Read();
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateANewExpressionWithMultipleInitialisations()
         {
             var createMemoryStream = CreateLambda(()
@@ -141,6 +168,28 @@ new MemoryStream
 {
     Capacity = 10000,
     Position = 100L
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateANewAonymousTypeExpressionWithMultipleInitialisations()
+        {
+            var anonType = new { Value1 = default(string), Value2 = default(string) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(string));
+
+            var propertyValue = Constant("This is a long value and it should wrap", typeof(string));
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, propertyValue, propertyValue);
+
+            var translated = ToReadableString(creation);
+
+            const string EXPECTED = @"
+new 
+{
+    Value1 = ""This is a long value and it should wrap"",
+    Value2 = ""This is a long value and it should wrap""
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -378,44 +427,44 @@ new StringBuilder(
         [Fact]
         public void ShouldTranslateAnAnonymousTypeCreation()
         {
-            var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
-            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
+            var anonType = new { ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(int));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = New(constructor, Constant("How much?!"), Constant(100));
+            var creation = New(constructor, Constant(100));
 
             var translated = ToReadableString(creation);
 
-            translated.ShouldBe("new { ValueString = \"How much?!\", ValueInt = 100 }");
+            translated.ShouldBe("new { ValueInt = 100 }");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/33
         [Fact]
         public void ShouldTranslateAnAnonymousTypeCreationWithACustomFactory()
         {
-            var anonType = new { ValueString = default(string), ValueInt = default(int) }.GetType();
-            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(int));
+            var anonType = new { ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(int));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = New(constructor, Constant("How much?"), Constant(10));
+            var creation = New(constructor, Constant(10));
 
             var translated = ToReadableString(creation, cfg => cfg.NameAnonymousTypesUsing(t => "MyMagicObject"));
 
-            translated.ShouldBe("new MyMagicObject { ValueString = \"How much?\", ValueInt = 10 }");
+            translated.ShouldBe("new MyMagicObject { ValueInt = 10 }");
         }
 
         [Fact]
         public void ShouldTranslateAFullyQualfiedAnonymousTypeCreation()
         {
-            var anonType = new { ValueString = default(string), TimeSpanValue = default(TimeSpan) }.GetType();
-            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(TimeSpan));
+            var anonType = new { Value = default(TimeSpan) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(TimeSpan));
 
             // ReSharper disable once AssignNullToNotNullAttribute
-            var creation = New(constructor, Constant("How much?!"), Default(typeof(TimeSpan)));
+            var creation = New(constructor, Default(typeof(TimeSpan)));
 
             var translated = ToReadableString(creation, s => s.UseFullyQualifiedTypeNames);
 
-            translated.ShouldBe("new { ValueString = \"How much?!\", TimeSpanValue = default(System.TimeSpan) }");
+            translated.ShouldBe("new { Value = default(System.TimeSpan) }");
         }
     }
 

@@ -11,13 +11,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Interfaces
 
         bool IsExtensionMethod { get; }
 
-        MethodInfo GetGenericMethodDefinition();
+        IMethod GetGenericMethodDefinition();
 
         Type[] GetGenericArguments();
 
         ParameterInfo[] GetParameters();
-
-        Type GetGenericArgumentFor(Type parameterType);
 
         Type ReturnType { get; }
     }

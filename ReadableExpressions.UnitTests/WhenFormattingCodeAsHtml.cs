@@ -47,12 +47,14 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             var translated = ToReadableHtmlString(assignment);
 
-            translated.ShouldBe(
-                "<span class=\"vb\">anonymousType_Bool_Int</span> = <span class=\"kw\">new </span>" +
-                "{ " +
-                    "ValueBool = <span class=\"kw\">true</span>, " +
-                    "ValueInt = <span class=\"nm\">1001</span> " +
-                "}");
+            const string EXPECTED = @"
+<span class=""vb"">anonymousType_Bool_Int</span> = <span class=""kw"">new </span>
+{
+    ValueBool = <span class=""kw"">true</span>,
+    ValueInt = <span class=""nm"">1001</span>
+}";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]

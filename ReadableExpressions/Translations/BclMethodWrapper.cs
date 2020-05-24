@@ -6,38 +6,65 @@ namespace AgileObjects.ReadableExpressions.Translations
     using Interfaces;
     using NetStandardPolyfills;
 
-    internal class BclMethodWrapper : IMethod
+    internal abstract class BclMethodWrapperBase
     {
-        private readonly MethodInfo _method;
+        private readonly MethodBase _method;
         private Type[] _genericArguments;
 
-        [DebuggerStepThrough]
-        public BclMethodWrapper(MethodInfo method, Type[] genericArguments = null)
+        protected BclMethodWrapperBase(MethodBase method)
         {
             _method = method;
-            _genericArguments = genericArguments;
-            IsExtensionMethod = method.IsExtensionMethod();
         }
 
         public string Name => _method.Name;
 
         public bool IsGenericMethod => _method.IsGenericMethod;
 
-        public bool IsExtensionMethod { get; }
-
-        public MethodInfo GetGenericMethodDefinition() => _method.GetGenericMethodDefinition();
-
-        public Type[] GetGenericArguments() =>
-            (_genericArguments ?? (_genericArguments = _method.GetGenericArguments()));
+        public virtual Type[] GetGenericArguments()
+            => _genericArguments ??= _method.GetGenericArguments();
 
         public ParameterInfo[] GetParameters() => _method.GetParameters();
+    }
 
-        public Type GetGenericArgumentFor(Type parameterType)
+    internal class CtorInfoWrapper : BclMethodWrapperBase, IMethod
+    {
+        private readonly ConstructorInfo _ctorInfo;
+
+        public CtorInfoWrapper(ConstructorInfo ctorInfo)
+            : base(ctorInfo)
         {
-            var parameterIndex = Array.IndexOf(_method.GetGenericArguments(), parameterType, 0);
-
-            return _genericArguments[parameterIndex];
+            _ctorInfo = ctorInfo;
         }
+
+        public bool IsExtensionMethod => false;
+
+        public IMethod GetGenericMethodDefinition() => null;
+
+        public Type ReturnType => _ctorInfo.DeclaringType;
+    }
+
+    internal class BclMethodWrapper : BclMethodWrapperBase, IMethod
+    {
+        private readonly MethodInfo _method;
+        private IMethod _genericMethodDefinition;
+        private Type[] _genericArguments;
+
+        [DebuggerStepThrough]
+        public BclMethodWrapper(MethodInfo method, Type[] genericArguments = null)
+            : base(method)
+        {
+            _method = method;
+            _genericArguments = genericArguments;
+            IsExtensionMethod = method.IsExtensionMethod();
+        }
+
+        public bool IsExtensionMethod { get; }
+
+        public IMethod GetGenericMethodDefinition()
+            => _genericMethodDefinition ??= new BclMethodWrapper(_method.GetGenericMethodDefinition());
+
+        public override Type[] GetGenericArguments()
+            => _genericArguments ??= base.GetGenericArguments();
 
         public Type ReturnType => _method.ReturnType;
     }

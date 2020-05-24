@@ -266,7 +266,7 @@
 
         public int FormattingSize { get; }
 
-        private int Count { get; set; }
+        public int Count { get; set; }
 
         public bool None => Count == 0;
 
