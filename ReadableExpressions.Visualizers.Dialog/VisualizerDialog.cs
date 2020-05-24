@@ -198,22 +198,23 @@
             var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
             int height;
 
+            var sizeSettings = Settings.Size;
             var saveNewSize = false;
 
-            if (Settings.Size.UseFixedSize &&
-                Settings.Size.InitialWidth.HasValue &&
-                Settings.Size.InitialHeight.HasValue)
+            if (sizeSettings.UseFixedSize &&
+                sizeSettings.InitialWidth.HasValue &&
+                sizeSettings.InitialHeight.HasValue)
             {
-                if (Settings.Size.InitialWidth.Value > width)
+                if (sizeSettings.InitialWidth.Value > width)
                 {
-                    width = Settings.Size.InitialWidth.Value;
+                    width = sizeSettings.InitialWidth.Value;
                 }
                 else
                 {
                     saveNewSize = true;
                 }
 
-                height = Settings.Size.InitialHeight.Value;
+                height = sizeSettings.InitialHeight.Value;
             }
             else
             {
