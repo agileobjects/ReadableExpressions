@@ -27,7 +27,7 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
-        private ExpressionAnalysis(TranslationSettings settings)
+        public ExpressionAnalysis(TranslationSettings settings)
         {
             _settings = settings;
         }
@@ -36,14 +36,29 @@
 
         public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
+            switch (expression.NodeType)
+            {
+                case ExpressionType.DebugInfo:
+                case ExpressionType.Default:
+                case ExpressionType.Extension:
+                case ExpressionType.Parameter:
+                case ExpressionType.RuntimeVariables:
+                    return settings.EmptyAnalysis;
+            }
+
             var analysis = new ExpressionAnalysis(settings);
 
             analysis.Visit(expression);
-
-            analysis._inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            analysis._joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            analysis.Finalise();
 
             return analysis;
+        }
+
+        public ExpressionAnalysis Finalise()
+        {
+            _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            return this;
         }
 
         #endregion

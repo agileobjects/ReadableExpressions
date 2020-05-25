@@ -46,7 +46,7 @@
             }
 
             var settings = configuration.GetTranslationSettings();
-            var translation = new TranslationTree(expression, settings);
+            var translation = new ExpressionTreeTranslation(expression, settings);
 
             return translation.GetTranslation();
         }

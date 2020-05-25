@@ -13,6 +13,7 @@
 
         private bool _commentQuotedLambdas;
         private int? _indentLength;
+        private ExpressionAnalysis _emptyAnalysis;
 
         internal TranslationSettings()
         {
@@ -22,6 +23,9 @@
             Indent = "    ";
             Formatter = NullTranslationFormatter.Instance;
         }
+
+        internal ExpressionAnalysis EmptyAnalysis =>
+            _emptyAnalysis ??= new ExpressionAnalysis(this).Finalise();
 
         /// <summary>
         /// Fully qualify type names with their namespaces.

@@ -15,14 +15,14 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class TranslationTree : ITranslationContext
+    internal class ExpressionTreeTranslation : ITranslationContext
     {
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public TranslationTree(Expression expression, TranslationSettings settings)
+        public ExpressionTreeTranslation(Expression expression, TranslationSettings settings)
         {
             _settings = settings;
             _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
