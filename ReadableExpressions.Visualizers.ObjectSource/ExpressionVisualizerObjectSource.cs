@@ -50,7 +50,7 @@
         }
 
         private static string Translate(Type type) 
-            => type.GetFriendlyName(ApplyDialogSettings);
+            => type.ToReadableString(ApplyDialogSettings);
 
         private static TranslationFormattingSettings ApplyDialogSettings(
             TranslationFormattingSettings settings)

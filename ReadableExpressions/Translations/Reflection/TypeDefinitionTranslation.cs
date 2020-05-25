@@ -10,18 +10,18 @@
     internal class TypeDefinitionTranslation : ITranslatable
     {
         private readonly string _accessibility;
-        private readonly string _modifier;
+        private readonly string _modifiers;
         private readonly ITranslatable _typeNameTranslatable;
 
         public TypeDefinitionTranslation(Type type, ITranslationSettings settings)
         {
             _accessibility = GetAccessibility(type);
-            _modifier = GetModifier(type);
+            _modifiers = GetModifiers(type);
             _typeNameTranslatable = new TypeNameTranslation(type, settings);
 
             TranslationSize =
                 _accessibility.Length +
-                _modifier.Length +
+                _modifiers.Length +
                 _typeNameTranslatable.TranslationSize;
 
             FormattingSize =
@@ -86,7 +86,7 @@
             return string.Empty;
         }
 
-        private static string GetModifier(Type type)
+        private static string GetModifiers(Type type)
         {
             if (type.IsInterface())
             {
@@ -121,7 +121,7 @@
 
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifier);
+            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
 
             _typeNameTranslatable.WriteTo(writer);
         }
