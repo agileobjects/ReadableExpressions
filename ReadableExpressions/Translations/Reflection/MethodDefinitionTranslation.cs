@@ -3,6 +3,7 @@
     using System.Reflection;
     using Extensions;
     using Interfaces;
+    using NetStandardPolyfills;
     using static MethodTranslationHelpers;
 
     internal class MethodDefinitionTranslation : ITranslatable
@@ -92,6 +93,16 @@
             if (method.IsPropertyGetterOrSetterCall(out var property))
             {
                 return new PropertyDefinitionTranslation(property, method, settings);
+            }
+
+            if (method.IsImplicitOperator())
+            {
+                return new OperatorDefinitionTranslation(method, "implicit", settings);
+            }
+
+            if (method.IsExplicitOperator())
+            {
+                return new OperatorDefinitionTranslation(method, "explicit", settings);
             }
 
             return new MethodDefinitionTranslation(method, settings);

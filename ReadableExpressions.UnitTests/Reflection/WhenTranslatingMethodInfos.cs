@@ -321,6 +321,38 @@ public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TRe
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldTranslateAnImplicitOperator()
+        {
+            var toStringImplicitOperator = typeof(CustomAdder).GetImplicitOperator(o => o.To<string>());
+
+            var translated = toStringImplicitOperator.ToReadableString();
+
+            const string EXPECTED = @"
+public static implicit operator string
+(
+    WhenTranslatingMethodInfos.CustomAdder adder
+)";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnExplicitOperator()
+        {
+            var toIntExplicitOperator = typeof(CustomAdder).GetExplicitOperator(o => o.To<int>());
+
+            var translated = toIntExplicitOperator.ToReadableString();
+
+            const string EXPECTED = @"
+public static explicit operator int
+(
+    WhenTranslatingMethodInfos.CustomAdder adder
+)";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Classes
 
         // ReSharper disable once ClassWithVirtualMembersNeverInherited.Local
@@ -384,6 +416,12 @@ public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TRe
             public string InstanceParameterless() => null;
 
             public abstract string InstanceAbstractParameterless();
+        }
+
+        internal class CustomAdder
+        {
+            public static implicit operator string(CustomAdder adder) => adder.ToString();
+            public static explicit operator int(CustomAdder adder) => adder.GetHashCode();
         }
 
         #endregion
