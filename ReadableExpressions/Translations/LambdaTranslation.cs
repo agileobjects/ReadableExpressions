@@ -65,13 +65,13 @@
                 : parametersLineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            _parameters.WriteTo(buffer);
+            _parameters.WriteTo(writer);
 
-            buffer.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
+            writer.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
 
-            _bodyTranslation.WriteTo(buffer);
+            _bodyTranslation.WriteTo(writer);
         }
     }
 }

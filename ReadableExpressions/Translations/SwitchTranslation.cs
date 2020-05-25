@@ -196,11 +196,11 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteControlStatementToTranslation(_switch);
-            _valueTranslation.WriteInParentheses(buffer);
-            buffer.WriteOpeningBraceToTranslation();
+            writer.WriteControlStatementToTranslation(_switch);
+            _valueTranslation.WriteInParentheses(writer);
+            writer.WriteOpeningBraceToTranslation();
 
             for (var i = 0; ;)
             {
@@ -208,10 +208,10 @@
 
                 for (int j = 0, l = caseTestValueTranslations.Length; ;)
                 {
-                    buffer.WriteControlStatementToTranslation(_case);
-                    caseTestValueTranslations[j].WriteTo(buffer);
-                    buffer.WriteToTranslation(':');
-                    buffer.WriteNewLineToTranslation();
+                    writer.WriteControlStatementToTranslation(_case);
+                    caseTestValueTranslations[j].WriteTo(writer);
+                    writer.WriteToTranslation(':');
+                    writer.WriteNewLineToTranslation();
 
                     ++j;
 
@@ -221,7 +221,7 @@
                     }
                 }
 
-                WriteCaseBody(_caseTranslations[i], buffer);
+                WriteCaseBody(_caseTranslations[i], writer);
 
                 ++i;
 
@@ -230,43 +230,43 @@
                     break;
                 }
 
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
 
-            WriteDefaultIfPresent(buffer);
+            WriteDefaultIfPresent(writer);
 
-            buffer.WriteClosingBraceToTranslation();
+            writer.WriteClosingBraceToTranslation();
         }
 
-        private static void WriteCaseBody(ITranslation bodyTranslation, TranslationBuffer buffer)
+        private static void WriteCaseBody(ITranslation bodyTranslation, TranslationWriter writer)
         {
-            buffer.Indent();
+            writer.Indent();
 
-            bodyTranslation.WriteTo(buffer);
+            bodyTranslation.WriteTo(writer);
 
             if (WriteBreak(bodyTranslation))
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteControlStatementToTranslation("break;");
+                writer.WriteNewLineToTranslation();
+                writer.WriteControlStatementToTranslation("break;");
             }
 
-            buffer.Unindent();
+            writer.Unindent();
         }
 
-        private void WriteDefaultIfPresent(TranslationBuffer buffer)
+        private void WriteDefaultIfPresent(TranslationWriter writer)
         {
             if (_defaultCaseTranslation == null)
             {
                 return;
             }
 
-            buffer.WriteNewLineToTranslation();
-            buffer.WriteNewLineToTranslation();
-            buffer.WriteControlStatementToTranslation("default:");
-            buffer.WriteNewLineToTranslation();
+            writer.WriteNewLineToTranslation();
+            writer.WriteNewLineToTranslation();
+            writer.WriteControlStatementToTranslation("default:");
+            writer.WriteNewLineToTranslation();
 
-            WriteCaseBody(_defaultCaseTranslation, buffer);
+            WriteCaseBody(_defaultCaseTranslation, writer);
         }
 
         private static bool WriteBreak(ITranslation caseTranslation)

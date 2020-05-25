@@ -376,34 +376,34 @@
             }
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             switch (Count)
             {
                 case 0:
                     if (_parenthesesMode != ParenthesesMode.Never)
                     {
-                        buffer.WriteToTranslation(_openAndCloseParentheses);
+                        writer.WriteToTranslation(_openAndCloseParentheses);
                     }
 
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.Always):
-                    _parameterTranslations[0].WriteTo(buffer);
+                    _parameterTranslations[0].WriteTo(writer);
                     return;
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                buffer.WriteToTranslation('(');
+                writer.WriteToTranslation('(');
             }
 
             var writeParametersOnNewLines = WriteParametersOnNewLines();
 
             if (writeParametersOnNewLines)
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.Indent();
+                writer.WriteNewLineToTranslation();
+                writer.Indent();
             }
 
             for (var i = 0; ;)
@@ -415,7 +415,7 @@
                     parameterTranslation.WithoutStartingNewLine();
                 }
 
-                parameterTranslation.WriteTo(buffer);
+                parameterTranslation.WriteTo(writer);
                 ++i;
 
                 if (i == Count)
@@ -425,27 +425,27 @@
 
                 if (writeParametersOnNewLines)
                 {
-                    buffer.WriteToTranslation(',');
+                    writer.WriteToTranslation(',');
 
                     if (!_parameterTranslations[i].IsMultiStatement)
                     {
-                        buffer.WriteNewLineToTranslation();
+                        writer.WriteNewLineToTranslation();
                     }
 
                     continue;
                 }
 
-                buffer.WriteToTranslation(", ");
+                writer.WriteToTranslation(", ");
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                buffer.WriteToTranslation(')');
+                writer.WriteToTranslation(')');
             }
 
             if (writeParametersOnNewLines)
             {
-                buffer.Unindent();
+                writer.Unindent();
             }
         }
 
@@ -531,24 +531,24 @@
                 return parameterLineCount;
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteKeywordToTranslation(_out);
+                writer.WriteKeywordToTranslation(_out);
 
                 if (_declareParameterInline)
                 {
                     if (_typeNameTranslation != null)
                     {
-                        _typeNameTranslation.WriteTo(buffer);
-                        buffer.WriteSpaceToTranslation();
+                        _typeNameTranslation.WriteTo(writer);
+                        writer.WriteSpaceToTranslation();
                     }
                     else
                     {
-                        buffer.WriteKeywordToTranslation(_var);
+                        writer.WriteKeywordToTranslation(_var);
                     }
                 }
 
-                _parameterTranslation.WriteTo(buffer);
+                _parameterTranslation.WriteTo(writer);
             }
         }
 
@@ -576,10 +576,10 @@
 
             public int GetLineCount() => _parameterTranslation.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteKeywordToTranslation(_ref);
-                _parameterTranslation.WriteTo(buffer);
+                writer.WriteKeywordToTranslation(_ref);
+                _parameterTranslation.WriteTo(writer);
             }
         }
     }

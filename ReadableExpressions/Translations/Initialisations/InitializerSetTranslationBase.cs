@@ -102,25 +102,25 @@
             }
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (WriteToMultipleLines)
             {
-                buffer.WriteOpeningBraceToTranslation();
+                writer.WriteOpeningBraceToTranslation();
             }
             else
             {
-                if (!buffer.TranslationQuery(q => q.TranslationEndsWith(' ')))
+                if (!writer.TranslationQuery(q => q.TranslationEndsWith(' ')))
                 {
-                    buffer.WriteSpaceToTranslation();
+                    writer.WriteSpaceToTranslation();
                 }
 
-                buffer.WriteToTranslation("{ ");
+                writer.WriteToTranslation("{ ");
             }
 
             for (var i = 0; ;)
             {
-                _initializerTranslations[i].WriteTo(buffer);
+                _initializerTranslations[i].WriteTo(writer);
 
                 ++i;
 
@@ -131,21 +131,21 @@
 
                 if (WriteToMultipleLines)
                 {
-                    buffer.WriteToTranslation(',');
-                    buffer.WriteNewLineToTranslation();
+                    writer.WriteToTranslation(',');
+                    writer.WriteNewLineToTranslation();
                     continue;
                 }
 
-                buffer.WriteToTranslation(", ");
+                writer.WriteToTranslation(", ");
             }
 
             if (WriteToMultipleLines)
             {
-                buffer.WriteClosingBraceToTranslation();
+                writer.WriteClosingBraceToTranslation();
             }
             else
             {
-                buffer.WriteToTranslation(" }");
+                writer.WriteToTranslation(" }");
             }
         }
     }

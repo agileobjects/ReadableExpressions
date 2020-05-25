@@ -99,15 +99,15 @@
 
         public int GetLineCount() => _subject?.GetLineCount() ?? 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_subject != null)
             {
-                _subject.WriteInParenthesesIfRequired(buffer, _context);
-                buffer.WriteDotToTranslation();
+                _subject.WriteInParenthesesIfRequired(writer, _context);
+                writer.WriteDotToTranslation();
             }
 
-            buffer.WriteToTranslation(_memberName);
+            writer.WriteToTranslation(_memberName);
         }
     }
 }

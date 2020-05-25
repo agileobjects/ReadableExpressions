@@ -94,13 +94,13 @@
 
             public int GetLineCount() => _emptyArrayNewing.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteNewToTranslation();
-                _emptyArrayNewing.WriteTo(buffer);
-                buffer.WriteToTranslation('[');
-                buffer.WriteToTranslation(0);
-                buffer.WriteToTranslation(']');
+                writer.WriteNewToTranslation();
+                _emptyArrayNewing.WriteTo(writer);
+                writer.WriteToTranslation('[');
+                writer.WriteToTranslation(0);
+                writer.WriteToTranslation(']');
             }
         }
 
@@ -121,10 +121,10 @@
 
             public int GetLineCount() => 1;
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteKeywordToTranslation("new");
-                buffer.WriteToTranslation("[]");
+                writer.WriteKeywordToTranslation("new");
+                writer.WriteToTranslation("[]");
             }
         }
 
@@ -148,11 +148,11 @@
 
             public int GetLineCount() => _emptyArrayNewing.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteNewToTranslation();
-                _emptyArrayNewing.WriteTo(buffer);
-                buffer.WriteToTranslation("[]");
+                writer.WriteNewToTranslation();
+                _emptyArrayNewing.WriteTo(writer);
+                writer.WriteToTranslation("[]");
             }
         }
     }

@@ -302,7 +302,7 @@
             }
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_hasVariables)
             {
@@ -311,25 +311,25 @@
                     var parametersType = parametersByType.Key;
                     var parameters = parametersByType.Value;
 
-                    parametersType.WriteTo(buffer);
-                    buffer.WriteSpaceToTranslation();
-                    parameters.WriteTo(buffer);
-                    buffer.WriteToTranslation(';');
-                    buffer.WriteNewLineToTranslation();
+                    parametersType.WriteTo(writer);
+                    writer.WriteSpaceToTranslation();
+                    parameters.WriteTo(writer);
+                    writer.WriteToTranslation(';');
+                    writer.WriteNewLineToTranslation();
                 }
 
                 switch (_statements[0].NodeType)
                 {
                     case Conditional when !ConditionalTranslation.IsTernary(_statements[0].Expression):
                     case Switch:
-                        buffer.WriteNewLineToTranslation();
+                        writer.WriteNewLineToTranslation();
                         break;
                 }
             }
 
             for (var i = 0; ;)
             {
-                _statements[i].WriteTo(buffer);
+                _statements[i].WriteTo(writer);
 
                 ++i;
 
@@ -338,7 +338,7 @@
                     break;
                 }
 
-                buffer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
         }
 
@@ -435,34 +435,34 @@
                 return lineCount;
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                if ((_writeBlankLineBefore || buffer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
-                    !buffer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
+                if ((_writeBlankLineBefore || writer.TranslationQuery(q => q.TranslationEndsWith("};"))) &&
+                    !writer.TranslationQuery(q => q.TranslationEndsWithBlankLine()))
                 {
-                    buffer.WriteNewLineToTranslation();
+                    writer.WriteNewLineToTranslation();
                 }
 
                 if (_writeReturnKeyword)
                 {
-                    buffer.WriteReturnToTranslation();
+                    writer.WriteReturnToTranslation();
                 }
 
-                WriteStatementTo(buffer);
+                WriteStatementTo(writer);
 
                 if (UseFinalBlankLine)
                 {
-                    buffer.WriteNewLineToTranslation();
+                    writer.WriteNewLineToTranslation();
                 }
             }
 
-            protected virtual void WriteStatementTo(TranslationBuffer buffer)
+            protected virtual void WriteStatementTo(TranslationWriter writer)
             {
-                _statementTranslation.WriteTo(buffer);
+                _statementTranslation.WriteTo(writer);
 
                 if (_statementIsUnterminated && (DoNotTerminate == false))
                 {
-                    buffer.WriteToTranslation(';');
+                    writer.WriteToTranslation(';');
                 }
             }
 
@@ -527,20 +527,20 @@
 
             public override bool HasGoto => false;
 
-            protected override void WriteStatementTo(TranslationBuffer buffer)
+            protected override void WriteStatementTo(TranslationWriter writer)
             {
                 if (_typeNameTranslation != null)
                 {
-                    _typeNameTranslation.WriteTo(buffer);
+                    _typeNameTranslation.WriteTo(writer);
                 }
                 else
                 {
-                    buffer.WriteKeywordToTranslation(_var);
+                    writer.WriteKeywordToTranslation(_var);
                 }
 
-                buffer.WriteSpaceToTranslation();
+                writer.WriteSpaceToTranslation();
 
-                base.WriteStatementTo(buffer);
+                base.WriteStatementTo(writer);
             }
 
             public override bool WriteBlankLineAfter() => IsMultiStatement;

@@ -253,12 +253,9 @@
 
         public string GetTranslation()
         {
-            var estimatedSize = _root.TranslationSize + _root.FormattingSize + _root.GetIndentSize();
-            var buffer = new TranslationBuffer(_settings, estimatedSize);
+            var writer = new TranslationWriter(_settings, _root);
 
-            _root.WriteTo(buffer);
-
-            return buffer.GetContent();
+            return writer.GetContent();
         }
     }
 }

@@ -85,14 +85,14 @@
                        _binaryConditionRightTranslation.GetLineCount();
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(buffer, _context);
-                buffer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
-                buffer.WriteNewLineToTranslation();
-                buffer.Indent();
-                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(buffer, _context);
-                buffer.Unindent();
+                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(writer, _context);
+                writer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
+                writer.WriteNewLineToTranslation();
+                writer.Indent();
+                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(writer, _context);
+                writer.Unindent();
             }
         }
     }

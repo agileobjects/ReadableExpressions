@@ -65,10 +65,10 @@
 
             public int GetLineCount() => 1;
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteControlStatementToTranslation(_statement);
-                buffer.WriteToTranslation(';');
+                writer.WriteControlStatementToTranslation(_statement);
+                writer.WriteToTranslation(';');
             }
         }
 
@@ -98,11 +98,11 @@
 
             public int GetLineCount() => 1;
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteControlStatementToTranslation("goto ");
-                buffer.WriteToTranslation(_labelName);
-                buffer.WriteToTranslation(';');
+                writer.WriteControlStatementToTranslation("goto ");
+                writer.WriteToTranslation(_labelName);
+                writer.WriteToTranslation(';');
             }
         }
 
@@ -129,10 +129,10 @@
 
             public int GetLineCount() => _returnValueTranslation.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteReturnToTranslation();
-                _returnValueTranslation.WriteTo(buffer);
+                writer.WriteReturnToTranslation();
+                _returnValueTranslation.WriteTo(writer);
             }
         }
     }

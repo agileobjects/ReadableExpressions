@@ -66,18 +66,18 @@
 
         public int GetLineCount() => _operandTranslation.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_operatorIsSuffix == false)
             {
-                buffer.WriteToTranslation(_operator);
+                writer.WriteToTranslation(_operator);
             }
 
-            _operandTranslation?.WriteTo(buffer);
+            _operandTranslation?.WriteTo(writer);
 
             if (_operatorIsSuffix)
             {
-                buffer.WriteToTranslation(_operator);
+                writer.WriteToTranslation(_operator);
             }
         }
     }

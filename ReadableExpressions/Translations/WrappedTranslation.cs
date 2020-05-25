@@ -36,11 +36,11 @@
 
         public int GetLineCount() => _translation.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteToTranslation(_prefix);
-            _translation.WriteTo(buffer);
-            buffer.WriteToTranslation(_suffix);
+            writer.WriteToTranslation(_prefix);
+            _translation.WriteTo(writer);
+            writer.WriteToTranslation(_suffix);
         }
     }
 }

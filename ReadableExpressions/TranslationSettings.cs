@@ -7,7 +7,7 @@
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
     /// </summary>
-    public class TranslationSettings : ITranslationBufferSettings
+    public class TranslationSettings : ITranslationSettings
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
@@ -38,6 +38,8 @@
                 return this;
             }
         }
+
+        bool ITranslationSettings.FullyQualifyTypeNames => FullyQualifyTypeNames;
 
         internal bool FullyQualifyTypeNames { get; private set; }
 
@@ -139,6 +141,8 @@
             return this;
         }
 
+        Func<Type, string> ITranslationSettings.AnonymousTypeNameFactory => AnonymousTypeNameFactory;
+
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
 
         /// <summary>
@@ -170,7 +174,7 @@
             return this;
         }
 
-        string ITranslationBufferSettings.Indent => Indent;
+        string ITranslationSettings.Indent => Indent;
 
         internal string Indent { get; private set; }
 
@@ -189,7 +193,7 @@
             return this;
         }
 
-        ITranslationFormatter ITranslationBufferSettings.Formatter => Formatter;
+        ITranslationFormatter ITranslationSettings.Formatter => Formatter;
 
         internal ITranslationFormatter Formatter { get; private set; }
     }

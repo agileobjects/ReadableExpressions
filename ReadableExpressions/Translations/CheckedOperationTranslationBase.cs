@@ -14,7 +14,7 @@
 
         protected bool IsCheckedOperation { get; }
 
-        protected void WriteOpeningCheckedIfNecessary(TranslationBuffer buffer, out bool isMultiStatementChecked)
+        protected void WriteOpeningCheckedIfNecessary(TranslationWriter writer, out bool isMultiStatementChecked)
         {
             if (IsCheckedOperation == false)
             {
@@ -22,22 +22,22 @@
                 return;
             }
 
-            buffer.WriteKeywordToTranslation("checked");
+            writer.WriteKeywordToTranslation("checked");
 
             isMultiStatementChecked = IsMultiStatement();
 
             if (isMultiStatementChecked)
             {
-                buffer.WriteOpeningBraceToTranslation();
+                writer.WriteOpeningBraceToTranslation();
                 return;
             }
 
-            buffer.WriteToTranslation(_openingSymbol);
+            writer.WriteToTranslation(_openingSymbol);
         }
 
         protected abstract bool IsMultiStatement();
 
-        protected void WriteClosingCheckedIfNecessary(TranslationBuffer buffer, bool isMultiStatementChecked)
+        protected void WriteClosingCheckedIfNecessary(TranslationWriter writer, bool isMultiStatementChecked)
         {
             if (IsCheckedOperation == false)
             {
@@ -46,11 +46,11 @@
 
             if (isMultiStatementChecked)
             {
-                buffer.WriteClosingBraceToTranslation();
+                writer.WriteClosingBraceToTranslation();
                 return;
             }
 
-            buffer.WriteToTranslation(_closingSymbol);
+            writer.WriteToTranslation(_closingSymbol);
         }
     }
 }

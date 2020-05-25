@@ -33,10 +33,10 @@
 
         public int GetLineCount() => _operand.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            _operand.WriteTo(buffer);
-            buffer.WriteToTranslation(_length);
+            _operand.WriteTo(writer);
+            writer.WriteToTranslation(_length);
         }
     }
 }

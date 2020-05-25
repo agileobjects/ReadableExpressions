@@ -41,6 +41,6 @@
 
         public int GetLineCount() => _baseTranslatable.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer) => _baseTranslatable.WriteTo(buffer);
+        public void WriteTo(TranslationWriter writer) => _baseTranslatable.WriteTo(writer);
     }
 }

@@ -166,11 +166,11 @@
                     _testedTypeNameTranslation.GetLineCount());
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _testedValueTranslation.WriteTo(buffer);
-                buffer.WriteKeywordToTranslation(_test);
-                _testedTypeNameTranslation.WriteTo(buffer);
+                _testedValueTranslation.WriteTo(writer);
+                writer.WriteKeywordToTranslation(_test);
+                _testedTypeNameTranslation.WriteTo(writer);
             }
         }
 
@@ -235,10 +235,10 @@
                     _castValueTranslation.GetLineCount());
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _castTypeNameTranslation.WriteInParentheses(buffer);
-                _castValueTranslation.WriteTo(buffer);
+                _castTypeNameTranslation.WriteInParentheses(writer);
+                _castValueTranslation.WriteTo(writer);
             }
         }
     }

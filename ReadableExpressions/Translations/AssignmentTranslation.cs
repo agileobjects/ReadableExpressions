@@ -185,20 +185,20 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
-            _targetTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation(_operator);
+            WriteOpeningCheckedIfNecessary(writer, out var isMultiStatementChecked);
+            _targetTranslation.WriteTo(writer);
+            writer.WriteToTranslation(_operator);
 
             if (_suppressSpaceBeforeValue == false)
             {
-                buffer.WriteSpaceToTranslation();
+                writer.WriteSpaceToTranslation();
             }
 
-            _valueTranslation.WriteTo(buffer);
+            _valueTranslation.WriteTo(writer);
 
-            WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
+            WriteClosingCheckedIfNecessary(writer, isMultiStatementChecked);
         }
     }
 }

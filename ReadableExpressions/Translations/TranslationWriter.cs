@@ -9,14 +9,7 @@
     using Interfaces;
     using static Formatting.TokenType;
 
-    internal interface ITranslationBufferSettings
-    {
-        ITranslationFormatter Formatter { get; }
-
-        string Indent { get; }
-    }
-
-    internal class TranslationBuffer : ITranslationQuery
+    internal class TranslationWriter : ITranslationQuery
     {
         private readonly ITranslationFormatter _formatter;
         private readonly string _indent;
@@ -27,12 +20,23 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationBuffer(ITranslationBufferSettings settings, int estimatedSize)
+        public TranslationWriter(ITranslationSettings settings, ITranslatable translatable)
+            : this(
+                settings.Formatter,
+                settings.Indent,
+                translatable.TranslationSize +
+                translatable.FormattingSize +
+                translatable.GetIndentSize())
+        {
+            translatable.WriteTo(this);
+        }
+
+        public TranslationWriter(ITranslationSettings settings, int estimatedSize)
             : this(settings.Formatter, settings.Indent, estimatedSize)
         {
         }
 
-        public TranslationBuffer(
+        public TranslationWriter(
             ITranslationFormatter formatter,
             string indent,
             int estimatedSize)

@@ -233,22 +233,22 @@
                 return lineCount;
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _subjectTranslation.WriteInParenthesesIfRequired(buffer, _context);
+                _subjectTranslation.WriteInParenthesesIfRequired(writer, _context);
 
                 if (_isPartOfMethodCallChain)
                 {
-                    buffer.WriteNewLineToTranslation();
-                    buffer.Indent();
+                    writer.WriteNewLineToTranslation();
+                    writer.Indent();
                 }
 
-                buffer.WriteDotToTranslation();
-                _methodInvocationTranslation.WriteTo(buffer);
+                writer.WriteDotToTranslation();
+                _methodInvocationTranslation.WriteTo(writer);
 
                 if (_isPartOfMethodCallChain)
                 {
-                    buffer.Unindent();
+                    writer.Unindent();
                 }
             }
         }
@@ -353,25 +353,25 @@
 
             public int GetLineCount() => _parameters.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteToTranslation(_method.Name, TokenType.MethodName);
-                WriteGenericArgumentNamesIfNecessary(buffer);
-                _parameters.WriteTo(buffer);
+                writer.WriteToTranslation(_method.Name, TokenType.MethodName);
+                WriteGenericArgumentNamesIfNecessary(writer);
+                _parameters.WriteTo(writer);
             }
 
-            private void WriteGenericArgumentNamesIfNecessary(TranslationBuffer buffer)
+            private void WriteGenericArgumentNamesIfNecessary(TranslationWriter writer)
             {
                 if (_explicitGenericArgumentCount == 0)
                 {
                     return;
                 }
 
-                buffer.WriteToTranslation('<');
+                writer.WriteToTranslation('<');
 
                 for (var i = 0; ;)
                 {
-                    _explicitGenericArguments[i].WriteTo(buffer);
+                    _explicitGenericArguments[i].WriteTo(writer);
 
                     ++i;
 
@@ -380,10 +380,10 @@
                         break;
                     }
 
-                    buffer.WriteToTranslation(", ");
+                    writer.WriteToTranslation(", ");
                 }
 
-                buffer.WriteToTranslation('>');
+                writer.WriteToTranslation('>');
             }
         }
     }

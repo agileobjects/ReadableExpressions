@@ -314,7 +314,7 @@
             const string EXPECTED = @"
 public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TResult>
 (
-    IQueryable<TSource> source,
+    this IQueryable<TSource> source,
     Expression<Func<TSource, int, IEnumerable<TCollection>>> collectionSelector,
     Expression<Func<TSource, TCollection, TResult>> resultSelector
 )";

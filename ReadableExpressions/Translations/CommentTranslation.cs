@@ -34,7 +34,7 @@
 
         public int GetLineCount() => _comment.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
-            => buffer.WriteToTranslation(_comment, TokenType.Comment);
+        public void WriteTo(TranslationWriter writer)
+            => writer.WriteToTranslation(_comment, TokenType.Comment);
     }
 }

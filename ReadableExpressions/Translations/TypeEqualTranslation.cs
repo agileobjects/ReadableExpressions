@@ -113,11 +113,11 @@
                     _typeNameTranslation.GetLineCount());
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _operandTranslation.WriteTo(buffer);
-                buffer.WriteKeywordToTranslation(_typeOf);
-                _typeNameTranslation.WriteInParentheses(buffer);
+                _operandTranslation.WriteTo(writer);
+                writer.WriteKeywordToTranslation(_typeOf);
+                _typeNameTranslation.WriteInParentheses(writer);
             }
         }
     }

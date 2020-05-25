@@ -31,10 +31,10 @@
 
         public int GetLineCount() => _typeNameTranslation.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteKeywordToTranslation("typeof");
-            _typeNameTranslation.WriteInParentheses(buffer);
+            writer.WriteKeywordToTranslation("typeof");
+            _typeNameTranslation.WriteInParentheses(writer);
         }
     }
 }

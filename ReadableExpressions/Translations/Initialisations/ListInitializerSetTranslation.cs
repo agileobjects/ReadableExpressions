@@ -83,13 +83,13 @@
             public int GetLineCount()
                 => _translations.GetLineCount(_argumentCount);
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteToTranslation("{ ");
+                writer.WriteToTranslation("{ ");
 
                 for (var i = 0; ;)
                 {
-                    _translations[i].WriteTo(buffer);
+                    _translations[i].WriteTo(writer);
 
                     ++i;
 
@@ -98,10 +98,10 @@
                         break;
                     }
 
-                    buffer.WriteToTranslation(", ");
+                    writer.WriteToTranslation(", ");
                 }
 
-                buffer.WriteToTranslation(" }");
+                writer.WriteToTranslation(" }");
             }
         }
     }

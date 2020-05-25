@@ -72,11 +72,11 @@
                 : Parameters.GetLineCount();
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteNewToTranslation();
-            _typeNameTranslation.WriteTo(buffer);
-            Parameters.WriteTo(buffer);
+            writer.WriteNewToTranslation();
+            _typeNameTranslation.WriteTo(writer);
+            Parameters.WriteTo(writer);
         }
 
         public Type Type => _typeNameTranslation.Type;

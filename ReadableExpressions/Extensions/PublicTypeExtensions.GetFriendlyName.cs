@@ -30,7 +30,7 @@
             TranslationSettings translationSettings,
             ITranslationFormatter formatter)
         {
-            var buffer = new TranslationBuffer(
+            var buffer = new TranslationWriter(
                 formatter,
                 translationSettings.Indent,
                 (type.FullName ?? type.ToString()).Length);
@@ -40,25 +40,25 @@
             return buffer.GetContent();
         }
 
-        internal static void WriteFriendlyName(this TranslationBuffer buffer, Type type)
-            => WriteFriendlyName(buffer, type, TranslationSettings.Default);
+        internal static void WriteFriendlyName(this TranslationWriter writer, Type type)
+            => WriteFriendlyName(writer, type, TranslationSettings.Default);
 
         internal static void WriteFriendlyName(
-            this TranslationBuffer buffer,
+            this TranslationWriter writer,
             Type type,
-            TranslationSettings settings)
+            ITranslationSettings settings)
         {
             if (type.FullName == null)
             {
                 if (type.IsGenericType())
                 {
                     // A generic open generic parameter Type:
-                    buffer.WriteGenericTypeName(type, settings);
+                    writer.WriteGenericTypeName(type, settings);
                 }
                 else
                 {
                     // An open generic parameter Type:
-                    buffer.WriteToTranslation(type.Name, InterfaceName);
+                    writer.WriteToTranslation(type.Name, InterfaceName);
                 }
 
                 return;
@@ -66,8 +66,8 @@
 
             if (type.IsArray)
             {
-                buffer.WriteFriendlyName(type.GetElementType(), settings);
-                buffer.WriteToTranslation("[]");
+                writer.WriteFriendlyName(type.GetElementType(), settings);
+                writer.WriteToTranslation("[]");
                 return;
             }
 
@@ -77,24 +77,24 @@
 
                 if (type.IsNested)
                 {
-                    buffer.WriteFriendlyName(type.DeclaringType, settings);
-                    buffer.WriteDotToTranslation();
+                    writer.WriteFriendlyName(type.DeclaringType, settings);
+                    writer.WriteDotToTranslation();
 
-                    if (!WriteSubstituteToTranslation(substitutedTypeName, buffer))
+                    if (!WriteSubstituteToTranslation(substitutedTypeName, writer))
                     {
-                        buffer.WriteTypeName(type);
+                        writer.WriteTypeName(type);
                     }
 
                     return;
                 }
 
-                if (WriteSubstituteToTranslation(substitutedTypeName, buffer))
+                if (WriteSubstituteToTranslation(substitutedTypeName, writer))
                 {
                     return;
                 }
 
-                buffer.WriteTypeNamespaceIfRequired(type, settings);
-                buffer.WriteTypeName(type);
+                writer.WriteTypeNamespaceIfRequired(type, settings);
+                writer.WriteTypeName(type);
                 return;
             }
 
@@ -102,71 +102,71 @@
 
             if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) == null)
             {
-                buffer.WriteGenericTypeName(type, settings);
+                writer.WriteGenericTypeName(type, settings);
                 return;
             }
 
-            buffer.WriteFriendlyName(underlyingNullableType, settings);
-            buffer.WriteToTranslation('?');
+            writer.WriteFriendlyName(underlyingNullableType, settings);
+            writer.WriteToTranslation('?');
         }
 
         private static bool WriteSubstituteToTranslation(
             string substitutedTypeName,
-            TranslationBuffer buffer)
+            TranslationWriter writer)
         {
             if (substitutedTypeName == null)
             {
                 return false;
             }
 
-            buffer.WriteKeywordToTranslation(substitutedTypeName);
+            writer.WriteKeywordToTranslation(substitutedTypeName);
             return true;
         }
 
         private static void WriteTypeNamespaceIfRequired(
-            this TranslationBuffer buffer,
+            this TranslationWriter writer,
             Type type,
-            TranslationSettings settings)
+            ITranslationSettings settings)
         {
             if (!settings.FullyQualifyTypeNames || (type.Namespace == null))
             {
                 return;
             }
 
-            buffer.WriteToTranslation(type.Namespace);
-            buffer.WriteDotToTranslation();
+            writer.WriteToTranslation(type.Namespace);
+            writer.WriteDotToTranslation();
         }
 
-        private static void WriteTypeName(this TranslationBuffer buffer, Type type)
+        private static void WriteTypeName(this TranslationWriter writer, Type type)
         {
             var tokenType = type.IsClass() ? TypeName : InterfaceName;
-            buffer.WriteToTranslation(type.Name, tokenType);
+            writer.WriteToTranslation(type.Name, tokenType);
         }
 
         private static void WriteGenericTypeName(
-            this TranslationBuffer buffer,
+            this TranslationWriter writer,
             Type genericType,
-            TranslationSettings settings)
+            ITranslationSettings settings)
         {
-            new GenericTypeNameWriter(buffer, settings).WriteGenericTypeName(genericType);
+            new GenericTypeNameWriter(writer, settings).WriteGenericTypeName(genericType);
         }
 
         private class GenericTypeNameWriter : GenericTypeNameWriterBase
         {
-            private readonly TranslationBuffer _buffer;
-            private readonly TranslationSettings _settings;
+            private readonly TranslationWriter _writer;
+            private readonly ITranslationSettings _settings;
 
-            public GenericTypeNameWriter(TranslationBuffer buffer, TranslationSettings settings)
+            public GenericTypeNameWriter(TranslationWriter writer, ITranslationSettings settings)
             {
-                _buffer = buffer;
+                _writer = writer;
                 _settings = settings;
             }
 
             protected override void WriteTypeName(string name)
-                => _buffer.WriteTypeNameToTranslation(name);
+                => _writer.WriteTypeNameToTranslation(name);
 
             protected override void WriteInterfaceName(string name)
-                => _buffer.WriteToTranslation(name, InterfaceName);
+                => _writer.WriteToTranslation(name, InterfaceName);
 
             protected override bool TryWriteCustomAnonTypeName(Type anonType)
             {
@@ -175,27 +175,27 @@
                     return base.TryWriteCustomAnonTypeName(anonType);
                 }
 
-                _buffer.WriteToTranslation(_settings.AnonymousTypeNameFactory.Invoke(anonType));
+                _writer.WriteToTranslation(_settings.AnonymousTypeNameFactory.Invoke(anonType));
                 return true;
             }
 
             protected override void WriteTypeArgumentNamePrefix()
-                => _buffer.WriteToTranslation('<');
+                => _writer.WriteToTranslation('<');
 
             protected override void WriteTypeName(Type type)
-                => _buffer.WriteFriendlyName(type, _settings);
+                => _writer.WriteFriendlyName(type, _settings);
 
             protected override void WriteTypeArgumentNameSeparator()
-                => _buffer.WriteToTranslation(", ");
+                => _writer.WriteToTranslation(", ");
 
             protected override void WriteTypeArgumentNameSuffix()
-                => _buffer.WriteToTranslation('>');
+                => _writer.WriteToTranslation('>');
 
             protected override void WriteTypeNamePrefix(Type genericType)
-                => _buffer.WriteTypeNamespaceIfRequired(genericType, _settings);
+                => _writer.WriteTypeNamespaceIfRequired(genericType, _settings);
 
             protected override void WriteNestedTypeNamesSeparator()
-                => _buffer.WriteDotToTranslation();
+                => _writer.WriteDotToTranslation();
         }
     }
 }

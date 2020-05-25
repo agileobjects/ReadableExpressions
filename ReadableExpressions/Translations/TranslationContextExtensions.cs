@@ -26,21 +26,24 @@
         }
 
         public static int GetKeywordFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Keyword);
+            => context.Settings.GetKeywordFormattingSize();
+
+        public static int GetKeywordFormattingSize(this ITranslationSettings settings)
+            => settings.GetFormattingSize(TokenType.Keyword);
 
         public static int GetControlStatementFormattingSize(this ITranslationContext context)
             => context.GetFormattingSize(TokenType.ControlStatement);
 
         public static int GetTypeNameFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.TypeName);
+            => context.Settings.GetTypeNameFormattingSize();
 
-        public static int GetVariableFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Variable);
-
-        public static int GetNumericFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Numeric);
+        public static int GetTypeNameFormattingSize(this ITranslationSettings settings)
+            => settings.GetFormattingSize(TokenType.TypeName);
 
         public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
-            => context.Settings.Formatter.GetFormattingSize(tokenType);
+            => context.Settings.GetFormattingSize(tokenType);
+
+        public static int GetFormattingSize(this ITranslationSettings settings, TokenType tokenType)
+            => settings.Formatter.GetFormattingSize(tokenType);
     }
 }

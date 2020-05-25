@@ -13,17 +13,22 @@
     internal class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
-        private readonly TranslationSettings _translationSettings;
+        private readonly ITranslationSettings _settings;
         private readonly bool _isObject;
         private bool _writeObjectTypeName;
 
         public TypeNameTranslation(Type type, ITranslationContext context)
+            : this(type, context.Settings)
+        {
+        }
+
+        public TypeNameTranslation(Type type, ITranslationSettings settings)
         {
             Type = type;
-            _translationSettings = context.Settings;
+            _settings = settings;
             _isObject = type == typeof(object);
 
-            var typeNameFormattingSize = context.GetTypeNameFormattingSize();
+            var typeNameFormattingSize = settings.GetTypeNameFormattingSize();
 
             if (_isObject)
             {
@@ -74,7 +79,7 @@
             translationSize += type.GetSubstitutionOrNull()?.Length ?? type.Name.Length;
             formattingSize += typeNameFormattingSize;
 
-            if (_translationSettings.FullyQualifyTypeNames && (type.Namespace != null))
+            if (_settings.FullyQualifyTypeNames && (type.Namespace != null))
             {
                 translationSize += type.Namespace.Length;
             }
@@ -114,21 +119,21 @@
 
         public int GetLineCount() => 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_isObject)
             {
                 if (_writeObjectTypeName)
                 {
-                    buffer.WriteTypeNameToTranslation("Object");
+                    writer.WriteTypeNameToTranslation("Object");
                     return;
                 }
 
-                buffer.WriteKeywordToTranslation(_object);
+                writer.WriteKeywordToTranslation(_object);
                 return;
             }
 
-            buffer.WriteFriendlyName(Type, _translationSettings);
+            writer.WriteFriendlyName(Type, _settings);
         }
     }
 }

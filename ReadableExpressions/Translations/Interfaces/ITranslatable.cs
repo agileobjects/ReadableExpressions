@@ -10,6 +10,6 @@
 
         int GetLineCount();
 
-        void WriteTo(TranslationBuffer buffer);
+        void WriteTo(TranslationWriter writer);
     }
 }

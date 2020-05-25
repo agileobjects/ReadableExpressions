@@ -63,11 +63,11 @@
 
         public int GetLineCount() => _subjectTranslation.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            _subjectTranslation.WriteTo(buffer);
-            buffer.WriteDotToTranslation();
-            buffer.WriteToTranslation(_subjectMethodName, MethodName);
+            _subjectTranslation.WriteTo(writer);
+            writer.WriteDotToTranslation();
+            writer.WriteToTranslation(_subjectMethodName, MethodName);
         }
     }
 }

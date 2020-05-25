@@ -73,19 +73,19 @@
             return initializersLineCount == 1 ? 1 : initializersLineCount + 1;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             _initializers.IsLongTranslation = TranslationSize > 40;
 
-            buffer.WriteNewToTranslation();
+            writer.WriteNewToTranslation();
 
             if (_typeName.Length != 0)
             {
-                buffer.WriteTypeNameToTranslation(_typeName);
-                buffer.WriteSpaceToTranslation();
+                writer.WriteTypeNameToTranslation(_typeName);
+                writer.WriteSpaceToTranslation();
             }
 
-            _initializers.WriteTo(buffer);
+            _initializers.WriteTo(writer);
         }
 
         private class AnonymousTypeInitializerTranslation : ITranslation
@@ -115,11 +115,11 @@
 
             public int GetLineCount() => _value.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteToTranslation(_memberName);
-                buffer.WriteToTranslation(" = ");
-                _value.WriteTo(buffer);
+                writer.WriteToTranslation(_memberName);
+                writer.WriteToTranslation(" = ");
+                _value.WriteTo(writer);
             }
         }
 

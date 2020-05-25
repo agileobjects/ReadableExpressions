@@ -29,11 +29,11 @@
 
         public int GetLineCount() => 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteTypeNameToTranslation("DBNull");
-            buffer.WriteDotToTranslation();
-            buffer.WriteToTranslation("Value");
+            writer.WriteTypeNameToTranslation("DBNull");
+            writer.WriteDotToTranslation();
+            writer.WriteToTranslation("Value");
         }
     }
 }
