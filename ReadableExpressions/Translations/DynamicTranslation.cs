@@ -14,6 +14,7 @@
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
+    using Reflection;
 
     internal static class DynamicTranslation
     {

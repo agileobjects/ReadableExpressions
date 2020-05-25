@@ -12,24 +12,6 @@
 
     internal static class TranslationExtensions
     {
-        public static int GetKeywordFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Keyword);
-
-        public static int GetControlStatementFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.ControlStatement);
-
-        public static int GetTypeNameFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.TypeName);
-
-        public static int GetVariableFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Variable);
-
-        public static int GetNumericFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Numeric);
-
-        public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
-            => context.Settings.Formatter.GetFormattingSize(tokenType);
-
         public static int GetLineCount<TTranslatable>(
             this IList<TTranslatable> translations,
             int translationsCount)

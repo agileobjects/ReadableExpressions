@@ -13,6 +13,7 @@
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
+    using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else

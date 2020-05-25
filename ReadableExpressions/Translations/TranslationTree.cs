@@ -81,12 +81,6 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
-        TypeNameTranslation ITranslationContext.GetTranslationFor(Type type)
-            => new TypeNameTranslation(type, this);
-
-        CodeBlockTranslation ITranslationContext.GetCodeBlockTranslationFor(Expression expression)
-            => new CodeBlockTranslation(GetTranslationFor(expression), this);
-
         public ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)

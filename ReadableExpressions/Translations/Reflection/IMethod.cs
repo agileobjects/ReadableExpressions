@@ -1,4 +1,4 @@
-namespace AgileObjects.ReadableExpressions.Translations.Interfaces
+namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
     using System.Reflection;
