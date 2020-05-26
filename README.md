@@ -105,3 +105,10 @@ string readable = myExpression
     .ToReadableString(c => c.TranslateConstantsUsing(
         (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
 ```
+
+To specify a custom string for code indenting, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.IndentUsing("\t"));
+```
