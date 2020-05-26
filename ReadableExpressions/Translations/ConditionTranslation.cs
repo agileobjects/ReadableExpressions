@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal static class ConditionTranslation
     {
@@ -77,7 +76,7 @@
             {
                 return _binaryConditionLeftTranslation.GetIndentSize() +
                        _binaryConditionRightTranslation.GetIndentSize() + 
-                       _binaryConditionRightTranslation.GetLineCount() * IndentLength;
+                       _binaryConditionRightTranslation.GetLineCount() * _context.Settings.IndentLength;
             }
 
             public int GetLineCount()
@@ -86,14 +85,14 @@
                        _binaryConditionRightTranslation.GetLineCount();
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(buffer, _context);
-                buffer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
-                buffer.WriteNewLineToTranslation();
-                buffer.Indent();
-                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(buffer, _context);
-                buffer.Unindent();
+                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(writer, _context);
+                writer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
+                writer.WriteNewLineToTranslation();
+                writer.Indent();
+                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(writer, _context);
+                writer.Unindent();
             }
         }
     }

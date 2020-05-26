@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
 {
-    using System;
     using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -104,10 +103,6 @@
         /// </returns>
         int? GetUnnamedVariableNumberOrNull(ParameterExpression variable);
 
-        TypeNameTranslation GetTranslationFor(Type type);
-
         ITranslation GetTranslationFor(Expression expression);
-
-        CodeBlockTranslation GetCodeBlockTranslationFor(Expression expression);
     }
 }

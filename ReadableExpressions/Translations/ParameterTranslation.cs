@@ -37,7 +37,7 @@
                 _parameterName = parameterName;
 
                 TranslationSize = _parameterName.Length;
-                FormattingSize = context.GetVariableFormattingSize();
+                FormattingSize = context.GetFormattingSize(Variable);
             }
 
             public ExpressionType NodeType => ExpressionType.Parameter;
@@ -70,15 +70,15 @@
 
             public int GetLineCount() => _typeNameTranslation?.GetLineCount() ?? 1;
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
                 if (_typeNameTranslation != null)
                 {
-                    _typeNameTranslation.WriteTo(buffer);
-                    buffer.WriteSpaceToTranslation();
+                    _typeNameTranslation.WriteTo(writer);
+                    writer.WriteSpaceToTranslation();
                 }
 
-                buffer.WriteToTranslation(_parameterName, Variable);
+                writer.WriteToTranslation(_parameterName, Variable);
             }
         }
 

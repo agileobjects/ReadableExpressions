@@ -44,17 +44,17 @@
         public int GetLineCount()
             => (_thrownItemTranslation?.GetLineCount() + 1).GetValueOrDefault();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteKeywordToTranslation(_throw);
+            writer.WriteKeywordToTranslation(_throw);
 
             if (_thrownItemTranslation == null)
             {
                 return;
             }
 
-            buffer.WriteSpaceToTranslation();
-            _thrownItemTranslation.WriteTo(buffer);
+            writer.WriteSpaceToTranslation();
+            _thrownItemTranslation.WriteTo(writer);
         }
     }
 }

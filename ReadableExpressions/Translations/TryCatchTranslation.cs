@@ -223,10 +223,10 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteKeywordToTranslation("try");
-            _bodyTranslation.WriteTo(buffer);
+            writer.WriteKeywordToTranslation("try");
+            _bodyTranslation.WriteTo(writer);
 
             switch (_catchBlockCount)
             {
@@ -234,13 +234,13 @@
                     break;
 
                 case 1:
-                    _catchBlockTranslations[0].WriteTo(buffer);
+                    _catchBlockTranslations[0].WriteTo(writer);
                     break;
 
                 default:
                     for (var i = 0; ;)
                     {
-                        _catchBlockTranslations[i].WriteTo(buffer);
+                        _catchBlockTranslations[i].WriteTo(writer);
 
                         ++i;
 
@@ -255,16 +255,16 @@
 
             if (_hasFault)
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteKeywordToTranslation("fault");
-                _faultTranslation.WriteTo(buffer);
+                writer.WriteNewLineToTranslation();
+                writer.WriteKeywordToTranslation("fault");
+                _faultTranslation.WriteTo(writer);
             }
 
             if (_hasFinally)
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteKeywordToTranslation("finally");
-                _finallyTranslation.WriteTo(buffer);
+                writer.WriteNewLineToTranslation();
+                writer.WriteKeywordToTranslation("finally");
+                _finallyTranslation.WriteTo(writer);
             }
         }
 
@@ -303,12 +303,12 @@
 
             public int GetLineCount() => _catchBodyTranslation.GetLineCount() + 1;
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteKeywordToTranslation("catch");
-                _exceptionClause?.WriteTo(buffer);
-                _catchBodyTranslation.WriteTo(buffer);
+                writer.WriteNewLineToTranslation();
+                writer.WriteKeywordToTranslation("catch");
+                _exceptionClause?.WriteTo(writer);
+                _catchBodyTranslation.WriteTo(writer);
             }
 
             private static ITranslatable GetExceptionClauseOrNullFor(CatchBlock catchBlock, ITranslationContext context)
@@ -345,13 +345,13 @@
 
                 public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 
-                public virtual void WriteTo(TranslationBuffer buffer)
+                public virtual void WriteTo(TranslationWriter writer)
                 {
-                    buffer.WriteToTranslation(" (");
-                    _exceptionTypeTranslation.WriteTo(buffer);
-                    buffer.WriteSpaceToTranslation();
-                    buffer.WriteToTranslation(_variableName, Variable);
-                    buffer.WriteToTranslation(')');
+                    writer.WriteToTranslation(" (");
+                    _exceptionTypeTranslation.WriteTo(writer);
+                    writer.WriteSpaceToTranslation();
+                    writer.WriteToTranslation(_variableName, Variable);
+                    writer.WriteToTranslation(')');
                 }
             }
 
@@ -371,11 +371,11 @@
 
                 public override int FormattingSize { get; }
 
-                public override void WriteTo(TranslationBuffer buffer)
+                public override void WriteTo(TranslationWriter writer)
                 {
-                    base.WriteTo(buffer);
-                    buffer.WriteKeywordToTranslation(" when ");
-                    _filterTranslation.WriteTo(buffer);
+                    base.WriteTo(writer);
+                    writer.WriteKeywordToTranslation(" when ");
+                    _filterTranslation.WriteTo(writer);
                 }
             }
 
@@ -397,10 +397,10 @@
 
                 public int GetLineCount() => _exceptionTypeTranslation.GetLineCount();
 
-                public void WriteTo(TranslationBuffer buffer)
+                public void WriteTo(TranslationWriter writer)
                 {
-                    buffer.WriteSpaceToTranslation();
-                    _exceptionTypeTranslation.WriteInParentheses(buffer);
+                    writer.WriteSpaceToTranslation();
+                    _exceptionTypeTranslation.WriteInParentheses(writer);
                 }
             }
 

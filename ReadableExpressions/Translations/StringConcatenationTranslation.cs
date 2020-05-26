@@ -85,7 +85,7 @@
         public int GetLineCount()
             => _operandTranslations.GetLineCount(_operandCount);
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             for (var i = 0; ;)
             {
@@ -93,11 +93,11 @@
 
                 if ((operandTranslation.NodeType == ExpressionType.Conditional) || operandTranslation.IsAssignment())
                 {
-                    operandTranslation.WriteInParentheses(buffer);
+                    operandTranslation.WriteInParentheses(writer);
                 }
                 else
                 {
-                    operandTranslation.WriteTo(buffer);
+                    operandTranslation.WriteTo(writer);
                 }
 
                 ++i;
@@ -107,7 +107,7 @@
                     break;
                 }
 
-                buffer.WriteToTranslation(" + ");
+                writer.WriteToTranslation(" + ");
             }
         }
     }

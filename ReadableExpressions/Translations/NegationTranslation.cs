@@ -52,10 +52,10 @@
 
         public int GetLineCount() => _negatedValue.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteToTranslation(_operator);
-            _negatedValue.WriteInParenthesesIfRequired(buffer, _context);
+            writer.WriteToTranslation(_operator);
+            _negatedValue.WriteInParenthesesIfRequired(writer, _context);
         }
     }
 }

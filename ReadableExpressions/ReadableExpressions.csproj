@@ -15,10 +15,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     
-    <AssemblyVersion>2.4.1.0</AssemblyVersion>
-    <FileVersion>2.4.1.0</FileVersion>
-    <VersionPrefix>2.4.1</VersionPrefix>
-    <Version>2.4.1</Version>
+    <AssemblyVersion>2.5.0.0</AssemblyVersion>
+    <FileVersion>2.5.0.0</FileVersion>
+    <VersionPrefix>2.5.0</VersionPrefix>
+    <Version>2.5.0</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
@@ -32,7 +32,9 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Updating to NetStandardPolyfills v1.4.1
+    <PackageReleaseNotes>- Wrapping long anonymous type translations
+- Support for using custom indents
+- Fixing formatted primitive variable names, re: #74
 - Performance improvements
     </PackageReleaseNotes>
   </PropertyGroup>

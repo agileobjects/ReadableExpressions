@@ -42,10 +42,10 @@
 
         public int GetLineCount() => _quotedLambdaTranslation.GetLineCount() + 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteNewLineToTranslation();
-            _quotedLambdaTranslation.WriteTo(buffer);
+            writer.WriteNewLineToTranslation();
+            _quotedLambdaTranslation.WriteTo(writer);
         }
     }
 }

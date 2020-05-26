@@ -12,7 +12,6 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class AssignmentTranslation :
         CheckedOperationTranslationBase,
@@ -20,6 +19,7 @@
         IPotentialSelfTerminatingTranslatable
     {
         private readonly ITranslation _targetTranslation;
+        private readonly TranslationSettings _settings;
         private readonly string _operator;
         private readonly ITranslation _valueTranslation;
         private bool _suppressSpaceBeforeValue;
@@ -27,10 +27,17 @@
         public AssignmentTranslation(BinaryExpression assignment, ITranslationContext context)
             : this(
                 assignment.NodeType,
-                context.GetCodeBlockTranslationFor(assignment.Left),
+                GetTargetTranslation(assignment.Left, context),
                 assignment.Right,
                 context)
         {
+        }
+
+        private static ITranslation GetTargetTranslation(Expression target, ITranslationContext context)
+        {
+            return (target.NodeType == Parameter)
+                ? context.GetTranslationFor(target)
+                : context.GetCodeBlockTranslationFor(target);
         }
 
         public AssignmentTranslation(
@@ -42,6 +49,7 @@
         {
             NodeType = nodeType;
             _targetTranslation = targetTranslation;
+            _settings = context.Settings;
             _operator = GetOperatorOrNull(nodeType);
             _valueTranslation = GetValueTranslation(value, context);
             TranslationSize = GetTranslationSize();
@@ -153,8 +161,8 @@
             if (IsCheckedOperation && IsMultiStatement())
             {
                 indentSize +=
-                    _targetTranslation.GetLineCount() * IndentLength +
-                    _valueTranslation.GetLineCount() * IndentLength;
+                    _targetTranslation.GetLineCount() * _settings.IndentLength +
+                    _valueTranslation.GetLineCount() * _settings.IndentLength;
             }
 
             return indentSize;
@@ -177,20 +185,20 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
-            _targetTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation(_operator);
+            WriteOpeningCheckedIfNecessary(writer, out var isMultiStatementChecked);
+            _targetTranslation.WriteTo(writer);
+            writer.WriteToTranslation(_operator);
 
             if (_suppressSpaceBeforeValue == false)
             {
-                buffer.WriteSpaceToTranslation();
+                writer.WriteSpaceToTranslation();
             }
 
-            _valueTranslation.WriteTo(buffer);
+            _valueTranslation.WriteTo(writer);
 
-            WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
+            WriteClosingCheckedIfNecessary(writer, isMultiStatementChecked);
         }
     }
 }

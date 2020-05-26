@@ -12,24 +12,26 @@
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
+    using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class ParameterSetTranslation : ITranslatable
     {
         private const int _splitArgumentsThreshold = 3;
         private const string _openAndCloseParentheses = "()";
 
+        private readonly TranslationSettings _settings;
         private readonly IList<CodeBlockTranslation> _parameterTranslations;
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
         public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
+            _settings = context.Settings;
             _parameterTranslations = new[] { new CodeBlockTranslation(parameter, context) };
             TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
             FormattingSize = parameter.FormattingSize;
@@ -73,6 +75,7 @@
             int count,
             ITranslationContext context)
         {
+            _settings = context.Settings;
             _parenthesesMode = ParenthesesMode.Auto;
 
             if (count == 0)
@@ -266,7 +269,7 @@
 
         public int FormattingSize { get; }
 
-        private int Count { get; set; }
+        public int Count { get; set; }
 
         public bool None => Count == 0;
 
@@ -313,6 +316,7 @@
 
             var indentSize = 0;
             var writeParametersOnNewLines = WriteParametersOnNewLines();
+            var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
             {
@@ -321,7 +325,7 @@
 
                 if (writeParametersOnNewLines)
                 {
-                    parameterIndentSize += parameter.GetLineCount() * IndentLength;
+                    parameterIndentSize += parameter.GetLineCount() * indentLength;
                 }
 
                 indentSize += parameterIndentSize;
@@ -372,34 +376,34 @@
             }
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             switch (Count)
             {
                 case 0:
                     if (_parenthesesMode != ParenthesesMode.Never)
                     {
-                        buffer.WriteToTranslation(_openAndCloseParentheses);
+                        writer.WriteToTranslation(_openAndCloseParentheses);
                     }
 
                     return;
 
                 case 1 when (_parenthesesMode != ParenthesesMode.Always):
-                    _parameterTranslations[0].WriteTo(buffer);
+                    _parameterTranslations[0].WriteTo(writer);
                     return;
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                buffer.WriteToTranslation('(');
+                writer.WriteToTranslation('(');
             }
 
             var writeParametersOnNewLines = WriteParametersOnNewLines();
 
             if (writeParametersOnNewLines)
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.Indent();
+                writer.WriteNewLineToTranslation();
+                writer.Indent();
             }
 
             for (var i = 0; ;)
@@ -411,7 +415,7 @@
                     parameterTranslation.WithoutStartingNewLine();
                 }
 
-                parameterTranslation.WriteTo(buffer);
+                parameterTranslation.WriteTo(writer);
                 ++i;
 
                 if (i == Count)
@@ -421,27 +425,27 @@
 
                 if (writeParametersOnNewLines)
                 {
-                    buffer.WriteToTranslation(',');
+                    writer.WriteToTranslation(',');
 
                     if (!_parameterTranslations[i].IsMultiStatement)
                     {
-                        buffer.WriteNewLineToTranslation();
+                        writer.WriteNewLineToTranslation();
                     }
 
                     continue;
                 }
 
-                buffer.WriteToTranslation(", ");
+                writer.WriteToTranslation(", ");
             }
 
             if (_parenthesesMode != ParenthesesMode.Never)
             {
-                buffer.WriteToTranslation(')');
+                writer.WriteToTranslation(')');
             }
 
             if (writeParametersOnNewLines)
             {
-                buffer.Unindent();
+                writer.Unindent();
             }
         }
 
@@ -527,24 +531,24 @@
                 return parameterLineCount;
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteKeywordToTranslation(_out);
+                writer.WriteKeywordToTranslation(_out);
 
                 if (_declareParameterInline)
                 {
                     if (_typeNameTranslation != null)
                     {
-                        _typeNameTranslation.WriteTo(buffer);
-                        buffer.WriteSpaceToTranslation();
+                        _typeNameTranslation.WriteTo(writer);
+                        writer.WriteSpaceToTranslation();
                     }
                     else
                     {
-                        buffer.WriteKeywordToTranslation(_var);
+                        writer.WriteKeywordToTranslation(_var);
                     }
                 }
 
-                _parameterTranslation.WriteTo(buffer);
+                _parameterTranslation.WriteTo(writer);
             }
         }
 
@@ -572,10 +576,10 @@
 
             public int GetLineCount() => _parameterTranslation.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteKeywordToTranslation(_ref);
-                _parameterTranslation.WriteTo(buffer);
+                writer.WriteKeywordToTranslation(_ref);
+                _parameterTranslation.WriteTo(writer);
             }
         }
     }

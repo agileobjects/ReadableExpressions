@@ -78,12 +78,12 @@
 
         public int GetLineCount() => _labelValueTranslation?.GetLineCount() ?? 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_labelIsNamed)
             {
-                buffer.WriteToTranslation(_labelName);
-                buffer.WriteToTranslation(':');
+                writer.WriteToTranslation(_labelName);
+                writer.WriteToTranslation(':');
             }
 
             if (_labelHasNoValue)
@@ -91,9 +91,9 @@
                 return;
             }
 
-            buffer.WriteReturnToTranslation();
-            _labelValueTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation(';');
+            writer.WriteReturnToTranslation();
+            _labelValueTranslation.WriteTo(writer);
+            writer.WriteToTranslation(';');
         }
     }
 }

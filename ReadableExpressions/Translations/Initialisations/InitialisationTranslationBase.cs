@@ -86,12 +86,12 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             _initializerTranslations.IsLongTranslation = TranslationSize > 40;
 
-            _newingTranslation.WriteTo(buffer);
-            _initializerTranslations.WriteTo(buffer);
+            _newingTranslation.WriteTo(writer);
+            _initializerTranslations.WriteTo(writer);
         }
     }
 }

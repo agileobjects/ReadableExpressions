@@ -12,7 +12,6 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static Constants;
 
     internal class BinaryTranslation : CheckedOperationTranslationBase, ITranslation
     {
@@ -139,9 +138,11 @@
 
             if (IsCheckedOperation && IsMultiStatement())
             {
+                var indentLength = _context.Settings.IndentLength;
+
                 indentSize +=
-                    _leftOperandTranslation.GetLineCount() * IndentLength +
-                    _rightOperandTranslation.GetLineCount() * IndentLength;
+                    _leftOperandTranslation.GetLineCount() * indentLength +
+                    _rightOperandTranslation.GetLineCount() * indentLength;
             }
 
             return indentSize;
@@ -177,13 +178,13 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            WriteOpeningCheckedIfNecessary(buffer, out var isMultiStatementChecked);
-            _leftOperandTranslation.WriteInParenthesesIfRequired(buffer, _context);
-            buffer.WriteToTranslation(_operator);
-            _rightOperandTranslation.WriteInParenthesesIfRequired(buffer, _context);
-            WriteClosingCheckedIfNecessary(buffer, isMultiStatementChecked);
+            WriteOpeningCheckedIfNecessary(writer, out var isMultiStatementChecked);
+            _leftOperandTranslation.WriteInParenthesesIfRequired(writer, _context);
+            writer.WriteToTranslation(_operator);
+            _rightOperandTranslation.WriteInParenthesesIfRequired(writer, _context);
+            WriteClosingCheckedIfNecessary(writer, isMultiStatementChecked);
         }
 
         protected override bool IsMultiStatement()
@@ -257,15 +258,15 @@
 
             public int GetLineCount() => _operandTranslation.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
                 if (_standaloneBoolean.IsComparisonToTrue)
                 {
-                    _operandTranslation.WriteTo(buffer);
+                    _operandTranslation.WriteTo(writer);
                     return;
                 }
 
-                NegationTranslation.ForNot(_operandTranslation, _context).WriteTo(buffer);
+                NegationTranslation.ForNot(_operandTranslation, _context).WriteTo(writer);
             }
 
             private class StandaloneBoolean

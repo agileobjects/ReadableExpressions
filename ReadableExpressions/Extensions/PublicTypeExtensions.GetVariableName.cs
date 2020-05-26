@@ -2,6 +2,7 @@
 {
     using System;
     using NetStandardPolyfills;
+    using Translations.Formatting;
     using static ExpressionExtensions;
 
     public static partial class PublicTypeExtensions
@@ -58,7 +59,11 @@
         }
 
         private static string GetBaseVariableName(Type namingType, TranslationSettings translationSettings)
-            => namingType.IsPrimitive() ? namingType.GetFriendlyName(translationSettings) : namingType.Name;
+        {
+            return namingType.IsPrimitive()
+                ? namingType.GetFriendlyName(translationSettings, NullTranslationFormatter.Instance)
+                : namingType.Name;
+        }
 
         private static string GetGenericTypeVariableName(Type namingType, TranslationSettings settings)
         {
@@ -71,8 +76,8 @@
             }
 
             var writer = new GenericVariableNameWriter(settings);
-            writer.WriteGenericTypeName(namingType);
-            
+            writer.WriteGenericTypeName(namingType, genericTypeArguments);
+
             return writer.TypeName;
         }
 

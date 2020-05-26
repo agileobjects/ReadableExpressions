@@ -15,14 +15,14 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class TranslationTree : ITranslationContext
+    internal class ExpressionTreeTranslation : ITranslationContext
     {
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public TranslationTree(Expression expression, TranslationSettings settings)
+        public ExpressionTreeTranslation(Expression expression, TranslationSettings settings)
         {
             _settings = settings;
             _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
@@ -80,12 +80,6 @@
 
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
-
-        TypeNameTranslation ITranslationContext.GetTranslationFor(Type type)
-            => new TypeNameTranslation(type, this);
-
-        CodeBlockTranslation ITranslationContext.GetCodeBlockTranslationFor(Expression expression)
-            => new CodeBlockTranslation(GetTranslationFor(expression), this);
 
         public ITranslation GetTranslationFor(Expression expression)
         {
@@ -259,12 +253,9 @@
 
         public string GetTranslation()
         {
-            var estimatedSize = _root.TranslationSize + _root.FormattingSize + _root.GetIndentSize();
-            var buffer = new TranslationBuffer(_settings.Formatter, estimatedSize);
+            var writer = new TranslationWriter(_settings, _root);
 
-            _root.WriteTo(buffer);
-
-            return buffer.GetContent();
+            return writer.GetContent();
         }
     }
 }

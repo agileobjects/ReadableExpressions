@@ -86,13 +86,13 @@
                 return bindingsLineCount;
             }
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
                 _initializerSetTranslation.IsLongTranslation = _parent.IsLongTranslation;
 
-                buffer.WriteToTranslation(_subjectName);
-                buffer.WriteToTranslation(" =");
-                _initializerSetTranslation.WriteTo(buffer);
+                writer.WriteToTranslation(_subjectName);
+                writer.WriteToTranslation(" =");
+                _initializerSetTranslation.WriteTo(writer);
             }
         }
 
@@ -116,11 +116,11 @@
 
             public int GetLineCount() => _valueTranslation.GetLineCount();
 
-            public void WriteTo(TranslationBuffer buffer)
+            public void WriteTo(TranslationWriter writer)
             {
-                buffer.WriteToTranslation(_memberName);
-                buffer.WriteToTranslation(" = ");
-                _valueTranslation.WriteTo(buffer);
+                writer.WriteToTranslation(_memberName);
+                writer.WriteToTranslation(" = ");
+                _valueTranslation.WriteTo(writer);
             }
         }
     }

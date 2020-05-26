@@ -33,6 +33,30 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             translated.ShouldBe("<span class=\"kw\">new </span><span class=\"tn\">Object</span>()");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/74
+        [Fact]
+        public void ShouldFormatAnUnnamedAnonymousTypeVariableAssignment()
+        {
+            var anonType = new { ValueBool = default(bool), ValueInt = default(int) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(bool), typeof(int));
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, Constant(true), Constant(1001));
+            var variable = Variable(anonType);
+            var assignment = Assign(variable, creation);
+
+            var translated = ToReadableHtmlString(assignment);
+
+            const string EXPECTED = @"
+<span class=""vb"">anonymousType_Bool_Int</span> = <span class=""kw"">new </span>
+{
+    ValueBool = <span class=""kw"">true</span>,
+    ValueInt = <span class=""nm"">1001</span>
+}";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         [Fact]
         public void ShouldFormatAnAssignment()
         {
@@ -224,12 +248,45 @@ Two:
                 "<span class=\"kw\">ref </span><span class=\"vb\">value</span>)");
         }
 
+        [Fact]
+        public void ShouldSupportCustomIndentsUsingTabs()
+        {
+            var anonType = new { String1 = default(string), String2 = default(string), String3 = default(string) }.GetType();
+            var constructor = anonType.GetPublicInstanceConstructor(typeof(string), typeof(string), typeof(string));
+
+            var longArgument = Constant("My, what a long argument value!");
+
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var creation = New(constructor, longArgument, longArgument, longArgument);
+
+            const string INDENT = "\t";
+
+            var translated = ToReadableHtmlString(creation, s => s.IndentUsing(INDENT));
+
+            var expected = @$"
+<span class=""kw"">new </span>
+{{
+{INDENT}String1 = <span class=""tx"">""My, what a long argument value!""</span>,
+{INDENT}String2 = <span class=""tx"">""My, what a long argument value!""</span>,
+{INDENT}String3 = <span class=""tx"">""My, what a long argument value!""</span>
+}}".TrimStart();
+
+            translated.ShouldBe(expected);
+        }
+
         #region Helper Members
 
-        private static string ToReadableHtmlString(Expression expression)
+        private static string ToReadableHtmlString(
+            Expression expression,
+            Func<TranslationSettings, TranslationSettings> configuration = null)
         {
-            return expression.ToReadableString(settings => settings
-                .FormatUsing(TranslationHtmlFormatter.Instance));
+            return expression.ToReadableString(settings =>
+            {
+                configuration?.Invoke(settings);
+
+                return settings
+                    .FormatUsing(TranslationHtmlFormatter.Instance);
+            });
         }
 
         private class Address

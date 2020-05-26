@@ -271,12 +271,12 @@
 
             var translated = method.ToReadableString();
 
-            const string EXPECTED =
-@"public static string WhenTranslatingMethodInfos.Helper.StaticOutParameter
+            const string EXPECTED = @"
+public static string WhenTranslatingMethodInfos.Helper.StaticOutParameter
 (
     out int value
 )";
-            translated.ShouldBe(EXPECTED);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -288,12 +288,29 @@
 
             var translated = method.ToReadableString();
 
-            const string EXPECTED =
-@"public static void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
+            const string EXPECTED = @"
+public static void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
 (
     ref List<List<int>> value
 )";
-            translated.ShouldBe(EXPECTED);
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAParamsParameter()
+        {
+            var method = typeof(ParamsHelper)
+                .GetPublicStaticMethod(nameof(ParamsHelper.OptionalParams));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public static string ParamsHelper.OptionalParams
+(
+    string value,
+    params string[] stringsToAdd
+)";
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/61
@@ -314,11 +331,113 @@
             const string EXPECTED = @"
 public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TResult>
 (
-    IQueryable<TSource> source,
+    this IQueryable<TSource> source,
     Expression<Func<TSource, int, IEnumerable<TCollection>>> collectionSelector,
     Expression<Func<TSource, TCollection, TResult>> resultSelector
 )";
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnImplicitOperator()
+        {
+            var toStringImplicitOperator = typeof(CustomAdder).GetImplicitOperator(o => o.To<string>());
+
+            var translated = toStringImplicitOperator.ToReadableString();
+
+            const string EXPECTED = @"
+public static implicit operator string
+(
+    WhenTranslatingMethodInfos.CustomAdder adder
+)";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnExplicitOperator()
+        {
+            var toIntExplicitOperator = typeof(CustomAdder).GetExplicitOperator(o => o.To<int>());
+
+            var translated = toIntExplicitOperator.ToReadableString();
+
+            const string EXPECTED = @"
+public static explicit operator int
+(
+    WhenTranslatingMethodInfos.CustomAdder adder
+)";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticProperty()
+        {
+            var publicInstanceProperty = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic));
+
+            publicInstanceProperty.ShouldNotBeNull();
+
+            var translated = publicInstanceProperty.ToReadableString();
+
+            translated.ShouldBe("public static int PropertiesHelper.PublicStatic { get; set; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInstanceProperty()
+        {
+            var nonPublicInstanceProperty = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter));
+
+            nonPublicInstanceProperty.ShouldNotBeNull();
+
+            var translated = nonPublicInstanceProperty.ToReadableString();
+
+            translated.ShouldBe(
+                "public virtual int PropertiesHelper.NonPublicInstanceSetter { get; internal set; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInstancePropertyGetter()
+        {
+            var publicInstanceGetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetGetter();
+
+            publicInstanceGetter.ShouldNotBeNull();
+
+            var translated = publicInstanceGetter.ToReadableString();
+
+            translated.ShouldBe("public int PropertiesHelper.PublicInstance { get; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticPropertySetter()
+        {
+            var publicStaticSetter = typeof(PropertiesHelper)
+                .GetNonPublicStaticProperty(nameof(PropertiesHelper.NonPublicStatic))
+                .GetSetter(nonPublic: true);
+
+            publicStaticSetter.ShouldNotBeNull();
+
+            var translated = publicStaticSetter.ToReadableString();
+
+            translated.ShouldBe("internal static int PropertiesHelper.NonPublicStatic { set; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnNonPublicInstancePropertySetter()
+        {
+            var nonPublicInstanceSetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter))
+                .GetSetter(nonPublic: true);
+
+            nonPublicInstanceSetter.ShouldNotBeNull();
+
+            var translated = nonPublicInstanceSetter.ToReadableString();
+
+            translated.ShouldBe(
+                "public virtual int PropertiesHelper.NonPublicInstanceSetter { internal set; }");
         }
 
         #region Helper Classes
@@ -384,6 +503,12 @@ public static IQueryable<TResult> Queryable.SelectMany<TSource, TCollection, TRe
             public string InstanceParameterless() => null;
 
             public abstract string InstanceAbstractParameterless();
+        }
+
+        internal class CustomAdder
+        {
+            public static implicit operator string(CustomAdder adder) => adder.ToString();
+            public static explicit operator int(CustomAdder adder) => adder.GetHashCode();
         }
 
         #endregion

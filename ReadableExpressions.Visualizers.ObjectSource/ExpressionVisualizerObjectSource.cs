@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.ObjectSource
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -29,16 +28,19 @@
             switch (target)
             {
                 case Expression expression:
-                    return Translate(expression);
+                    return expression.ToReadableString(ApplyDialogSettings);
 
                 case Type type:
                     return Translate(type);
 
-                case MethodInfo method:
-                    return method.ToReadableString(s => s.FormatUsing(_htmlFormatter));
-
                 case ConstructorInfo ctor:
-                    return ctor.ToReadableString(s => s.FormatUsing(_htmlFormatter));
+                    return ctor.ToReadableString(ApplyDialogSettings);
+
+                case MethodInfo method:
+                    return method.ToReadableString(ApplyDialogSettings);
+
+                case PropertyInfo property:
+                    return property.ToReadableString(ApplyDialogSettings);
 
                 default:
                     if (target == null)
@@ -50,21 +52,19 @@
             }
         }
 
-        private static string Translate(Type type)
+        private static string Translate(Type type) 
+            => type.ToReadableString(ApplyDialogSettings);
+
+        private static TranslationFormattingSettings ApplyDialogSettings(
+            TranslationFormattingSettings settings)
         {
-            return type.GetFriendlyName(settings => GetDialogSettings()
-                .Update(settings)
-                .FormatUsing(_htmlFormatter));
+            return settings
+                .FormatUsing(_htmlFormatter)
+                .IndentUsing(GetDialogSettings().Indent);
         }
 
-        private static string Translate(Expression expression)
-        {
-            Debug.WriteLine("Translating: " + expression);
-
-            return expression.ToReadableString(settings => GetDialogSettings()
-                .Update(settings)
-                .FormatUsing(_htmlFormatter));
-        }
+        private static TranslationSettings ApplyDialogSettings(TranslationSettings settings) 
+            => GetDialogSettings().Update(settings.FormatUsing(_htmlFormatter));
 
         private static VisualizerDialogSettings GetDialogSettings()
             => VisualizerDialogSettings.GetInstance();

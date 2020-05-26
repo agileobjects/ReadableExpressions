@@ -108,17 +108,17 @@
             }
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteNewToTranslation();
-            _typeNameTranslation.WriteTo(buffer);
-            buffer.WriteToTranslation('[');
+            writer.WriteNewToTranslation();
+            _typeNameTranslation.WriteTo(writer);
+            writer.WriteToTranslation('[');
 
             if (_boundTranslationCount != 0)
             {
                 for (var i = 0; ;)
                 {
-                    _boundTranslations[i].WriteTo(buffer);
+                    _boundTranslations[i].WriteTo(writer);
 
                     ++i;
 
@@ -127,11 +127,11 @@
                         break;
                     }
 
-                    buffer.WriteToTranslation("[]");
+                    writer.WriteToTranslation("[]");
                 }
             }
 
-            buffer.WriteToTranslation(']');
+            writer.WriteToTranslation(']');
         }
     }
 }

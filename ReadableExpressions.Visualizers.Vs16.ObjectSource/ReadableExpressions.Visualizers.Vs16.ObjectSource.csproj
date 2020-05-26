@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.ObjectSource.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\net2.0&quot; /Y&#xD;&#xA;xcopy &quot;$(SolutionDir)$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netstandard2.0&quot; /Y" />
+    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.NetStandardPolyfills.dll $(TargetDir)AgileObjects.ReadableExpressions.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.ObjectSource.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\net2.0&quot; /Y&#xD;&#xA;xcopy &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers\netstandard2.0&quot; /Y" />
   </Target>
 
 </Project>

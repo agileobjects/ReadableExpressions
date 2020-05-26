@@ -12,24 +12,6 @@
 
     internal static class TranslationExtensions
     {
-        public static int GetKeywordFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Keyword);
-
-        public static int GetControlStatementFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.ControlStatement);
-
-        public static int GetTypeNameFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.TypeName);
-
-        public static int GetVariableFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Variable);
-
-        public static int GetNumericFormattingSize(this ITranslationContext context)
-            => context.GetFormattingSize(TokenType.Numeric);
-
-        public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
-            => context.Settings.Formatter.GetFormattingSize(tokenType);
-
         public static int GetLineCount<TTranslatable>(
             this IList<TTranslatable> translations,
             int translationsCount)
@@ -99,48 +81,48 @@
         public static ITranslation WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
             => new ModifiedTranslation(translatable, nodeType, type);
 
-        public static void WriteOpeningBraceToTranslation(this TranslationBuffer buffer, bool startOnNewLine = true)
+        public static void WriteOpeningBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
         {
-            if (startOnNewLine && buffer.TranslationQuery(q => !q.TranslationEndsWith('{')))
+            if (startOnNewLine && writer.TranslationQuery(q => !q.TranslationEndsWith('{')))
             {
-                buffer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
 
-            buffer.WriteToTranslation('{');
-            buffer.WriteNewLineToTranslation();
-            buffer.Indent();
+            writer.WriteToTranslation('{');
+            writer.WriteNewLineToTranslation();
+            writer.Indent();
         }
 
-        public static void WriteClosingBraceToTranslation(this TranslationBuffer buffer, bool startOnNewLine = true)
+        public static void WriteClosingBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
         {
             if (startOnNewLine)
             {
-                buffer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
 
-            buffer.Unindent();
-            buffer.WriteToTranslation('}');
+            writer.Unindent();
+            writer.WriteToTranslation('}');
         }
 
-        public static void WriteInParentheses(this ITranslation translation, TranslationBuffer buffer)
+        public static void WriteInParentheses(this ITranslation translation, TranslationWriter writer)
         {
-            buffer.WriteToTranslation('(');
-            translation.WriteTo(buffer);
-            buffer.WriteToTranslation(')');
+            writer.WriteToTranslation('(');
+            translation.WriteTo(writer);
+            writer.WriteToTranslation(')');
         }
 
         public static void WriteInParenthesesIfRequired(
             this ITranslation translation,
-            TranslationBuffer buffer,
+            TranslationWriter writer,
             ITranslationContext context)
         {
             if (ShouldWriteInParentheses(translation))
             {
-                translation.WriteInParentheses(buffer);
+                translation.WriteInParentheses(writer);
                 return;
             }
 
-            new CodeBlockTranslation(translation, context).WriteTo(buffer);
+            new CodeBlockTranslation(translation, context).WriteTo(writer);
         }
 
         public static bool ShouldWriteInParentheses(this ITranslation translation)
@@ -150,25 +132,25 @@
                     CastTranslation.IsCast(translation.NodeType);
         }
 
-        public static void WriteNewToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteKeywordToTranslation("new ");
+        public static void WriteNewToTranslation(this TranslationWriter writer)
+            => writer.WriteKeywordToTranslation("new ");
 
-        public static void WriteSpaceToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteToTranslation(' ');
+        public static void WriteSpaceToTranslation(this TranslationWriter writer)
+            => writer.WriteToTranslation(' ');
 
-        public static void WriteDotToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteToTranslation('.');
+        public static void WriteDotToTranslation(this TranslationWriter writer)
+            => writer.WriteToTranslation('.');
 
-        public static void WriteReturnToTranslation(this TranslationBuffer buffer)
-            => buffer.WriteControlStatementToTranslation("return ");
+        public static void WriteReturnToTranslation(this TranslationWriter writer)
+            => writer.WriteControlStatementToTranslation("return ");
 
-        public static void WriteControlStatementToTranslation(this TranslationBuffer buffer, string statement)
-            => buffer.WriteToTranslation(statement, TokenType.ControlStatement);
+        public static void WriteControlStatementToTranslation(this TranslationWriter writer, string statement)
+            => writer.WriteToTranslation(statement, TokenType.ControlStatement);
 
-        public static void WriteKeywordToTranslation(this TranslationBuffer buffer, string keyword)
-            => buffer.WriteToTranslation(keyword, TokenType.Keyword);
+        public static void WriteKeywordToTranslation(this TranslationWriter writer, string keyword)
+            => writer.WriteToTranslation(keyword, TokenType.Keyword);
 
-        public static void WriteTypeNameToTranslation(this TranslationBuffer buffer, string name)
-            => buffer.WriteToTranslation(name, TokenType.TypeName);
+        public static void WriteTypeNameToTranslation(this TranslationWriter writer, string name)
+            => writer.WriteToTranslation(name, TokenType.TypeName);
     }
 }

@@ -82,12 +82,12 @@
                 : subjectLineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            _subject.WriteTo(buffer);
-            buffer.WriteToTranslation('[');
-            _parameters.WithoutParentheses().WriteTo(buffer);
-            buffer.WriteToTranslation(']');
+            _subject.WriteTo(writer);
+            writer.WriteToTranslation('[');
+            _parameters.WithoutParentheses().WriteTo(writer);
+            writer.WriteToTranslation(']');
         }
     }
 }

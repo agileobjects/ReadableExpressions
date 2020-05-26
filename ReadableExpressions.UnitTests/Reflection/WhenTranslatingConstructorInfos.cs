@@ -123,10 +123,10 @@
         [Fact]
         public void ShouldTranslateAThreeParametersTwoGenericsCtorInfo()
         {
-            var method = typeof(Helper<DateTime, TimeSpan>)
+            var ctor = typeof(Helper<DateTime, TimeSpan>)
                 .GetPublicInstanceConstructor(typeof(int), typeof(Func<int, DateTime>), typeof(TimeSpan));
 
-            var translated = method.ToReadableString();
+            var translated = ctor.ToReadableString();
 
             const string EXPECTED =
 @"public WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>

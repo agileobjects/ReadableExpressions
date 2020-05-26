@@ -51,7 +51,7 @@
 
         public int GetLineCount() => _value.GetLineCount();
 
-        public void WriteTo(TranslationBuffer buffer)
-            => buffer.WriteToTranslation(_value, _tokenType);
+        public void WriteTo(TranslationWriter writer)
+            => writer.WriteToTranslation(_value, _tokenType);
     }
 }

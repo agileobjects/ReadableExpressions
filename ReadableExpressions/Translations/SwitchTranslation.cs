@@ -7,13 +7,13 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private const string _switch = "switch ";
         private const string _case = "case ";
 
+        private readonly TranslationSettings _settings;
         private readonly ITranslation _valueTranslation;
         private readonly ITranslation[][] _caseTestValueTranslations;
         private readonly ITranslation[] _caseTranslations;
@@ -22,6 +22,7 @@
 
         public SwitchTranslation(SwitchExpression switchStatement, ITranslationContext context)
         {
+            _settings = context.Settings;
             Type = switchStatement.Type;
             _valueTranslation = context.GetTranslationFor(switchStatement.SwitchValue);
 
@@ -120,17 +121,18 @@
         public int GetIndentSize()
         {
             var indentSize = 0;
+            var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
             {
-                indentSize += _caseTestValueTranslations[i].Length * IndentLength;
+                indentSize += _caseTestValueTranslations[i].Length * indentLength;
 
                 var caseTranslation = _caseTranslations[i];
-                indentSize += caseTranslation.GetLineCount() * IndentLength * 2;
+                indentSize += caseTranslation.GetLineCount() * indentLength * 2;
 
                 if (WriteBreak(caseTranslation))
                 {
-                    indentSize += IndentLength * 2;
+                    indentSize += indentLength * 2;
                 }
 
                 ++i;
@@ -143,12 +145,12 @@
 
             if (_defaultCaseTranslation != null)
             {
-                indentSize += IndentLength;
-                indentSize += _defaultCaseTranslation.GetLineCount() * IndentLength * 2;
+                indentSize += indentLength;
+                indentSize += _defaultCaseTranslation.GetLineCount() * indentLength * 2;
 
                 if (WriteBreak(_defaultCaseTranslation))
                 {
-                    indentSize += IndentLength * 2;
+                    indentSize += indentLength * 2;
                 }
             }
 
@@ -194,11 +196,11 @@
             return lineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteControlStatementToTranslation(_switch);
-            _valueTranslation.WriteInParentheses(buffer);
-            buffer.WriteOpeningBraceToTranslation();
+            writer.WriteControlStatementToTranslation(_switch);
+            _valueTranslation.WriteInParentheses(writer);
+            writer.WriteOpeningBraceToTranslation();
 
             for (var i = 0; ;)
             {
@@ -206,10 +208,10 @@
 
                 for (int j = 0, l = caseTestValueTranslations.Length; ;)
                 {
-                    buffer.WriteControlStatementToTranslation(_case);
-                    caseTestValueTranslations[j].WriteTo(buffer);
-                    buffer.WriteToTranslation(':');
-                    buffer.WriteNewLineToTranslation();
+                    writer.WriteControlStatementToTranslation(_case);
+                    caseTestValueTranslations[j].WriteTo(writer);
+                    writer.WriteToTranslation(':');
+                    writer.WriteNewLineToTranslation();
 
                     ++j;
 
@@ -219,7 +221,7 @@
                     }
                 }
 
-                WriteCaseBody(_caseTranslations[i], buffer);
+                WriteCaseBody(_caseTranslations[i], writer);
 
                 ++i;
 
@@ -228,43 +230,43 @@
                     break;
                 }
 
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
 
-            WriteDefaultIfPresent(buffer);
+            WriteDefaultIfPresent(writer);
 
-            buffer.WriteClosingBraceToTranslation();
+            writer.WriteClosingBraceToTranslation();
         }
 
-        private static void WriteCaseBody(ITranslation bodyTranslation, TranslationBuffer buffer)
+        private static void WriteCaseBody(ITranslation bodyTranslation, TranslationWriter writer)
         {
-            buffer.Indent();
+            writer.Indent();
 
-            bodyTranslation.WriteTo(buffer);
+            bodyTranslation.WriteTo(writer);
 
             if (WriteBreak(bodyTranslation))
             {
-                buffer.WriteNewLineToTranslation();
-                buffer.WriteControlStatementToTranslation("break;");
+                writer.WriteNewLineToTranslation();
+                writer.WriteControlStatementToTranslation("break;");
             }
 
-            buffer.Unindent();
+            writer.Unindent();
         }
 
-        private void WriteDefaultIfPresent(TranslationBuffer buffer)
+        private void WriteDefaultIfPresent(TranslationWriter writer)
         {
             if (_defaultCaseTranslation == null)
             {
                 return;
             }
 
-            buffer.WriteNewLineToTranslation();
-            buffer.WriteNewLineToTranslation();
-            buffer.WriteControlStatementToTranslation("default:");
-            buffer.WriteNewLineToTranslation();
+            writer.WriteNewLineToTranslation();
+            writer.WriteNewLineToTranslation();
+            writer.WriteControlStatementToTranslation("default:");
+            writer.WriteNewLineToTranslation();
 
-            WriteCaseBody(_defaultCaseTranslation, buffer);
+            WriteCaseBody(_defaultCaseTranslation, writer);
         }
 
         private static bool WriteBreak(ITranslation caseTranslation)

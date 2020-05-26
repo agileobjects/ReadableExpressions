@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using static Constants;
 
     internal class CodeBlockTranslation :
         ITranslation,
@@ -162,13 +161,14 @@
 
             if (_indentContents || _writeBraces)
             {
-                var translationIndentSize = _translation.GetLineCount() * IndentLength;
+                var indentLength = _context.Settings.IndentLength;
+                var translationIndentSize = _translation.GetLineCount() * indentLength;
 
                 indentSize += translationIndentSize;
 
                 if (_writeBraces)
                 {
-                    indentSize += 2 * IndentLength;
+                    indentSize += 2 * indentLength;
 
                     if (_indentContents)
                     {
@@ -197,13 +197,13 @@
             return translationLineCount;
         }
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_writeBraces)
             {
-                buffer.WriteOpeningBraceToTranslation(_startOnNewLine);
+                writer.WriteOpeningBraceToTranslation(_startOnNewLine);
 
-                if (WriteEmptyCodeBlock(buffer))
+                if (WriteEmptyCodeBlock(writer))
                 {
                     return;
                 }
@@ -211,37 +211,37 @@
 
             if (_indentContents)
             {
-                buffer.Indent();
+                writer.Indent();
             }
 
             if (_writeBraces && _ensureReturnKeyword && !_translation.IsMultiStatement())
             {
-                buffer.WriteReturnToTranslation();
+                writer.WriteReturnToTranslation();
             }
 
-            _translation.WriteTo(buffer);
+            _translation.WriteTo(writer);
 
             if (EnsureTerminated())
             {
-                buffer.WriteToTranslation(';');
+                writer.WriteToTranslation(';');
             }
 
             if (_writeBraces)
             {
-                buffer.WriteClosingBraceToTranslation();
+                writer.WriteClosingBraceToTranslation();
             }
 
             if (_indentContents)
             {
-                buffer.Unindent();
+                writer.Unindent();
             }
         }
 
-        private bool WriteEmptyCodeBlock(TranslationBuffer buffer)
+        private bool WriteEmptyCodeBlock(TranslationWriter writer)
         {
             if (_isEmptyTranslation)
             {
-                buffer.WriteClosingBraceToTranslation(startOnNewLine: false);
+                writer.WriteClosingBraceToTranslation(startOnNewLine: false);
                 return true;
             }
 

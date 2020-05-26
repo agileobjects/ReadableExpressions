@@ -38,13 +38,13 @@
 
         public int GetLineCount() => _loopBodyTranslation.GetLineCount() + 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
-            buffer.WriteControlStatementToTranslation("while ");
-            buffer.WriteToTranslation('(');
-            buffer.WriteKeywordToTranslation("true");
-            buffer.WriteToTranslation(')');
-            _loopBodyTranslation.WriteTo(buffer);
+            writer.WriteControlStatementToTranslation("while ");
+            writer.WriteToTranslation('(');
+            writer.WriteKeywordToTranslation("true");
+            writer.WriteToTranslation(')');
+            _loopBodyTranslation.WriteTo(writer);
         }
     }
 }

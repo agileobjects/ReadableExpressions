@@ -61,11 +61,11 @@
         public int GetLineCount()
             => _typeCanBeNull ? 1 : _typeNameTranslation?.GetLineCount() ?? 1;
 
-        public void WriteTo(TranslationBuffer buffer)
+        public void WriteTo(TranslationWriter writer)
         {
             if (_typeCanBeNull)
             {
-                buffer.WriteKeywordToTranslation(_null);
+                writer.WriteKeywordToTranslation(_null);
             }
 
             if (_typeNameTranslation == null)
@@ -74,8 +74,8 @@
                 return;
             }
 
-            buffer.WriteKeywordToTranslation(_default);
-            _typeNameTranslation.WriteInParentheses(buffer);
+            writer.WriteKeywordToTranslation(_default);
+            _typeNameTranslation.WriteInParentheses(writer);
         }
     }
 }

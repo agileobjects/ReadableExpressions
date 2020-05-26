@@ -14,6 +14,7 @@
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
+    using Reflection;
 
     internal static class DynamicTranslation
     {
@@ -236,13 +237,11 @@
 
                 public bool IsExtensionMethod => false;
 
-                public MethodInfo GetGenericMethodDefinition() => null;
+                public IMethod GetGenericMethodDefinition() => null;
 
                 public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
 
                 public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
-
-                public Type GetGenericArgumentFor(Type parameterType) => null;
 
                 public Type ReturnType => typeof(void);
             }
