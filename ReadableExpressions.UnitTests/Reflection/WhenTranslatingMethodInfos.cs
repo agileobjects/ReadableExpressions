@@ -271,12 +271,12 @@
 
             var translated = method.ToReadableString();
 
-            const string EXPECTED =
-@"public static string WhenTranslatingMethodInfos.Helper.StaticOutParameter
+            const string EXPECTED = @"
+public static string WhenTranslatingMethodInfos.Helper.StaticOutParameter
 (
     out int value
 )";
-            translated.ShouldBe(EXPECTED);
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]
@@ -288,12 +288,29 @@
 
             var translated = method.ToReadableString();
 
-            const string EXPECTED =
-@"public static void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
+            const string EXPECTED = @"
+public static void WhenTranslatingMethodInfos.Helper.StaticRefParameter<List<List<int>>>
 (
     ref List<List<int>> value
 )";
-            translated.ShouldBe(EXPECTED);
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAParamsParameter()
+        {
+            var method = typeof(ParamsHelper)
+                .GetPublicStaticMethod(nameof(ParamsHelper.OptionalParams));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public static string ParamsHelper.OptionalParams
+(
+    string value,
+    params string[] stringsToAdd
+)";
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/61
