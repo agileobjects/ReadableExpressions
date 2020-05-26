@@ -61,40 +61,40 @@
     <EmbeddedResource Include="extension.vsixmanifest">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs10.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs10.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs11.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs11.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs11.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs12.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs12.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs14.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs14.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs15.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs15.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs16.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll">
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll</Link>
     </EmbeddedResource>
     <Content Include="CustomAction.config" />
