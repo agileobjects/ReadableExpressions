@@ -353,6 +353,49 @@ public static explicit operator int
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldTranslateAnInstancePropertyGetter()
+        {
+            var publicInstanceGetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.PublicInstance))
+                .GetGetter();
+
+            publicInstanceGetter.ShouldNotBeNull();
+
+            var translated = publicInstanceGetter.ToReadableString();
+
+            translated.ShouldBe("public int PropertiesHelper.PublicInstance { get; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticPropertySetter()
+        {
+            var publicStaticSetter = typeof(PropertiesHelper)
+                .GetNonPublicStaticProperty(nameof(PropertiesHelper.NonPublicStatic))
+                .GetSetter(nonPublic: true);
+
+            publicStaticSetter.ShouldNotBeNull();
+
+            var translated = publicStaticSetter.ToReadableString();
+
+            translated.ShouldBe("internal static int PropertiesHelper.NonPublicStatic { set; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnNonPublicInstancePropertySetter()
+        {
+            var nonPublicInstanceSetter = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter))
+                .GetSetter(nonPublic: true);
+
+            nonPublicInstanceSetter.ShouldNotBeNull();
+
+            var translated = nonPublicInstanceSetter.ToReadableString();
+
+            translated.ShouldBe(
+                "public int PropertiesHelper.NonPublicInstanceSetter { internal set; }");
+        }
+
         #region Helper Classes
 
         // ReSharper disable once ClassWithVirtualMembersNeverInherited.Local

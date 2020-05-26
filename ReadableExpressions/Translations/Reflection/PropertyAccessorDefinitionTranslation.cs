@@ -4,21 +4,23 @@
     using Interfaces;
     using static MethodTranslationHelpers;
 
-    internal class PropertyDefinitionTranslation : ITranslatable
+    internal class PropertyAccessorDefinitionTranslation : ITranslatable
     {
-        private readonly string _accessibility;
+        private readonly string _propertyAccessibility;
+        private readonly string _accessorAccessibility;
         private readonly string _modifiers;
         private readonly TypeNameTranslation _propertyTypeTranslation;
         private readonly TypeNameTranslation _declaringTypeNameTranslation;
         private readonly string _propertyName;
         private readonly string _accessor;
 
-        public PropertyDefinitionTranslation(
+        public PropertyAccessorDefinitionTranslation(
             PropertyInfo property,
             MethodInfo accessor,
             ITranslationSettings settings)
         {
-            _accessibility = GetAccessibility(accessor);
+            _propertyAccessibility = GetAccessibility(property);
+            _accessorAccessibility = GetAccessibility(accessor);
             _modifiers = GetModifiers(accessor);
 
             _propertyTypeTranslation =
@@ -34,7 +36,7 @@
             _accessor = (accessor.ReturnType != typeof(void)) ? "get" : "set";
 
             TranslationSize =
-                _accessibility.Length +
+                _propertyAccessibility.Length +
                 _modifiers.Length +
                 _propertyTypeTranslation.TranslationSize +
                 _propertyName.Length +
@@ -52,6 +54,11 @@
                 TranslationSize += _declaringTypeNameTranslation.TranslationSize + 1;
                 FormattingSize += _declaringTypeNameTranslation.FormattingSize;
             }
+
+            if (_accessorAccessibility != _propertyAccessibility)
+            {
+                FormattingSize += keywordFormattingSize;
+            }
         }
 
         public int TranslationSize { get; }
@@ -64,7 +71,7 @@
 
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            writer.WriteKeywordToTranslation(_propertyAccessibility + _modifiers);
 
             _propertyTypeTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();
@@ -77,6 +84,12 @@
 
             writer.WriteToTranslation(_propertyName);
             writer.WriteToTranslation(" { ");
+
+            if (_accessorAccessibility != _propertyAccessibility)
+            {
+                writer.WriteKeywordToTranslation(_accessorAccessibility);
+            }
+
             writer.WriteKeywordToTranslation(_accessor);
             writer.WriteToTranslation("; }");
         }
