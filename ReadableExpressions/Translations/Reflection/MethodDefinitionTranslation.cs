@@ -92,7 +92,7 @@
         {
             if (method.IsPropertyGetterOrSetterCall(out var property))
             {
-                return new PropertyAccessorDefinitionTranslation(property, method, settings);
+                return new PropertyDefinitionTranslation(property, method, settings);
             }
 
             if (method.IsImplicitOperator())

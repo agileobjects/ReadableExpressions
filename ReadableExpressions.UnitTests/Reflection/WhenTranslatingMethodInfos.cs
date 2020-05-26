@@ -354,6 +354,33 @@ public static explicit operator int
         }
 
         [Fact]
+        public void ShouldTranslateAStaticProperty()
+        {
+            var publicInstanceProperty = typeof(PropertiesHelper)
+                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic));
+
+            publicInstanceProperty.ShouldNotBeNull();
+
+            var translated = publicInstanceProperty.ToReadableString();
+
+            translated.ShouldBe("public static int PropertiesHelper.PublicStatic { get; set; }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInstanceProperty()
+        {
+            var nonPublicInstanceProperty = typeof(PropertiesHelper)
+                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter));
+
+            nonPublicInstanceProperty.ShouldNotBeNull();
+
+            var translated = nonPublicInstanceProperty.ToReadableString();
+
+            translated.ShouldBe(
+                "public virtual int PropertiesHelper.NonPublicInstanceSetter { get; internal set; }");
+        }
+
+        [Fact]
         public void ShouldTranslateAnInstancePropertyGetter()
         {
             var publicInstanceGetter = typeof(PropertiesHelper)
@@ -393,7 +420,7 @@ public static explicit operator int
             var translated = nonPublicInstanceSetter.ToReadableString();
 
             translated.ShouldBe(
-                "public int PropertiesHelper.NonPublicInstanceSetter { internal set; }");
+                "public virtual int PropertiesHelper.NonPublicInstanceSetter { internal set; }");
         }
 
         #region Helper Classes

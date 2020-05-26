@@ -792,7 +792,7 @@ new CustomAdder
 
         internal int NonPublicInstance { get; set; }
 
-        public int NonPublicInstanceSetter { get; internal set; }
+        public virtual int NonPublicInstanceSetter { get; internal set; }
     }
 
     internal class IndexedProperty

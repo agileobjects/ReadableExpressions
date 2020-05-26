@@ -33,11 +33,14 @@
                 case Type type:
                     return Translate(type);
 
+                case ConstructorInfo ctor:
+                    return ctor.ToReadableString(ApplyDialogSettings);
+
                 case MethodInfo method:
                     return method.ToReadableString(ApplyDialogSettings);
 
-                case ConstructorInfo ctor:
-                    return ctor.ToReadableString(ApplyDialogSettings);
+                case PropertyInfo property:
+                    return property.ToReadableString(ApplyDialogSettings);
 
                 default:
                     if (target == null)

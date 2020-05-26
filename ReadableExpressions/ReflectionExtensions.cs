@@ -76,6 +76,28 @@
             return writer.GetContent();
         }
 
+        /// <summary>
+        /// Translates this <paramref name="property"/> into a readable string.
+        /// </summary>
+        /// <param name="property">The PropertyInfo to translate.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="property"/>.</returns>
+        public static string ToReadableString(
+            this PropertyInfo property,
+            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
+        {
+            if (property == null)
+            {
+                return "[Property not found]";
+            }
+
+            var settings = configuration.GetBufferSettings();
+            var translation = new PropertyDefinitionTranslation(property, settings);
+            var writer = new TranslationWriter(settings, translation);
+
+            return writer.GetContent();
+        }
+
         private static ITranslationSettings GetBufferSettings(
             this Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration)
         {
