@@ -1,10 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>8.0</LangVersion>
-    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Dialog</AssemblyName>
-    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Dialog</RootNamespace>
+    <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf</RootNamespace>
+    <UseWPF>true</UseWPF>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -23,17 +24,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Controls\GitHubIcon.png">
-      <Link>Controls\GitHubIcon.png</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Controls\GitHubIconDark.png">
-      <Link>Controls\GitHubIconDark.png</Link>
-    </EmbeddedResource>
+    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System.Windows.Forms" />
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="VisualizerDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@
     using System.Drawing;
     using System.Linq;
     using System.Windows.Forms;
-    using static DialogConstants;
+    using static Core.DialogConstants;
 
     internal class IndentTypeSelector : ComboBox
     {

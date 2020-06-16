@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls
 {
     using System.Windows.Forms;
+    using Core;
 
     internal abstract class MenuItemPanelBase : FlowLayoutPanel
     {

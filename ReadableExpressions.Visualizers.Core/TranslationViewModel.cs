@@ -10,6 +10,9 @@
         private string _translation;
         private string _translationRaw;
 
+        public string VisualizerTitle
+            => "ReadableExpressions v" + VersionNumber.FileVersion;
+
         public VisualizerDialogSettings Settings => VisualizerDialogSettings.Instance;
 
         public VisualizerDialogTheme Theme

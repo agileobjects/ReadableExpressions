@@ -5,7 +5,7 @@
     using System.Drawing.Text;
     using System.Linq;
     using System.Windows.Forms;
-    using static DialogConstants;
+    using static Core.DialogConstants;
 
     internal class FontFamilySelector : ComboBox
     {

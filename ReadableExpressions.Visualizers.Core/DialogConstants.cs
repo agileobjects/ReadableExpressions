@@ -1,9 +1,9 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core
 {
     using System.Drawing;
     using static System.Drawing.FontStyle;
 
-    internal static class DialogConstants
+    public static class DialogConstants
     {
         public const int MenuWidth = 300;
         public const int MenuItemHeight = 16;

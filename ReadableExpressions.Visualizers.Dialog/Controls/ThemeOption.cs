@@ -3,7 +3,7 @@
     using System.Drawing;
     using System.Windows.Forms;
     using Core.Theming;
-    using static DialogConstants;
+    using static Core.DialogConstants;
 
     internal class ThemeOption : RadioButton
     {

@@ -12,7 +12,7 @@
     using Core.Theming;
     using Theming;
     using static System.Windows.Forms.SystemInformation;
-    using static DialogConstants;
+    using static Core.DialogConstants;
 
     public class VisualizerDialog : Form
     {
@@ -33,7 +33,10 @@
             _renderer = new VisualizerDialogRenderer(this);
             _themeableControls = new List<Control>();
 
-            base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
+            ViewModel = new TranslationViewModel();
+
+            base.Text = ViewModel.VisualizerTitle;
+
             StartPosition = FormStartPosition.CenterScreen;
             MinimizeBox = false;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
@@ -46,8 +49,6 @@
                 WidthFactor = graphics.DpiX / 72;
                 HeightFactor = graphics.DpiY / 72;
             }
-
-            ViewModel = new TranslationViewModel();
 
             ToolTip = AddToolTip();
             Viewer = AddViewer();
@@ -69,7 +70,7 @@
         }
 
         internal TranslationViewModel ViewModel { get; }
-        
+
         internal VisualizerDialogColourTable ColourTable { get; }
 
         internal VisualizerDialogSettings Settings => ViewModel.Settings;
@@ -232,7 +233,7 @@
         internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
-            
+
             ColourTable.HandleThemeChanged();
 
             foreach (var control in _themeableControls)
