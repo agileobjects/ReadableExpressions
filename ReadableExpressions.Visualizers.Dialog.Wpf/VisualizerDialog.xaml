@@ -5,4 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Height="450" Width="800">
+    <DockPanel>
+        <ToolBarTray DockPanel.Dock="Bottom">
+            <ToolBar>
+                <Button Content="TEST"></Button>
+            </ToolBar>
+        </ToolBarTray>
+    </DockPanel>
 </Window>

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
@@ -13,6 +13,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
     <NoWarn>0649;1701;1702</NoWarn>
+    <UseWPF>true</UseWPF>
     <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -22,7 +23,20 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\ReadableExpressions.Visualizers.Dialog.Wpf.csproj" />
+    <Compile Include="..\ReadableExpressions.Visualizers.Core\**\*.cs" Exclude="..\ReadableExpressions.Visualizers.Core\obj\**\*.cs;">
+      <Link>Core\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.cs;..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" Exclude="..\ReadableExpressions.Visualizers.Dialog.Wpf\obj\**\*.cs;">
+      <Link>WpfDialog\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml" />
+    <Page Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,11 +46,16 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsBase" />
-    <PackageReference Include="ILMerge" Version="2.14.1208" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)packages\ILMerge.2.14.1208\tools\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
+    <Exec Command="xcopy $(TargetPath) &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; /Y&#xD;&#xA;xcopy &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
   </Target>
 
 </Project>

@@ -12,8 +12,8 @@
 
         public VisualizerDialog(Func<object> translationFactory)
         {
-            //InitializeComponent();
-            
+            InitializeComponent();
+
             _translationFactory = translationFactory;
 
             Title = new TranslationViewModel().VisualizerTitle;

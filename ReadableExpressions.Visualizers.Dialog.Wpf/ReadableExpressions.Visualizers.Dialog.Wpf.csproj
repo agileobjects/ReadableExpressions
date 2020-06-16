@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf</RootNamespace>
-    <UseWPF>true</UseWPF>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -14,6 +13,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
     <NoWarn>0649;1701;1702</NoWarn>
+    <UseWPF>true</UseWPF>
     <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
