@@ -16,8 +16,12 @@
 
             _translationFactory = translationFactory;
 
-            Title = new TranslationViewModel().VisualizerTitle;
+            DataContext = ViewModel = new TranslationViewModel();
+
+            ViewModel.Translation = (string)_translationFactory.Invoke();
         }
+
+        private TranslationViewModel ViewModel { get; }
 
         protected override void OnSourceInitialized(EventArgs e)
         {

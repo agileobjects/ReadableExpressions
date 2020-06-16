@@ -1,15 +1,45 @@
 ﻿<Window x:Class="AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf.VisualizerDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
-        Height="450" Width="800">
-    <DockPanel>
-        <ToolBarTray DockPanel.Dock="Bottom">
-            <ToolBar>
-                <Button Content="TEST"></Button>
-            </ToolBar>
-        </ToolBarTray>
-    </DockPanel>
+        xmlns:reControls="clr-namespace:AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf.Controls"
+        Height="450" Width="800" WindowStartupLocation="CenterScreen"
+        Title="{Binding VisualizerTitle}">
+
+    <Window.Resources>
+        <Style x:Key="ToolbarStyle" TargetType="{x:Type Control}">
+            <Setter Property="Background" Value="{Binding Theme.Toolbar}" />
+            <Setter Property="Foreground" Value="{Binding Theme.Default}" />
+        </Style>
+
+        <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
+            <Setter Property="Background" Value="{Binding Theme.Menu}" />
+            <Setter Property="Foreground" Value="{Binding Theme.Default}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="MenuRow" Height="22"></RowDefinition>
+            <RowDefinition x:Name="ViewerRow" Height="*"></RowDefinition>
+            <RowDefinition x:Name="ToolbarRow" Height="30"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Menu Grid.Row="0" IsMainMenu="True" Style="{StaticResource ToolbarStyle}">
+            <MenuItem Header="_Options"></MenuItem>
+        </Menu>
+
+        <reControls:VisualizerViewer 
+            x:Name="Viewer"
+            Grid.Row="1" Style="{StaticResource ControlStyle}"
+            Theme="{Binding Theme}"
+            Translation="{Binding Translation}"/>
+
+        <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" Style="{StaticResource ToolbarStyle}">
+            <Button Content="Feeback" Style="{StaticResource ControlStyle}"></Button>
+        </ToolBar>
+        <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" HorizontalAlignment="Right" Style="{StaticResource ToolbarStyle}">
+            <Button Content="Copy" Style="{StaticResource ControlStyle}"></Button>
+        </ToolBar>
+    </Grid>
+
 </Window>

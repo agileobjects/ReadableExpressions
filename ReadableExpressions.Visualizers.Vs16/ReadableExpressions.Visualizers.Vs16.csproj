@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml" />
-    <Page Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml" />
+    <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" />
+    <Page Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="..\ReadableExpressions.Visualizers.Dialog.Wpf\*.xaml">
+    <None Update="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
   </ItemGroup>
