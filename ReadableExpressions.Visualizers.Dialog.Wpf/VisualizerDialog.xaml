@@ -40,7 +40,9 @@
             <Button Content="Feeback" Style="{StaticResource ControlStyle}"></Button>
         </ToolBar>
         <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" HorizontalAlignment="Right" Style="{StaticResource ToolbarStyle}">
-            <Button Content="Copy" Style="{StaticResource ControlStyle}"></Button>
+            <reControls:CopyButton 
+                Style="{StaticResource ControlStyle}"
+                TranslationRaw="{Binding TranslationRaw}"/>
         </ToolBar>
     </Grid>
 
