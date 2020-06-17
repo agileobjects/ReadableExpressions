@@ -37,7 +37,9 @@
             Translation="{Binding Translation}"/>
 
         <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" Style="{StaticResource ToolbarStyle}">
-            <Button Content="Feeback" Style="{StaticResource ControlStyle}"></Button>
+            <reControls:FeedbackButton 
+                Style="{StaticResource ControlStyle}"
+                IconSuffix="" />
         </ToolBar>
         <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" HorizontalAlignment="Right" Style="{StaticResource ToolbarStyle}">
             <reControls:CopyButton 

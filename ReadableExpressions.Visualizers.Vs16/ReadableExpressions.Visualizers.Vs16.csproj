@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.cs;..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" Exclude="..\ReadableExpressions.Visualizers.Dialog.Wpf\obj\**\*.cs;">
+    <Compile Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.cs;..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml;..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.png" Exclude="..\ReadableExpressions.Visualizers.Dialog.Wpf\obj\**\*.cs;">
       <Link>WpfDialog\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
@@ -37,6 +37,17 @@
   <ItemGroup>
     <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" />
     <Page Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\Controls\GitHubIcon.png" />
+    <Resource Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\Controls\GitHubIcon.png">
+      <Link>WpfDialog\Controls\GitHubIcon.png</Link>
+    </Resource>
+    <Compile Remove="..\ReadableExpressions.Visualizers.Dialog.Wpf\Controls\GitHubIconDark.png" />
+    <Resource Include="..\ReadableExpressions.Visualizers.Dialog.Wpf\Controls\GitHubIconDark.png">
+      <Link>WpfDialog\Controls\GitHubIconDark.png</Link>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
@@ -52,6 +63,12 @@
     <None Update="..\ReadableExpressions.Visualizers.Dialog.Wpf\**\*.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="..\ReadableExpressions.Visualizers.Dialog.Wpf\Controls\VisualizerViewer.xaml.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Compile>
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

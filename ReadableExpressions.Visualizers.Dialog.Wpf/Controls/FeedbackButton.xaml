@@ -1,0 +1,9 @@
+﻿<Button x:Class="AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf.Controls.FeedbackButton"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Click="LaunchGitHubIssues">
+    <StackPanel Orientation="Horizontal">
+        <Image x:Name="GitHubIcon" />
+        <TextBlock>Feedback</TextBlock>
+    </StackPanel>
+</Button>

@@ -33,6 +33,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Controls\GitHubIcon.png" />
+    <Resource Include="Controls\GitHubIconDark.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="VisualizerDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </None>
