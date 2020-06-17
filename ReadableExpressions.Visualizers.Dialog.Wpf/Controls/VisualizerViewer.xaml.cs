@@ -5,22 +5,6 @@
 
     public partial class VisualizerViewer
     {
-        public static readonly DependencyProperty ThemeProperty =
-            DependencyProperty.RegisterAttached(
-                nameof(Theme),
-                typeof(VisualizerDialogTheme),
-                typeof(VisualizerViewer),
-                new PropertyMetadata((d, e) => 
-                    ((VisualizerViewer)d).SetTheme((VisualizerDialogTheme)e.NewValue)));
-
-        public static readonly DependencyProperty TranslationProperty =
-            DependencyProperty.RegisterAttached(
-                nameof(Translation),
-                typeof(string),
-                typeof(VisualizerViewer),
-                new PropertyMetadata((d, e) => 
-                    ((VisualizerViewer)d).SetInitialContent((string)e.NewValue)));
-
         private bool _initialised;
 
         public VisualizerViewer()
@@ -36,11 +20,55 @@
             set => SetValue(ThemeProperty, value);
         }
 
+        public static readonly DependencyProperty ThemeProperty =
+            DependencyProperty.RegisterAttached(
+                nameof(Theme),
+                typeof(VisualizerDialogTheme),
+                typeof(VisualizerViewer),
+                new PropertyMetadata((d, e) =>
+                    ((VisualizerViewer)d).SetTheme((VisualizerDialogTheme)e.NewValue)));
+
+        public string FontName
+        {
+            get => (string)GetValue(FontNameProperty);
+            set => SetValue(FontNameProperty, value);
+        }
+
+        public static readonly DependencyProperty FontNameProperty =
+            DependencyProperty.RegisterAttached(
+                nameof(FontName),
+                typeof(string),
+                typeof(VisualizerViewer),
+                new PropertyMetadata((d, e) =>
+                    ((VisualizerViewer)d).SetFontName((string)e.NewValue)));
+
+        public int FontSizeInPoints
+        {
+            get => (int)GetValue(FontSizeInPointsProperty);
+            set => SetValue(FontSizeInPointsProperty, value);
+        }
+
+        public static readonly DependencyProperty FontSizeInPointsProperty =
+            DependencyProperty.RegisterAttached(
+                nameof(FontSizeInPoints),
+                typeof(int),
+                typeof(VisualizerViewer),
+                new PropertyMetadata((d, e) =>
+                    ((VisualizerViewer)d).SetFontSizeInPoints((int)e.NewValue)));
+
         public string Translation
         {
             get => (string)GetValue(TranslationProperty);
             set => SetValue(TranslationProperty, value);
         }
+
+        public static readonly DependencyProperty TranslationProperty =
+            DependencyProperty.RegisterAttached(
+                nameof(Translation),
+                typeof(string),
+                typeof(VisualizerViewer),
+                new PropertyMetadata((d, e) =>
+                    ((VisualizerViewer)d).SetInitialContent((string)e.NewValue)));
 
         private void SetInitialContent(string translation)
         {
@@ -58,8 +86,8 @@
 body, pre {{ 
     background: {Theme.Background};
     color: {Theme.Default}; 
-    font-family: 'Consolas';
-    font-size: 12pt;
+    font-family: '{FontName}';
+    font-size: {FontSizeInPoints}pt;
     overflow: auto;
 }}
 .kw {{ color: {Theme.Keyword} }}
@@ -187,6 +215,22 @@ body, pre {{
             };
 
             Browser.InvokeScript("setTheme", args);
+        }
+
+        private void SetFontName(string newFontName)
+        {
+            if (_initialised)
+            {
+                Browser.InvokeScript("setFontFamily", newFontName);
+            }
+        }
+
+        private void SetFontSizeInPoints(int newSizeInPoints)
+        {
+            if (_initialised)
+            {
+                Browser.InvokeScript("setFontSize", newSizeInPoints);
+            }
         }
     }
 }

@@ -32,6 +32,8 @@
             x:Name="Viewer"
             Grid.Row="1" Style="{StaticResource ControlStyle}"
             Theme="{Binding Theme}"
+            FontName="{Binding Settings.Font.Name}"
+            FontSizeInPoints="{Binding Settings.Font.Size}"
             Translation="{Binding Translation}"/>
 
         <ToolBar Grid.Row="2" ToolBarTray.IsLocked="True" Style="{StaticResource ToolbarStyle}">

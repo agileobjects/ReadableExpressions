@@ -3,6 +3,7 @@
     using System;
     using System.Linq.Expressions;
     using AgileObjects.ReadableExpressions.Visualizers.Dialog;
+    using WpfVisualizerDialog = AgileObjects.ReadableExpressions.Visualizers.Dialog.Wpf.VisualizerDialog;
 
     public class Program
     {
@@ -13,7 +14,8 @@
 
             Console.WriteLine(def);
 
-            new VisualizerDialog(() => "default(void)").ShowDialog();
+            new WpfVisualizerDialog(() => "<span class=\"kw\">default</span>(<span class=\"kw\">void</span>)").ShowDialog();
+            //new VisualizerDialog(() => "<span class=\"kw\">default</span>(<span class=\"kw\">void</span>)").ShowDialog();
         }
     }
 }
