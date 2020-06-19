@@ -6,12 +6,12 @@
         Title="{Binding VisualizerTitle}">
 
     <Window.Resources>
-        <Style x:Key="ToolbarStyle" TargetType="{x:Type Control}">
+        <Style x:Key="ToolbarStyle" TargetType="Control">
             <Setter Property="Background" Value="{Binding Theme.Toolbar}" />
             <Setter Property="Foreground" Value="{Binding Theme.Default}" />
         </Style>
 
-        <Style x:Key="ControlStyle" TargetType="{x:Type Control}">
+        <Style x:Key="ControlStyle" TargetType="Control">
             <Setter Property="Background" Value="{Binding Theme.Menu}" />
             <Setter Property="Foreground" Value="{Binding Theme.Default}" />
         </Style>
@@ -19,13 +19,54 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition x:Name="MenuRow" Height="22"></RowDefinition>
+            <RowDefinition x:Name="MenuRow" Height="25"></RowDefinition>
             <RowDefinition x:Name="ViewerRow" Height="*"></RowDefinition>
             <RowDefinition x:Name="ToolbarRow" Height="30"></RowDefinition>
         </Grid.RowDefinitions>
 
         <Menu Grid.Row="0" IsMainMenu="True" Style="{StaticResource ToolbarStyle}">
-            <MenuItem Header="_Options"></MenuItem>
+            <Menu.Resources>
+                <Style TargetType="Grid">
+                    <Setter Property="Background" Value="{Binding Theme.Menu}" />
+                </Style>
+                <Style BasedOn="{StaticResource ControlStyle}" TargetType="Label">
+                    <Setter Property="Grid.Column" Value="0" />
+                    <Setter Property="Padding" Value="8,5,0,5" />
+                </Style>
+                <Style TargetType="CheckBox">
+                    <Setter Property="Grid.Column" Value="0" />
+                    <Setter Property="Height" Value="18" />
+                    <Setter Property="HorizontalAlignment" Value="Right" />
+                    <Setter Property="Margin" Value="0,4,-10,0" />
+                </Style>
+            </Menu.Resources>
+            <MenuItem Header="_Options">
+                <MenuItem Header="_Theme" />
+                <MenuItem Header="_Code sample font" />
+                <MenuItem Header="_Indent using" />
+                <MenuItem>
+                    <MenuItem.Template>
+                        <ControlTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="20" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="_Resize viewer to match code" />
+                                <CheckBox />
+                            </Grid>
+                        </ControlTemplate>
+                    </MenuItem.Template>
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="_Fully-qualify type names" />
+                <MenuItem Header="Use _explicit type names" />
+                <MenuItem Header="Use explicit _generic arguments" />
+                <MenuItem Header="_Declare out params inline" />
+                <MenuItem Header="Show implicit _array type names" />
+                <MenuItem Header="Show _lambda parameter type names" />
+                <MenuItem Header="Comment _Quoted Lambdas" />
+            </MenuItem>
         </Menu>
 
         <reControls:VisualizerViewer 
