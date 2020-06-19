@@ -26,8 +26,10 @@
 
         <Menu Grid.Row="0" IsMainMenu="True" Style="{StaticResource ToolbarStyle}">
             <Menu.Resources>
-                <Style TargetType="Grid">
+                <Style TargetType="MenuItem">
                     <Setter Property="Background" Value="{Binding Theme.Menu}" />
+                    <Setter Property="Margin" Value="0,0,-25,0" />
+                    <Setter Property="Padding" Value="0" />
                 </Style>
                 <Style BasedOn="{StaticResource ControlStyle}" TargetType="Label">
                     <Setter Property="Grid.Column" Value="0" />
@@ -37,7 +39,7 @@
                     <Setter Property="Grid.Column" Value="0" />
                     <Setter Property="Height" Value="18" />
                     <Setter Property="HorizontalAlignment" Value="Right" />
-                    <Setter Property="Margin" Value="0,4,-10,0" />
+                    <Setter Property="Margin" Value="0,4,6,0" />
                 </Style>
             </Menu.Resources>
             <MenuItem Header="_Options">
@@ -50,7 +52,7 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="20" />
+                                    <ColumnDefinition Width="25" />
                                 </Grid.ColumnDefinitions>
                                 <Label Content="_Resize viewer to match code" />
                                 <CheckBox />
