@@ -26,48 +26,51 @@
 
         <Menu Grid.Row="0" IsMainMenu="True" Style="{StaticResource ToolbarStyle}">
             <Menu.Resources>
+                <Style x:Key="TopLevelMenuItem" TargetType="MenuItem">
+                    <Setter Property="Height" Value="25" />
+                </Style>
                 <Style TargetType="MenuItem">
                     <Setter Property="Background" Value="{Binding Theme.Menu}" />
+                    <Setter Property="Height" Value="26" />
                     <Setter Property="Margin" Value="0,0,-25,0" />
-                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Width" Value="300" />
                 </Style>
                 <Style BasedOn="{StaticResource ControlStyle}" TargetType="Label">
                     <Setter Property="Grid.Column" Value="0" />
                     <Setter Property="Padding" Value="8,5,0,5" />
                 </Style>
-                <Style TargetType="CheckBox">
-                    <Setter Property="Grid.Column" Value="0" />
-                    <Setter Property="Height" Value="18" />
-                    <Setter Property="HorizontalAlignment" Value="Right" />
-                    <Setter Property="Margin" Value="0,4,6,0" />
-                </Style>
+                <ControlTemplate x:Key="TranslationSetting" TargetType="MenuItem">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="25" />
+                        </Grid.ColumnDefinitions>
+                        <Label Content="{TemplateBinding Header}" />
+                        <CheckBox Grid.Column="0" Height="18" HorizontalAlignment="Right" Margin="0,4,6,0" />
+                    </Grid>
+                </ControlTemplate>
             </Menu.Resources>
-            <MenuItem Header="_Options">
+            <MenuItem Header="_Options" Style="{StaticResource TopLevelMenuItem}">
                 <MenuItem Header="_Theme" />
                 <MenuItem Header="_Code sample font" />
                 <MenuItem Header="_Indent using" />
-                <MenuItem>
-                    <MenuItem.Template>
-                        <ControlTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="25" />
-                                </Grid.ColumnDefinitions>
-                                <Label Content="_Resize viewer to match code" />
-                                <CheckBox />
-                            </Grid>
-                        </ControlTemplate>
-                    </MenuItem.Template>
-                </MenuItem>
+                <MenuItem Header="_Resize viewer to match code" 
+                          Template="{StaticResource TranslationSetting}" />
                 <Separator />
-                <MenuItem Header="_Fully-qualify type names" />
-                <MenuItem Header="Use _explicit type names" />
-                <MenuItem Header="Use explicit _generic arguments" />
-                <MenuItem Header="_Declare out params inline" />
-                <MenuItem Header="Show implicit _array type names" />
-                <MenuItem Header="Show _lambda parameter type names" />
-                <MenuItem Header="Comment _Quoted Lambdas" />
+                <MenuItem Header="_Fully-qualify type names" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="Use _explicit type names" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="Use explicit _generic arguments" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="_Declare out params inline" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="Show implicit _array type names" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="Show _lambda parameter type names" 
+                          Template="{StaticResource TranslationSetting}" />
+                <MenuItem Header="Comment _Quoted Lambdas" 
+                          Template="{StaticResource TranslationSetting}" />
             </MenuItem>
         </Menu>
 
