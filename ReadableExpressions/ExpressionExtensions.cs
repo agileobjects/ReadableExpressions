@@ -10,7 +10,7 @@
 #endif
 
     /// <summary>
-    /// Provides the Expression translation extension method.
+    /// Provides Expression translation extension methods.
     /// </summary>
     public static class ExpressionExtensions
     {

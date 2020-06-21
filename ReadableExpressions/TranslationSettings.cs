@@ -1,13 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Translations;
     using Translations.Formatting;
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
     /// </summary>
-    public class TranslationSettings : ITranslationSettings
+    public class TranslationSettings
     {
         internal static readonly TranslationSettings Default = new TranslationSettings();
 
@@ -38,8 +37,6 @@
                 return this;
             }
         }
-
-        bool ITranslationSettings.FullyQualifyTypeNames => FullyQualifyTypeNames;
 
         internal bool FullyQualifyTypeNames { get; private set; }
 
@@ -141,8 +138,6 @@
             return this;
         }
 
-        Func<Type, string> ITranslationSettings.AnonymousTypeNameFactory => AnonymousTypeNameFactory;
-
         internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
 
         /// <summary>
@@ -174,8 +169,6 @@
             return this;
         }
 
-        string ITranslationSettings.Indent => Indent;
-
         internal string Indent { get; private set; }
 
         internal int IndentLength => _indentLength ??= Indent.Length;
@@ -192,8 +185,6 @@
             Formatter = formatter;
             return this;
         }
-
-        ITranslationFormatter ITranslationSettings.Formatter => Formatter;
 
         internal ITranslationFormatter Formatter { get; private set; }
     }

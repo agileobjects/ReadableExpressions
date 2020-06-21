@@ -5,7 +5,6 @@
     using System.Linq.Expressions;
     using System.Reflection;
     using Core.Configuration;
-    using Extensions;
     using Formatting;
     using Translations.Formatting;
 
@@ -52,16 +51,8 @@
             }
         }
 
-        private static string Translate(Type type) 
+        private static string Translate(Type type)
             => type.ToReadableString(ApplyDialogSettings);
-
-        private static TranslationFormattingSettings ApplyDialogSettings(
-            TranslationFormattingSettings settings)
-        {
-            return settings
-                .FormatUsing(_htmlFormatter)
-                .IndentUsing(GetDialogSettings().Indent);
-        }
 
         private static TranslationSettings ApplyDialogSettings(TranslationSettings settings) 
             => GetDialogSettings().Update(settings.FormatUsing(_htmlFormatter));

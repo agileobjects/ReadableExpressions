@@ -40,13 +40,10 @@
             return buffer.GetContent();
         }
 
-        internal static void WriteFriendlyName(this TranslationWriter writer, Type type)
-            => WriteFriendlyName(writer, type, TranslationSettings.Default);
-
         internal static void WriteFriendlyName(
             this TranslationWriter writer,
             Type type,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             if (type.FullName == null)
             {
@@ -126,7 +123,7 @@
         private static void WriteTypeNamespaceIfRequired(
             this TranslationWriter writer,
             Type type,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             if (!settings.FullyQualifyTypeNames || (type.Namespace == null))
             {
@@ -146,7 +143,7 @@
         private static void WriteGenericTypeName(
             this TranslationWriter writer,
             Type genericType,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             new GenericTypeNameWriter(writer, settings).WriteGenericTypeName(genericType);
         }
@@ -154,9 +151,9 @@
         private class GenericTypeNameWriter : GenericTypeNameWriterBase
         {
             private readonly TranslationWriter _writer;
-            private readonly ITranslationSettings _settings;
+            private readonly TranslationSettings _settings;
 
-            public GenericTypeNameWriter(TranslationWriter writer, ITranslationSettings settings)
+            public GenericTypeNameWriter(TranslationWriter writer, TranslationSettings settings)
             {
                 _writer = writer;
                 _settings = settings;

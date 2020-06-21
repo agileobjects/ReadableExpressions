@@ -20,7 +20,7 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationWriter(ITranslationSettings settings, ITranslatable translatable)
+        public TranslationWriter(TranslationSettings settings, ITranslatable translatable)
             : this(
                 settings.Formatter,
                 settings.Indent,
@@ -31,7 +31,7 @@
             translatable.WriteTo(this);
         }
 
-        public TranslationWriter(ITranslationSettings settings, int estimatedSize)
+        public TranslationWriter(TranslationSettings settings, int estimatedSize)
             : this(settings.Formatter, settings.Indent, estimatedSize)
         {
         }

@@ -8,7 +8,7 @@
 
     internal class ParameterSetDefinitionTranslation : ITranslatable
     {
-        private readonly ITranslationSettings _settings;
+        private readonly TranslationSettings _settings;
         private readonly ParameterInfo[] _parameters;
         private readonly int _parameterCount;
         private readonly ITranslatable[] _parameterTranslations;
@@ -16,7 +16,7 @@
 
         public ParameterSetDefinitionTranslation(
             MethodInfo method,
-            ITranslationSettings settings)
+            TranslationSettings settings)
             : this((MethodBase)method, settings)
         {
             if (method.IsExtensionMethod())
@@ -29,7 +29,7 @@
 
         public ParameterSetDefinitionTranslation(
             MethodBase method,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _settings = settings;
             _parameters = method.GetParameters();

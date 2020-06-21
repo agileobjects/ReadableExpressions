@@ -13,7 +13,7 @@
     internal class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
-        private readonly ITranslationSettings _settings;
+        private readonly TranslationSettings _settings;
         private readonly bool _isObject;
         private bool _writeObjectTypeName;
 
@@ -22,7 +22,7 @@
         {
         }
 
-        public TypeNameTranslation(Type type, ITranslationSettings settings)
+        public TypeNameTranslation(Type type, TranslationSettings settings)
         {
             Type = type;
             _settings = settings;

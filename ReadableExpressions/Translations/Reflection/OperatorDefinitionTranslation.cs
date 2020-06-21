@@ -13,7 +13,7 @@
         public OperatorDefinitionTranslation(
             MethodInfo @operator,
             string typeKeyword,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _modifiers = GetAccessibility(@operator) + "static " + typeKeyword + " operator ";
 

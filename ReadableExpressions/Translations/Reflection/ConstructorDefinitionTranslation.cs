@@ -12,7 +12,7 @@
 
         public ConstructorDefinitionTranslation(
             ConstructorInfo ctor,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _accessibility = GetAccessibility(ctor);
             _typeNameTranslation = new TypeNameTranslation(ctor.DeclaringType, settings);

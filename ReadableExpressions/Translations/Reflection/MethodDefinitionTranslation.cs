@@ -19,7 +19,7 @@
 
         private MethodDefinitionTranslation(
             MethodInfo method,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _accessibility = GetAccessibility(method);
             _modifiers = GetModifiers(method);
@@ -88,7 +88,7 @@
             }
         }
 
-        public static ITranslatable For(MethodInfo method, ITranslationSettings settings)
+        public static ITranslatable For(MethodInfo method, TranslationSettings settings)
         {
             if (method.IsPropertyGetterOrSetterCall(out var property))
             {

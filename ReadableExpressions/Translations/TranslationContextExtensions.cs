@@ -28,7 +28,7 @@
         public static int GetKeywordFormattingSize(this ITranslationContext context)
             => context.Settings.GetKeywordFormattingSize();
 
-        public static int GetKeywordFormattingSize(this ITranslationSettings settings)
+        public static int GetKeywordFormattingSize(this TranslationSettings settings)
             => settings.GetFormattingSize(TokenType.Keyword);
 
         public static int GetControlStatementFormattingSize(this ITranslationContext context)
@@ -37,13 +37,13 @@
         public static int GetTypeNameFormattingSize(this ITranslationContext context)
             => context.Settings.GetTypeNameFormattingSize();
 
-        public static int GetTypeNameFormattingSize(this ITranslationSettings settings)
+        public static int GetTypeNameFormattingSize(this TranslationSettings settings)
             => settings.GetFormattingSize(TokenType.TypeName);
 
         public static int GetFormattingSize(this ITranslationContext context, TokenType tokenType)
             => context.Settings.GetFormattingSize(tokenType);
 
-        public static int GetFormattingSize(this ITranslationSettings settings, TokenType tokenType)
+        public static int GetFormattingSize(this TranslationSettings settings, TokenType tokenType)
             => settings.Formatter.GetFormattingSize(tokenType);
     }
 }
