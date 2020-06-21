@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using Extensions;
     using Translations;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -49,6 +50,26 @@
             var translation = new ExpressionTreeTranslation(expression, settings);
 
             return translation.GetTranslation();
+        }
+
+        /// <summary>
+        /// Translates the given <paramref name="expression"/> to a source-code string, formatted
+        /// as one or more classes with one or more methods.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <returns>The translated <paramref name="expression"/>.</returns>
+        public static string ToSourceCode(this Expression expression)
+        {
+            var translation = expression.ToReadableString();
+
+            return @$"
+public class MyClass
+{{
+    public {expression.Type.GetFriendlyName()} MyMethod()
+    {{
+        {translation}
+    }}
+}}";
         }
 
         internal static TranslationSettings GetTranslationSettings(

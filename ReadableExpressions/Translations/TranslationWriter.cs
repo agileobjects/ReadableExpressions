@@ -288,7 +288,7 @@
             {
                 Debug.WriteIf(
                     _estimatedSize >= _content.Length,
-                    $"TranslationBuffer: estimated: {_estimatedSize}, actual " + _content.Length);
+                    $"TranslationWriter: estimated: {_estimatedSize}, actual " + _content.Length);
             }
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;

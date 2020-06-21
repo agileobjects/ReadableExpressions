@@ -12,7 +12,7 @@
 
     internal class ExpressionAnalysis
     {
-        private readonly TranslationSettings _settings;
+        private readonly ITranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
         private ICollection<ParameterExpression> _accessedVariables;
         private IList<ParameterExpression> _inlineOutputVariables;
@@ -27,7 +27,7 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
-        public ExpressionAnalysis(TranslationSettings settings)
+        public ExpressionAnalysis(ITranslationSettings settings)
         {
             _settings = settings;
         }
