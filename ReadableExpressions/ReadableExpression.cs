@@ -23,23 +23,23 @@
 
         /// <summary>
         /// Create a <see cref="ClassExpression"/> representing a source code class with the given
-        /// <paramref name="singleMethodContent"/>.
+        /// <paramref name="singleMethod"/>.
         /// </summary>
-        /// <param name="singleMethodContent">
-        /// A LambdaExpression defining the <see cref="ClassExpression"/>'s single method.
+        /// <param name="singleMethod">
+        /// An Expression defining the <see cref="ClassExpression"/>'s single method.
         /// </param>
         /// <returns>A <see cref="ClassExpression"/> representing a source code class.</returns>
-        public static ClassExpression Class(LambdaExpression singleMethodContent)
-            => new ClassExpression(singleMethodContent);
+        public static ClassExpression Class(Expression singleMethod)
+            => new ClassExpression(singleMethod);
 
         /// <summary>
         /// Create a <see cref="MethodExpression"/> representing a source code method with the given
         /// <paramref name="method"/> definition.
         /// </summary>
-        /// <param name="method">A LambdaExpression defining the <see cref="MethodExpression"/>.</param>
+        /// <param name="method">An Expression defining the <see cref="MethodExpression"/>.</param>
         /// <returns>A <see cref="MethodExpression"/> representing a source code method.</returns>
-        public static MethodExpression Method(LambdaExpression method)
-            => new MethodExpression(method);
+        public static MethodExpression Method(Expression method)
+            => MethodExpression.For(method);
 
         /// <summary>
         /// Create a <see cref="CommentExpression"/> representing a code comment with the 

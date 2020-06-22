@@ -64,13 +64,13 @@
             => ReadableExpression.SourceCode(expression).ToReadableString();
 
         /// <summary>
-        /// Translates the given <paramref name="lambda"/> to a source-code string,
+        /// Translates the given <paramref name="expression"/> to a source-code string,
         /// formatted as a method.
         /// </summary>
-        /// <param name="lambda">The Expression to translate to source code.</param>
-        /// <returns>The translated <paramref name="lambda"/>, formatted as a method.</returns>
-        public static string ToSourceCodeMethod(this LambdaExpression lambda) 
-            => ReadableExpression.Method(lambda).ToReadableString();
+        /// <param name="expression">The Expression to translate to source code.</param>
+        /// <returns>The translated <paramref name="expression"/>, formatted as a method.</returns>
+        public static string ToSourceCodeMethod(this Expression expression) 
+            => ReadableExpression.Method(expression).ToReadableString();
 
         internal static TranslationSettings GetTranslationSettings(
             this Func<TranslationSettings, TranslationSettings> configuration)

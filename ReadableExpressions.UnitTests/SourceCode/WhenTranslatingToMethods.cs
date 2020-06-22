@@ -25,5 +25,19 @@ public void DoAction()
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldTranslateADefaultVoidExpressionToAMethod()
+        {
+            var doNothing = Default(typeof(void));
+
+            var translated = doNothing.ToSourceCodeMethod();
+
+            const string EXPECTED = @"
+public void DoAction()
+{
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }

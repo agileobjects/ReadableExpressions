@@ -14,10 +14,26 @@
     /// </summary>
     public class MethodExpression : Expression
     {
-        internal MethodExpression(LambdaExpression bodyLambda)
+        private MethodExpression(LambdaExpression bodyLambda)
         {
             Body = bodyLambda.Body;
             Method = new MethodExpressionMethod(bodyLambda);
+        }
+
+        internal static MethodExpression For(Expression expression)
+        {
+            if (expression.NodeType == ExpressionType.Lambda)
+            {
+                return new MethodExpression((LambdaExpression)expression);
+            }
+
+            var lambdaType = expression.HasReturnType()
+                ? GetFuncType(expression.Type)
+                : GetActionType();
+
+            var lambdaExpression = Lambda(lambdaType, expression);
+
+            return new MethodExpression(lambdaExpression);
         }
 
         /// <summary>
