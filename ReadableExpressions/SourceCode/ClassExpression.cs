@@ -34,6 +34,21 @@
         public override Type Type => typeof(string);
 
         /// <summary>
+        /// Visits each of this <see cref="ClassExpression"/>'s Methods.
+        /// </summary>
+        /// <param name="visitor">The visitor with which to visit this <see cref="ClassExpression"/>.</param>
+        /// <returns>This <see cref="ClassExpression"/>.</returns>
+        protected override Expression Accept(ExpressionVisitor visitor)
+        {
+            foreach (var method in Methods)
+            {
+                visitor.Visit(method);
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Gets the name of this <see cref="ClassExpression"/>.
         /// </summary>
         public string Name { get; }

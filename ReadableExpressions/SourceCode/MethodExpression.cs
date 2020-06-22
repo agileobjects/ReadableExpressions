@@ -34,6 +34,17 @@
         public override Type Type => Body.Type;
 
         /// <summary>
+        /// Visits this <see cref="MethodExpression"/>'s Body.
+        /// </summary>
+        /// <param name="visitor">The visitor with which to visit this <see cref="MethodExpression"/>.</param>
+        /// <returns>This <see cref="MethodExpression"/>.</returns>
+        protected override Expression Accept(ExpressionVisitor visitor)
+        {
+            visitor.Visit(Body);
+            return this;
+        }
+
+        /// <summary>
         /// Gets the Expression describing the body of this <see cref="MethodExpression"/>.
         /// </summary>
         public Expression Body { get; }

@@ -9,6 +9,11 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class ExpressionAnalysis
     {
@@ -38,11 +43,11 @@
         {
             switch (expression.NodeType)
             {
-                case ExpressionType.DebugInfo:
-                case ExpressionType.Default:
-                case ExpressionType.Extension:
-                case ExpressionType.Parameter:
-                case ExpressionType.RuntimeVariables:
+                case DebugInfo:
+                case Default:
+                case Extension:
+                case Parameter:
+                case RuntimeVariables:
                     return settings.EmptyAnalysis;
             }
 
@@ -69,13 +74,13 @@
 
         public bool IsNotJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != ExpressionType.Assign) ||
+            return (expression.NodeType != Assign) ||
                    _joinedAssignments?.Contains((BinaryExpression)expression) != true;
         }
 
         public bool IsCatchBlockVariable(Expression variable)
         {
-            return (variable.NodeType == ExpressionType.Parameter) &&
+            return (variable.NodeType == Parameter) &&
                   (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
         }
 
@@ -106,156 +111,156 @@
 
                 switch (expression.NodeType)
                 {
-                    case ExpressionType.Constant:
-                    case ExpressionType.DebugInfo:
-                    case ExpressionType.Default:
-                    case ExpressionType.Extension:
+                    case Constant:
+                    case DebugInfo:
+                    case Default:
+                    case Extension:
                         return;
 
-                    case ExpressionType.ArrayLength:
+                    case ArrayLength:
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
-                    case ExpressionType.Decrement:
-                    case ExpressionType.Increment:
-                    case ExpressionType.IsFalse:
-                    case ExpressionType.IsTrue:
-                    case ExpressionType.Negate:
-                    case ExpressionType.NegateChecked:
-                    case ExpressionType.Not:
-                    case ExpressionType.OnesComplement:
-                    case ExpressionType.PostDecrementAssign:
-                    case ExpressionType.PostIncrementAssign:
-                    case ExpressionType.PreDecrementAssign:
-                    case ExpressionType.PreIncrementAssign:
-                    case ExpressionType.Quote:
-                    case ExpressionType.Throw:
-                    case ExpressionType.TypeAs:
-                    case ExpressionType.UnaryPlus:
-                    case ExpressionType.Unbox:
+                    case ConvertChecked:
+                    case Decrement:
+                    case Increment:
+                    case IsFalse:
+                    case IsTrue:
+                    case Negate:
+                    case NegateChecked:
+                    case Not:
+                    case OnesComplement:
+                    case PostDecrementAssign:
+                    case PostIncrementAssign:
+                    case PreDecrementAssign:
+                    case PreIncrementAssign:
+                    case Quote:
+                    case Throw:
+                    case TypeAs:
+                    case UnaryPlus:
+                    case Unbox:
                         expression = ((UnaryExpression)expression).Operand;
                         continue;
 
-                    case ExpressionType.Add:
-                    case ExpressionType.AddAssign:
-                    case ExpressionType.AddAssignChecked:
-                    case ExpressionType.AddChecked:
-                    case ExpressionType.And:
-                    case ExpressionType.AndAlso:
-                    case ExpressionType.AndAssign:
-                    case ExpressionType.ArrayIndex:
-                    case ExpressionType.Assign:
-                    case ExpressionType.Coalesce:
-                    case ExpressionType.Divide:
-                    case ExpressionType.DivideAssign:
-                    case ExpressionType.Equal:
-                    case ExpressionType.ExclusiveOr:
-                    case ExpressionType.ExclusiveOrAssign:
-                    case ExpressionType.GreaterThan:
-                    case ExpressionType.GreaterThanOrEqual:
-                    case ExpressionType.LeftShift:
-                    case ExpressionType.LeftShiftAssign:
-                    case ExpressionType.LessThan:
-                    case ExpressionType.LessThanOrEqual:
-                    case ExpressionType.ModuloAssign:
-                    case ExpressionType.Multiply:
-                    case ExpressionType.MultiplyAssign:
-                    case ExpressionType.MultiplyAssignChecked:
-                    case ExpressionType.MultiplyChecked:
-                    case ExpressionType.Modulo:
-                    case ExpressionType.NotEqual:
-                    case ExpressionType.Or:
-                    case ExpressionType.OrAssign:
-                    case ExpressionType.OrElse:
-                    case ExpressionType.Power:
-                    case ExpressionType.PowerAssign:
-                    case ExpressionType.RightShift:
-                    case ExpressionType.RightShiftAssign:
-                    case ExpressionType.Subtract:
-                    case ExpressionType.SubtractAssign:
-                    case ExpressionType.SubtractAssignChecked:
-                    case ExpressionType.SubtractChecked:
+                    case Add:
+                    case AddAssign:
+                    case AddAssignChecked:
+                    case AddChecked:
+                    case And:
+                    case AndAlso:
+                    case AndAssign:
+                    case ArrayIndex:
+                    case Assign:
+                    case Coalesce:
+                    case Divide:
+                    case DivideAssign:
+                    case Equal:
+                    case ExclusiveOr:
+                    case ExclusiveOrAssign:
+                    case GreaterThan:
+                    case GreaterThanOrEqual:
+                    case LeftShift:
+                    case LeftShiftAssign:
+                    case LessThan:
+                    case LessThanOrEqual:
+                    case ModuloAssign:
+                    case Multiply:
+                    case MultiplyAssign:
+                    case MultiplyAssignChecked:
+                    case MultiplyChecked:
+                    case Modulo:
+                    case NotEqual:
+                    case Or:
+                    case OrAssign:
+                    case OrElse:
+                    case Power:
+                    case PowerAssign:
+                    case RightShift:
+                    case RightShiftAssign:
+                    case Subtract:
+                    case SubtractAssign:
+                    case SubtractAssignChecked:
+                    case SubtractChecked:
                         Visit((BinaryExpression)expression);
                         return;
 
-                    case ExpressionType.Block:
+                    case Block:
                         Visit((BlockExpression)expression);
                         return;
 
-                    case ExpressionType.Call:
+                    case Call:
                         Visit((MethodCallExpression)expression);
                         return;
 
-                    case ExpressionType.Conditional:
+                    case Conditional:
                         Visit((ConditionalExpression)expression);
                         return;
 
-                    case ExpressionType.Dynamic:
+                    case Dynamic:
                         Visit(((DynamicExpression)expression).Arguments);
                         return;
 
-                    case ExpressionType.Goto:
+                    case Goto:
                         Visit((GotoExpression)expression);
                         return;
 
-                    case ExpressionType.Index:
+                    case Index:
                         Visit((IndexExpression)expression);
                         return;
 
-                    case ExpressionType.Invoke:
+                    case Invoke:
                         Visit((InvocationExpression)expression);
                         return;
 
-                    case ExpressionType.Label:
+                    case Label:
                         expression = ((LabelExpression)expression).DefaultValue;
                         continue;
 
-                    case ExpressionType.Lambda:
+                    case Lambda:
                         Visit((LambdaExpression)expression);
                         return;
 
-                    case ExpressionType.ListInit:
+                    case ListInit:
                         Visit((ListInitExpression)expression);
                         return;
 
-                    case ExpressionType.Loop:
+                    case Loop:
                         expression = ((LoopExpression)expression).Body;
                         continue;
 
-                    case ExpressionType.MemberAccess:
+                    case MemberAccess:
                         expression = ((MemberExpression)expression).Expression;
                         continue;
 
-                    case ExpressionType.MemberInit:
+                    case MemberInit:
                         Visit((MemberInitExpression)expression);
                         return;
 
-                    case ExpressionType.New:
+                    case New:
                         Visit((NewExpression)expression);
                         return;
 
-                    case ExpressionType.NewArrayInit:
-                    case ExpressionType.NewArrayBounds:
+                    case NewArrayInit:
+                    case NewArrayBounds:
                         Visit((NewArrayExpression)expression);
                         return;
 
-                    case ExpressionType.Parameter:
+                    case Parameter:
                         Visit((ParameterExpression)expression);
                         return;
 
-                    case ExpressionType.RuntimeVariables:
+                    case RuntimeVariables:
                         Visit(((RuntimeVariablesExpression)expression).Variables);
                         return;
 
-                    case ExpressionType.Switch:
+                    case Switch:
                         Visit((SwitchExpression)expression);
                         return;
 
-                    case ExpressionType.Try:
+                    case Try:
                         Visit((TryExpression)expression);
                         return;
 
-                    case ExpressionType.TypeEqual:
-                    case ExpressionType.TypeIs:
+                    case TypeEqual:
+                    case TypeIs:
                         expression = ((TypeBinaryExpression)expression).Expression;
                         continue;
 
@@ -267,8 +272,8 @@
 
         private void Visit(BinaryExpression binary)
         {
-            if ((binary.NodeType == ExpressionType.Assign) &&
-                (binary.Left.NodeType == ExpressionType.Parameter) &&
+            if ((binary.NodeType == Assign) &&
+                (binary.Left.NodeType == Parameter) &&
                (_joinedAssignmentVariables?.Contains(binary.Left) != true) &&
                (_assignedAssignments?.Contains(binary) != true))
             {
@@ -342,7 +347,7 @@
                 {
                     var argument = methodCall.Arguments[i];
 
-                    if ((argument.NodeType == ExpressionType.Parameter) &&
+                    if ((argument.NodeType == Parameter) &&
                         VariableHasNotYetBeenAccessed(argument))
                     {
                         (_inlineOutputVariables ??= new List<ParameterExpression>())
@@ -384,7 +389,7 @@
 
             var currentBlockFinalExpression = _blocks?.Peek()?.Expressions.Last();
 
-            if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
+            if (currentBlockFinalExpression?.NodeType == Label)
             {
                 var returnLabel = (LabelExpression)currentBlockFinalExpression;
 
@@ -594,16 +599,16 @@
             {
                 switch (assignedValue.NodeType)
                 {
-                    case ExpressionType.Block:
+                    case Block:
                         assignedValue = ((BlockExpression)assignedValue).Result;
                         continue;
 
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
+                    case ConvertChecked:
                         assignedValue = ((UnaryExpression)assignedValue).Operand;
                         continue;
 
-                    case ExpressionType.Assign:
+                    case Assign:
                         (_assignedAssignments ??= new List<Expression>()).Add(assignedValue);
                         break;
                 }

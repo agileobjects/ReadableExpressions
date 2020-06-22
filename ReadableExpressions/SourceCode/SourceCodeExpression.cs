@@ -40,6 +40,17 @@
         public override Type Type => typeof(string);
 
         /// <summary>
+        /// Visits each of this <see cref="SourceCodeExpression"/>'s Elements.
+        /// </summary>
+        /// <param name="visitor">The visitor with which to visit this <see cref="SourceCodeExpression"/>.</param>
+        /// <returns>This <see cref="SourceCodeExpression"/>.</returns>
+        protected override Expression Accept(ExpressionVisitor visitor)
+        {
+            visitor.Visit(Elements);
+            return this;
+        }
+
+        /// <summary>
         /// Gets the Expression on which this <see cref="SourceCodeExpression"/> is based.
         /// </summary>
         public Expression Content { get; }
