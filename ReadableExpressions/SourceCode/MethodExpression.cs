@@ -58,7 +58,10 @@
             public MethodExpressionMethod(Expression body)
             {
                 _body = body;
-                Name = "Get" + ReturnType.GetFriendlyName().ToPascalCase();
+
+                Name = body.HasReturnType()
+                    ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
+                    : "DoAction";
             }
 
             public Type DeclaringType => null;

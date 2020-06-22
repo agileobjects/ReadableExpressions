@@ -186,10 +186,10 @@
             switch (expression.NodeType)
             {
                 case Label:
-                    return (expression.Type != typeof(void)) ||
+                    return expression.HasReturnType() ||
                            context.IsReferencedByGoto(((LabelExpression)expression).Target);
 
-                case Default when expression.Type == typeof(void):
+                case Default when !expression.HasReturnType():
                     return false;
             }
 

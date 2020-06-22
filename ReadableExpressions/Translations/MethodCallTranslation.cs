@@ -44,7 +44,7 @@
             {
                 var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
 
-                if (methodCall.Method.ReturnType != typeof(void))
+                if (methodCall.HasReturnType())
                 {
                     return getterTranslation;
                 }

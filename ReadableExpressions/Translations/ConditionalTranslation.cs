@@ -36,10 +36,10 @@
         private static bool HasNoElseCondition(ConditionalExpression conditional)
         {
             return (conditional.IfFalse.NodeType == ExpressionType.Default) &&
-                   (conditional.Type == typeof(void));
+                   !conditional.HasReturnType();
         }
 
-        public static bool IsTernary(Expression conditional) => conditional.Type != typeof(void);
+        public static bool IsTernary(Expression conditional) => conditional.HasReturnType();
 
         private abstract class ConditionalTranslationBase : ITranslation
         {
