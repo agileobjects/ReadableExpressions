@@ -76,5 +76,30 @@ namespace GeneratedExpressionCode
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldTranslateATwoParameterLambdaActionToAMethod()
+        {
+            var returnGivenLong = CreateLambda((DateTime date1, DateTime date2) => date1 - date2);
+
+            var translated = returnGivenLong.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public TimeSpan GetTimeSpan
+        (
+            DateTime date1,
+            DateTime date2
+        )
+        {
+            return date1 - date2;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
