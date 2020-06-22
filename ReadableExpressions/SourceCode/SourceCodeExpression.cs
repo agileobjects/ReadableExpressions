@@ -1,17 +1,58 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
+    using System;
+    using System.Collections.ObjectModel;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
 
-    internal class SourceCodeExpression
+    /// <summary>
+    /// Represents a piece of complete source code.
+    /// </summary>
+    public class SourceCodeExpression : Expression
     {
-        public static SourceCodeExpression For(
-            Expression expression)
+        internal SourceCodeExpression(Expression content)
         {
-            return new SourceCodeExpression();
+            Namespace = "GeneratedExpressionCode";
+            Content = content;
+
+            switch (content.NodeType)
+            {
+                case ExpressionType.Lambda:
+                    Elements = new ReadOnlyCollection<Expression>(
+                        new Expression[] { new ClassExpression((LambdaExpression)content) });
+                    break;
+            }
         }
+
+        /// <summary>
+        /// Gets the <see cref="SourceCodeExpressionType"/> value (1000) indicating the type of this
+        /// <see cref="SourceCodeExpression"/> as an ExpressionType.
+        /// </summary>
+        public override ExpressionType NodeType
+            => (ExpressionType)SourceCodeExpressionType.SourceCode;
+
+        /// <summary>
+        /// Gets the type of this <see cref="SourceCodeExpression"/> - typeof(string).
+        /// </summary>
+        public override Type Type => typeof(string);
+
+        /// <summary>
+        /// Gets the Expression on which this <see cref="SourceCodeExpression"/> is based.
+        /// </summary>
+        public Expression Content { get; }
+
+        /// <summary>
+        /// Gets the namespace to which the source code represented by this
+        /// <see cref="SourceCodeExpression"/> belongs.
+        /// </summary>
+        public string Namespace { get; }
+
+        /// <summary>
+        /// Gets the Expressions which describe the elements of this <see cref="SourceCodeExpression"/>.
+        /// </summary>
+        public ReadOnlyCollection<Expression> Elements { get; }
     }
 }

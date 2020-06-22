@@ -17,13 +17,7 @@
         private static readonly string[] _newLines = { NewLine };
         private const string _commentString = "// ";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CommentExpression"/> class.
-        /// </summary>
-        /// <param name="comment">
-        /// The comment text create, without slashes or /* */.
-        /// </param>
-        public CommentExpression(string comment)
+        internal CommentExpression(string comment)
         {
             Comment =
                 _commentString +
@@ -31,7 +25,7 @@
         }
 
         /// <summary>
-        /// Gets the <see cref="SourceCodeExpressionType"/> value (1000) indicating the type of this
+        /// Gets the <see cref="SourceCodeExpressionType"/> value (1003) indicating the type of this
         /// <see cref="CommentExpression"/> as an ExpressionType.
         /// </summary>
         public override ExpressionType NodeType

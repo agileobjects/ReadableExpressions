@@ -17,18 +17,12 @@
         public ParameterSetDefinitionTranslation(
             MethodInfo method,
             TranslationSettings settings)
-            : this((MethodBase)method, settings)
+            : this(new BclMethodWrapper(method), settings)
         {
-            if (method.IsExtensionMethod())
-            {
-                _isExtensionMethod = true;
-                TranslationSize += "this ".Length;
-                FormattingSize += settings.GetKeywordFormattingSize();
-            }
         }
 
         public ParameterSetDefinitionTranslation(
-            MethodBase method,
+            IMethod method,
             TranslationSettings settings)
         {
             _settings = settings;
@@ -87,6 +81,13 @@
 
             TranslationSize = translationSize;
             FormattingSize = formattingSize;
+
+            if (method.IsExtensionMethod)
+            {
+                _isExtensionMethod = true;
+                TranslationSize += "this ".Length;
+                FormattingSize += settings.GetKeywordFormattingSize();
+            }
         }
 
         public int TranslationSize { get; }

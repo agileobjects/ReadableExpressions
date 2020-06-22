@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations.SourceCode
 {
     using System;
 #if NET35
@@ -9,7 +9,7 @@
     using Extensions;
     using Formatting;
     using Interfaces;
-    using SourceCode;
+    using ReadableExpressions.SourceCode;
 
     internal class CommentTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {

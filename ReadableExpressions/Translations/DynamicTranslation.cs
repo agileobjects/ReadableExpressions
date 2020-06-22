@@ -231,6 +231,24 @@
                     Name = name;
                 }
 
+                public Type DeclaringType => null;
+                
+                public bool IsPublic => false;
+                
+                public bool IsProtectedInternal => false;
+                
+                public bool IsInternal => false;
+                
+                public bool IsProtected => false;
+                
+                public bool IsPrivate => false;
+                
+                public bool IsAbstract => false;
+                
+                public bool IsStatic => false;
+
+                public bool IsVirtual => false;
+                
                 public string Name { get; }
 
                 public bool IsGenericMethod => false;

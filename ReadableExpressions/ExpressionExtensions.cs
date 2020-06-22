@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Extensions;
     using Translations;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -53,23 +52,14 @@
         }
 
         /// <summary>
-        /// Translates the given <paramref name="expression"/> to a source-code string, formatted
-        /// as one or more classes with one or more methods.
+        /// Translates the given <paramref name="expression"/> to a complete source-code string,
+        /// formatted as one or more classes with one or more methods in a namespace.
         /// </summary>
-        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="expression">The Expression to translate to source code.</param>
         /// <returns>The translated <paramref name="expression"/>.</returns>
         public static string ToSourceCode(this Expression expression)
         {
-            var translation = expression.ToReadableString();
-
-            return @$"
-public class MyClass
-{{
-    public {expression.Type.GetFriendlyName()} MyMethod()
-    {{
-        {translation}
-    }}
-}}";
+            return ReadableExpression.SourceCode(expression).ToReadableString();
         }
 
         internal static TranslationSettings GetTranslationSettings(

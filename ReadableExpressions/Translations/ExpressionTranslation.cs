@@ -9,19 +9,20 @@
 #endif
     using Initialisations;
     using Interfaces;
+    using ReadableExpressions.SourceCode;
     using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static SourceCode.SourceCodeExpressionType;
+    using static ReadableExpressions.SourceCode.SourceCodeExpressionType;
 
     internal class ExpressionTranslation : ITranslationContext
     {
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
-        private readonly ITranslation _root;
+        private readonly ITranslatable _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
@@ -250,6 +251,15 @@
                 default:
                     switch ((SourceCodeExpressionType)expression.NodeType)
                     {
+                        case SourceCodeExpressionType.SourceCode:
+                            return new SourceCodeTranslation((SourceCodeExpression)expression, this);
+
+                        case Class:
+                            return new ClassTranslation((ClassExpression)expression, this);
+
+                        case Method:
+                            return new MethodTranslation((MethodExpression)expression, this);
+
                         case Comment:
                             return new CommentTranslation((CommentExpression)expression, this);
                     }

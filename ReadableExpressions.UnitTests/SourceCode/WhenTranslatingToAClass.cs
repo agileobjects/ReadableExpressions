@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
 #if !NET35
     using Xunit;
@@ -17,9 +17,9 @@
             var translated = returnOneThousand.ToSourceCode();
 
             const string EXPECTED = @"
-namespace GeneratedCode
+namespace GeneratedExpressionCode
 {
-    public class GeneratedClass
+    public class GeneratedExpressionClass
     {
         public int GetInt()
         {
@@ -27,7 +27,6 @@ namespace GeneratedCode
         }
     }
 }";
-
             translated.ShouldBe(EXPECTED.TrimStart());
         }
     }

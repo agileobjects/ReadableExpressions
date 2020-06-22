@@ -17,8 +17,8 @@
         private readonly int _genericArgumentCount;
         private readonly ITranslatable _parametersTranslation;
 
-        private MethodDefinitionTranslation(
-            MethodInfo method,
+        public MethodDefinitionTranslation(
+            IMethod method,
             TranslationSettings settings)
         {
             _accessibility = GetAccessibility(method);
@@ -105,7 +105,7 @@
                 return new OperatorDefinitionTranslation(method, "explicit", settings);
             }
 
-            return new MethodDefinitionTranslation(method, settings);
+            return new MethodDefinitionTranslation(new BclMethodWrapper(method), settings);
         }
 
         public int TranslationSize { get; }
