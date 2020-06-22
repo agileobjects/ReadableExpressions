@@ -10,10 +10,10 @@
 
     [NUnit.Framework.TestFixture]
 #endif
-    public class WhenTranslatingToAClass : TestClassBase
+    public class WhenTranslatingToSourceCode : TestClassBase
     {
         [Fact]
-        public void ShouldTranslateAnEmptyParameterlessLambdaActionToAMethod()
+        public void ShouldTranslateAnEmptyParameterlessLambdaActionToASourceCodeMethod()
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
@@ -33,7 +33,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldTranslateAParameterlessLambdaFuncToAMethod()
+        public void ShouldTranslateAParameterlessLambdaFuncToASourceCodeMethod()
         {
             var returnOneThousand = CreateLambda(() => 1000);
 
@@ -54,7 +54,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldTranslateASingleParameterLambdaFuncToAMethod()
+        public void ShouldTranslateASingleParameterLambdaFuncToASourceCodeMethod()
         {
             var returnGivenLong = CreateLambda((long arg) => arg);
 
@@ -78,11 +78,11 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldTranslateATwoParameterLambdaActionToAMethod()
+        public void ShouldTranslateATwoParameterLambdaActionToASourceCodeMethod()
         {
-            var returnGivenLong = CreateLambda((DateTime date1, DateTime date2) => date1 - date2);
+            var returnDateDiff = CreateLambda((DateTime date1, DateTime date2) => date1 - date2);
 
-            var translated = returnGivenLong.ToSourceCode();
+            var translated = returnDateDiff.ToSourceCode();
 
             const string EXPECTED = @"
 namespace GeneratedExpressionCode
