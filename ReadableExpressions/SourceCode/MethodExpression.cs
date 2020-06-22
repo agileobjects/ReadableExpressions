@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using System.Reflection;
     using Extensions;
     using Translations.Reflection;
 
@@ -18,7 +17,7 @@
         internal MethodExpression(LambdaExpression bodyLambda)
         {
             Body = bodyLambda.Body;
-            Method = new MethodExpressionMethod(bodyLambda.Body);
+            Method = new MethodExpressionMethod(bodyLambda);
         }
 
         /// <summary>
@@ -54,14 +53,19 @@
         private class MethodExpressionMethod : IMethod
         {
             private readonly Expression _body;
+            private readonly IParameter[] _parameters;
 
-            public MethodExpressionMethod(Expression body)
+            public MethodExpressionMethod(LambdaExpression definition)
             {
-                _body = body;
+                _body = definition.Body;
 
-                Name = body.HasReturnType()
+                Name = _body.HasReturnType()
                     ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
                     : "DoAction";
+
+                _parameters = definition
+                    .Parameters
+                    .ProjectToArray(p => (IParameter)new MethodExpressionParameter(p));
             }
 
             public Type DeclaringType => null;
@@ -95,8 +99,25 @@
             public Type[] GetGenericArguments()
                 => Enumerable<Type>.EmptyArray;
 
-            public ParameterInfo[] GetParameters()
-                => Enumerable<ParameterInfo>.EmptyArray;
+            public IParameter[] GetParameters() => _parameters;
+
+            private class MethodExpressionParameter : IParameter
+            {
+                private readonly ParameterExpression _parameter;
+
+                public MethodExpressionParameter(ParameterExpression parameter)
+                {
+                    _parameter = parameter;
+                }
+
+                public Type Type => _parameter.Type;
+
+                public string Name => _parameter.Name;
+
+                public bool IsOut => false;
+
+                public bool IsParamsArray => false;
+            }
         }
     }
 }

@@ -4,12 +4,11 @@
     using Extensions;
     using Formatting;
     using Interfaces;
-    using NetStandardPolyfills;
 
     internal class ParameterSetDefinitionTranslation : ITranslatable
     {
         private readonly TranslationSettings _settings;
-        private readonly ParameterInfo[] _parameters;
+        private readonly IParameter[] _parameters;
         private readonly int _parameterCount;
         private readonly ITranslatable[] _parameterTranslations;
         private readonly bool _isExtensionMethod;
@@ -45,7 +44,7 @@
             for (var i = 0; ;)
             {
                 var parameter = _parameters[i];
-                var parameterType = parameter.ParameterType;
+                var parameterType = parameter.Type;
 
                 if (parameter.IsOut)
                 {
@@ -57,7 +56,7 @@
                     parameterType = parameterType.GetElementType();
                     formattingSize += keywordFormattingSize;
                 }
-                else if (i == finalParameterIndex && parameter.IsParamsArray())
+                else if (i == finalParameterIndex && parameter.IsParamsArray)
                 {
                     formattingSize += keywordFormattingSize;
                 }
@@ -115,7 +114,7 @@
             for (var i = 0; ;)
             {
                 var parameter = _parameters[i];
-                var parameterType = parameter.ParameterType;
+                var parameterType = parameter.Type;
 
                 writer.WriteNewLineToTranslation();
 
@@ -131,7 +130,7 @@
                 {
                     writer.WriteKeywordToTranslation("ref ");
                 }
-                else if (i == finalParameterIndex && parameter.IsParamsArray())
+                else if (i == finalParameterIndex && parameter.IsParamsArray)
                 {
                     writer.WriteKeywordToTranslation("params ");
                 }

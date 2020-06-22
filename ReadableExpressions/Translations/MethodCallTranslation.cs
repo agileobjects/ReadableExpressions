@@ -290,7 +290,7 @@
                 if (context.Settings.UseImplicitGenericParameters)
                 {
                     RemoveSuppliedGenericTypeParameters(
-                        methodGenericDefinition.GetParameters().Project(p => p.ParameterType),
+                        methodGenericDefinition.GetParameters().Project(p => p.Type),
                         genericParameterTypes);
                 }
 

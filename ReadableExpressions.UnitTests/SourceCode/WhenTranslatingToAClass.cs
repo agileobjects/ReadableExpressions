@@ -52,5 +52,29 @@ namespace GeneratedExpressionCode
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldTranslateASingleParameterLambdaFuncToAMethod()
+        {
+            var returnGivenLong = CreateLambda((long arg) => arg);
+
+            var translated = returnGivenLong.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public long GetLong
+        (
+            long arg
+        )
+        {
+            return arg;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }

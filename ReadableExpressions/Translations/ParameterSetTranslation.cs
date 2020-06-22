@@ -8,7 +8,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using System.Reflection;
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
@@ -95,7 +94,7 @@
 
             Count = count;
 
-            ParameterInfo[] methodParameters;
+            IParameter[] methodParameters;
 
             if (methodProvided)
             {
@@ -178,7 +177,7 @@
 
         private IEnumerable<Expression> GetAllParameters(
             IEnumerable<Expression> parameters,
-            IList<ParameterInfo> methodParameters)
+            IList<IParameter> methodParameters)
         {
             var i = 0;
 
@@ -186,7 +185,7 @@
             {
                 // params arrays are always the last parameter:
                 if ((i == (methodParameters.Count - 1)) &&
-                     methodParameters[i].IsParamsArray())
+                     methodParameters[i].IsParamsArray)
                 {
                     var paramsArray = (NewArrayExpression)parameter;
 
@@ -210,7 +209,7 @@
 
         private static ITranslation GetParameterTranslation(
             Expression parameter,
-            ParameterInfo info,
+            IParameter info,
             ITranslationContext context)
         {
             if (info.IsOut)
@@ -218,7 +217,7 @@
                 return new OutParameterTranslation(parameter, context);
             }
 
-            if (info.ParameterType.IsByRef)
+            if (info.Type.IsByRef)
             {
                 return new RefParameterTranslation(parameter, context);
             }
