@@ -9,20 +9,22 @@
 #endif
     using Initialisations;
     using Interfaces;
+    using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static SourceCode.SourceCodeExpressionType;
 
-    internal class ExpressionTreeTranslation : ITranslationContext
+    internal class ExpressionTranslation : ITranslationContext
     {
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public ExpressionTreeTranslation(Expression expression, TranslationSettings settings)
+        public ExpressionTranslation(Expression expression, TranslationSettings settings)
         {
             _settings = settings;
             _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
@@ -244,6 +246,15 @@
 
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
+
+                default:
+                    switch ((SourceCodeExpressionType)expression.NodeType)
+                    {
+                        case Comment:
+                            return new CommentTranslation((CommentExpression)expression, this);
+                    }
+
+                    break;
             }
 
             return new FixedValueTranslation(expression, this);

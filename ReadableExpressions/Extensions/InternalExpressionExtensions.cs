@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using SourceCode;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -57,9 +58,6 @@
             => (block.Type != typeof(void)) && block.Result.IsReturnable();
 
         public static bool IsComment(this Expression expression)
-            => (expression.NodeType == Constant) && IsComment((ConstantExpression)expression);
-
-        private static bool IsComment(ConstantExpression constant)
-            => (constant.Value is string value) && value.IsComment();
+            => expression.NodeType == (ExpressionType)SourceCodeExpressionType.Comment;
     }
 }

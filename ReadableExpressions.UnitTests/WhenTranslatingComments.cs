@@ -23,6 +23,16 @@
         }
 
         [Fact]
+        public void ShouldUseATranslatedCommentInToString()
+        {
+            var comment = ReadableExpression.Comment("ToString me");
+
+            var translated = comment.ToString();
+
+            translated.ShouldBe("// ToString me");
+        }
+
+        [Fact]
         public void ShouldTranslateAMultipleLineComment()
         {
             var comment = ReadableExpression.Comment(@"

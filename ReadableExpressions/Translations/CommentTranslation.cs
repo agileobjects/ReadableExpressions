@@ -9,14 +9,15 @@
     using Extensions;
     using Formatting;
     using Interfaces;
+    using SourceCode;
 
     internal class CommentTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
         private readonly string _comment;
 
-        public CommentTranslation(string comment, ITranslationContext context)
+        public CommentTranslation(CommentExpression comment, ITranslationContext context)
         {
-            _comment = comment;
+            _comment = comment.Comment;
             FormattingSize = context.GetFormattingSize(TokenType.Comment);
         }
 
