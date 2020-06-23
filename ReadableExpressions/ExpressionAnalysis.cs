@@ -126,6 +126,9 @@
                 switch (expression.NodeType)
                 {
                     case Constant:
+                        Visit((ConstantExpression)expression);
+                        return;
+
                     case DebugInfo:
                     case Extension:
                         return;
@@ -364,6 +367,14 @@
             });
         }
 
+        private void Visit(ConstantExpression constant)
+        {
+            if (constant.Type.IsAssignableTo(typeof(Type)))
+            {
+                AddNamespaceIfRequired((Type)constant.Value);
+            }
+        }
+
         private void Visit(DefaultExpression @default)
             => AddNamespaceIfRequired(@default.Type);
 
@@ -507,6 +518,7 @@
 
         private void Visit(MethodExpression method)
         {
+            AddNamespaceIfRequired(method.Type);
             Visit(method.Parameters);
             Visit(method.Body);
         }

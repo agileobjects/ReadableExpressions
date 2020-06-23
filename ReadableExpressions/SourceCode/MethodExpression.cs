@@ -112,6 +112,8 @@
             {
                 _parameters = parameters;
                 _body = definition.Body;
+                
+                ReturnType = definition.ReturnType;
 
                 Name = _body.HasReturnType()
                     ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
@@ -142,7 +144,7 @@
 
             public bool IsExtensionMethod => false;
 
-            public Type ReturnType => _body.Type;
+            public Type ReturnType { get; }
 
             public IMethod GetGenericMethodDefinition() => null;
 

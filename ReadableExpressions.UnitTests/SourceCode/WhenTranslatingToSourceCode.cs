@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
 #if !NET35
@@ -121,6 +122,30 @@ namespace GeneratedExpressionCode
         public DateTime GetDateTime()
         {
             return default(DateTime);
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeASystemUsingFromATypeOfExpression()
+        {
+            var getDefaultDate = Lambda<Func<Type>>(Constant(typeof(Stream)));
+
+            var translated = getDefaultDate.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+using System.IO;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public Type GetType()
+        {
+            return typeof(Stream);
         }
     }
 }";
