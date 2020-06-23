@@ -21,8 +21,13 @@
         Method = 1002,
 
         /// <summary>
-        /// 1003. A source code comment.
+        /// 1003. A source code method parameter.
         /// </summary>
-        Comment = 1003
+        MethodParameter = 1003,
+
+        /// <summary>
+        /// 1004. A source code comment.
+        /// </summary>
+        Comment = 1004
     }
 }

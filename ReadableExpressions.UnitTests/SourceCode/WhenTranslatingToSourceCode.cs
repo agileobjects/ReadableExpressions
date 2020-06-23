@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using System.Text;
+    using System.Text.RegularExpressions;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -144,6 +146,63 @@ namespace GeneratedExpressionCode
         public long GetLong()
         {
             return DateTime.Now.Ticks;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeSystemUsingsFromMethodArgumentTypes()
+        {
+            var stringBuilderMatchesRegex = CreateLambda(
+                (Regex re, StringBuilder sb) => re.IsMatch(sb.ToString()));
+
+            var translated = stringBuilderMatchesRegex.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public bool GetBool
+        (
+            Regex re,
+            StringBuilder sb
+        )
+        {
+            return re.IsMatch(sb.ToString());
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotDuplicateUsings()
+        {
+            var stringBuilderContainsOther = CreateLambda(
+                (StringBuilder sb1, StringBuilder sb2) => sb1.ToString().Contains(sb2.ToString()));
+
+            var translated = stringBuilderContainsOther.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.Text;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public bool GetBool
+        (
+            StringBuilder sb1,
+            StringBuilder sb2
+        )
+        {
+            return sb1.ToString().Contains(sb2.ToString());
         }
     }
 }";

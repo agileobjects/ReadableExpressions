@@ -285,8 +285,20 @@
                         switch ((SourceCodeExpressionType)expression.NodeType)
                         {
                             case SourceCodeExpressionType.SourceCode:
-                                expression = ((SourceCodeExpression)expression).Content;
-                                continue;
+                                Visit(((SourceCodeExpression)expression).Elements);
+                                return;
+
+                            case SourceCodeExpressionType.Class:
+                                Visit(((ClassExpression)expression).Methods);
+                                return;
+
+                            case SourceCodeExpressionType.Method:
+                                Visit((MethodExpression)expression);
+                                return;
+
+                            case SourceCodeExpressionType.MethodParameter:
+                                Visit((MethodParameterExpression)expression);
+                                return;
                         }
 
                         return;
@@ -342,58 +354,6 @@
             _blocks.Pop();
         }
 
-        private void Visit(MethodCallExpression methodCall)
-        {
-            if (_chainedMethodCalls?.Contains(methodCall) != true)
-            {
-                var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
-
-                if (methodCallChain.Length > 1)
-                {
-                    _chainedMethodCalls ??= new List<MethodCallExpression>();
-
-                    if (methodCallChain.Length > 2)
-                    {
-                        _chainedMethodCalls.AddRange(methodCallChain);
-                    }
-                    else if (methodCallChain[0].ToString().Contains(" ... "))
-                    {
-                        // Expression.ToString() replaces multiple lines with ' ... ';
-                        // potential fragile, but works unless MS change it:
-                        _chainedMethodCalls.AddRange(methodCallChain);
-                    }
-                }
-            }
-
-            if (_settings.DeclareOutParamsInline)
-            {
-                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
-                {
-                    var argument = methodCall.Arguments[i];
-
-                    if ((argument.NodeType == Parameter) &&
-                        VariableHasNotYetBeenAccessed(argument))
-                    {
-                        (_inlineOutputVariables ??= new List<ParameterExpression>())
-                            .Add((ParameterExpression)argument);
-                    }
-                }
-            }
-
-            Visit(methodCall.Object);
-            Visit(methodCall.Arguments);
-        }
-
-        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
-        {
-            while (methodCall != null)
-            {
-                yield return methodCall;
-
-                methodCall = methodCall.GetSubject() as MethodCallExpression;
-            }
-        }
-
         private void Visit(ConditionalExpression conditional)
         {
             VisitConstruct(conditional, c =>
@@ -404,12 +364,12 @@
             });
         }
 
-        private void Visit(DefaultExpression @default) 
+        private void Visit(DefaultExpression @default)
             => AddNamespaceIfRequired(@default.Type);
 
         private void AddNamespaceIfRequired(Type accessedType)
         {
-            if (!_settings.CollectRequiredNamespaces || 
+            if (!_settings.CollectRequiredNamespaces ||
                (accessedType == typeof(void)) ||
                 accessedType.IsPrimitive())
             {
@@ -492,6 +452,67 @@
             // Static member access
             AddNamespaceIfRequired(memberAccess.Member.DeclaringType);
         }
+
+        private void Visit(MethodCallExpression methodCall)
+        {
+            if (_chainedMethodCalls?.Contains(methodCall) != true)
+            {
+                var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
+
+                if (methodCallChain.Length > 1)
+                {
+                    _chainedMethodCalls ??= new List<MethodCallExpression>();
+
+                    if (methodCallChain.Length > 2)
+                    {
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                    else if (methodCallChain[0].ToString().Contains(" ... "))
+                    {
+                        // Expression.ToString() replaces multiple lines with ' ... ';
+                        // potential fragile, but works unless MS change it:
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                }
+            }
+
+            if (_settings.DeclareOutParamsInline)
+            {
+                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                {
+                    var argument = methodCall.Arguments[i];
+
+                    if ((argument.NodeType == Parameter) &&
+                        VariableHasNotYetBeenAccessed(argument))
+                    {
+                        (_inlineOutputVariables ??= new List<ParameterExpression>())
+                            .Add((ParameterExpression)argument);
+                    }
+                }
+            }
+
+            Visit(methodCall.Object);
+            Visit(methodCall.Arguments);
+        }
+
+        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
+        {
+            while (methodCall != null)
+            {
+                yield return methodCall;
+
+                methodCall = methodCall.GetSubject() as MethodCallExpression;
+            }
+        }
+
+        private void Visit(MethodExpression method)
+        {
+            Visit(method.Parameters);
+            Visit(method.Body);
+        }
+
+        private void Visit(MethodParameterExpression methodParameter)
+            => AddNamespaceIfRequired(methodParameter.Type);
 
         private void Visit(NewExpression newing) => Visit(newing.Arguments);
 
@@ -639,7 +660,8 @@
             }
         }
 
-        private void Visit(IList<Expression> expressions)
+        private void Visit<TExpression>(IList<TExpression> expressions)
+            where TExpression : Expression
         {
             for (int i = 0, n = expressions.Count; i < n; ++i)
             {

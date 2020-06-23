@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
     using System;
+    using System.Collections.ObjectModel;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -16,8 +17,31 @@
     {
         private MethodExpression(LambdaExpression bodyLambda)
         {
+            IParameter[] parameters;
+
+            var parameterCount = bodyLambda.Parameters.Count;
+
+            if (parameterCount != 0)
+            {
+                var methodParameters = new MethodParameterExpression[parameterCount];
+                parameters = new IParameter[parameterCount];
+
+                for (var i = 0; i < parameterCount; i++)
+                {
+                    parameters[i] = methodParameters[i] = 
+                        new MethodParameterExpression(bodyLambda.Parameters[i]);
+                }
+
+                Parameters = new ReadOnlyCollection<MethodParameterExpression>(methodParameters);
+            }
+            else
+            {
+                parameters = Enumerable<IParameter>.EmptyArray;
+                Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
+            }
+
             Body = bodyLambda.Body;
-            Method = new MethodExpressionMethod(bodyLambda);
+            Method = new MethodExpressionMethod(bodyLambda, parameters);
         }
 
         internal static MethodExpression For(Expression expression)
@@ -55,9 +79,20 @@
         /// <returns>This <see cref="MethodExpression"/>.</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
+            foreach (var parameter in Parameters)
+            {
+                visitor.Visit(parameter);
+            }
+            
             visitor.Visit(Body);
             return this;
         }
+
+        /// <summary>
+        /// Gets the <see cref="MethodParameterExpression"/>s describing the parameters of this
+        /// <see cref="MethodExpression"/>.
+        /// </summary>
+        public ReadOnlyCollection<MethodParameterExpression> Parameters { get; }
 
         /// <summary>
         /// Gets the Expression describing the body of this <see cref="MethodExpression"/>.
@@ -68,20 +103,19 @@
 
         private class MethodExpressionMethod : IMethod
         {
-            private readonly Expression _body;
             private readonly IParameter[] _parameters;
+            private readonly Expression _body;
 
-            public MethodExpressionMethod(LambdaExpression definition)
+            public MethodExpressionMethod(
+                LambdaExpression definition,
+                IParameter[] parameters)
             {
+                _parameters = parameters;
                 _body = definition.Body;
 
                 Name = _body.HasReturnType()
                     ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
                     : "DoAction";
-
-                _parameters = definition
-                    .Parameters
-                    .ProjectToArray(p => (IParameter)new MethodExpressionParameter(p));
             }
 
             public Type DeclaringType => null;
@@ -116,24 +150,6 @@
                 => Enumerable<Type>.EmptyArray;
 
             public IParameter[] GetParameters() => _parameters;
-
-            private class MethodExpressionParameter : IParameter
-            {
-                private readonly ParameterExpression _parameter;
-
-                public MethodExpressionParameter(ParameterExpression parameter)
-                {
-                    _parameter = parameter;
-                }
-
-                public Type Type => _parameter.Type;
-
-                public string Name => _parameter.Name;
-
-                public bool IsOut => false;
-
-                public bool IsParamsArray => false;
-            }
         }
     }
 }
