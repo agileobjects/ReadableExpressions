@@ -244,8 +244,8 @@
                         continue;
 
                     case MemberAccess:
-                        expression = ((MemberExpression)expression).Expression;
-                        continue;
+                        Visit((MemberExpression)expression);
+                        return;
 
                     case MemberInit:
                         Visit((MemberInitExpression)expression);
@@ -342,30 +342,6 @@
             _blocks.Pop();
         }
 
-        private void Visit(DefaultExpression @default)
-        {
-            if (!_settings.CollectRequiredNamespaces || 
-                !@default.HasReturnType() ||
-                 @default.Type.IsPrimitive())
-            {
-                return;
-            }
-
-            var @namespace = @default.Type.Namespace;
-
-            if (@namespace == null)
-            {
-                return;
-            }
-
-            _requiredNamespaces ??= new List<string>();
-
-            if (!_requiredNamespaces.Contains(@namespace))
-            {
-                _requiredNamespaces.Add(@namespace);
-            }
-        }
-
         private void Visit(MethodCallExpression methodCall)
         {
             if (_chainedMethodCalls?.Contains(methodCall) != true)
@@ -428,6 +404,33 @@
             });
         }
 
+        private void Visit(DefaultExpression @default) 
+            => AddNamespaceIfRequired(@default.Type);
+
+        private void AddNamespaceIfRequired(Type accessedType)
+        {
+            if (!_settings.CollectRequiredNamespaces || 
+               (accessedType == typeof(void)) ||
+                accessedType.IsPrimitive())
+            {
+                return;
+            }
+
+            var @namespace = accessedType.Namespace;
+
+            if (@namespace == null)
+            {
+                return;
+            }
+
+            _requiredNamespaces ??= new List<string>();
+
+            if (!_requiredNamespaces.Contains(@namespace))
+            {
+                _requiredNamespaces.Add(@namespace);
+            }
+        }
+
         private void Visit(GotoExpression @goto)
         {
             if (@goto.Kind != GotoExpressionKind.Goto)
@@ -476,6 +479,18 @@
         {
             Visit(init.NewExpression);
             Visit(init.Initializers);
+        }
+
+        private void Visit(MemberExpression memberAccess)
+        {
+            if (memberAccess.Expression != null)
+            {
+                Visit(memberAccess.Expression);
+                return;
+            }
+
+            // Static member access
+            AddNamespaceIfRequired(memberAccess.Member.DeclaringType);
         }
 
         private void Visit(NewExpression newing) => Visit(newing.Arguments);

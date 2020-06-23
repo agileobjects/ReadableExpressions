@@ -124,5 +124,30 @@ namespace GeneratedExpressionCode
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldIncludeASystemUsingFromAStaticMemberAccessExpression()
+        {
+            var dateTimeNow = Property(null, typeof(DateTime), nameof(DateTime.Now));
+            var dateTimeTicks = Property(dateTimeNow, nameof(DateTime.Ticks));
+            var getDefaultDate = Lambda<Func<long>>(dateTimeTicks);
+
+            var translated = getDefaultDate.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public long GetLong()
+        {
+            return DateTime.Now.Ticks;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
