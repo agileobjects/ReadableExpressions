@@ -54,7 +54,7 @@
         private static string Translate(Type type)
             => type.ToReadableString(ApplyDialogSettings);
 
-        private static TranslationSettings ApplyDialogSettings(TranslationSettings settings) 
+        private static ITranslationSettings ApplyDialogSettings(ITranslationSettings settings) 
             => GetDialogSettings().Update(settings.FormatUsing(_htmlFormatter));
 
         private static VisualizerDialogSettings GetDialogSettings()

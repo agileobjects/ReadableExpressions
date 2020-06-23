@@ -80,22 +80,45 @@ namespace GeneratedExpressionCode
         [Fact]
         public void ShouldTranslateATwoParameterLambdaActionToASourceCodeMethod()
         {
-            var returnDateDiff = CreateLambda((DateTime date1, DateTime date2) => date1 - date2);
+            var subtractShortFromInt = CreateLambda((int value1, short value2) => value1 - value2);
 
-            var translated = returnDateDiff.ToSourceCode();
+            var translated = subtractShortFromInt.ToSourceCode();
 
             const string EXPECTED = @"
 namespace GeneratedExpressionCode
 {
     public class GeneratedExpressionClass
     {
-        public TimeSpan GetTimeSpan
+        public int GetInt
         (
-            DateTime date1,
-            DateTime date2
+            int value1,
+            short value2
         )
         {
-            return date1 - date2;
+            return value1 - ((int)value2);
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeASystemUsingFromADefaultExpression()
+        {
+            var getDefaultDate = Lambda<Func<DateTime>>(Default(typeof(DateTime)));
+
+            var translated = getDefaultDate.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public DateTime GetDateTime()
+        {
+            return default(DateTime);
         }
     }
 }";

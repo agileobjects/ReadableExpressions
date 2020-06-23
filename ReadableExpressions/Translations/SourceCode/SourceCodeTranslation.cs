@@ -12,8 +12,11 @@
 
     internal class SourceCodeTranslation : ITranslation
     {
+        private const string _using = "using ";
         private const string _namespace = "namespace ";
 
+        private readonly IList<string> _namespaces;
+        private readonly int _namespaceCount;
         private readonly SourceCodeExpression _sourceCode;
         private readonly IList<ITranslation> _elements;
         private readonly int _elementCount;
@@ -22,6 +25,8 @@
             SourceCodeExpression sourceCode,
             ITranslationContext context)
         {
+            _namespaces = context.RequiredNamespaces;
+            _namespaceCount = context.RequiredNamespaces.Count;
             _sourceCode = sourceCode;
             _elementCount = sourceCode.Elements.Count;
             _elements = new ITranslation[_elementCount];
@@ -31,7 +36,27 @@
                 sourceCode.Namespace.Length +
                 6; // <- for opening and closing braces
 
-            var formattingSize = context.GetKeywordFormattingSize(); // <- for 'namespace'
+            var keywordFormattingSize = context.GetKeywordFormattingSize();
+
+            var formattingSize = keywordFormattingSize; // <- for 'namespace'
+
+            if (_namespaceCount != 0)
+            {
+                for (var i = 0; ;)
+                {
+                    translationSize += _namespaces[i].Length;
+                    formattingSize += keywordFormattingSize; // <- for using
+
+                    ++i;
+
+                    if (i == _namespaceCount)
+                    {
+                        break;
+                    }
+
+                    translationSize += 2; // <- for new line
+                }
+            }
 
             for (var i = 0; ;)
             {
@@ -81,7 +106,14 @@
 
         public int GetLineCount()
         {
-            var lineCount = 0;
+            var lineCount = 
+                _namespaceCount + 
+                3; // <- for braces and namespace declaration
+
+            if (_namespaceCount > 0)
+            {
+                ++lineCount; // <- for gap between namespaces and namespace declaration
+            }
 
             for (var i = 0; ;)
             {
@@ -98,6 +130,19 @@
 
         public void WriteTo(TranslationWriter writer)
         {
+            if (_namespaceCount != 0)
+            {
+                for (var i = 0; i < _namespaceCount; ++i)
+                {
+                    writer.WriteKeywordToTranslation(_using);
+                    writer.WriteToTranslation(_namespaces[i]);
+                    writer.WriteToTranslation(';');
+                    writer.WriteNewLineToTranslation();
+                }
+            
+                writer.WriteNewLineToTranslation();
+            }
+
             writer.WriteKeywordToTranslation(_namespace);
             writer.WriteToTranslation(_sourceCode.Namespace);
             writer.WriteOpeningBraceToTranslation();

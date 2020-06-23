@@ -1,12 +1,14 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Translations;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using LinqExpression = System.Linq.Expressions.Expression;
 #else
     using System.Linq.Expressions;
+#endif
+    using Translations;
+#if NET35
+    using LinqExpression = System.Linq.Expressions.Expression;
 #endif
 
     /// <summary>
@@ -23,7 +25,7 @@
         /// <returns>The translated <paramref name="expression"/>.</returns>
         public static string ToReadableString(
             this LinqExpression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return LinqExpressionToDlrExpressionConverter
                 .Convert(expression)
@@ -38,7 +40,7 @@
         /// <returns>The translated <paramref name="expression"/>.</returns>
         public static string ToReadableString(
             this Expression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (expression == null)
             {
@@ -46,9 +48,8 @@
             }
 
             var settings = configuration.GetTranslationSettings();
-            var translation = new ExpressionTranslation(expression, settings);
 
-            return translation.GetTranslation();
+            return expression.Translate(settings);
         }
 
         /// <summary>
@@ -56,12 +57,17 @@
         /// formatted as one or more classes with one or more methods in a namespace.
         /// </summary>
         /// <param name="expression">The Expression to translate to source code.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>
         /// The translated <paramref name="expression"/>, formatted as one or more classes with one
         /// or more methods in a namespace.
         /// </returns>
-        public static string ToSourceCode(this Expression expression) 
-            => ReadableExpression.SourceCode(expression).ToReadableString();
+        public static string ToSourceCode(
+            this Expression expression,
+            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+        {
+            return expression.ToSourceCodeString(ReadableExpression.SourceCode, configuration);
+        }
 
         /// <summary>
         /// Translates the given <paramref name="expression"/> to a source-code string,
@@ -69,13 +75,63 @@
         /// </summary>
         /// <param name="expression">The Expression to translate to source code.</param>
         /// <returns>The translated <paramref name="expression"/>, formatted as a method.</returns>
-        public static string ToSourceCodeMethod(this Expression expression) 
-            => ReadableExpression.Method(expression).ToReadableString();
+        public static string ToSourceCodeMethod(this Expression expression)
+            => expression.ToSourceCodeString(ReadableExpression.Method);
+
+        private static string ToSourceCodeString<TSourceCodeExpression>(
+            this Expression expression,
+            Func<Expression, TSourceCodeExpression> sourceCodeExpressionFactory,
+            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+            where TSourceCodeExpression : Expression
+        {
+            if (expression == null)
+            {
+                return null;
+            }
+
+            var sourceCodeExpression = sourceCodeExpressionFactory.Invoke(expression);
+            var settings = configuration.GetTranslationSettings();
+
+            return sourceCodeExpression.Translate(settings);
+        }
+
+        private static string Translate(
+            this Expression expression,
+            TranslationSettings settings)
+        {
+            var translation = new ExpressionTranslation(expression, settings);
+
+            return translation.GetTranslation();
+        }
 
         internal static TranslationSettings GetTranslationSettings(
-            this Func<TranslationSettings, TranslationSettings> configuration)
+            this Func<ITranslationSettings, ITranslationSettings> configuration)
         {
-            return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;
+            if (configuration == null)
+            {
+                return TranslationSettings.Default;
+            }
+
+            var settings = new TranslationSettings();
+
+            configuration.Invoke(settings);
+
+            return settings;
+        }
+
+        internal static TranslationSettings GetTranslationSettings(
+            this Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration)
+        {
+            if (configuration == null)
+            {
+                return TranslationSettings.DefaultSourceCode;
+            }
+
+            var settings = new TranslationSettings();
+
+            configuration.Invoke(settings);
+
+            return settings;
         }
     }
 }

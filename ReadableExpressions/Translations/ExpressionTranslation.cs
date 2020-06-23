@@ -36,6 +36,9 @@
 
         TranslationSettings ITranslationContext.Settings => _settings;
 
+        IList<string> ITranslationContext.RequiredNamespaces
+            => _expressionAnalysis.RequiredNamespaces;
+
         ICollection<ParameterExpression> ITranslationContext.InlineOutputVariables
             => _expressionAnalysis.InlineOutputVariables;
 

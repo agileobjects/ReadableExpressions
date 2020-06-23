@@ -278,7 +278,7 @@ Two:
 
         private static string ToReadableHtmlString(
             Expression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return expression.ToReadableString(settings =>
             {

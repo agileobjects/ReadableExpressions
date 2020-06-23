@@ -9,6 +9,8 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+    using NetStandardPolyfills;
+    using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -17,8 +19,9 @@
 
     internal class ExpressionAnalysis
     {
-        private readonly ITranslationSettings _settings;
+        private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
+        private List<string> _requiredNamespaces;
         private ICollection<ParameterExpression> _accessedVariables;
         private IList<ParameterExpression> _inlineOutputVariables;
         private IList<ParameterExpression> _joinedAssignmentVariables;
@@ -32,7 +35,7 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
-        public ExpressionAnalysis(ITranslationSettings settings)
+        private ExpressionAnalysis(TranslationSettings settings)
         {
             _settings = settings;
         }
@@ -48,7 +51,7 @@
                 case Extension:
                 case Parameter:
                 case RuntimeVariables:
-                    return settings.EmptyAnalysis;
+                    return new ExpressionAnalysis(settings).Finalise();
             }
 
             var analysis = new ExpressionAnalysis(settings);
@@ -61,12 +64,23 @@
 
         public ExpressionAnalysis Finalise()
         {
+            if (_requiredNamespaces != null)
+            {
+                _requiredNamespaces.Sort();
+            }
+            else
+            {
+                _requiredNamespaces = Enumerable<string>.EmptyList;
+            }
+
             _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
             _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
             return this;
         }
 
         #endregion
+
+        public IList<string> RequiredNamespaces => _requiredNamespaces;
 
         public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
@@ -113,8 +127,11 @@
                 {
                     case Constant:
                     case DebugInfo:
-                    case Default:
                     case Extension:
+                        return;
+
+                    case Default:
+                        Visit((DefaultExpression)expression);
                         return;
 
                     case ArrayLength:
@@ -265,6 +282,13 @@
                         continue;
 
                     default:
+                        switch ((SourceCodeExpressionType)expression.NodeType)
+                        {
+                            case SourceCodeExpressionType.SourceCode:
+                                expression = ((SourceCodeExpression)expression).Content;
+                                continue;
+                        }
+
                         return;
                 }
             }
@@ -305,6 +329,9 @@
             Visit(binary.Right);
         }
 
+        private bool VariableHasNotYetBeenAccessed(Expression variable)
+            => _accessedVariables?.Contains(variable) != true;
+
         private void Visit(BlockExpression block)
         {
             (_blocks ??= new Stack<BlockExpression>()).Push(block);
@@ -315,8 +342,29 @@
             _blocks.Pop();
         }
 
-        private bool VariableHasNotYetBeenAccessed(Expression variable)
-            => _accessedVariables?.Contains(variable) != true;
+        private void Visit(DefaultExpression @default)
+        {
+            if (!_settings.CollectRequiredNamespaces || 
+                !@default.HasReturnType() ||
+                 @default.Type.IsPrimitive())
+            {
+                return;
+            }
+
+            var @namespace = @default.Type.Namespace;
+
+            if (@namespace == null)
+            {
+                return;
+            }
+
+            _requiredNamespaces ??= new List<string>();
+
+            if (!_requiredNamespaces.Contains(@namespace))
+            {
+                _requiredNamespaces.Add(@namespace);
+            }
+        }
 
         private void Visit(MethodCallExpression methodCall)
         {
@@ -402,7 +450,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 

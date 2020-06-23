@@ -18,7 +18,7 @@
         /// <returns>A readable string version of this <paramref name="type"/>.</returns>
         public static string ToReadableString(
             this Type type,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (type == null)
             {
@@ -40,7 +40,7 @@
         /// <returns>A readable string version of this <paramref name="ctor"/>.</returns>
         public static string ToReadableString(
             this ConstructorInfo ctor,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (ctor == null)
             {
@@ -62,7 +62,7 @@
         /// <returns>A readable string version of this <paramref name="method"/>.</returns>
         public static string ToReadableString(
             this MethodInfo method,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (method == null)
             {
@@ -84,7 +84,7 @@
         /// <returns>A readable string version of this <paramref name="property"/>.</returns>
         public static string ToReadableString(
             this PropertyInfo property,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (property == null)
             {

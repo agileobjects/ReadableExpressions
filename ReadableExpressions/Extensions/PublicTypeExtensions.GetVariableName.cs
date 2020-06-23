@@ -13,8 +13,12 @@
         /// <param name="type">The Type for which to retrieve the variable name.</param>
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A camel-case variable name for a variable of this <paramref name="type"/>.</returns>
-        public static string GetVariableNameInCamelCase(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => GetVariableNameInCamelCase(type, configuration.GetTranslationSettings());
+        public static string GetVariableNameInCamelCase(
+            this Type type, 
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            return GetVariableNameInCamelCase(type, configuration.GetTranslationSettings());
+        }
 
         internal static string GetVariableNameInCamelCase(this Type type, TranslationSettings settings)
             => GetVariableName(type, settings).ToCamelCase();
@@ -25,8 +29,12 @@
         /// <param name="type">The Type for which to retrieve the variable name.</param>
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
-        public static string GetVariableNameInPascalCase(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
-            => GetVariableNameInPascalCase(type, configuration.GetTranslationSettings());
+        public static string GetVariableNameInPascalCase(
+            this Type type, 
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            return GetVariableNameInPascalCase(type, configuration.GetTranslationSettings());
+        }
 
         private static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
             => GetVariableName(type, settings).ToPascalCase();

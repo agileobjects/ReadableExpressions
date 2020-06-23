@@ -10,13 +10,18 @@
     internal interface ITranslationContext
     {
         /// <summary>
-        /// Configuration for translation in this context
+        /// Gets the <see cref="TranslationSettings"/> to use for translation in this context.
         /// </summary>
         TranslationSettings Settings { get; }
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expression"/> which are first used as
-        /// an output parameter argument.
+        /// Gets the namespaces required by the translated Expression.
+        /// </summary>
+        IList<string> RequiredNamespaces { get; }
+
+        /// <summary>
+        /// Gets the variables in the translated Expression which are first used as an output
+        /// parameter argument.
         /// </summary>
         ICollection<ParameterExpression> InlineOutputVariables { get; }
 
@@ -32,8 +37,8 @@
         bool ShouldBeDeclaredInline(ParameterExpression parameter);
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expression"/> which should be declared
-        /// in the same statement in which they are assigned.
+        /// Gets the variables in the translated Expression which should be declared in the same
+        /// statement in which they are assigned.
         /// </summary>
         ICollection<ParameterExpression> JoinedAssignmentVariables { get; }
 
@@ -41,7 +46,7 @@
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an
         /// assignment where the assigned variable is declared as part of the assignment statement.
         /// </summary>
-        /// <param name="expression">The <see cref="Expression"/> to evaluate.</param>
+        /// <param name="expression">The Expression to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="expression"/> represents an assignment where the assigned
         /// variable is declared as part of the assignment statement, otherwise false.
@@ -85,7 +90,7 @@
         /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
         /// of multiple method calls.
         /// </summary>
-        /// <param name="methodCall">The <see cref="Expression"/> to evaluate.</param>
+        /// <param name="methodCall">The Expression to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
         /// otherwise false.
