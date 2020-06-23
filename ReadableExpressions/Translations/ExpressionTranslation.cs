@@ -87,6 +87,9 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
+        IList<ParameterExpression> ITranslationContext.GetUnscopedVariablesFor(MethodExpression method)
+            => _expressionAnalysis.UnscopedVariablesByMethod[method];
+
         public ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)

@@ -13,11 +13,9 @@
     /// </summary>
     public class MethodParameterExpression : Expression, IParameter
     {
-        private readonly ParameterExpression _parameter;
-
         internal MethodParameterExpression(ParameterExpression parameter)
         {
-            _parameter = parameter;
+            ParameterExpression = parameter;
         }
 
         /// <summary>
@@ -30,7 +28,7 @@
         /// <summary>
         /// Gets the type of this <see cref="MethodParameterExpression"/>.
         /// </summary>
-        public override Type Type => _parameter.Type;
+        public override Type Type => ParameterExpression.Type;
 
         /// <summary>
         /// Visits this <see cref="MethodParameterExpression"/>.
@@ -41,15 +39,21 @@
         /// <returns>This <see cref="MethodParameterExpression"/>.</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
-            visitor.Visit(_parameter);
+            visitor.Visit(ParameterExpression);
             return this;
         }
+
+        /// <summary>
+        /// Gets the ParameterExpression on which this <see cref="MethodParameterExpression"/> is
+        /// based.
+        /// </summary>
+        public ParameterExpression ParameterExpression { get; }
 
         /// <summary>
         /// Gets the name of the method parameter described by this
         /// <see cref="MethodParameterExpression"/>.
         /// </summary>
-        public string Name => _parameter.Name;
+        public string Name => ParameterExpression.Name;
 
         bool IParameter.IsOut => false;
 

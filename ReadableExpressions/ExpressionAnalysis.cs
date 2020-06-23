@@ -34,6 +34,7 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
+        private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
 
         private ExpressionAnalysis(TranslationSettings settings)
         {
@@ -113,6 +114,9 @@
                 .GroupBy(variable => variable.Type)
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
                  EmptyDictionary<Type, ParameterExpression[]>.Instance;
+
+        public Dictionary<MethodExpression, List<ParameterExpression>> UnscopedVariablesByMethod
+            => _unscopedVariablesByMethod ??= EmptyDictionary<MethodExpression, List<ParameterExpression>>.Instance;
 
         private void Visit(Expression expression)
         {
@@ -355,6 +359,25 @@
             Visit(block.Variables);
 
             _blocks.Pop();
+
+            UpdateMethodVariablesIfAppropriate(block.Variables, (uv, p) => uv.Remove(p));
+        }
+
+        private void UpdateMethodVariablesIfAppropriate(
+            IEnumerable<ParameterExpression> variables,
+            Action<IList<ParameterExpression>, ParameterExpression> methodVariablesAction)
+        {
+            if (_unscopedVariablesByMethod == null)
+            {
+                return;
+            }
+
+            var unscopedVariables = _unscopedVariablesByMethod.Values.Last();
+
+            foreach (var variable in variables)
+            {
+                methodVariablesAction.Invoke(unscopedVariables, variable);
+            }
         }
 
         private void Visit(ConditionalExpression conditional)
@@ -518,12 +541,20 @@
 
         private void Visit(MethodExpression method)
         {
+            (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
+                .Add(method, new List<ParameterExpression>());
+
             AddNamespaceIfRequired(method.Type);
+
             Visit(method.Parameters);
             Visit(method.Body);
+
+            UpdateMethodVariablesIfAppropriate(
+                method.Parameters.ProjectToArray(p => p.ParameterExpression),
+                (uv, p) => uv.Remove(p));
         }
 
-        private void Visit(MethodParameterExpression methodParameter)
+        private void Visit(MethodParameterExpression methodParameter) 
             => AddNamespaceIfRequired(methodParameter.Type);
 
         private void Visit(NewExpression newing) => Visit(newing.Arguments);
@@ -584,6 +615,14 @@
             {
                 (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
             }
+
+            UpdateMethodVariablesIfAppropriate(new[] { variable }, (uv, p) =>
+            {
+                if (!uv.Contains(p))
+                {
+                    uv.Add(p);
+                }
+            });
 
             if (_joinedAssignmentVariables?.Contains(variable) != true)
             {

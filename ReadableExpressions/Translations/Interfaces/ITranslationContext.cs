@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using ReadableExpressions.SourceCode;
 
     internal interface ITranslationContext
     {
@@ -107,6 +108,8 @@
         /// this Type is declared.
         /// </returns>
         int? GetUnnamedVariableNumberOrNull(ParameterExpression variable);
+
+        IList<ParameterExpression> GetUnscopedVariablesFor(MethodExpression method);
 
         ITranslation GetTranslationFor(Expression expression);
     }

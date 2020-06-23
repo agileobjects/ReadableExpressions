@@ -39,5 +39,26 @@ public void DoAction()
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldIncludeNonScopeVariablesAsParameters()
+        {
+            var intParameter = Parameter(typeof(int), "scopedInt");
+            var intVariable = Variable(typeof(int), "nonScopedInt");
+            var addInts = Lambda<Func<int, int>>(Add(intParameter, intVariable), intParameter);
+
+            var translated = addInts.ToSourceCodeMethod();
+
+            const string EXPECTED = @"
+public int GetInt
+(
+    int scopedInt,
+    int nonScopedInt
+)
+{
+    return scopedInt + nonScopedInt;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
