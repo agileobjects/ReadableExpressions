@@ -13,12 +13,12 @@
     /// </summary>
     public class ClassExpression : Expression
     {
-        internal ClassExpression(Expression singleMethod)
+        internal ClassExpression(Expression singleMethod, TranslationSettings settings)
         {
-            Name = "GeneratedExpressionClass";
+            Name = settings.ClassNameFactory.Invoke(singleMethod);
 
             Methods = new ReadOnlyCollection<MethodExpression>(
-                new[] { MethodExpression.For(singleMethod) });
+                new[] { MethodExpression.For(singleMethod, settings) });
         }
 
         /// <summary>

@@ -13,7 +13,7 @@
     /// </summary>
     public class SourceCodeExpression : Expression
     {
-        internal SourceCodeExpression(Expression content)
+        internal SourceCodeExpression(Expression content, TranslationSettings settings)
         {
             Namespace = "GeneratedExpressionCode";
             Content = content;
@@ -22,7 +22,7 @@
             {
                 case ExpressionType.Lambda:
                     Elements = new ReadOnlyCollection<Expression>(
-                        new Expression[] { new ClassExpression((LambdaExpression)content) });
+                        new Expression[] { new ClassExpression((LambdaExpression)content, settings) });
                     break;
             }
         }

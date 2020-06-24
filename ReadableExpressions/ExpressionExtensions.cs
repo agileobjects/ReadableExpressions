@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using SourceCode;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -66,7 +67,35 @@
             this Expression expression,
             Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
         {
-            return expression.ToSourceCodeString(ReadableExpression.SourceCode, configuration);
+            if (expression == null)
+            {
+                return null;
+            }
+
+            return expression
+                .ToSourceCodeExpression(configuration, out var settings)
+                .Translate(settings);
+        }
+
+        /// <summary>
+        /// Translates the given <paramref name="expression"/> to a source-code string,
+        /// formatted as a class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate to source code.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>The translated <paramref name="expression"/>, formatted as a class.</returns>
+        public static string ToSourceCodeClass(
+            this Expression expression,
+            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+        {
+            if (expression == null)
+            {
+                return null;
+            }
+
+            return expression
+                .ToClassExpression(configuration, out var settings)
+                .Translate(settings);
         }
 
         /// <summary>
@@ -74,25 +103,20 @@
         /// formatted as a method.
         /// </summary>
         /// <param name="expression">The Expression to translate to source code.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
         /// <returns>The translated <paramref name="expression"/>, formatted as a method.</returns>
-        public static string ToSourceCodeMethod(this Expression expression)
-            => expression.ToSourceCodeString(ReadableExpression.Method);
-
-        private static string ToSourceCodeString<TSourceCodeExpression>(
+        public static string ToSourceCodeMethod(
             this Expression expression,
-            Func<Expression, TSourceCodeExpression> sourceCodeExpressionFactory,
             Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
-            where TSourceCodeExpression : Expression
         {
             if (expression == null)
             {
                 return null;
             }
 
-            var sourceCodeExpression = sourceCodeExpressionFactory.Invoke(expression);
-            var settings = configuration.GetTranslationSettings();
-
-            return sourceCodeExpression.Translate(settings);
+            return expression
+                .ToMethodExpression(configuration, out var settings)
+                .Translate(settings);
         }
 
         private static string Translate(
@@ -110,21 +134,6 @@
             if (configuration == null)
             {
                 return TranslationSettings.Default;
-            }
-
-            var settings = new TranslationSettings();
-
-            configuration.Invoke(settings);
-
-            return settings;
-        }
-
-        internal static TranslationSettings GetTranslationSettings(
-            this Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration)
-        {
-            if (configuration == null)
-            {
-                return TranslationSettings.DefaultSourceCode;
             }
 
             var settings = new TranslationSettings();

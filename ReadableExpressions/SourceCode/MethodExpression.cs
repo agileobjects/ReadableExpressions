@@ -15,7 +15,7 @@
     /// </summary>
     public class MethodExpression : Expression
     {
-        private MethodExpression(LambdaExpression bodyLambda)
+        private MethodExpression(LambdaExpression bodyLambda, TranslationSettings settings)
         {
             IParameter[] parameters;
 
@@ -44,11 +44,11 @@
             Method = new MethodExpressionMethod(bodyLambda, parameters);
         }
 
-        internal static MethodExpression For(Expression expression)
+        internal static MethodExpression For(Expression expression, TranslationSettings settings)
         {
             if (expression.NodeType == ExpressionType.Lambda)
             {
-                return new MethodExpression((LambdaExpression)expression);
+                return new MethodExpression((LambdaExpression)expression, settings);
             }
 
             var lambdaType = expression.HasReturnType()
@@ -57,7 +57,7 @@
 
             var lambdaExpression = Lambda(lambdaType, expression);
 
-            return new MethodExpression(lambdaExpression);
+            return new MethodExpression(lambdaExpression, settings);
         }
 
         /// <summary>
