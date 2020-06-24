@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
     using NetStandardPolyfills;
@@ -241,6 +242,42 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldNotIncludeAUsingFromAnImplicitGenericMethodArgument()
+        {
+            var helperVariable = Variable(typeof(TestHelper), "helper");
+            var newHelper = New(typeof(TestHelper));
+            var populateHelper = Assign(helperVariable, newHelper);
+
+            var method = typeof(TestHelper)
+                .GetPublicInstanceMethods("GetHashCode")
+                .First(m => m.IsGenericMethod)
+                .MakeGenericMethod(typeof(Regex));
+
+            var methodCall = Call(helperVariable, method, Property(helperVariable, "Regex"));
+            var lambdaBody = Block(new[] { helperVariable }, populateHelper, methodCall);
+            var lambda = Lambda<Func<int>>(lambdaBody);
+
+            var translated = lambda.ToSourceCode();
+
+            const string EXPECTED = @"
+using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt()
+        {
+            var helper = new WhenTranslatingToSourceCode.TestHelper();
+
+            return helper.GetHashCode(helper.Regex);
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeAUsingFromAStaticMemberAccessExpression()
         {
             var dateTimeNow = Property(null, typeof(DateTime), nameof(DateTime.Now));
@@ -326,7 +363,11 @@ namespace GeneratedExpressionCode
 
         public class TestHelper
         {
+            public Regex Regex => null;
+
             public string GetTypeName<T>() => typeof(T).Name;
+
+            public int GetHashCode<T>(T obj) => obj.GetHashCode();
         }
 
         #endregion

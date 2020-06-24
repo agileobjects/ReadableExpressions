@@ -11,6 +11,7 @@
     using Extensions;
     using NetStandardPolyfills;
     using SourceCode;
+    using Translations.Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -542,7 +543,8 @@
 
             if (methodCall.Method.IsGenericMethod)
             {
-                AddNamespacesIfRequired(methodCall.Method.GetGenericArguments());
+                AddNamespacesIfRequired(
+                    new BclMethodWrapper(methodCall.Method).GetRequiredExplicitGenericArguments(_settings));
             }
 
             Visit(methodCall.Object);

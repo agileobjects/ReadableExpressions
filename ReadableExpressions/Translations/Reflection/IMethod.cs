@@ -7,17 +7,17 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         Type DeclaringType { get; }
 
         bool IsPublic { get; }
-        
+
         bool IsProtectedInternal { get; }
-        
+
         bool IsInternal { get; }
-        
+
         bool IsProtected { get; }
-        
+
         bool IsPrivate { get; }
 
         bool IsAbstract { get; }
-        
+
         bool IsStatic { get; }
 
         bool IsVirtual { get; }

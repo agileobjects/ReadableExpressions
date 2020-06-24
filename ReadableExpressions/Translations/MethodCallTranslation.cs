@@ -212,8 +212,8 @@
             {
                 var indentSize = _subjectTranslation.GetIndentSize();
 
-                indentSize += _isPartOfMethodCallChain 
-                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength 
+                indentSize += _isPartOfMethodCallChain
+                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength
                     : _methodInvocationTranslation.GetLineCount();
 
                 return indentSize;
@@ -221,8 +221,8 @@
 
             public int GetLineCount()
             {
-                var lineCount = 
-                    _subjectTranslation.GetLineCount() + 
+                var lineCount =
+                    _subjectTranslation.GetLineCount() +
                     _methodInvocationTranslation.GetLineCount();
 
                 if (_isPartOfMethodCallChain)
@@ -266,7 +266,7 @@
                 _parameters = parameters;
                 _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
                 _explicitGenericArgumentCount = _explicitGenericArguments.Length;
-                
+
                 TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
 
                 FormattingSize =
@@ -278,23 +278,10 @@
                 ITranslationContext context,
                 out int translationsSize)
             {
-                if (!_method.IsGenericMethod)
-                {
-                    translationsSize = 0;
-                    return Enumerable<ITranslatable>.EmptyArray;
-                }
+                var requiredGenericParameterTypes = _method
+                    .GetRequiredExplicitGenericArguments(context.Settings);
 
-                var methodGenericDefinition = _method.GetGenericMethodDefinition();
-                var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
-
-                if (context.Settings.UseImplicitGenericParameters)
-                {
-                    RemoveSuppliedGenericTypeParameters(
-                        methodGenericDefinition.GetParameters().Project(p => p.Type),
-                        genericParameterTypes);
-                }
-
-                if (!genericParameterTypes.Any())
+                if (!requiredGenericParameterTypes.Any())
                 {
                     translationsSize = 0;
                     return Enumerable<ITranslatable>.EmptyArray;
@@ -302,8 +289,7 @@
 
                 var argumentTranslationsSize = 0;
 
-                var arguments = _method
-                    .GetGenericArguments()
+                var arguments = requiredGenericParameterTypes
                     .Project(argumentType =>
                     {
                         if (argumentType.FullName == null)
@@ -323,24 +309,6 @@
                 translationsSize = argumentTranslationsSize;
 
                 return (translationsSize != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
-            }
-
-            private static void RemoveSuppliedGenericTypeParameters(
-                IEnumerable<Type> types,
-                ICollection<Type> genericParameterTypes)
-            {
-                foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
-                {
-                    if (type.IsGenericParameter && genericParameterTypes.Contains(type))
-                    {
-                        genericParameterTypes.Remove(type);
-                    }
-
-                    if (type.IsGenericType())
-                    {
-                        RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
-                    }
-                }
             }
 
             public Type Type => _method.ReturnType;
