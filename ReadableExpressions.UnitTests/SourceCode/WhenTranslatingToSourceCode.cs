@@ -153,6 +153,29 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldIncludeASystemUsingFromAnObjectNewing()
+        {
+            var createStringBuilder = Lambda<Func<object>>(New(typeof(StringBuilder)));
+
+            var translated = createStringBuilder.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.Text;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public object GetObject()
+        {
+            return new StringBuilder();
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeASystemUsingFromAStaticMemberAccessExpression()
         {
             var dateTimeNow = Property(null, typeof(DateTime), nameof(DateTime.Now));

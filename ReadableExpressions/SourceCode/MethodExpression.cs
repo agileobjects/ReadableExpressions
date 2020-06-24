@@ -70,7 +70,7 @@
         /// <summary>
         /// Gets the type of this <see cref="MethodExpression"/>.
         /// </summary>
-        public override Type Type => Body.Type;
+        public override Type Type => Method.ReturnType;
 
         /// <summary>
         /// Visits this <see cref="MethodExpression"/>'s Body.
@@ -104,18 +104,16 @@
         private class MethodExpressionMethod : IMethod
         {
             private readonly IParameter[] _parameters;
-            private readonly Expression _body;
 
             public MethodExpressionMethod(
                 LambdaExpression definition,
                 IParameter[] parameters)
             {
                 _parameters = parameters;
-                _body = definition.Body;
                 
                 ReturnType = definition.ReturnType;
 
-                Name = _body.HasReturnType()
+                Name = (ReturnType != typeof(void))
                     ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
                     : "DoAction";
             }

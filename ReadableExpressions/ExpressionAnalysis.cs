@@ -405,6 +405,7 @@
         {
             if (!_settings.CollectRequiredNamespaces ||
                (accessedType == typeof(void)) ||
+               (accessedType == typeof(object)) ||
                 accessedType.IsPrimitive())
             {
                 return;
@@ -557,7 +558,11 @@
         private void Visit(MethodParameterExpression methodParameter) 
             => AddNamespaceIfRequired(methodParameter.Type);
 
-        private void Visit(NewExpression newing) => Visit(newing.Arguments);
+        private void Visit(NewExpression newing)
+        {
+            AddNamespaceIfRequired(newing.Type);
+            Visit(newing.Arguments);
+        }
 
         private void Visit(IList<ElementInit> elementInits)
         {
