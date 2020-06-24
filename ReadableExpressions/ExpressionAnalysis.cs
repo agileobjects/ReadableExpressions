@@ -67,7 +67,7 @@
         {
             if (_requiredNamespaces != null)
             {
-                _requiredNamespaces.Sort();
+                _requiredNamespaces.Sort(UsingsComparer.Instance);
             }
             else
             {
@@ -401,10 +401,19 @@
         private void Visit(DefaultExpression @default)
             => AddNamespaceIfRequired(@default.Type);
 
+        private void AddNamespacesIfRequired(IEnumerable<Type> accessedTypes)
+        {
+            foreach (var type in accessedTypes)
+            {
+                AddNamespaceIfRequired(type);
+            }
+        }
+
         private void AddNamespaceIfRequired(Type accessedType)
         {
             if (!_settings.CollectRequiredNamespaces ||
                (accessedType == typeof(void)) ||
+               (accessedType == typeof(string)) ||
                (accessedType == typeof(object)) ||
                 accessedType.IsPrimitive())
             {
@@ -413,10 +422,7 @@
 
             if (accessedType.IsGenericType())
             {
-                foreach (var typeArgument in accessedType.GetGenericTypeArguments())
-                {
-                    AddNamespaceIfRequired(typeArgument);
-                }
+                AddNamespacesIfRequired(accessedType.GetGenericTypeArguments());
             }
 
             var @namespace = accessedType.Namespace;
@@ -532,6 +538,11 @@
                             .Add((ParameterExpression)argument);
                     }
                 }
+            }
+
+            if (methodCall.Method.IsGenericMethod)
+            {
+                AddNamespacesIfRequired(methodCall.Method.GetGenericArguments());
             }
 
             Visit(methodCall.Object);

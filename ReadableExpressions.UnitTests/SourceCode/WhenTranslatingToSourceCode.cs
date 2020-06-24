@@ -5,6 +5,7 @@
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
+    using NetStandardPolyfills;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -179,7 +180,6 @@ namespace GeneratedExpressionCode
         [Fact]
         public void ShouldIncludeAUsingFromAGenericTypeArgument()
         {
-            //Comparer<StringBuilder>.Default
             var comparerType = typeof(Comparer<StringBuilder>);
             var defaultComparer = Property(null, comparerType, "Default");
             var comparerNotNull = NotEqual(defaultComparer, Default(defaultComparer.Type));
@@ -198,6 +198,42 @@ namespace GeneratedExpressionCode
         public bool GetBool()
         {
             return Comparer<StringBuilder>.Default != null;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAUsingFromAGenericMethodArgument()
+        {
+            var helperVariable = Variable(typeof(TestHelper), "helper");
+            var newHelper = New(typeof(TestHelper));
+            var populateHelper = Assign(helperVariable, newHelper);
+
+            var method = typeof(TestHelper)
+                .GetPublicInstanceMethod("GetTypeName")
+                .MakeGenericMethod(typeof(Regex));
+
+            var methodCall = Call(helperVariable, method);
+            var lambdaBody = Block(new[] { helperVariable }, populateHelper, methodCall);
+            var lambda = Lambda<Func<string>>(lambdaBody);
+
+            var translated = lambda.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.Text.RegularExpressions;
+using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public string GetString()
+        {
+            var helper = new WhenTranslatingToSourceCode.TestHelper();
+
+            return helper.GetTypeName<Regex>();
         }
     }
 }";
@@ -285,5 +321,14 @@ namespace GeneratedExpressionCode
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        #region Helper Members
+
+        public class TestHelper
+        {
+            public string GetTypeName<T>() => typeof(T).Name;
+        }
+
+        #endregion
     }
 }
