@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -106,7 +107,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeASystemUsingFromADefaultExpression()
+        public void ShouldIncludeAUsingFromADefaultExpression()
         {
             var getDefaultDate = Lambda<Func<DateTime>>(Default(typeof(DateTime)));
 
@@ -129,7 +130,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeASystemUsingFromATypeOfExpression()
+        public void ShouldIncludeAUsingFromATypeOfExpression()
         {
             var getDefaultDate = Lambda<Func<Type>>(Constant(typeof(Stream)));
 
@@ -153,7 +154,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeASystemUsingFromAnObjectNewing()
+        public void ShouldIncludeAUsingFromAnObjectNewing()
         {
             var createStringBuilder = Lambda<Func<object>>(New(typeof(StringBuilder)));
 
@@ -176,7 +177,35 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeASystemUsingFromAStaticMemberAccessExpression()
+        public void ShouldIncludeAUsingFromAGenericTypeArgument()
+        {
+            //Comparer<StringBuilder>.Default
+            var comparerType = typeof(Comparer<StringBuilder>);
+            var defaultComparer = Property(null, comparerType, "Default");
+            var comparerNotNull = NotEqual(defaultComparer, Default(defaultComparer.Type));
+            var comparerCheckLambda = Lambda<Func<bool>>(comparerNotNull);
+
+            var translated = comparerCheckLambda.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.Collections.Generic;
+using System.Text;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public bool GetBool()
+        {
+            return Comparer<StringBuilder>.Default != null;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAUsingFromAStaticMemberAccessExpression()
         {
             var dateTimeNow = Property(null, typeof(DateTime), nameof(DateTime.Now));
             var dateTimeTicks = Property(dateTimeNow, nameof(DateTime.Ticks));
@@ -201,7 +230,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeSystemUsingsFromMethodArgumentTypes()
+        public void ShouldIncludeUsingsFromMethodArgumentTypes()
         {
             var stringBuilderMatchesRegex = CreateLambda(
                 (Regex re, StringBuilder sb) => re.IsMatch(sb.ToString()));

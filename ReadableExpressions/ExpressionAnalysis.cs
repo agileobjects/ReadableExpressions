@@ -411,6 +411,14 @@
                 return;
             }
 
+            if (accessedType.IsGenericType())
+            {
+                foreach (var typeArgument in accessedType.GetGenericTypeArguments())
+                {
+                    AddNamespaceIfRequired(typeArgument);
+                }
+            }
+
             var @namespace = accessedType.Namespace;
 
             if (@namespace == null)
@@ -555,7 +563,7 @@
                 (uv, p) => uv.Remove(p));
         }
 
-        private void Visit(MethodParameterExpression methodParameter) 
+        private void Visit(MethodParameterExpression methodParameter)
             => AddNamespaceIfRequired(methodParameter.Type);
 
         private void Visit(NewExpression newing)
