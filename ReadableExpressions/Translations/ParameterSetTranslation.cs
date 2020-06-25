@@ -153,7 +153,7 @@
                         WithParentheses();
                     }
 
-                CreateCodeBlock:
+                    CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
@@ -183,12 +183,13 @@
 
             foreach (var parameter in parameters)
             {
-                // params arrays are always the last parameter:
+                // params arrays are always the last parameter - if it's
+                // not a NewArrayExpression it's a single Expression which
+                // returns an Array, and doesn't need to be deconstructed:
                 if ((i == (methodParameters.Count - 1)) &&
-                     methodParameters[i].IsParamsArray)
+                     methodParameters[i].IsParamsArray &&
+                     parameter is NewArrayExpression paramsArray)
                 {
-                    var paramsArray = (NewArrayExpression)parameter;
-
                     if (paramsArray.Expressions.Count > 0)
                     {
                         foreach (var paramsArrayValue in paramsArray.Expressions)

@@ -332,6 +332,34 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldIncludeUsingsFromMethodGenericArgumentTypes()
+        {
+            var joinListItems = CreateLambda(
+                (Func<IList<string>> listFactory) => string.Join(", ", listFactory.Invoke().ToArray()));
+
+            var translated = joinListItems.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+using System.Collections.Generic;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public string GetString
+        (
+            Func<IList<string>> listFactory
+        )
+        {
+            return string.Join("", "", listFactory.Invoke().ToArray());
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldNotDuplicateUsings()
         {
             var stringBuilderContainsOther = CreateLambda(
