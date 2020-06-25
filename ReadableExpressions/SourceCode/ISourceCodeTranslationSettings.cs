@@ -13,6 +13,13 @@
     public interface ISourceCodeTranslationSettings : ITranslationSettings
     {
         /// <summary>
+        /// Add generated classes to the namespace of the given <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">The type the namespace of which the generated code should use.</typeparam>
+        /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
+        ISourceCodeTranslationSettings WithNamespaceOf<T>();
+
+        /// <summary>
         /// Add generated classes to the given <paramref name="namespace"/>.
         /// </summary>
         /// <param name="namespace">The namespace in which to create generated classes.</param>

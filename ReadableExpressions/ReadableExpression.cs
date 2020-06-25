@@ -130,7 +130,7 @@
                 return TranslationSettings.DefaultSourceCode;
             }
 
-            var settings = new TranslationSettings();
+            var settings = TranslationSettings.ForSourceCode();
 
             configuration.Invoke(settings);
 

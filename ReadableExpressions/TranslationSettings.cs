@@ -16,12 +16,7 @@
     {
         public static readonly TranslationSettings Default = new TranslationSettings();
 
-        public static readonly TranslationSettings DefaultSourceCode = new TranslationSettings
-        {
-            CollectRequiredNamespaces = true,
-            Namespace = "GeneratedExpressionCode",
-            ClassNameFactory = exp => "GeneratedExpressionClass"
-        };
+        public static readonly TranslationSettings DefaultSourceCode = ForSourceCode();
 
         private bool _commentQuotedLambdas;
         private int? _indentLength;
@@ -34,6 +29,20 @@
             Indent = "    ";
             Formatter = NullTranslationFormatter.Instance;
         }
+
+        #region Factory Method
+
+        public static TranslationSettings ForSourceCode()
+        {
+            return new TranslationSettings
+            {
+                CollectRequiredNamespaces = true,
+                Namespace = "GeneratedExpressionCode",
+                ClassNameFactory = exp => "GeneratedExpressionClass"
+            };
+        }
+
+        #endregion 
 
         public bool CollectRequiredNamespaces { get; set; }
 
@@ -198,6 +207,9 @@
         }
 
         public ITranslationFormatter Formatter { get; private set; }
+
+        public ISourceCodeTranslationSettings WithNamespaceOf<T>()
+            => WithNamespace(typeof(T).Namespace);
 
         public ISourceCodeTranslationSettings WithNamespace(string @namespace)
         {

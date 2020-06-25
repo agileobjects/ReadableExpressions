@@ -392,7 +392,8 @@ namespace GeneratedExpressionCode
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
-            var translated = doNothing.ToSourceCode(s => s.WithNamespace("AgileObjects.GeneratedStuff"));
+            var translated = doNothing.ToSourceCode(s => s
+                .WithNamespace("AgileObjects.GeneratedStuff"));
 
             const string EXPECTED = @"
 namespace AgileObjects.GeneratedStuff
@@ -405,6 +406,27 @@ namespace AgileObjects.GeneratedStuff
     }
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldUseACustomTypeNamespace()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCode(s => s
+                .WithNamespaceOf<TestHelper>());
+
+            var expected = @$"
+namespace {typeof(TestHelper).Namespace}
+{{
+    public class GeneratedExpressionClass
+    {{
+        public void DoAction()
+        {{
+        }}
+    }}
+}}";
+            translated.ShouldBe(expected.TrimStart());
         }
 
         #region Helper Members
