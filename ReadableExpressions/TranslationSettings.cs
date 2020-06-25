@@ -19,6 +19,7 @@
         public static readonly TranslationSettings DefaultSourceCode = new TranslationSettings
         {
             CollectRequiredNamespaces = true,
+            Namespace = "GeneratedExpressionCode",
             ClassNameFactory = exp => "GeneratedExpressionClass"
         };
 
@@ -197,6 +198,14 @@
         }
 
         public ITranslationFormatter Formatter { get; private set; }
+
+        public ISourceCodeTranslationSettings WithNamespace(string @namespace)
+        {
+            Namespace = @namespace;
+            return this;
+        }
+
+        public string Namespace { get; private set; }
 
         public ISourceCodeTranslationSettings NameClassesUsing(Func<Expression, string> nameFactory)
         {

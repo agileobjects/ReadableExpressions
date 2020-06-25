@@ -448,7 +448,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Constant(10));
 
-            var translated = ToReadableString(creation, cfg => cfg.NameAnonymousTypesUsing(t => "MyMagicObject"));
+            var translated = ToReadableString(creation, s => s.NameAnonymousTypesUsing(t => "MyMagicObject"));
 
             translated.ShouldBe("new MyMagicObject { ValueInt = 10 }");
         }

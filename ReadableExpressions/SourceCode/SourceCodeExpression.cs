@@ -15,7 +15,7 @@
     {
         internal SourceCodeExpression(Expression content, TranslationSettings settings)
         {
-            Namespace = "GeneratedExpressionCode";
+            Namespace = settings.Namespace;
             Content = content;
 
             switch (content.NodeType)

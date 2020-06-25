@@ -34,8 +34,8 @@ public class GeneratedExpressionClass
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
-            var translated = doNothing.ToSourceCodeClass(cfg =>
-                cfg.NameClassesUsing(exp => "MyClass"));
+            var translated = doNothing.ToSourceCodeClass(s =>
+                s.NameClassesUsing(exp => "MyClass"));
 
             const string EXPECTED = @"
 public class MyClass

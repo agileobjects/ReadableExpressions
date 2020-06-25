@@ -387,6 +387,26 @@ namespace GeneratedExpressionCode
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldUseACustomNamespace()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCode(s => s.WithNamespace("AgileObjects.GeneratedStuff"));
+
+            const string EXPECTED = @"
+namespace AgileObjects.GeneratedStuff
+{
+    public class GeneratedExpressionClass
+    {
+        public void DoAction()
+        {
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Members
 
         public class TestHelper
