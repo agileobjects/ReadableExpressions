@@ -28,7 +28,7 @@
 
                 for (var i = 0; i < parameterCount; i++)
                 {
-                    parameters[i] = methodParameters[i] = 
+                    parameters[i] = methodParameters[i] =
                         new MethodParameterExpression(bodyLambda.Parameters[i]);
                 }
 
@@ -83,7 +83,7 @@
             {
                 visitor.Visit(parameter);
             }
-            
+
             visitor.Visit(Body);
             return this;
         }
@@ -111,12 +111,8 @@
                 TranslationSettings settings)
             {
                 _parameters = parameters;
-                
                 ReturnType = definition.ReturnType;
-
-                Name = (ReturnType != typeof(void))
-                    ? "Get" + ReturnType.GetVariableNameInPascalCase(settings)
-                    : "DoAction";
+                Name = settings.MethodNameFactory.Invoke(definition);
             }
 
             public Type DeclaringType => null;

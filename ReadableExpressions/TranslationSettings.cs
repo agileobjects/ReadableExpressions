@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -30,16 +31,19 @@
             Formatter = NullTranslationFormatter.Instance;
         }
 
-        #region Factory Method
+        #region Factory Methods
 
         public static TranslationSettings ForSourceCode()
         {
-            return new TranslationSettings
+            var settings = new TranslationSettings
             {
                 CollectRequiredNamespaces = true,
                 Namespace = "GeneratedExpressionCode",
                 ClassNameFactory = exp => "GeneratedExpressionClass"
             };
+
+            settings.MethodNameFactory = settings.GetMethodName;
+            return settings;
         }
 
         #endregion 
@@ -226,5 +230,22 @@
         }
 
         public Func<Expression, string> ClassNameFactory { get; private set; }
+
+        public ISourceCodeTranslationSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory)
+        {
+            MethodNameFactory = nameFactory;
+            return this;
+        }
+
+        public Func<LambdaExpression, string> MethodNameFactory { get; private set; }
+
+        private string GetMethodName(LambdaExpression methodBody)
+        {
+            var returnType = methodBody.ReturnType;
+
+            return (returnType != typeof(void))
+                ? "Get" + returnType.GetVariableNameInPascalCase(this)
+                : "DoAction";
+        }
     }
 }

@@ -30,10 +30,20 @@
         /// Name generated classes using the given <paramref name="nameFactory"/>.
         /// </summary>
         /// <param name="nameFactory">
-        /// The factory from which to obtain the name of a generated class. The suppled Expression
-        /// will be the nearest-scoped Expression.
+        /// The factory from which to obtain the name of a generated class. The nearest-scope
+        /// Expression is supplied.
         /// </param>
         /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
         ISourceCodeTranslationSettings NameClassesUsing(Func<Expression, string> nameFactory);
+
+        /// <summary>
+        /// Name generated methods using the given <paramref name="nameFactory"/>.
+        /// </summary>
+        /// <param name="nameFactory">
+        /// The factory from which to obtain the name of a generated method. The method body
+        /// LambdaExpression is supplied.
+        /// </param>
+        /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
+        ISourceCodeTranslationSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory);
     }
 }

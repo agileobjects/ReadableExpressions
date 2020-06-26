@@ -85,5 +85,20 @@ public int GetInt
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldUseACustomMethodName()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCodeMethod(s => s
+                .NameMethodsUsing(exp => "MagicMethod"));
+
+            const string EXPECTED = @"
+public void MagicMethod()
+{
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
