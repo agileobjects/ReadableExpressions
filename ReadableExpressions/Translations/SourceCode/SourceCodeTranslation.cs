@@ -159,6 +159,7 @@
                 }
 
                 writer.WriteNewLineToTranslation();
+                writer.WriteNewLineToTranslation();
             }
 
             writer.WriteClosingBraceToTranslation();

@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -18,11 +19,38 @@
             Namespace = settings.Namespace;
             Content = content;
 
+            ClassExpression @class;
+
             switch (content.NodeType)
             {
                 case ExpressionType.Lambda:
-                    Elements = new ReadOnlyCollection<Expression>(
-                        new Expression[] { new ClassExpression((LambdaExpression)content, settings) });
+                    @class = new ClassExpression(this, content, settings);
+                    Classes = new ReadOnlyCollection<ClassExpression>(new[] { @class });
+                    Elements = new ReadOnlyCollection<Expression>(new Expression[] { @class });
+                    break;
+
+                case ExpressionType.Block:
+                    var expressions = ((BlockExpression)content).Expressions;
+                    var elementCount = expressions.Count;
+                    var classes = new List<ClassExpression>(elementCount);
+                    var elements = new Expression[elementCount];
+
+                    for (var i = 0; i < elementCount; ++i)
+                    {
+                        var expression = expressions[i];
+
+                        if (expression is CommentExpression comment)
+                        {
+                            elements[i] = comment;
+                            continue;
+                        }
+
+                        elements[i] = @class = new ClassExpression(this, expression, settings);
+                        classes.Add(@class);
+                    }
+
+                    Classes = new ReadOnlyCollection<ClassExpression>(classes);
+                    Elements = new ReadOnlyCollection<Expression>(elements);
                     break;
             }
         }
@@ -65,5 +93,11 @@
         /// Gets the Expressions which describe the elements of this <see cref="SourceCodeExpression"/>.
         /// </summary>
         public ReadOnlyCollection<Expression> Elements { get; }
+
+        /// <summary>
+        /// Gets the <see cref="ClassExpression"/>s which describe the classes of this
+        /// <see cref="SourceCodeExpression"/>.
+        /// </summary>
+        public ReadOnlyCollection<ClassExpression> Classes { get; }
     }
 }

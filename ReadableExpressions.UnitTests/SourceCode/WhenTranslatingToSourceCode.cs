@@ -143,5 +143,36 @@ namespace {typeof(WhenTranslatingToSourceCode).Namespace}
 }}";
             translated.ShouldBe(expected.TrimStart());
         }
+
+        [Fact]
+        public void ShouldTranslateATwoLambdaBlockToTwoSingleMethodClasses()
+        {
+            var getDefaultInt = Lambda<Func<int>>(Default(typeof(int)));
+            var getDefaultString = Lambda<Func<string>>(Default(typeof(string)));
+            var block = Block(getDefaultInt, getDefaultString);
+
+            var translated = block.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass1
+    {
+        public int GetInt()
+        {
+            return default(int);
+        }
+    }
+
+    public class GeneratedExpressionClass2
+    {
+        public string GetString()
+        {
+            return null;
+        }
+    }
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }

@@ -13,7 +13,10 @@
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
     /// </summary>
-    internal class TranslationSettings : ISourceCodeTranslationSettings
+    internal class TranslationSettings :
+        ISourceCodeTranslationSettings,
+        IClassTranslationSettings,
+        IMethodTranslationSettings
     {
         public static readonly TranslationSettings Default = new TranslationSettings();
 
@@ -39,7 +42,7 @@
             {
                 CollectRequiredNamespaces = true,
                 Namespace = "GeneratedExpressionCode",
-                ClassNameFactory = exp => "GeneratedExpressionClass"
+                ClassNameFactory = (sc, exp) => sc.GetClassName(exp)
             };
 
             settings.MethodNameFactory = settings.GetMethodName;
@@ -223,15 +226,50 @@
 
         public string Namespace { get; private set; }
 
-        public ISourceCodeTranslationSettings NameClassesUsing(Func<Expression, string> nameFactory)
+        IClassTranslationSettings IClassTranslationSettings<IClassTranslationSettings>.NameClassesUsing(
+            Func<ClassExpression, string> nameFactory)
+        {
+            return SetClassNamingFactory((sc, @class) => nameFactory.Invoke(@class));
+        }
+
+        public ISourceCodeTranslationSettings NameClassesUsing(
+            Func<SourceCodeExpression, ClassExpression, string> nameFactory)
+        {
+            return SetClassNamingFactory(nameFactory);
+        }
+
+        private TranslationSettings SetClassNamingFactory(
+            Func<SourceCodeExpression, ClassExpression, string> nameFactory)
         {
             ClassNameFactory = nameFactory;
             return this;
         }
 
-        public Func<Expression, string> ClassNameFactory { get; private set; }
+        public ISourceCodeTranslationSettings NameClassesUsing(Func<ClassExpression, string> nameFactory)
+        {
+            ClassNameFactory = (sc, exp) => nameFactory.Invoke(exp);
+            return this;
+        }
+
+        public Func<SourceCodeExpression, ClassExpression, string> ClassNameFactory { get; private set; }
+
+        IClassTranslationSettings IMethodTranslationSettings<IClassTranslationSettings>.NameMethodsUsing(
+            Func<LambdaExpression, string> nameFactory)
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
+
+        IMethodTranslationSettings IMethodTranslationSettings<IMethodTranslationSettings>.NameMethodsUsing(
+            Func<LambdaExpression, string> nameFactory)
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
 
         public ISourceCodeTranslationSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory)
+            => SetMethodNamingFactory(nameFactory);
+
+        private TranslationSettings SetMethodNamingFactory(
+            Func<LambdaExpression, string> nameFactory)
         {
             MethodNameFactory = nameFactory;
             return this;

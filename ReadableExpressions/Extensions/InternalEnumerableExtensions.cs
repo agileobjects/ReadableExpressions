@@ -12,20 +12,32 @@
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
 
-        public static TResult[] ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, TResult> projector)
+        public static TResult[] ProjectToArray<TItem, TResult>(
+            this IList<TItem> items,
+            Func<TItem, TResult> projector)
+        {
+            return items.ProjectToArray(projector, (p, item) => p.Invoke(item));
+        }
+
+        public static TResult[] ProjectToArray<TArg, TItem, TResult>(
+            this IList<TItem> items,
+            TArg argument,
+            Func<TArg, TItem, TResult> projector)
         {
             var itemCount = items.Count;
             var result = new TResult[itemCount];
 
             for (var i = 0; i < itemCount; ++i)
             {
-                result[i] = projector.Invoke(items[i]);
+                result[i] = projector.Invoke(argument, items[i]);
             }
 
             return result;
         }
 
-        public static TResult[] ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, int, TResult> projector)
+        public static TResult[] ProjectToArray<TItem, TResult>(
+            this IList<TItem> items,
+            Func<TItem, int, TResult> projector)
         {
             var itemCount = items.Count;
             var result = new TResult[itemCount];
@@ -79,7 +91,7 @@
         [DebuggerStepThrough]
         public static T FirstOrDefault<T>(this IList<T> items, Func<T, bool> predicate)
         {
-            for (var i = 0; i < items.Count; )
+            for (var i = 0; i < items.Count;)
             {
                 var item = items[i];
 

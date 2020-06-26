@@ -1,16 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code generation.
     /// </summary>
-    public interface ISourceCodeTranslationSettings : ITranslationSettings
+    public interface ISourceCodeTranslationSettings : 
+        IClassTranslationSettings<ISourceCodeTranslationSettings>
     {
         /// <summary>
         /// Add generated classes to the namespace of the given <typeparamref name="T"/>.
@@ -30,20 +26,11 @@
         /// Name generated classes using the given <paramref name="nameFactory"/>.
         /// </summary>
         /// <param name="nameFactory">
-        /// The factory from which to obtain the name of a generated class. The nearest-scope
-        /// Expression is supplied.
+        /// The factory from which to obtain the name of a generated class. The parent
+        /// <see cref="SourceCodeExpression"/> and <see cref="ClassExpression"/> are supplied.
         /// </param>
         /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
-        ISourceCodeTranslationSettings NameClassesUsing(Func<Expression, string> nameFactory);
-
-        /// <summary>
-        /// Name generated methods using the given <paramref name="nameFactory"/>.
-        /// </summary>
-        /// <param name="nameFactory">
-        /// The factory from which to obtain the name of a generated method. The method body
-        /// LambdaExpression is supplied.
-        /// </param>
-        /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
-        ISourceCodeTranslationSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory);
+        ISourceCodeTranslationSettings NameClassesUsing(
+            Func<SourceCodeExpression, ClassExpression, string> nameFactory);
     }
 }

@@ -1,11 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
-    using System;
     using SourceCode;
 
     /// <summary>
@@ -37,10 +37,9 @@
             Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration,
             out TranslationSettings settings)
         {
-            return content.ToSourceCodeExpression(
-                (cnt, stgs) => new SourceCodeExpression(cnt, stgs),
-                configuration,
-                out settings);
+            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
+
+            return new SourceCodeExpression(content, settings);
         }
 
         /// <summary>
@@ -54,7 +53,7 @@
         /// <returns>A <see cref="ClassExpression"/> representing a source code class.</returns>
         public static ClassExpression Class(
             Expression singleMethod,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+            Func<IClassTranslationSettings, IClassTranslationSettings> configuration = null)
         {
             if (singleMethod == null)
             {
@@ -66,13 +65,12 @@
 
         internal static ClassExpression ToClassExpression(
             this Expression content,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration,
+            Func<IClassTranslationSettings, IClassTranslationSettings> configuration,
             out TranslationSettings settings)
         {
-            return content.ToSourceCodeExpression(
-                (cnt, stgs) => new ClassExpression(cnt, stgs),
-                configuration,
-                out settings);
+            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
+
+            return new ClassExpression(content, settings);
         }
 
         /// <summary>
@@ -84,7 +82,7 @@
         /// <returns>A <see cref="MethodExpression"/> representing a source code method.</returns>
         public static MethodExpression Method(
             Expression method,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
         {
             if (method == null)
             {
@@ -96,10 +94,12 @@
 
         internal static MethodExpression ToMethodExpression(
             this Expression content,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration,
+            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration,
             out TranslationSettings settings)
         {
-            return content.ToSourceCodeExpression(MethodExpression.For, configuration, out settings);
+            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
+
+            return MethodExpression.For(content, settings);
         }
 
         /// <summary>
@@ -111,19 +111,9 @@
         public static CommentExpression Comment(string text)
             => new CommentExpression(text);
 
-        private static TExpression ToSourceCodeExpression<TExpression>(
-            this Expression content,
-            Func<Expression, TranslationSettings, TExpression> expressionFactory,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration,
-            out TranslationSettings settings)
-        {
-            settings = configuration.GetTranslationSettings();
-
-            return expressionFactory.Invoke(content, settings);
-        }
-
-        private static TranslationSettings GetTranslationSettings(
-            this Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration)
+        private static TranslationSettings GetTranslationSettings<TConfiguration>(
+            this TConfiguration configuration,
+            Action<TConfiguration, TranslationSettings> configurator)
         {
             if (configuration == null)
             {
@@ -132,8 +122,7 @@
 
             var settings = TranslationSettings.ForSourceCode();
 
-            configuration.Invoke(settings);
-
+            configurator.Invoke(configuration, settings);
             return settings;
         }
     }

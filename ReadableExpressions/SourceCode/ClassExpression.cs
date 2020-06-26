@@ -13,9 +13,22 @@
     /// </summary>
     public class ClassExpression : Expression
     {
+        private readonly SourceCodeExpression _parent;
+        private readonly TranslationSettings _settings;
+        private string _name;
+
         internal ClassExpression(Expression singleMethod, TranslationSettings settings)
+            : this(null, singleMethod, settings)
         {
-            Name = settings.ClassNameFactory.Invoke(singleMethod);
+        }
+
+        internal ClassExpression(
+            SourceCodeExpression parent,
+            Expression singleMethod,
+            TranslationSettings settings)
+        {
+            _parent = parent;
+            _settings = settings;
 
             Methods = new ReadOnlyCollection<MethodExpression>(
                 new[] { MethodExpression.For(singleMethod, settings) });
@@ -51,7 +64,8 @@
         /// <summary>
         /// Gets the name of this <see cref="ClassExpression"/>.
         /// </summary>
-        public string Name { get; }
+        public string Name
+            => _name ??= _settings.ClassNameFactory.Invoke(_parent, this);
 
         /// <summary>
         /// Gets the <see cref="MethodExpression"/>s which make up this <see cref="ClassExpression"/>'s

@@ -86,7 +86,7 @@
         /// <returns>The translated <paramref name="expression"/>, formatted as a class.</returns>
         public static string ToSourceCodeClass(
             this Expression expression,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+            Func<IClassTranslationSettings, IClassTranslationSettings> configuration = null)
         {
             if (expression == null)
             {
@@ -107,7 +107,7 @@
         /// <returns>The translated <paramref name="expression"/>, formatted as a method.</returns>
         public static string ToSourceCodeMethod(
             this Expression expression,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
+            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
         {
             if (expression == null)
             {
