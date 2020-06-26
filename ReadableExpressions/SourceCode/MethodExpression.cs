@@ -41,7 +41,7 @@
             }
 
             Body = bodyLambda.Body;
-            Method = new MethodExpressionMethod(bodyLambda, parameters);
+            Method = new MethodExpressionMethod(bodyLambda, parameters, settings);
         }
 
         internal static MethodExpression For(Expression expression, TranslationSettings settings)
@@ -107,14 +107,15 @@
 
             public MethodExpressionMethod(
                 LambdaExpression definition,
-                IParameter[] parameters)
+                IParameter[] parameters,
+                TranslationSettings settings)
             {
                 _parameters = parameters;
                 
                 ReturnType = definition.ReturnType;
 
                 Name = (ReturnType != typeof(void))
-                    ? "Get" + ReturnType.GetFriendlyName().ToPascalCase()
+                    ? "Get" + ReturnType.GetVariableNameInPascalCase(settings)
                     : "DoAction";
             }
 

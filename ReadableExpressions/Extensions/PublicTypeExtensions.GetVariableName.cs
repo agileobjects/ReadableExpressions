@@ -36,7 +36,7 @@
             return GetVariableNameInPascalCase(type, configuration.GetTranslationSettings());
         }
 
-        private static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
+        internal static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
             => GetVariableName(type, settings).ToPascalCase();
 
         private static string GetVariableName(Type type, TranslationSettings settings)

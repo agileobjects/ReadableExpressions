@@ -463,7 +463,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-        VisitValue:
+            VisitValue:
             Visit(@goto.Value);
         }
 
@@ -545,6 +545,11 @@
             {
                 AddNamespacesIfRequired(
                     new BclMethodWrapper(methodCall.Method).GetRequiredExplicitGenericArguments(_settings));
+            }
+
+            if (methodCall.Method.IsExtensionMethod())
+            {
+                AddNamespaceIfRequired(methodCall.Method.DeclaringType);
             }
 
             Visit(methodCall.Object);
