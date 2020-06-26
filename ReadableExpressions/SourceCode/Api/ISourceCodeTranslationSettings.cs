@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.SourceCode.Api
 {
     using System;
 
@@ -27,10 +27,10 @@
         /// </summary>
         /// <param name="nameFactory">
         /// The factory from which to obtain the name of a generated class. The parent
-        /// <see cref="SourceCodeExpression"/> and <see cref="ClassExpression"/> are supplied.
+        /// <see cref="SourceCodeExpression"/> and a <see cref="IClassNamingContext"/> are supplied.
         /// </param>
         /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
         ISourceCodeTranslationSettings NameClassesUsing(
-            Func<SourceCodeExpression, ClassExpression, string> nameFactory);
+            Func<SourceCodeExpression, IClassNamingContext, string> nameFactory);
     }
 }

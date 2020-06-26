@@ -7,31 +7,34 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Api;
 
     /// <summary>
     /// Represents a class in a piece of source code.
     /// </summary>
-    public class ClassExpression : Expression
+    public class ClassExpression : Expression, IClassNamingContext
     {
         private readonly SourceCodeExpression _parent;
+        private readonly Expression _body;
         private readonly TranslationSettings _settings;
         private string _name;
 
-        internal ClassExpression(Expression singleMethod, TranslationSettings settings)
-            : this(null, singleMethod, settings)
+        internal ClassExpression(Expression body, TranslationSettings settings)
+            : this(null, body, settings)
         {
         }
 
         internal ClassExpression(
             SourceCodeExpression parent,
-            Expression singleMethod,
+            Expression body,
             TranslationSettings settings)
         {
             _parent = parent;
+            _body = body;
             _settings = settings;
 
             Methods = new ReadOnlyCollection<MethodExpression>(
-                new[] { MethodExpression.For(singleMethod, settings) });
+                new[] { MethodExpression.For(body, settings) });
         }
 
         /// <summary>
@@ -72,5 +75,18 @@
         /// methods.
         /// </summary>
         public ReadOnlyCollection<MethodExpression> Methods { get; }
+
+        #region IClassNamingContext Members
+
+        ExpressionType IClassNamingContext.NodeType => _body.NodeType;
+
+        Type IClassNamingContext.Type
+            => (_body as LambdaExpression)?.ReturnType ?? _body.Type;
+
+        Expression IClassNamingContext.Body => _body;
+
+        int IClassNamingContext.Index => _parent?.Classes.IndexOf(this) ?? 0;
+
+        #endregion
     }
 }

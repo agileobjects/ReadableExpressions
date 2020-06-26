@@ -16,20 +16,12 @@
             this IList<TItem> items,
             Func<TItem, TResult> projector)
         {
-            return items.ProjectToArray(projector, (p, item) => p.Invoke(item));
-        }
-
-        public static TResult[] ProjectToArray<TArg, TItem, TResult>(
-            this IList<TItem> items,
-            TArg argument,
-            Func<TArg, TItem, TResult> projector)
-        {
             var itemCount = items.Count;
             var result = new TResult[itemCount];
 
             for (var i = 0; i < itemCount; ++i)
             {
-                result[i] = projector.Invoke(argument, items[i]);
+                result[i] = projector.Invoke(items[i]);
             }
 
             return result;

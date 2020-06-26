@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using ReadableExpressions.Extensions;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -34,11 +35,11 @@ public class GeneratedExpressionClass
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
-            var translated = doNothing.ToSourceCodeClass(s =>
-                s.NameClassesUsing(exp => "MyClass"));
+            var translated = doNothing.ToSourceCodeClass(s => s.NameClassesUsing(ctx =>
+                $"My{ctx.Type.GetVariableNameInPascalCase()}Class{ctx.Index}"));
 
             const string EXPECTED = @"
-public class MyClass
+public class MyVoidClass0
 {
     public void DoAction()
     {

@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using SourceCode;
+    using SourceCode.Api;
 
     /// <summary>
     /// A factory class providing source code Expressions.

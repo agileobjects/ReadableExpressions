@@ -92,10 +92,10 @@ public int GetInt
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = doNothing.ToSourceCodeMethod(s => s
-                .NameMethodsUsing(exp => "MagicMethod"));
+                .NameMethodsUsing(ctx => "MagicMethod" + ctx.Index));
 
             const string EXPECTED = @"
-public void MagicMethod()
+public void MagicMethod0()
 {
 }";
             translated.ShouldBe(EXPECTED.TrimStart());

@@ -2,12 +2,8 @@
 {
     using System;
     using Extensions;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
     using SourceCode;
+    using SourceCode.Api;
     using Translations.Formatting;
 
     /// <summary>
@@ -227,59 +223,60 @@
         public string Namespace { get; private set; }
 
         IClassTranslationSettings IClassTranslationSettings<IClassTranslationSettings>.NameClassesUsing(
-            Func<ClassExpression, string> nameFactory)
+            Func<IClassNamingContext, string> nameFactory)
         {
             return SetClassNamingFactory((sc, @class) => nameFactory.Invoke(@class));
         }
 
         public ISourceCodeTranslationSettings NameClassesUsing(
-            Func<SourceCodeExpression, ClassExpression, string> nameFactory)
+            Func<SourceCodeExpression, IClassNamingContext, string> nameFactory)
         {
             return SetClassNamingFactory(nameFactory);
         }
 
         private TranslationSettings SetClassNamingFactory(
-            Func<SourceCodeExpression, ClassExpression, string> nameFactory)
+            Func<SourceCodeExpression, IClassNamingContext, string> nameFactory)
         {
             ClassNameFactory = nameFactory;
             return this;
         }
 
-        public ISourceCodeTranslationSettings NameClassesUsing(Func<ClassExpression, string> nameFactory)
+        public ISourceCodeTranslationSettings NameClassesUsing(Func<IClassNamingContext, string> nameFactory)
         {
             ClassNameFactory = (sc, exp) => nameFactory.Invoke(exp);
             return this;
         }
 
-        public Func<SourceCodeExpression, ClassExpression, string> ClassNameFactory { get; private set; }
+        public Func<SourceCodeExpression, IClassNamingContext, string> ClassNameFactory { get; private set; }
 
         IClassTranslationSettings IMethodTranslationSettings<IClassTranslationSettings>.NameMethodsUsing(
-            Func<LambdaExpression, string> nameFactory)
+            Func<IMethodNamingContext, string> nameFactory)
         {
             return SetMethodNamingFactory(nameFactory);
         }
 
         IMethodTranslationSettings IMethodTranslationSettings<IMethodTranslationSettings>.NameMethodsUsing(
-            Func<LambdaExpression, string> nameFactory)
+            Func<IMethodNamingContext, string> nameFactory)
         {
             return SetMethodNamingFactory(nameFactory);
         }
 
-        public ISourceCodeTranslationSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory)
+        public ISourceCodeTranslationSettings NameMethodsUsing(
+            Func<IMethodNamingContext, string> nameFactory)
             => SetMethodNamingFactory(nameFactory);
 
         private TranslationSettings SetMethodNamingFactory(
-            Func<LambdaExpression, string> nameFactory)
+            Func<IMethodNamingContext, string> nameFactory)
         {
             MethodNameFactory = nameFactory;
             return this;
         }
 
-        public Func<LambdaExpression, string> MethodNameFactory { get; private set; }
+        public Func<IMethodNamingContext, string> MethodNameFactory { get; private set; }
 
-        private string GetMethodName(LambdaExpression methodBody)
+        private string GetMethodName(IMethodNamingContext methodContext)
         {
-            var returnType = methodBody.ReturnType;
+            var returnType = methodContext.ReturnType;
 
             return (returnType != typeof(void))
                 ? "Get" + returnType.GetVariableNameInPascalCase(this)

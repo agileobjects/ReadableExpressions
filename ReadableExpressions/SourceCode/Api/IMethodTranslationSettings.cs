@@ -1,11 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.SourceCode.Api
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code method generation.
@@ -17,11 +12,11 @@
         /// Name generated methods using the given <paramref name="nameFactory"/>.
         /// </summary>
         /// <param name="nameFactory">
-        /// The factory from which to obtain the name of a generated method. The method body
-        /// LambdaExpression is supplied.
+        /// The factory from which to obtain the name of a generated method. The method 
+        /// <see cref="IMethodNamingContext"/> is supplied.
         /// </param>
         /// <returns>These settings, to support a fluent interface.</returns>
-        TSettings NameMethodsUsing(Func<LambdaExpression, string> nameFactory);
+        TSettings NameMethodsUsing(Func<IMethodNamingContext, string> nameFactory);
     }
 
     /// <summary>

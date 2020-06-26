@@ -1,10 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
+    using Api;
+
     internal static class SourceCodeExpressionExtensions
     {
         public static string GetClassName(
             this SourceCodeExpression sourceCodeExpression,
-            ClassExpression @class)
+            IClassNamingContext @class)
         {
             const string DEFAULT_NAME = "GeneratedExpressionClass";
 
@@ -20,7 +22,7 @@
                 return DEFAULT_NAME;
             }
 
-            var classIndex = sourceCodeClasses.IndexOf(@class);
+            var classIndex = sourceCodeClasses.IndexOf((ClassExpression)@class);
 
             return DEFAULT_NAME + (classIndex + 1);
         }
