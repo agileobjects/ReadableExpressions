@@ -24,6 +24,7 @@ public void DoAction()
 {
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+            translated.ShouldCompileMethod();
         }
 
         [Fact]
@@ -38,6 +39,7 @@ public void DoAction()
 {
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+            translated.ShouldCompileMethod();
         }
 
         [Fact]
@@ -59,6 +61,7 @@ public int GetInt
     return scopedInt + nonScopedInt;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+            translated.ShouldCompileMethod();
         }
 
         [Fact]
@@ -84,6 +87,7 @@ public int GetInt
     return blockScopedInt + scopedInt;
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+            translated.ShouldCompileMethod();
         }
 
         [Fact]
@@ -99,6 +103,7 @@ public void MagicMethod0()
 {
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
+            translated.ShouldCompileMethod();
         }
     }
 }
