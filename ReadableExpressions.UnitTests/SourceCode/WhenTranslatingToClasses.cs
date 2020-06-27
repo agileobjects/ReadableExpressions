@@ -27,8 +27,8 @@ public class GeneratedExpressionClass
     {
     }
 }";
+            EXPECTED.ShouldBeCompilableClass();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompileClass();
         }
 
         [Fact]
@@ -46,8 +46,8 @@ public class MyVoidClass0
     {
     }
 }";
+            EXPECTED.ShouldBeCompilableClass();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompileClass();
         }
     }
 }

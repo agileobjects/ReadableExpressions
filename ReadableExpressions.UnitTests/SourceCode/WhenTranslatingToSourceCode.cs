@@ -29,8 +29,8 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -51,8 +51,8 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -102,8 +102,8 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -124,8 +124,8 @@ namespace AgileObjects.GeneratedStuff
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -146,8 +146,8 @@ namespace {typeof(WhenTranslatingToSourceCode).Namespace}
         }}
     }}
 }}";
+            expected.ShouldCompile();
             translated.ShouldBe(expected.TrimStart());
-            translated.ShouldCompile();
         }
 
         [Fact]
@@ -178,8 +178,8 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
-            translated.ShouldCompile();
         }
     }
 }
