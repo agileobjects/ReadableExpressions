@@ -8,6 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using Api;
+    using Extensions;
 
     /// <summary>
     /// Represents a class in a piece of source code.
@@ -17,6 +18,7 @@
         private readonly SourceCodeExpression _parent;
         private readonly Expression _body;
         private readonly TranslationSettings _settings;
+        private Type _type;
         private string _name;
 
         internal ClassExpression(Expression body, TranslationSettings settings)
@@ -34,7 +36,7 @@
             _settings = settings;
 
             Methods = new ReadOnlyCollection<MethodExpression>(
-                new[] { MethodExpression.For(body, settings) });
+                new[] { MethodExpression.For(this, body, settings) });
         }
 
         /// <summary>
@@ -45,9 +47,11 @@
             => (ExpressionType)SourceCodeExpressionType.Class;
 
         /// <summary>
-        /// Gets the type of this <see cref="ClassExpression"/> - typeof(string).
+        /// Gets the type of this <see cref="ClassExpression"/>, which is the return type of the
+        /// Expression from which the main method of the class was created.
         /// </summary>
-        public override Type Type => typeof(string);
+        public override Type Type
+            => _type ??= (_body as LambdaExpression)?.ReturnType ?? _body.Type;
 
         /// <summary>
         /// Visits each of this <see cref="ClassExpression"/>'s Methods.
@@ -76,16 +80,19 @@
         /// </summary>
         public ReadOnlyCollection<MethodExpression> Methods { get; }
 
+        /// <summary>
+        /// Gets the index of this <see cref="ClassExpression"/> in the set of generated classes.
+        /// </summary>
+        public int Index => _parent?.Classes.IndexOf(this) ?? 0;
+
         #region IClassNamingContext Members
 
         ExpressionType IClassNamingContext.NodeType => _body.NodeType;
 
-        Type IClassNamingContext.Type
-            => (_body as LambdaExpression)?.ReturnType ?? _body.Type;
+        string IClassNamingContext.TypeName
+            => Type.GetVariableNameInPascalCase(_settings);
 
         Expression IClassNamingContext.Body => _body;
-
-        int IClassNamingContext.Index => _parent?.Classes.IndexOf(this) ?? 0;
 
         #endregion
     }

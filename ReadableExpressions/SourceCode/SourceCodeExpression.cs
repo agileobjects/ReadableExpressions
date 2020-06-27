@@ -63,9 +63,9 @@
             => (ExpressionType)SourceCodeExpressionType.SourceCode;
 
         /// <summary>
-        /// Gets the type of this <see cref="SourceCodeExpression"/> - typeof(string).
+        /// Gets the type of this <see cref="SourceCodeExpression"/> - typeof(void).
         /// </summary>
-        public override Type Type => typeof(string);
+        public override Type Type => typeof(void);
 
         /// <summary>
         /// Visits each of this <see cref="SourceCodeExpression"/>'s Elements.

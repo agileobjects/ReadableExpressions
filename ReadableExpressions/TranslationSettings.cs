@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Extensions;
     using SourceCode;
     using SourceCode.Api;
     using Translations.Formatting;
@@ -34,15 +33,13 @@
 
         public static TranslationSettings ForSourceCode()
         {
-            var settings = new TranslationSettings
+            return new TranslationSettings
             {
                 CollectRequiredNamespaces = true,
                 Namespace = "GeneratedExpressionCode",
-                ClassNameFactory = (sc, exp) => sc.GetClassName(exp)
+                ClassNameFactory = (sc, classCtx) => sc.GetClassName(classCtx),
+                MethodNameFactory = (c, methodCtx) => c.GetMethodName(methodCtx)
             };
-
-            settings.MethodNameFactory = settings.GetMethodName;
-            return settings;
         }
 
         #endregion 
@@ -222,6 +219,8 @@
 
         public string Namespace { get; private set; }
 
+        #region Class Naming
+
         IClassTranslationSettings IClassTranslationSettings<IClassTranslationSettings>.NameClassesUsing(
             Func<IClassNamingContext, string> nameFactory)
         {
@@ -249,6 +248,20 @@
 
         public Func<SourceCodeExpression, IClassNamingContext, string> ClassNameFactory { get; private set; }
 
+        #endregion
+
+        ISourceCodeTranslationSettings IClassTranslationSettings<ISourceCodeTranslationSettings>.NameMethodsUsing(
+            Func<ClassExpression, IMethodNamingContext, string> nameFactory)
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
+
+        IClassTranslationSettings IClassTranslationSettings<IClassTranslationSettings>.NameMethodsUsing(
+            Func<ClassExpression, IMethodNamingContext, string> nameFactory)
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
+
         IClassTranslationSettings IMethodTranslationSettings<IClassTranslationSettings>.NameMethodsUsing(
             Func<IMethodNamingContext, string> nameFactory)
         {
@@ -263,24 +276,27 @@
 
         public ISourceCodeTranslationSettings NameMethodsUsing(
             Func<IMethodNamingContext, string> nameFactory)
-            => SetMethodNamingFactory(nameFactory);
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
 
         private TranslationSettings SetMethodNamingFactory(
             Func<IMethodNamingContext, string> nameFactory)
+        {
+            return SetMethodNamingFactory((cCtx, mCtx) => nameFactory.Invoke(mCtx));
+        }
+
+        private TranslationSettings SetMethodNamingFactory(
+            Func<ClassExpression, IMethodNamingContext, string> nameFactory)
         {
             MethodNameFactory = nameFactory;
             return this;
         }
 
-        public Func<IMethodNamingContext, string> MethodNameFactory { get; private set; }
-
-        private string GetMethodName(IMethodNamingContext methodContext)
+        public Func<ClassExpression, IMethodNamingContext, string> MethodNameFactory
         {
-            var returnType = methodContext.ReturnType;
-
-            return (returnType != typeof(void))
-                ? "Get" + returnType.GetVariableNameInPascalCase(this)
-                : "DoAction";
+            get;
+            private set;
         }
     }
 }

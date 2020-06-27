@@ -17,6 +17,17 @@
         /// </param>
         /// <returns>These settings, to support a fluent interface.</returns>
         TSettings NameClassesUsing(Func<IClassNamingContext, string> nameFactory);
+
+        /// <summary>
+        /// Name generated methods using the given <paramref name="nameFactory"/>.
+        /// </summary>
+        /// <param name="nameFactory">
+        /// The factory from which to obtain the name of a generated method. The parent
+        /// <see cref="ClassExpression"/> and method <see cref="IMethodNamingContext"/> are
+        /// supplied.
+        /// </param>
+        /// <returns>These settings, to support a fluent interface.</returns>
+        TSettings NameMethodsUsing(Func<ClassExpression, IMethodNamingContext, string> nameFactory);
     }
 
     /// <summary>

@@ -2,31 +2,36 @@
 {
     using System;
     using System.Collections.ObjectModel;
-    using Api;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Api;
     using Extensions;
     using Translations.Reflection;
 
     /// <summary>
     /// Represents a method in a class in a piece of source code.
     /// </summary>
-    public class MethodExpression : Expression
+    public class MethodExpression : Expression, IMethodNamingContext
     {
         private readonly ClassExpression _parent;
+        private readonly LambdaExpression _definition;
+        private readonly TranslationSettings _settings;
 
         private MethodExpression(
             ClassExpression parent,
-            LambdaExpression body,
+            LambdaExpression definition,
             TranslationSettings settings)
         {
             _parent = parent;
+            _definition = definition;
+            _settings = settings;
+            
             IParameter[] parameters;
 
-            var parameterCount = body.Parameters.Count;
+            var parameterCount = definition.Parameters.Count;
 
             if (parameterCount != 0)
             {
@@ -36,7 +41,7 @@
                 for (var i = 0; i < parameterCount; i++)
                 {
                     parameters[i] = methodParameters[i] =
-                        new MethodParameterExpression(body.Parameters[i]);
+                        new MethodParameterExpression(definition.Parameters[i]);
                 }
 
                 Parameters = new ReadOnlyCollection<MethodParameterExpression>(methodParameters);
@@ -47,8 +52,7 @@
                 Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
             }
 
-            Body = body.Body;
-            Method = new MethodExpressionMethod(this, body, parameters, settings);
+            Method = new MethodExpressionMethod(this, parameters, settings);
         }
 
         #region Factory Method
@@ -85,9 +89,10 @@
             => (ExpressionType)SourceCodeExpressionType.Method;
 
         /// <summary>
-        /// Gets the type of this <see cref="MethodExpression"/>.
+        /// Gets the type of this <see cref="MethodExpression"/>, which is the return type of the
+        /// LambdaExpression from which the method was created.
         /// </summary>
-        public override Type Type => Method.ReturnType;
+        public override Type Type => _definition.ReturnType;
 
         /// <summary>
         /// Visits this <see cref="MethodExpression"/>'s Body.
@@ -114,13 +119,24 @@
         /// <summary>
         /// Gets the Expression describing the body of this <see cref="MethodExpression"/>.
         /// </summary>
-        public Expression Body { get; }
+        public Expression Body => _definition.Body;
 
         internal IMethod Method { get; }
 
-        private int Index => _parent?.Methods.IndexOf(this) ?? 0;
+        #region IMethodNamingContext Members
 
-        private class MethodExpressionMethod : IMethod, IMethodNamingContext
+        Type IMethodNamingContext.ReturnType => Type;
+
+        string IMethodNamingContext.ReturnTypeName
+            => Type.GetVariableNameInPascalCase(_settings);
+
+        LambdaExpression IMethodNamingContext.MethodLambda => _definition;
+
+        int IMethodNamingContext.Index => _parent?.Methods.IndexOf(this) ?? 0;
+
+        #endregion
+
+        private class MethodExpressionMethod : IMethod
         {
             private readonly MethodExpression _method;
             private readonly IParameter[] _parameters;
@@ -129,11 +145,9 @@
 
             public MethodExpressionMethod(
                 MethodExpression method,
-                LambdaExpression body,
                 IParameter[] parameters,
                 TranslationSettings settings)
             {
-                Body = body;
                 _method = method;
                 _parameters = parameters;
                 _settings = settings;
@@ -158,15 +172,13 @@
             public bool IsVirtual => false;
 
             public string Name
-                => _name ??= _settings.MethodNameFactory.Invoke(this);
+                => _name ??= _settings.MethodNameFactory.Invoke(_method._parent, _method);
 
             public bool IsGenericMethod => false;
 
             public bool IsExtensionMethod => false;
 
-            public LambdaExpression Body { get; }
-
-            public Type ReturnType => Body.ReturnType;
+            public Type ReturnType => _method.Type;
 
             public IMethod GetGenericMethodDefinition() => null;
 
@@ -174,12 +186,6 @@
                 => Enumerable<Type>.EmptyArray;
 
             public IParameter[] GetParameters() => _parameters;
-
-            #region IMethodNamingContext Members
-
-            int IMethodNamingContext.Index => _method.Index;
-
-            #endregion
         }
     }
 }

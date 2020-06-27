@@ -19,10 +19,17 @@
         Type ReturnType { get; }
 
         /// <summary>
+        /// Gets a PascalCase, method-name-friendly translation of the return type of the
+        /// LambdaExpression from which the method to which this <see cref="IMethodNamingContext"/>
+        /// relates was created.
+        /// </summary>
+        string ReturnTypeName { get; }
+
+        /// <summary>
         /// Gets the LambdaExpression from which the method to which this
         /// <see cref="IMethodNamingContext"/> relates was created.
         /// </summary>
-        LambdaExpression Body { get; }
+        LambdaExpression MethodLambda { get; }
 
         /// <summary>
         /// Gets the index of the method in the set of generated class methods to which this
