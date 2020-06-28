@@ -38,7 +38,7 @@
                 CollectRequiredNamespaces = true,
                 Namespace = "GeneratedExpressionCode",
                 ClassNameFactory = (sc, classCtx) => sc.GetClassName(classCtx),
-                MethodNameFactory = (c, methodCtx) => c.GetMethodName(methodCtx)
+                MethodNameFactory = (sc, cls, methodCtx) => cls.GetMethodName(methodCtx)
             };
         }
 
@@ -250,6 +250,12 @@
 
         #endregion
 
+        public ISourceCodeTranslationSettings NameMethodsUsing(
+            Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> nameFactory)
+        {
+            return SetMethodNamingFactory(nameFactory);
+        }
+
         ISourceCodeTranslationSettings IClassTranslationSettings<ISourceCodeTranslationSettings>.NameMethodsUsing(
             Func<ClassExpression, IMethodNamingContext, string> nameFactory)
         {
@@ -289,11 +295,18 @@
         private TranslationSettings SetMethodNamingFactory(
             Func<ClassExpression, IMethodNamingContext, string> nameFactory)
         {
+            return SetMethodNamingFactory(
+                (sc, cls, ctx) => nameFactory.Invoke(cls, ctx));
+        }
+
+        private TranslationSettings SetMethodNamingFactory(
+            Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> nameFactory)
+        {
             MethodNameFactory = nameFactory;
             return this;
         }
 
-        public Func<ClassExpression, IMethodNamingContext, string> MethodNameFactory
+        public Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> MethodNameFactory
         {
             get;
             private set;

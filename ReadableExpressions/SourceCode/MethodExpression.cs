@@ -153,6 +153,8 @@
                 _settings = settings;
             }
 
+            private ClassExpression Parent => _method._parent;
+
             public Type DeclaringType => null;
 
             public bool IsPublic => true;
@@ -171,8 +173,8 @@
 
             public bool IsVirtual => false;
 
-            public string Name
-                => _name ??= _settings.MethodNameFactory.Invoke(_method._parent, _method);
+            public string Name => 
+                _name ??= _settings.MethodNameFactory.Invoke(Parent?.Parent, Parent, _method);
 
             public bool IsGenericMethod => false;
 

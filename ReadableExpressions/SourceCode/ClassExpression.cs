@@ -15,7 +15,6 @@
     /// </summary>
     public class ClassExpression : Expression, IClassNamingContext
     {
-        private readonly SourceCodeExpression _parent;
         private readonly Expression _body;
         private readonly TranslationSettings _settings;
         private Type _type;
@@ -31,7 +30,7 @@
             Expression body,
             TranslationSettings settings)
         {
-            _parent = parent;
+            Parent = parent;
             _body = body;
             _settings = settings;
 
@@ -68,11 +67,13 @@
             return this;
         }
 
+        internal SourceCodeExpression Parent { get; }
+
         /// <summary>
         /// Gets the name of this <see cref="ClassExpression"/>.
         /// </summary>
         public string Name
-            => _name ??= _settings.ClassNameFactory.Invoke(_parent, this);
+            => _name ??= _settings.ClassNameFactory.Invoke(Parent, this);
 
         /// <summary>
         /// Gets the <see cref="MethodExpression"/>s which make up this <see cref="ClassExpression"/>'s
@@ -83,7 +84,7 @@
         /// <summary>
         /// Gets the index of this <see cref="ClassExpression"/> in the set of generated classes.
         /// </summary>
-        public int Index => _parent?.Classes.IndexOf(this) ?? 0;
+        public int Index => Parent?.Classes.IndexOf(this) ?? 0;
 
         #region IClassNamingContext Members
 

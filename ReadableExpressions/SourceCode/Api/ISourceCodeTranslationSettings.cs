@@ -32,5 +32,17 @@
         /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
         ISourceCodeTranslationSettings NameClassesUsing(
             Func<SourceCodeExpression, IClassNamingContext, string> nameFactory);
+
+        /// <summary>
+        /// Name generated methods using the given <paramref name="nameFactory"/>.
+        /// </summary>
+        /// <param name="nameFactory">
+        /// The factory from which to obtain the name of a generated method. The parent
+        /// <see cref="SourceCodeExpression"/>, <see cref="ClassExpression"/> and a
+        /// <see cref="IMethodNamingContext"/> are supplied.
+        /// </param>
+        /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
+        ISourceCodeTranslationSettings NameMethodsUsing(
+            Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> nameFactory);
     }
 }
