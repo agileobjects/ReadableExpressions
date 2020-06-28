@@ -33,9 +33,7 @@
             Parent = parent;
             _body = body;
             _settings = settings;
-
-            Methods = new ReadOnlyCollection<MethodExpression>(
-                new[] { MethodExpression.For(this, body, settings) });
+            Methods = MethodExpression.For(this, body, settings).ToReadOnlyCollection();
         }
 
         /// <summary>

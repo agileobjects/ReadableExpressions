@@ -8,6 +8,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     /// <summary>
     /// Represents a piece of complete source code.
@@ -25,8 +26,8 @@
             {
                 case ExpressionType.Lambda:
                     @class = new ClassExpression(this, content, settings);
-                    Classes = new ReadOnlyCollection<ClassExpression>(new[] { @class });
-                    Elements = new ReadOnlyCollection<Expression>(new Expression[] { @class });
+                    Classes = @class.ToReadOnlyCollection();
+                    Elements = ((Expression)@class).ToReadOnlyCollection();
                     break;
 
                 case ExpressionType.Block:
@@ -49,9 +50,13 @@
                         classes.Add(@class);
                     }
 
-                    Classes = new ReadOnlyCollection<ClassExpression>(classes);
-                    Elements = new ReadOnlyCollection<Expression>(elements);
+                    Classes = classes.ToReadOnlyCollection();
+                    Elements = elements.ToReadOnlyCollection();
                     break;
+
+                default:
+                    content = content.ToLambdaExpression();
+                    goto case ExpressionType.Lambda;
             }
         }
 

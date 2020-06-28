@@ -10,6 +10,6 @@
         public static readonly List<T> EmptyList = new List<T>(0);
 
         public static readonly ReadOnlyCollection<T> EmptyReadOnlyCollection =
-            new ReadOnlyCollection<T>(EmptyArray);
+            EmptyArray.ToReadOnlyCollection();
     }
 }

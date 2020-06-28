@@ -38,6 +38,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -62,6 +63,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -85,6 +87,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -112,6 +115,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -148,6 +152,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -184,6 +189,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -209,6 +215,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -238,6 +245,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -267,6 +275,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -296,6 +305,41 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAUsingFromACatchBlockExceptionVariable()
+        {
+            var tryCatch = TryCatch(
+                Call(typeof(Console), "ReadLine", Type.EmptyTypes),
+                Catch(Parameter(typeof(IOException), "ioEx"), Default(typeof(string))));
+
+            var translated = tryCatch.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+using System.IO;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public string GetString()
+        {
+            try
+            {
+                return Console.ReadLine();
+            }
+            catch (IOException)
+            {
+                return null;
+            }
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -324,6 +368,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

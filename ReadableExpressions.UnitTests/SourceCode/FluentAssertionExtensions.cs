@@ -1,19 +1,20 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
+#if FEATURE_COMPILATION
     using System;
     using System.IO;
     using System.Linq;
-#if FEATURE_COMPILATION
+    using System.Text.RegularExpressions;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
 #endif
 
     public static class FluentAssertionExtensions
     {
-        public static void ShouldBeCompilableMethod(this string methodCode) 
+        public static void ShouldBeCompilableMethod(this string methodCode)
             => ShouldBeCompilableClass("public class GeneratedExpressionClass { " + methodCode + " }");
 
-        public static void ShouldBeCompilableClass(this string classCode) 
+        public static void ShouldBeCompilableClass(this string classCode)
             => ShouldCompile("namespace GeneratedExpressionCode { " + classCode + " }");
 
         public static void ShouldCompile(this string sourceCode)
@@ -25,7 +26,13 @@
             var compilation = CSharpCompilation.Create(
                 "ReadableExpressionsTestAssembly" + Guid.NewGuid(),
                 new[] { syntaxTree },
-                new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) },
+                new[]
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Regex).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(FluentAssertionExtensions).Assembly.Location),
+                },
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             using (var dllStream = new MemoryStream())
@@ -40,7 +47,7 @@
 
                 var errors = string.Join(
                     Environment.NewLine,
-                    emitResult.Diagnostics.Select(d => d.Descriptor.Description));
+                    emitResult.Diagnostics.Select(d => d.ToString()));
 
                 throw new NotSupportedException(errors);
             }

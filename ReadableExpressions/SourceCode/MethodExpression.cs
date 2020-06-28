@@ -28,7 +28,7 @@
             _parent = parent;
             _definition = definition;
             _settings = settings;
-            
+
             IParameter[] parameters;
 
             var parameterCount = definition.Parameters.Count;
@@ -44,7 +44,7 @@
                         new MethodParameterExpression(definition.Parameters[i]);
                 }
 
-                Parameters = new ReadOnlyCollection<MethodParameterExpression>(methodParameters);
+                Parameters = methodParameters.ToReadOnlyCollection();
             }
             else
             {
@@ -55,7 +55,7 @@
             Method = new MethodExpressionMethod(this, parameters, settings);
         }
 
-        #region Factory Method
+        #region Factory Methods
 
         internal static MethodExpression For(Expression expression, TranslationSettings settings)
             => For(null, expression, settings);
@@ -70,11 +70,7 @@
                 return new MethodExpression(parent, (LambdaExpression)expression, settings);
             }
 
-            var lambdaType = expression.HasReturnType()
-                ? GetFuncType(expression.Type)
-                : GetActionType();
-
-            var lambdaExpression = Lambda(lambdaType, expression);
+            var lambdaExpression = expression.ToLambdaExpression();
 
             return new MethodExpression(parent, lambdaExpression, settings);
         }
@@ -173,7 +169,7 @@
 
             public bool IsVirtual => false;
 
-            public string Name => 
+            public string Name =>
                 _name ??= _settings.MethodNameFactory.Invoke(Parent?.Parent, Parent, _method);
 
             public bool IsGenericMethod => false;

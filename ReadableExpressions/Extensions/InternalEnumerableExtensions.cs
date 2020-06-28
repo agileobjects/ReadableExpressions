@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
 #if NET35
     using System.Linq;
@@ -11,6 +12,15 @@
     {
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
+
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T item)
+            => new[] { item }.ToReadOnlyCollection();
+
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this List<T> items)
+            => new ReadOnlyCollection<T>(items);
+
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T[] items)
+            => new ReadOnlyCollection<T>(items);
 
         public static TResult[] ProjectToArray<TItem, TResult>(
             this IList<TItem> items,

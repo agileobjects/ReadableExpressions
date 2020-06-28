@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Initialisations;
     using Interfaces;
     using ReadableExpressions.SourceCode;
@@ -88,7 +89,10 @@
         }
 
         IList<ParameterExpression> ITranslationContext.GetUnscopedVariablesFor(MethodExpression method)
-            => _expressionAnalysis.UnscopedVariablesByMethod[method];
+        {
+            return _expressionAnalysis.UnscopedVariablesByMethod.TryGetValue(method, out var variables)
+                ? variables : Enumerable<ParameterExpression>.EmptyList;
+        }
 
         public ITranslation GetTranslationFor(Expression expression)
         {

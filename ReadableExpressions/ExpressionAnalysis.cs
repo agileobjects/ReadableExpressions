@@ -29,6 +29,7 @@
         private ICollection<BinaryExpression> _joinedAssignments;
         private ICollection<Expression> _assignedAssignments;
         private Stack<BlockExpression> _blocks;
+        private List<ParameterExpression> _blockVariables;
         private Stack<object> _constructs;
         private ICollection<ParameterExpression> _catchBlockVariables;
         private ICollection<LabelTarget> _namedLabelTargets;
@@ -64,7 +65,7 @@
             return analysis;
         }
 
-        public ExpressionAnalysis Finalise()
+        private ExpressionAnalysis Finalise()
         {
             if (_requiredNamespaces != null)
             {
@@ -354,31 +355,19 @@
 
         private void Visit(BlockExpression block)
         {
-            (_blocks ??= new Stack<BlockExpression>()).Push(block);
+            if (_blocks == null)
+            {
+                _blocks = new Stack<BlockExpression>();
+                _blockVariables = new List<ParameterExpression>();
+            }
+
+            _blockVariables.AddRange(block.Variables);
+            _blocks.Push(block);
 
             Visit(block.Expressions);
             Visit(block.Variables);
 
             _blocks.Pop();
-
-            UpdateMethodVariablesIfAppropriate(block.Variables, (uv, p) => uv.Remove(p));
-        }
-
-        private void UpdateMethodVariablesIfAppropriate(
-            IEnumerable<ParameterExpression> variables,
-            Action<IList<ParameterExpression>, ParameterExpression> methodVariablesAction)
-        {
-            if (_unscopedVariablesByMethod == null)
-            {
-                return;
-            }
-
-            var unscopedVariables = _unscopedVariablesByMethod.Values.Last();
-
-            foreach (var variable in variables)
-            {
-                methodVariablesAction.Invoke(unscopedVariables, variable);
-            }
         }
 
         private void Visit(ConditionalExpression conditional)
@@ -400,7 +389,7 @@
         }
 
         private void Visit(DefaultExpression @default)
-            => AddNamespaceIfRequired(@default.Type);
+            => AddNamespaceIfRequired(@default);
 
         private void AddNamespacesIfRequired(IEnumerable<Type> accessedTypes)
         {
@@ -409,6 +398,9 @@
                 AddNamespaceIfRequired(type);
             }
         }
+
+        private void AddNamespaceIfRequired(Expression expression)
+            => AddNamespaceIfRequired(expression.Type);
 
         private void AddNamespaceIfRequired(Type accessedType)
         {
@@ -543,11 +535,11 @@
 
             if (methodCall.Method.IsGenericMethod)
             {
-                AddNamespacesIfRequired(
-                    new BclMethodWrapper(methodCall.Method).GetRequiredExplicitGenericArguments(_settings));
+                AddNamespacesIfRequired(new BclMethodWrapper(methodCall.Method)
+                    .GetRequiredExplicitGenericArguments(_settings));
             }
 
-            if (methodCall.Method.IsExtensionMethod())
+            if (methodCall.Method.IsStatic)
             {
                 AddNamespaceIfRequired(methodCall.Method.DeclaringType);
             }
@@ -556,7 +548,8 @@
             Visit(methodCall.Arguments);
         }
 
-        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
+        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(
+            MethodCallExpression methodCall)
         {
             while (methodCall != null)
             {
@@ -568,21 +561,35 @@
 
         private void Visit(MethodExpression method)
         {
-            (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
-                .Add(method, new List<ParameterExpression>());
-
-            AddNamespaceIfRequired(method.Type);
+            AddNamespaceIfRequired(method);
 
             Visit(method.Parameters);
             Visit(method.Body);
 
-            UpdateMethodVariablesIfAppropriate(
-                method.Parameters.ProjectToArray(p => p.ParameterExpression),
-                (uv, p) => uv.Remove(p));
+            if (_accessedVariables == null)
+            {
+                return;
+            }
+
+            var unscopedVariables = _accessedVariables
+                .Except(method.Parameters.ProjectToArray(p => p.ParameterExpression));
+
+            if (_blockVariables?.Any() == true)
+            {
+                unscopedVariables = unscopedVariables.Except(_blockVariables);
+            }
+
+            if (_catchBlockVariables?.Any() == true)
+            {
+                unscopedVariables = unscopedVariables.Except(_catchBlockVariables);
+            }
+
+            (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
+                .Add(method, unscopedVariables.ToList());
         }
 
         private void Visit(MethodParameterExpression methodParameter)
-            => AddNamespaceIfRequired(methodParameter.Type);
+            => AddNamespaceIfRequired(methodParameter);
 
         private void Visit(NewExpression newing)
         {
@@ -646,14 +653,6 @@
             {
                 (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
             }
-
-            UpdateMethodVariablesIfAppropriate(new[] { variable }, (uv, p) =>
-            {
-                if (!uv.Contains(p))
-                {
-                    uv.Add(p);
-                }
-            });
 
             if (_joinedAssignmentVariables?.Contains(variable) != true)
             {
@@ -721,9 +720,13 @@
 
         private void Visit(CatchBlock @catch)
         {
-            if (@catch.Variable != null)
+            var catchVariable = @catch.Variable;
+
+            if (catchVariable != null)
             {
-                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(@catch.Variable);
+                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(catchVariable);
+
+                AddNamespaceIfRequired(catchVariable);
             }
 
             VisitConstruct(@catch, c =>
