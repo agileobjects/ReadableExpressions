@@ -382,6 +382,12 @@
 
         private void Visit(ConstantExpression constant)
         {
+            if (constant.Type.IsEnum())
+            {
+                AddNamespaceIfRequired(constant);
+                return;
+            }
+
             if (constant.Type.IsAssignableTo(typeof(Type)))
             {
                 AddNamespaceIfRequired((Type)constant.Value);

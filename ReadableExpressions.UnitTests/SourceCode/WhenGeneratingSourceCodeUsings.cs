@@ -92,6 +92,30 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldIncludeAUsingFromAnEnumMember()
+        {
+            var getEnumIntValue = CreateLambda<object>(() => (OddNumber?)OddNumber.One);
+
+            var translated = getEnumIntValue.ToSourceCode();
+
+            var expected = @$"
+using {typeof(OddNumber).Namespace};
+
+namespace GeneratedExpressionCode
+{{
+    public class GeneratedExpressionClass
+    {{
+        public object GetObject()
+        {{
+            return (OddNumber?)OddNumber.One;
+        }}
+    }}
+}}";
+            expected.ShouldCompile();
+            translated.ShouldBe(expected.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeAUsingFromAGenericTypeArgument()
         {
             var comparerType = typeof(Comparer<StringBuilder>);
@@ -194,7 +218,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldIncludeAUsingFromAStaticMemberAccessExpression()
+        public void ShouldIncludeAUsingFromAStaticMemberAccess()
         {
             var dateTimeNow = Property(null, typeof(DateTime), nameof(DateTime.Now));
             var dateTimeTicks = Property(dateTimeNow, nameof(DateTime.Ticks));
