@@ -49,6 +49,31 @@ public class GeneratedExpressionClass
         }
 
         [Fact]
+        public void ShouldIncludeNonScopeVariablesAsMethodParameters()
+        {
+            var int1Variable = Parameter(typeof(int), "int1");
+            var int2Variable = Variable(typeof(int), "int2");
+            var addInts = Add(int1Variable, int2Variable);
+
+            var translated = addInts.ToSourceCodeClass();
+
+            const string EXPECTED = @"
+public class GeneratedExpressionClass
+{
+    public int GetInt
+    (
+        int int1,
+        int int2
+    )
+    {
+        return int1 + int2;
+    }
+}";
+            EXPECTED.ShouldBeCompilableClass();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldUseACustomClassName()
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
