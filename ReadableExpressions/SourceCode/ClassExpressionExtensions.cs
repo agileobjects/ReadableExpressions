@@ -17,7 +17,7 @@
                 return defaultName;
             }
 
-            var classMethods = classExpression.Methods;
+            var classMethods = classExpression.MethodsByReturnType[methodCtx.ReturnType];
 
             if (classMethods.Count == 1)
             {

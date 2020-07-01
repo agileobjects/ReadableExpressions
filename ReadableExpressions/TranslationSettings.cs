@@ -250,6 +250,8 @@
 
         #endregion
 
+        #region Method Naming
+
         public ISourceCodeTranslationSettings NameMethodsUsing(
             Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> nameFactory)
         {
@@ -311,5 +313,18 @@
             get;
             private set;
         }
+
+        #endregion
+
+        ISourceCodeTranslationSettings ISourceCodeTranslationSettings.SingleClass
+        {
+            get
+            {
+                GenerateSingleClass = true;
+                return this;
+            }
+        }
+
+        internal bool GenerateSingleClass { get; private set; }
     }
 }

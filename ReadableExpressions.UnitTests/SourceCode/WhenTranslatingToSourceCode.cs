@@ -225,5 +225,34 @@ namespace GeneratedExpressionCode
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldTranslateATwoLambdaBlockToASingleTwoMethodClass()
+        {
+            var getDefaultInt = Lambda<Func<int>>(Default(typeof(int)));
+            var getDefaultString = Lambda<Func<string>>(Default(typeof(string)));
+            var block = Block(getDefaultInt, getDefaultString);
+
+            var translated = block.ToSourceCode(s => s.SingleClass);
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt()
+        {
+            return default(int);
+        }
+
+        public string GetString()
+        {
+            return null;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }

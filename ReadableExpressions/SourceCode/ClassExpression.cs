@@ -1,9 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
 #if NET35
     using Microsoft.Scripting.Ast;
+    using Microsoft.Scripting.Utils;
 #else
     using System.Linq.Expressions;
 #endif
@@ -33,7 +35,68 @@
             Parent = parent;
             _body = body;
             _settings = settings;
-            Methods = MethodExpression.For(this, body, settings).ToReadOnlyCollection();
+
+            var method = MethodExpression.For(this, body, settings);
+            Methods = method.ToReadOnlyCollection();
+
+            MethodsByReturnType = new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(1)
+            {
+                [method.ReturnType] = Methods
+            }
+#if FEATURE_READONLYDICTIONARY
+                .ToReadOnlyDictionary()
+#endif
+                ;
+        }
+
+        internal ClassExpression(
+            SourceCodeExpression parent,
+            BlockExpression body,
+            TranslationSettings settings)
+        {
+            Parent = parent;
+            _body = body;
+            _settings = settings;
+
+            var expressions = body.Expressions;
+            var elementCount = expressions.Count;
+            var methods = new MethodExpression[elementCount];
+            var methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
+
+            for (var i = 0; i < elementCount; ++i)
+            {
+                var expression = expressions[i];
+
+                var method = MethodExpression.For(this, expression, settings);
+                methods[i] = method;
+
+                if (!methodsByReturnType.TryGetValue(method.ReturnType, out var typedMethods))
+                {
+                    methodsByReturnType.Add(
+                        method.ReturnType,
+                        typedMethods = new List<MethodExpression>());
+                }
+
+                typedMethods.Add(method);
+            }
+
+            var readonlyMethodsByReturnType =
+                new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(methodsByReturnType.Count);
+
+            foreach (var methodAndReturnType in methodsByReturnType)
+            {
+                readonlyMethodsByReturnType.Add(
+                    methodAndReturnType.Key,
+                    methodAndReturnType.Value.ToReadOnlyCollection());
+            }
+
+            Methods = methods.ToReadOnlyCollection();
+
+            MethodsByReturnType = readonlyMethodsByReturnType
+#if FEATURE_READONLYDICTIONARY
+                .ToReadOnlyDictionary()
+#endif
+                ;
         }
 
         /// <summary>
@@ -78,6 +141,16 @@
         /// methods.
         /// </summary>
         public ReadOnlyCollection<MethodExpression> Methods { get; }
+
+        /// <summary>
+        /// Gets the <see cref="MethodExpression"/>s which make up this <see cref="ClassExpression"/>'s
+        /// methods, kyed by their return type.
+        /// </summary>
+#if FEATURE_READONLYDICTIONARY
+        public ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType { get; }
+#else
+        public IDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType { get; }
+#endif
 
         /// <summary>
         /// Gets the index of this <see cref="ClassExpression"/> in the set of generated classes.

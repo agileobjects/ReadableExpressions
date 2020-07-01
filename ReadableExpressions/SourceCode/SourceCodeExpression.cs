@@ -30,6 +30,12 @@
                     Elements = ((Expression)@class).ToReadOnlyCollection();
                     break;
 
+                case ExpressionType.Block when settings.GenerateSingleClass:
+                    @class = new ClassExpression(this, (BlockExpression)content, settings);
+                    Classes = @class.ToReadOnlyCollection();
+                    Elements = ((Expression)@class).ToReadOnlyCollection();
+                    break;
+                
                 case ExpressionType.Block:
                     var expressions = ((BlockExpression)content).Expressions;
                     var elementCount = expressions.Count;

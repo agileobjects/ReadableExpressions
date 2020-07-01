@@ -88,7 +88,7 @@
         /// Gets the type of this <see cref="MethodExpression"/>, which is the return type of the
         /// LambdaExpression from which the method was created.
         /// </summary>
-        public override Type Type => _definition.ReturnType;
+        public override Type Type => ReturnType;
 
         /// <summary>
         /// Visits this <see cref="MethodExpression"/>'s Body.
@@ -105,6 +105,12 @@
             visitor.Visit(Body);
             return this;
         }
+
+        /// <summary>
+        /// Gets the return type of this <see cref="MethodExpression"/>, which is the return type
+        /// of the LambdaExpression from which the method was created.
+        /// </summary>
+        public Type ReturnType => _definition.ReturnType;
 
         /// <summary>
         /// Gets the <see cref="MethodParameterExpression"/>s describing the parameters of this

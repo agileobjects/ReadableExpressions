@@ -44,5 +44,12 @@
         /// <returns>These <see cref="ISourceCodeTranslationSettings"/>, to support a fluent interface.</returns>
         ISourceCodeTranslationSettings NameMethodsUsing(
             Func<SourceCodeExpression, ClassExpression, IMethodNamingContext, string> nameFactory);
+
+        /// <summary>
+        /// Generate source code for a single class only. BlockExpressions directly containing
+        /// multiple LambdaExpressions will generate a single class with one method per lambda
+        /// instead of multiple, single-method classes.
+        /// </summary>
+        ISourceCodeTranslationSettings SingleClass { get; }
     }
 }

@@ -6,6 +6,7 @@
     using System.Diagnostics;
 #if NET35
     using System.Linq;
+    using Microsoft.Scripting.Utils;
 #endif
 
     internal static class InternalEnumerableExtensions
@@ -21,7 +22,14 @@
 
         public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T[] items)
             => new ReadOnlyCollection<T>(items);
-
+        
+#if FEATURE_READONLYDICTIONARY
+        public static ReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TKey, TValue>(
+            this IDictionary<TKey, TValue> dictionary)
+        {
+            return new ReadOnlyDictionary<TKey, TValue>(dictionary);
+        }
+#endif
         public static TResult[] ProjectToArray<TItem, TResult>(
             this IList<TItem> items,
             Func<TItem, TResult> projector)
