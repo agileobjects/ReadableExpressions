@@ -23,7 +23,7 @@
         private string _name;
 
         internal ClassExpression(Expression body, TranslationSettings settings)
-            : this(null, body, settings)
+            : this(null, Enumerable<string>.EmptyArray, body, settings)
         {
         }
 
@@ -31,8 +31,18 @@
             SourceCodeExpression parent,
             Expression body,
             TranslationSettings settings)
+            : this(parent, Enumerable<string>.EmptyArray, body, settings)
+        {
+        }
+
+        internal ClassExpression(
+            SourceCodeExpression parent,
+            IList<string> summaryLines,
+            Expression body,
+            TranslationSettings settings)
         {
             Parent = parent;
+            SummaryLines = summaryLines;
             _body = body;
             _settings = settings;
 
@@ -55,6 +65,7 @@
             TranslationSettings settings)
         {
             Parent = parent;
+            SummaryLines = Enumerable<string>.EmptyArray;
             _body = body;
             _settings = settings;
 
@@ -114,9 +125,12 @@
             => _type ??= (_body as LambdaExpression)?.ReturnType ?? _body.Type;
 
         /// <summary>
-        /// Visits each of this <see cref="ClassExpression"/>'s Methods.
+        /// Visits each of this <see cref="ClassExpression"/>'s <see cref="Methods"/>.
         /// </summary>
-        /// <param name="visitor">The visitor with which to visit this <see cref="ClassExpression"/>.</param>
+        /// <param name="visitor">
+        /// The visitor with which to visit this <see cref="ClassExpression"/>'s
+        /// <see cref="Methods"/>.
+        /// </param>
         /// <returns>This <see cref="ClassExpression"/>.</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
@@ -129,6 +143,11 @@
         }
 
         internal SourceCodeExpression Parent { get; }
+
+        /// <summary>
+        /// Gets the summary text describing this <see cref="ClassExpression"/>, if set.
+        /// </summary>
+        public IList<string> SummaryLines { get; }
 
         /// <summary>
         /// Gets the name of this <see cref="ClassExpression"/>.

@@ -18,8 +18,8 @@
         private readonly IList<string> _namespaces;
         private readonly int _namespaceCount;
         private readonly SourceCodeExpression _sourceCode;
-        private readonly IList<ITranslation> _elements;
-        private readonly int _elementCount;
+        private readonly IList<ITranslation> _classes;
+        private readonly int _classCount;
 
         public SourceCodeTranslation(
             SourceCodeExpression sourceCode,
@@ -28,8 +28,8 @@
             _namespaces = context.RequiredNamespaces;
             _namespaceCount = context.RequiredNamespaces.Count;
             _sourceCode = sourceCode;
-            _elementCount = sourceCode.Elements.Count;
-            _elements = new ITranslation[_elementCount];
+            _classCount = sourceCode.Classes.Count;
+            _classes = new ITranslation[_classCount];
 
             var translationSize =
                 _namespace.Length +
@@ -60,14 +60,14 @@
 
             for (var i = 0; ;)
             {
-                var element = _elements[i] = context.GetTranslationFor(sourceCode.Elements[i]);
+                var @class = _classes[i] = context.GetTranslationFor(sourceCode.Classes[i]);
 
-                translationSize += element.TranslationSize;
-                formattingSize += element.FormattingSize;
+                translationSize += @class.TranslationSize;
+                formattingSize += @class.FormattingSize;
 
                 ++i;
 
-                if (i == _elementCount)
+                if (i == _classCount)
                 {
                     break;
                 }
@@ -93,11 +93,11 @@
 
             for (var i = 0; ;)
             {
-                indentSize += _elements[i].GetIndentSize();
+                indentSize += _classes[i].GetIndentSize();
 
                 ++i;
 
-                if (i == _elementCount)
+                if (i == _classCount)
                 {
                     return indentSize;
                 }
@@ -117,11 +117,11 @@
 
             for (var i = 0; ;)
             {
-                lineCount += _elements[i].GetLineCount();
+                lineCount += _classes[i].GetLineCount();
 
                 ++i;
 
-                if (i == _elementCount)
+                if (i == _classCount)
                 {
                     return lineCount;
                 }
@@ -149,11 +149,11 @@
 
             for (var i = 0; ;)
             {
-                _elements[i].WriteTo(writer);
+                _classes[i].WriteTo(writer);
 
                 ++i;
 
-                if (i == _elementCount)
+                if (i == _classCount)
                 {
                     break;
                 }

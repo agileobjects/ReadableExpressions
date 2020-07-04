@@ -15,6 +15,7 @@
         private const string _classString = "class ";
 
         private readonly ClassExpression _class;
+        private readonly ITranslatable _summary;
         private readonly IList<ITranslation> _methods;
         private readonly int _methodCount;
 
@@ -23,10 +24,12 @@
             ITranslationContext context)
         {
             _class = @class;
+            _summary = new SummaryTranslation(_class.SummaryLines, context);
             _methodCount = @class.Methods.Count;
             _methods = new ITranslation[_methodCount];
 
             var translationSize =
+                _summary.TranslationSize + 
                 "public ".Length +
                 _classString.Length +
                 @class.Name.Length +
@@ -35,6 +38,7 @@
             var keywordFormattingSize = context.GetKeywordFormattingSize();
 
             var formattingSize =
+               _summary.FormattingSize + 
                 keywordFormattingSize + // <- for accessibility
                 keywordFormattingSize; // <- for 'class'
 
@@ -86,7 +90,7 @@
 
         public int GetLineCount()
         {
-            var lineCount = 0;
+            var lineCount = _summary.GetLineCount();
 
             for (var i = 0; ;)
             {
@@ -103,6 +107,8 @@
 
         public void WriteTo(TranslationWriter writer)
         {
+            _summary.WriteTo(writer);
+
             writer.WriteKeywordToTranslation("public " + _classString);
             writer.WriteTypeNameToTranslation(_class.Name);
             writer.WriteOpeningBraceToTranslation();

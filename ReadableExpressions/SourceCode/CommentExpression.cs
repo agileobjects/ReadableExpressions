@@ -1,11 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
-    using System;
     using static System.Environment;
     using static System.StringSplitOptions;
 
@@ -19,9 +19,11 @@
 
         internal CommentExpression(string comment)
         {
+            TextLines = comment.Trim().Split(_newLines, None);
+
             Comment =
                 _commentString +
-                string.Join(NewLine + _commentString, comment.Trim().Split(_newLines, None));
+                string.Join(NewLine + _commentString, TextLines);
         }
 
         /// <summary>
@@ -40,6 +42,8 @@
         /// Gets the double-slash-commented text.
         /// </summary>
         public string Comment { get; }
+
+        internal string[] TextLines { get; }
 
         /// <summary>
         /// Gets a string representation of this <see cref="CommentExpression"/>.

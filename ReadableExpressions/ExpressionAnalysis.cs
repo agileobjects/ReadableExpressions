@@ -294,7 +294,7 @@
                         switch ((SourceCodeExpressionType)expression.NodeType)
                         {
                             case SourceCodeExpressionType.SourceCode:
-                                Visit(((SourceCodeExpression)expression).Elements);
+                                Visit(((SourceCodeExpression)expression).Classes);
                                 return;
 
                             case SourceCodeExpressionType.Class:

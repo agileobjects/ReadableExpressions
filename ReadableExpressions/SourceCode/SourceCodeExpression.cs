@@ -27,20 +27,18 @@
                 case ExpressionType.Lambda:
                     @class = new ClassExpression(this, content, settings);
                     Classes = @class.ToReadOnlyCollection();
-                    Elements = ((Expression)@class).ToReadOnlyCollection();
                     break;
 
                 case ExpressionType.Block when settings.GenerateSingleClass:
                     @class = new ClassExpression(this, (BlockExpression)content, settings);
                     Classes = @class.ToReadOnlyCollection();
-                    Elements = ((Expression)@class).ToReadOnlyCollection();
                     break;
-                
+
                 case ExpressionType.Block:
                     var expressions = ((BlockExpression)content).Expressions;
                     var elementCount = expressions.Count;
                     var classes = new List<ClassExpression>(elementCount);
-                    var elements = new Expression[elementCount];
+                    var summaryLines = Enumerable<string>.EmptyArray;
 
                     for (var i = 0; i < elementCount; ++i)
                     {
@@ -48,16 +46,17 @@
 
                         if (expression is CommentExpression comment)
                         {
-                            elements[i] = comment;
+                            summaryLines = comment.TextLines;
                             continue;
                         }
 
-                        elements[i] = @class = new ClassExpression(this, expression, settings);
+                        @class = new ClassExpression(this, summaryLines, expression, settings);
                         classes.Add(@class);
+
+                        summaryLines = Enumerable<string>.EmptyArray;
                     }
 
                     Classes = classes.ToReadOnlyCollection();
-                    Elements = elements.ToReadOnlyCollection();
                     break;
 
                 default:
@@ -79,13 +78,20 @@
         public override Type Type => typeof(void);
 
         /// <summary>
-        /// Visits each of this <see cref="SourceCodeExpression"/>'s Elements.
+        /// Visits each of this <see cref="SourceCodeExpression"/>'s <see cref="Classes"/>.
         /// </summary>
-        /// <param name="visitor">The visitor with which to visit this <see cref="SourceCodeExpression"/>.</param>
+        /// <param name="visitor">
+        /// The visitor with which to visit this <see cref="SourceCodeExpression"/>'s
+        /// <see cref="Classes"/>.
+        /// </param>
         /// <returns>This <see cref="SourceCodeExpression"/>.</returns>
         protected override Expression Accept(ExpressionVisitor visitor)
         {
-            visitor.Visit(Elements);
+            foreach (var @class in Classes)
+            {
+                visitor.Visit(@class);
+            }
+
             return this;
         }
 
@@ -99,11 +105,6 @@
         /// <see cref="SourceCodeExpression"/> belongs.
         /// </summary>
         public string Namespace { get; }
-
-        /// <summary>
-        /// Gets the Expressions which describe the elements of this <see cref="SourceCodeExpression"/>.
-        /// </summary>
-        public ReadOnlyCollection<Expression> Elements { get; }
 
         /// <summary>
         /// Gets the <see cref="ClassExpression"/>s which describe the classes of this

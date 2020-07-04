@@ -4,9 +4,11 @@
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
+    using static ReadableExpression;
 #else
     using Fact = NUnit.Framework.TestAttribute;
     using static Microsoft.Scripting.Ast.Expression;
+    using static ReadableExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -248,6 +250,35 @@ namespace GeneratedExpressionCode
         public string GetString()
         {
             return null;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateACommentAndLambdaBlockToACommentedSingleMethodClass()
+        {
+            var classComment = Comment("This is my generated class and I LOVE IT");
+            var getDefaultDateTime = Lambda<Func<DateTime>>(Default(typeof(DateTime)));
+            var block = Block(classComment, getDefaultDateTime);
+
+            var translated = block.ToSourceCode();
+
+            const string EXPECTED = @"
+using System;
+
+namespace GeneratedExpressionCode
+{
+    /// <summary>
+    /// This is my generated class and I LOVE IT
+    /// </summary>
+    public class GeneratedExpressionClass
+    {
+        public DateTime GetDateTime()
+        {
+            return default(DateTime);
         }
     }
 }";
