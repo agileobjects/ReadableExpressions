@@ -316,7 +316,7 @@
 
         #endregion
 
-        ISourceCodeTranslationSettings ISourceCodeTranslationSettings.SingleClass
+        ISourceCodeTranslationSettings ISourceCodeTranslationSettings.CreateSingleClass
         {
             get
             {

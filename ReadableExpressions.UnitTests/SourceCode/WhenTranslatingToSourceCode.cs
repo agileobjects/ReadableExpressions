@@ -233,7 +233,7 @@ namespace GeneratedExpressionCode
             var getDefaultString = Lambda<Func<string>>(Default(typeof(string)));
             var block = Block(getDefaultInt, getDefaultString);
 
-            var translated = block.ToSourceCode(s => s.SingleClass);
+            var translated = block.ToSourceCode(s => s.CreateSingleClass);
 
             const string EXPECTED = @"
 namespace GeneratedExpressionCode
