@@ -20,8 +20,8 @@
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = SourceCode(cfg => cfg
-                    .WithClass(cls => cls
-                        .WithMethod(doNothing)))
+                .WithClass(cls => cls
+                    .WithMethod(doNothing)))
                 .ToSourceCode();
 
             const string EXPECTED = @"
@@ -30,6 +30,31 @@ namespace GeneratedExpressionCode
     public class GeneratedExpressionClass
     {
         public void DoAction()
+        {
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldBuildANamedClassAndMethod()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = SourceCode(cfg => cfg
+                .WithClass(cls => cls
+                    .Named("MyClass")
+                    .WithMethod("MyMethod", doNothing)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class MyClass
+    {
+        public void MyMethod()
         {
         }
     }

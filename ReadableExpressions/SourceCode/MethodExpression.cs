@@ -21,6 +21,7 @@
 
         private MethodExpression(
             ClassExpression parent,
+            string name,
             LambdaExpression definition,
             TranslationSettings settings)
         {
@@ -51,7 +52,7 @@
                 Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
             }
 
-            Method = new MethodExpressionMethod(this, parameters, settings);
+            Method = new MethodExpressionMethod(this, name, parameters, settings);
         }
 
         #region Factory Methods
@@ -65,18 +66,19 @@
             TranslationSettings settings)
         {
             var definition = (expression.NodeType == ExpressionType.Lambda)
-                ? (LambdaExpression) expression
+                ? (LambdaExpression)expression
                 : expression.ToLambdaExpression();
 
-            return For(parent, definition, settings);
+            return For(parent, null, definition, settings);
         }
 
         internal static MethodExpression For(
             ClassExpression parent,
+            string name,
             LambdaExpression definition,
             TranslationSettings settings)
         {
-            return new MethodExpression(parent, definition, settings);
+            return new MethodExpression(parent, name, definition, settings);
         }
 
         #endregion
@@ -157,10 +159,12 @@
 
             public MethodExpressionMethod(
                 MethodExpression method,
+                string name,
                 IParameter[] parameters,
                 TranslationSettings settings)
             {
                 _method = method;
+                _name = name;
                 _parameters = parameters;
                 _settings = settings;
             }

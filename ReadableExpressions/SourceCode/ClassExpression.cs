@@ -19,8 +19,8 @@
     {
         private readonly Expression _body;
         private readonly TranslationSettings _settings;
-        private Type _type;
         private string _name;
+        private Type _type;
 
         internal ClassExpression(Expression body, TranslationSettings settings)
             : this(null, Enumerable<string>.EmptyArray, body, settings)
@@ -85,11 +85,14 @@
 
         internal ClassExpression(
             SourceCodeExpression parent,
+            string name,
             IList<string> summaryLines,
             IList<MethodExpressionBuilder> methodBuilders,
             TranslationSettings settings)
             : this(parent, summaryLines, settings)
         {
+            _name = name;
+            
             var methodCount = methodBuilders.Count;
 
             if (methodCount == 1)

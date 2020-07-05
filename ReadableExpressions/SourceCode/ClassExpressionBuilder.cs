@@ -12,6 +12,7 @@
     internal class ClassExpressionBuilder : IClassExpressionSettings
     {
         private readonly IList<MethodExpressionBuilder> _methodBuilders;
+        private string _name;
         private readonly IList<string> _summaryLines;
 
         public ClassExpressionBuilder()
@@ -20,9 +21,20 @@
             _summaryLines = Enumerable<string>.EmptyArray;
         }
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(LambdaExpression definition)
+        IClassExpressionSettings IClassExpressionSettings.Named(string name)
         {
-            _methodBuilders.Add(new MethodExpressionBuilder(definition));
+            _name = name;
+            return this;
+        }
+
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(LambdaExpression definition)
+            => ((IClassExpressionSettings)this).WithMethod(null, definition);
+
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(
+            string name,
+            LambdaExpression definition)
+        {
+            _methodBuilders.Add(new MethodExpressionBuilder(name, definition));
             return this;
         }
 
@@ -32,6 +44,7 @@
         {
             return new ClassExpression(
                 parent,
+                _name,
                 _summaryLines,
                 _methodBuilders,
                 settings);
