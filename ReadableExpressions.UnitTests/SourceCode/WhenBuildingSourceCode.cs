@@ -62,5 +62,54 @@ namespace GeneratedExpressionCode
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldBuildMultipleClassesAndMethods()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+            var getBlah = Lambda<Func<string>>(Constant("Blah"));
+            var getOne = Lambda<Func<int>>(Constant(1));
+            var getTen = Lambda<Func<int>>(Constant(10));
+
+            var translated = SourceCode(cfg => cfg
+                    .WithClass(cls => cls
+                        .WithMethod("DoNothing", doNothing)
+                        .WithMethod(getBlah))
+                    .WithClass(cls => cls
+                        .WithMethod(getOne)
+                        .WithMethod(getTen)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass1
+    {
+        public void DoNothing()
+        {
+        }
+
+        public string GetString()
+        {
+            return ""Blah"";
+        }
+    }
+
+    public class GeneratedExpressionClass2
+    {
+        public int GetInt1()
+        {
+            return 1;
+        }
+
+        public int GetInt2()
+        {
+            return 10;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }

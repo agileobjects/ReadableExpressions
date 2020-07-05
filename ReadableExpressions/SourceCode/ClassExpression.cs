@@ -68,15 +68,7 @@
 
                 var method = MethodExpression.For(this, expression, settings);
                 methods[i] = method;
-
-                if (!methodsByReturnType.TryGetValue(method.ReturnType, out var typedMethods))
-                {
-                    methodsByReturnType.Add(
-                        method.ReturnType,
-                        typedMethods = new List<MethodExpression>());
-                }
-
-                typedMethods.Add(method);
+                AddTypedMethod(methodsByReturnType, method);
             }
 
             Methods = methods.ToReadOnlyCollection();
@@ -92,7 +84,7 @@
             : this(parent, summaryLines, settings)
         {
             _name = name;
-            
+
             var methodCount = methodBuilders.Count;
 
             if (methodCount == 1)
@@ -109,7 +101,8 @@
 
             for (var i = 0; i < methodCount; ++i)
             {
-                methods[i] = methodBuilders[i].Build(this, settings);
+                var method = methods[i] = methodBuilders[i].Build(this, settings);
+                AddTypedMethod(methodsByReturnType, method);
             }
 
             _body = Block(methods.ProjectToArray(m => (Expression)m));
@@ -128,6 +121,20 @@
         }
 
         #region Setup
+
+        private static void AddTypedMethod(
+            IDictionary<Type, List<MethodExpression>> methodsByReturnType,
+            MethodExpression method)
+        {
+            if (!methodsByReturnType.TryGetValue(method.ReturnType, out var typedMethods))
+            {
+                methodsByReturnType.Add(
+                    method.ReturnType,
+                    typedMethods = new List<MethodExpression>());
+            }
+
+            typedMethods.Add(method);
+        }
 
 #if FEATURE_READONLYDICTIONARY
         private ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
