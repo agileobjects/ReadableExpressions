@@ -17,7 +17,6 @@
     public class MethodExpression : Expression, IMethodNamingContext
     {
         private readonly ClassExpression _parent;
-        private readonly LambdaExpression _definition;
         private readonly TranslationSettings _settings;
 
         private MethodExpression(
@@ -26,7 +25,7 @@
             TranslationSettings settings)
         {
             _parent = parent;
-            _definition = definition;
+            Definition = definition;
             _settings = settings;
 
             IParameter[] parameters;
@@ -65,14 +64,19 @@
             Expression expression,
             TranslationSettings settings)
         {
-            if (expression.NodeType == ExpressionType.Lambda)
-            {
-                return new MethodExpression(parent, (LambdaExpression)expression, settings);
-            }
+            var definition = (expression.NodeType == ExpressionType.Lambda)
+                ? (LambdaExpression) expression
+                : expression.ToLambdaExpression();
 
-            var lambdaExpression = expression.ToLambdaExpression();
+            return For(parent, definition, settings);
+        }
 
-            return new MethodExpression(parent, lambdaExpression, settings);
+        internal static MethodExpression For(
+            ClassExpression parent,
+            LambdaExpression definition,
+            TranslationSettings settings)
+        {
+            return new MethodExpression(parent, definition, settings);
         }
 
         #endregion
@@ -110,7 +114,7 @@
         /// Gets the return type of this <see cref="MethodExpression"/>, which is the return type
         /// of the LambdaExpression from which the method was created.
         /// </summary>
-        public Type ReturnType => _definition.ReturnType;
+        public Type ReturnType => Definition.ReturnType;
 
         /// <summary>
         /// Gets the <see cref="MethodParameterExpression"/>s describing the parameters of this
@@ -119,9 +123,15 @@
         public ReadOnlyCollection<MethodParameterExpression> Parameters { get; }
 
         /// <summary>
+        /// Gets the LambdaExpression describing the parameters and body of this
+        /// <see cref="MethodExpression"/>.
+        /// </summary>
+        public LambdaExpression Definition { get; }
+
+        /// <summary>
         /// Gets the Expression describing the body of this <see cref="MethodExpression"/>.
         /// </summary>
-        public Expression Body => _definition.Body;
+        public Expression Body => Definition.Body;
 
         internal IMethod Method { get; }
 
@@ -132,7 +142,7 @@
         string IMethodNamingContext.ReturnTypeName
             => Type.GetVariableNameInPascalCase(_settings);
 
-        LambdaExpression IMethodNamingContext.MethodLambda => _definition;
+        LambdaExpression IMethodNamingContext.MethodLambda => Definition;
 
         int IMethodNamingContext.Index => _parent?.Methods.IndexOf(this) ?? 0;
 

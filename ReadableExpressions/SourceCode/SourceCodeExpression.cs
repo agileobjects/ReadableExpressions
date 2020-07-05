@@ -15,9 +15,11 @@
     /// </summary>
     public class SourceCodeExpression : Expression
     {
+        private readonly TranslationSettings _settings;
+
         internal SourceCodeExpression(Expression content, TranslationSettings settings)
+            : this(settings)
         {
-            Namespace = settings.Namespace;
             Content = content;
 
             ClassExpression @class;
@@ -63,6 +65,38 @@
                     content = content.ToLambdaExpression();
                     goto case ExpressionType.Lambda;
             }
+        }
+
+        internal SourceCodeExpression(
+            IList<ClassExpressionBuilder> classBuilders,
+            TranslationSettings settings)
+            : this(settings)
+        {
+            var classCount = classBuilders.Count;
+
+            if (classCount == 1)
+            {
+                var @class = classBuilders[0].Build(this, settings);
+                Content = @class;
+                Classes = @class.ToReadOnlyCollection();
+                return;
+            }
+
+            var classes = new ClassExpression[classCount];
+
+            for (var i = 0; i < classCount; ++i)
+            {
+                classes[i] = classBuilders[i].Build(this, settings);
+            }
+
+            Content = Block(classes.ProjectToArray(cls => (Expression)cls));
+            Classes = classes.ToReadOnlyCollection();
+        }
+
+        private SourceCodeExpression(TranslationSettings settings)
+        {
+            _settings = settings;
+            Namespace = settings.Namespace;
         }
 
         /// <summary>
@@ -111,5 +145,15 @@
         /// <see cref="SourceCodeExpression"/>.
         /// </summary>
         public ReadOnlyCollection<ClassExpression> Classes { get; }
+
+        /// <summary>
+        /// Translates this <see cref="SourceCodeExpression"/> to a complete source-code string,
+        /// formatted as one or more classes with one or more methods in a namespace.
+        /// </summary>
+        /// <returns>
+        /// The translated <see cref="SourceCodeExpression"/>, formatted as one or more classes with
+        /// one or more methods in a namespace.
+        /// </returns>
+        public string ToSourceCode() => this.Translate(_settings);
     }
 }

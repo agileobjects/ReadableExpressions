@@ -16,6 +16,23 @@
     {
         /// <summary>
         /// Create a <see cref="SourceCodeExpression"/> representing a complete piece of source code
+        /// using the given <paramref name="configuration"/>.
+        /// </summary>
+        /// <param name="configuration">
+        /// The configuration with which to generate the <see cref="SourceCodeExpression"/>.
+        /// </param>
+        /// <returns>A <see cref="SourceCodeExpression"/> representing a complete piece of source code.</returns>
+        public static SourceCodeExpression SourceCode(
+            Func<ISourceCodeExpressionSettings, ISourceCodeExpressionSettings> configuration)
+        {
+            var builder = new SourceCodeExpressionBuilder();
+            configuration.Invoke(builder);
+
+            return builder.Build();
+        }
+
+        /// <summary>
+        /// Create a <see cref="SourceCodeExpression"/> representing a complete piece of source code
         /// with the given <paramref name="content"/>.
         /// </summary>
         /// <param name="content">The content of the piece of source code to create.</param>
@@ -25,20 +42,14 @@
             Expression content,
             Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
         {
-            if (content == null)
-            {
-                return null;
-            }
-
-            return content.ToSourceCodeExpression(configuration, out _);
+            return content?.ToSourceCodeExpression(configuration);
         }
 
         internal static SourceCodeExpression ToSourceCodeExpression(
             this Expression content,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration,
-            out TranslationSettings settings)
+            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration)
         {
-            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
+            var settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
 
             return new SourceCodeExpression(content, settings);
         }
@@ -56,12 +67,7 @@
             Expression singleMethod,
             Func<IClassTranslationSettings, IClassTranslationSettings> configuration = null)
         {
-            if (singleMethod == null)
-            {
-                return null;
-            }
-
-            return singleMethod.ToClassExpression(configuration, out _);
+            return singleMethod?.ToClassExpression(configuration, out _);
         }
 
         internal static ClassExpression ToClassExpression(
@@ -85,12 +91,7 @@
             Expression method,
             Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
         {
-            if (method == null)
-            {
-                return null;
-            }
-
-            return method.ToMethodExpression(configuration, out _);
+            return method?.ToMethodExpression(configuration, out _);
         }
 
         internal static MethodExpression ToMethodExpression(

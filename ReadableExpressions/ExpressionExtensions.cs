@@ -72,14 +72,9 @@
             this Expression expression,
             Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
         {
-            if (expression == null)
-            {
-                return null;
-            }
-
-            return expression
-                .ToSourceCodeExpression(configuration, out var settings)
-                .Translate(settings);
+            return expression?
+                .ToSourceCodeExpression(configuration)
+                .ToSourceCode();
         }
 
         /// <summary>
@@ -97,12 +92,7 @@
             this Expression expression,
             Func<IClassTranslationSettings, IClassTranslationSettings> configuration = null)
         {
-            if (expression == null)
-            {
-                return null;
-            }
-
-            return expression
+            return expression?
                 .ToClassExpression(configuration, out var settings)
                 .Translate(settings);
         }
@@ -118,24 +108,13 @@
             this Expression expression,
             Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
         {
-            if (expression == null)
-            {
-                return null;
-            }
-
-            return expression
+            return expression?
                 .ToMethodExpression(configuration, out var settings)
                 .Translate(settings);
         }
 
-        private static string Translate(
-            this Expression expression,
-            TranslationSettings settings)
-        {
-            var translation = new ExpressionTranslation(expression, settings);
-
-            return translation.GetTranslation();
-        }
+        internal static string Translate(this Expression expression, TranslationSettings settings)
+            => new ExpressionTranslation(expression, settings).GetTranslation();
 
         internal static TranslationSettings GetTranslationSettings(
             this Func<ITranslationSettings, ITranslationSettings> configuration)

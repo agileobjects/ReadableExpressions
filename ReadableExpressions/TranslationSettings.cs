@@ -32,24 +32,26 @@
         #region Factory Methods
 
         public static TranslationSettings ForSourceCode()
+            => SetDefaultSourceCodeOptions(new TranslationSettings());
+
+        public static TranslationSettings SetDefaultSourceCodeOptions(TranslationSettings settings)
         {
-            return new TranslationSettings
-            {
-                CollectRequiredNamespaces = true,
-                Namespace = "GeneratedExpressionCode",
-                ClassNameFactory = (sc, classCtx) => sc.GetClassName(classCtx),
-                MethodNameFactory = (sc, cls, methodCtx) => cls.GetMethodName(methodCtx)
-            };
+            settings.CollectRequiredNamespaces = true;
+            settings.Namespace = "GeneratedExpressionCode";
+            settings.ClassNameFactory = (sc, classCtx) => sc.GetClassName(classCtx);
+            settings.MethodNameFactory = (sc, cls, methodCtx) => cls.GetMethodName(methodCtx);
+
+            return settings;
         }
 
         #endregion 
 
-        public bool CollectRequiredNamespaces { get; set; }
+        public bool CollectRequiredNamespaces { get; private set; }
 
         /// <summary>
         /// Fully qualify type names with their namespaces.
         /// </summary>
-        public ITranslationSettings UseFullyQualifiedTypeNames
+        ITranslationSettings ITranslationSettings.UseFullyQualifiedTypeNames
         {
             get
             {
@@ -63,7 +65,7 @@
         /// <summary>
         /// Use full type names instead of 'var' for local and inline-declared output parameter variables.
         /// </summary>
-        public ITranslationSettings UseExplicitTypeNames
+        ITranslationSettings ITranslationSettings.UseExplicitTypeNames
         {
             get
             {
@@ -77,7 +79,7 @@
         /// <summary>
         /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;
         /// </summary>
-        public ITranslationSettings UseExplicitGenericParameters
+        ITranslationSettings ITranslationSettings.UseExplicitGenericParameters
         {
             get
             {
@@ -91,7 +93,7 @@
         /// <summary>
         /// Declare output parameter variables inline with the method call where they are first used.
         /// </summary>
-        public ITranslationSettings DeclareOutputParametersInline
+        ITranslationSettings ITranslationSettings.DeclareOutputParametersInline
         {
             get
             {
@@ -105,7 +107,7 @@
         /// <summary>
         /// Show the names of implicitly-typed array types.
         /// </summary>
-        public ITranslationSettings ShowImplicitArrayTypes
+        ITranslationSettings ITranslationSettings.ShowImplicitArrayTypes
         {
             get
             {
@@ -119,7 +121,7 @@
         /// <summary>
         /// Show the names of lambda parameter types.
         /// </summary>
-        public ITranslationSettings ShowLambdaParameterTypes
+        ITranslationSettings ITranslationSettings.ShowLambdaParameterTypes
         {
             get
             {
@@ -133,7 +135,7 @@
         /// <summary>
         /// Annotate Quoted Lambda Expressions with a comment indicating they have been Quoted.
         /// </summary>
-        public ITranslationSettings ShowQuotedLambdaComments
+        ITranslationSettings ITranslationSettings.ShowQuotedLambdaComments
         {
             get
             {
@@ -152,7 +154,7 @@
         /// The factory method to execute to retrieve the name for an anonymous type.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public ITranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
+        ITranslationSettings ITranslationSettings.NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
             return this;
@@ -168,7 +170,7 @@
         /// The factory method to execute to retrieve the ConstantExpression's translated value.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public ITranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory)
+        ITranslationSettings ITranslationSettings.TranslateConstantsUsing(Func<Type, object, string> valueFactory)
         {
             ConstantExpressionValueFactory = valueFactory;
             return this;
@@ -183,7 +185,7 @@
         /// The value with which to indent multi-line Expression translations.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public ITranslationSettings IndentUsing(string indent)
+        ITranslationSettings ITranslationSettings.IndentUsing(string indent)
         {
             Indent = indent;
             return this;
@@ -200,7 +202,7 @@
         /// The <see cref="ITranslationFormatter"/> with which to format Expression translations.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public ITranslationSettings FormatUsing(ITranslationFormatter formatter)
+        ITranslationSettings ITranslationSettings.FormatUsing(ITranslationFormatter formatter)
         {
             Formatter = formatter;
             return this;
@@ -208,10 +210,13 @@
 
         public ITranslationFormatter Formatter { get; private set; }
 
-        public ISourceCodeTranslationSettings WithNamespaceOf<T>()
-            => WithNamespace(typeof(T).Namespace);
+        ISourceCodeTranslationSettings ISourceCodeTranslationSettings.WithNamespaceOf<T>()
+            => SetNamespace(typeof(T).Namespace);
 
-        public ISourceCodeTranslationSettings WithNamespace(string @namespace)
+        ISourceCodeTranslationSettings ISourceCodeTranslationSettings.WithNamespace(string @namespace)
+            => SetNamespace(@namespace);
+
+        protected ISourceCodeTranslationSettings SetNamespace(string @namespace)
         {
             Namespace = @namespace;
             return this;

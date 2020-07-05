@@ -40,34 +40,22 @@
             IList<string> summaryLines,
             Expression body,
             TranslationSettings settings)
+            : this(parent, summaryLines, settings)
         {
-            Parent = parent;
-            SummaryLines = summaryLines;
             _body = body;
-            _settings = settings;
 
             var method = MethodExpression.For(this, body, settings);
             Methods = method.ToReadOnlyCollection();
-
-            MethodsByReturnType = new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(1)
-            {
-                [method.ReturnType] = Methods
-            }
-#if FEATURE_READONLYDICTIONARY
-                .ToReadOnlyDictionary()
-#endif
-                ;
+            MethodsByReturnType = GetMethodsByReturnType(method);
         }
 
         internal ClassExpression(
             SourceCodeExpression parent,
             BlockExpression body,
             TranslationSettings settings)
+            : this(parent, Enumerable<string>.EmptyArray, settings)
         {
-            Parent = parent;
-            SummaryLines = Enumerable<string>.EmptyArray;
             _body = body;
-            _settings = settings;
 
             var expressions = body.Expressions;
             var elementCount = expressions.Count;
@@ -91,6 +79,77 @@
                 typedMethods.Add(method);
             }
 
+            Methods = methods.ToReadOnlyCollection();
+            MethodsByReturnType = GetMethodsByReturnType(methodsByReturnType);
+        }
+
+        internal ClassExpression(
+            SourceCodeExpression parent,
+            IList<string> summaryLines,
+            IList<MethodExpressionBuilder> methodBuilders,
+            TranslationSettings settings)
+            : this(parent, summaryLines, settings)
+        {
+            var methodCount = methodBuilders.Count;
+
+            if (methodCount == 1)
+            {
+                var method = methodBuilders[0].Build(this, settings);
+                _body = method.Definition;
+                Methods = method.ToReadOnlyCollection();
+                MethodsByReturnType = GetMethodsByReturnType(method);
+                return;
+            }
+
+            var methods = new MethodExpression[methodCount];
+            var methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
+
+            for (var i = 0; i < methodCount; ++i)
+            {
+                methods[i] = methodBuilders[i].Build(this, settings);
+            }
+
+            _body = Block(methods.ProjectToArray(m => (Expression)m));
+            Methods = methods.ToReadOnlyCollection();
+            MethodsByReturnType = GetMethodsByReturnType(methodsByReturnType);
+        }
+
+        private ClassExpression(
+            SourceCodeExpression parent,
+            IList<string> summaryLines,
+            TranslationSettings settings)
+        {
+            Parent = parent;
+            SummaryLines = summaryLines;
+            _settings = settings;
+        }
+
+        #region Setup
+
+#if FEATURE_READONLYDICTIONARY
+        private ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
+#else
+        private IDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
+#endif
+            MethodExpression method)
+        {
+            return new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(1)
+            {
+                [method.ReturnType] = Methods
+            }
+#if FEATURE_READONLYDICTIONARY
+            .ToReadOnlyDictionary()
+#endif
+            ;
+        }
+
+#if FEATURE_READONLYDICTIONARY
+        private static ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
+#else
+        private static IDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
+#endif
+            Dictionary<Type, List<MethodExpression>> methodsByReturnType)
+        {
             var readonlyMethodsByReturnType =
                 new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(methodsByReturnType.Count);
 
@@ -101,14 +160,14 @@
                     methodAndReturnType.Value.ToReadOnlyCollection());
             }
 
-            Methods = methods.ToReadOnlyCollection();
-
-            MethodsByReturnType = readonlyMethodsByReturnType
+            return readonlyMethodsByReturnType
 #if FEATURE_READONLYDICTIONARY
                 .ToReadOnlyDictionary()
 #endif
-                ;
+            ;
         }
+
+        #endregion
 
         /// <summary>
         /// Gets the <see cref="SourceCodeExpressionType"/> value (1001) indicating the type of this
@@ -142,7 +201,10 @@
             return this;
         }
 
-        internal SourceCodeExpression Parent { get; }
+        /// <summary>
+        /// Gets this <see cref="ClassExpression"/>'s parent <see cref="SourceCodeExpression"/>.
+        /// </summary>
+        public SourceCodeExpression Parent { get; }
 
         /// <summary>
         /// Gets the summary text describing this <see cref="ClassExpression"/>, if set.
