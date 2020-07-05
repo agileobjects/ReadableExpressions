@@ -8,16 +8,16 @@
 
     internal class MethodExpressionBuilder
     {
-        private readonly string _name;
-
         public MethodExpressionBuilder(
             string name,
             LambdaExpression definition)
         {
-            _name = name;
+            Name = name;
             Definition = definition;
         }
 
+        public string Name { get; }
+        
         public LambdaExpression Definition { get; }
 
         public MethodExpression Build(
@@ -25,7 +25,7 @@
             TranslationSettings settings)
         {
             return MethodExpression
-                .For(parent, _name, Definition, settings);
+                .For(parent, Name, Definition, settings);
         }
     }
 }

@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
+    using System;
     using System.Collections.Generic;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -34,6 +36,12 @@
             string name,
             LambdaExpression definition)
         {
+            if (_methodBuilders.Any(mb => mb.Name == name))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate method name '{name}' specified.");
+            }
+
             _methodBuilders.Add(new MethodExpressionBuilder(name, definition));
             return this;
         }

@@ -20,12 +20,13 @@
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = SourceCode(cfg => cfg
+                .WithNamespace("GeneratedStuffs.Yo")
                 .WithClass(cls => cls
                     .WithMethod(doNothing)))
                 .ToSourceCode();
 
             const string EXPECTED = @"
-namespace GeneratedExpressionCode
+namespace GeneratedStuffs.Yo
 {
     public class GeneratedExpressionClass
     {
@@ -110,6 +111,23 @@ namespace GeneratedExpressionCode
 }";
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldErrorIfDuplicateMethodNamesSpecified()
+        {
+            var configEx = Should.Throw<InvalidOperationException>(() =>
+            {
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                SourceCode(cfg => cfg
+                    .WithClass(cls => cls
+                        .WithMethod("MyMethod", doNothing)
+                        .WithMethod("MyMethod", doNothing)));
+            });
+
+            configEx.Message.ShouldContain("Duplicate method name");
+            configEx.Message.ShouldContain("MyMethod");
         }
     }
 }
