@@ -32,5 +32,18 @@
         /// <returns>These <see cref="ISourceCodeExpressionSettings"/>, to support a fluent interface.</returns>
         ISourceCodeExpressionSettings WithClass(
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration);
+
+        /// <summary>
+        /// Add a <see cref="ClassExpression"/> to the <see cref="SourceCodeExpression"/> being built,
+        /// using the given <paramref name="configuration"/>.
+        /// </summary>
+        /// <param name="name">The name of the <see cref="ClassExpression"/> to create.</param>
+        /// <param name="configuration">
+        /// The configuration with which to generate the <see cref="ClassExpression"/>.
+        /// </param>
+        /// <returns>These <see cref="ISourceCodeExpressionSettings"/>, to support a fluent interface.</returns>
+        ISourceCodeExpressionSettings WithClass(
+            string name,
+            Func<IClassExpressionSettings, IClassExpressionSettings> configuration);
     }
 }

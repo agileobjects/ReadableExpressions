@@ -12,13 +12,6 @@
     public interface IClassExpressionSettings
     {
         /// <summary>
-        /// Give the generated class the given <paramref name="name"/>.
-        /// </summary>
-        /// <param name="name">The name ot use for the generated <see cref="ClassExpression"/>.</param>
-        /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
-        IClassExpressionSettings Named(string name);
-
-        /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,
         /// using the given <paramref name="definition"/>.
         /// </summary>

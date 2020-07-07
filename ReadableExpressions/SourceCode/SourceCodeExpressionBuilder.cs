@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Api;
 
     internal class SourceCodeExpressionBuilder :
@@ -32,7 +33,20 @@
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
-            var builder = new ClassExpressionBuilder();
+            return ((ISourceCodeExpressionSettings)this).WithClass(null, configuration);
+        }
+
+        ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
+            string name,
+            Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
+        {
+            if ((name != null) && _classBuilders.Any(b => b.Name == name))
+            {
+                throw new InvalidOperationException(
+                    $"Duplicate class name '{name}' specified.");
+            }
+
+            var builder = new ClassExpressionBuilder(name);
             configuration.Invoke(builder);
 
             _classBuilders.Add(builder);

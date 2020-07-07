@@ -14,20 +14,16 @@
     internal class ClassExpressionBuilder : IClassExpressionSettings
     {
         private readonly IList<MethodExpressionBuilder> _methodBuilders;
-        private string _name;
         private readonly IList<string> _summaryLines;
 
-        public ClassExpressionBuilder()
+        public ClassExpressionBuilder(string name)
         {
+            Name = name;
             _methodBuilders = new List<MethodExpressionBuilder>();
             _summaryLines = Enumerable<string>.EmptyArray;
         }
 
-        IClassExpressionSettings IClassExpressionSettings.Named(string name)
-        {
-            _name = name;
-            return this;
-        }
+        public string Name { get; }
 
         IClassExpressionSettings IClassExpressionSettings.WithMethod(LambdaExpression definition)
             => ((IClassExpressionSettings)this).WithMethod(null, definition);
@@ -36,7 +32,7 @@
             string name,
             LambdaExpression definition)
         {
-            if (_methodBuilders.Any(mb => mb.Name == name))
+            if ((name != null) && _methodBuilders.Any(mb => mb.Name == name))
             {
                 throw new InvalidOperationException(
                     $"Duplicate method name '{name}' specified.");
@@ -52,7 +48,7 @@
         {
             return new ClassExpression(
                 parent,
-                _name,
+                Name,
                 _summaryLines,
                 _methodBuilders,
                 settings);

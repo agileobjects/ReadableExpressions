@@ -45,8 +45,7 @@ namespace GeneratedStuffs.Yo
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = SourceCode(cfg => cfg
-                .WithClass(cls => cls
-                    .Named("MyClass")
+                .WithClass("MyClass", cls => cls
                     .WithMethod("MyMethod", doNothing)))
                 .ToSourceCode();
 
@@ -111,6 +110,24 @@ namespace GeneratedExpressionCode
 }";
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldErrorIfDuplicateClassNamesSpecified()
+        {
+            var configEx = Should.Throw<InvalidOperationException>(() =>
+            {
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                SourceCode(cfg => cfg
+                    .WithClass("MyClass", cls => cls
+                        .WithMethod(doNothing))
+                    .WithClass("MyClass", cls => cls
+                        .WithMethod(doNothing)));
+            });
+
+            configEx.Message.ShouldContain("Duplicate class name");
+            configEx.Message.ShouldContain("MyClass");
         }
 
         [Fact]
