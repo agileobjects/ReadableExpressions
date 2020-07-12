@@ -29,16 +29,17 @@
         private IList<ParameterExpression> _joinedAssignmentVariables;
         private ICollection<BinaryExpression> _joinedAssignments;
         private ICollection<Expression> _assignedAssignments;
-        private Stack<BlockExpression> _blocks;
         private List<ParameterExpression> _blockVariables;
+        private Stack<BlockExpression> _blocks;
+        private ICollection<BlockExpression> _inlineBlocks;
         private Stack<object> _constructs;
         private ICollection<ParameterExpression> _catchBlockVariables;
         private ICollection<LabelTarget> _namedLabelTargets;
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
-        private ICollection<BlockExpression> _inlineBlocks;
         private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
+        private Dictionary<BlockExpression, MethodExpression> _methodsByInlineBlock;
 
         private ExpressionAnalysis(TranslationSettings settings)
         {
@@ -121,6 +122,9 @@
 
         public Dictionary<MethodExpression, List<ParameterExpression>> UnscopedVariablesByMethod
             => _unscopedVariablesByMethod ??= EmptyDictionary<MethodExpression, List<ParameterExpression>>.Instance;
+
+        public Dictionary<BlockExpression, MethodExpression> MethodsByInlineBlock
+            => _methodsByInlineBlock ??= EmptyDictionary<BlockExpression, MethodExpression>.Instance;
 
         private void Visit(Expression expression)
         {
@@ -429,14 +433,16 @@
                 return;
             }
 
+            _methodsByInlineBlock ??= new Dictionary<BlockExpression, MethodExpression>();
+
             foreach (var inlineBlock in _inlineBlocks)
             {
                 var inlineBlockMethod = MethodExpression
                     .For(@class, inlineBlock, _settings);
 
-                Visit(inlineBlockMethod);
-
                 @class.AddMethod(inlineBlockMethod);
+
+                _methodsByInlineBlock.Add(inlineBlock, inlineBlockMethod);
             }
         }
 
@@ -531,7 +537,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
@@ -647,21 +653,26 @@
                 return;
             }
 
-            var unscopedVariables = _accessedVariables
+            var unscopedVariablesQuery = _accessedVariables
                 .Except(method.Parameters.ProjectToArray(p => p.ParameterExpression));
 
             if (_blockVariables?.Any() == true)
             {
-                unscopedVariables = unscopedVariables.Except(_blockVariables);
+                unscopedVariablesQuery = unscopedVariablesQuery.Except(_blockVariables);
             }
 
             if (_catchBlockVariables?.Any() == true)
             {
-                unscopedVariables = unscopedVariables.Except(_catchBlockVariables);
+                unscopedVariablesQuery = unscopedVariablesQuery.Except(_catchBlockVariables);
             }
 
-            (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
-                .Add(method, unscopedVariables.ToList());
+            var unscopedVariables = unscopedVariablesQuery.ToList();
+
+            if (unscopedVariables.Any())
+            {
+                (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
+                    .Add(method, unscopedVariables);
+            }
         }
 
         private void Visit(MethodParameterExpression methodParameter)

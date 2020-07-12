@@ -9,6 +9,8 @@
 
     internal class SummaryTranslation : ITranslatable
     {
+        private static readonly ITranslatable _empty = new SummaryTranslation();
+
         private const string _tripleSlash = "/// ";
         private const string _summaryStart = _tripleSlash + "<summary>";
         private const string _summaryEnd = _tripleSlash + "</summary>";
@@ -16,15 +18,13 @@
         private readonly int _lineCount;
         private readonly IList<string> _textLines;
 
-        public SummaryTranslation(IList<string> textLines, ITranslationContext context)
+        private SummaryTranslation()
+        {
+        }
+
+        private SummaryTranslation(IList<string> textLines, ITranslationContext context)
         {
             _lineCount = textLines.Count;
-
-            if (_lineCount == 0)
-            {
-                return;
-            }
-
             _textLines = textLines.ProjectToArray(line => _tripleSlash + line);
 
             TranslationSize =
@@ -35,6 +35,13 @@
             FormattingSize =
                 GetLineCount() * context.GetFormattingSize(Comment);
         }
+
+        #region Factory Method
+
+        public static ITranslatable For(IList<string> textLines, ITranslationContext context)
+            => textLines.Any() ? _empty : new SummaryTranslation(textLines, context);
+
+        #endregion
 
         public int TranslationSize { get; }
 

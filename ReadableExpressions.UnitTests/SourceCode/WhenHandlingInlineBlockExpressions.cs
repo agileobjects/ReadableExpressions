@@ -13,7 +13,7 @@
     public class WhenHandlingInlineBlockExpressions
     {
         [Fact]
-        public void ShouldExtractAnInlineBlockIfTestToAPrivateMethod()
+        public void ShouldExtractAnInlineIfTestBlockToAPrivateMethod()
         {
             var intVariable = Parameter(typeof(int), "input");
 
@@ -38,7 +38,7 @@ public class GeneratedExpressionClass
 {
     public string GetString()
     {
-        if (GetBool())
+        if (this.GetBool())
         {
             return ""Yep"";
         }

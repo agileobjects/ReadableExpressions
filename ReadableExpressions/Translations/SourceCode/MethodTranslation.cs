@@ -25,7 +25,7 @@
             ITranslationContext context)
         {
             _method = method;
-            _summary = new SummaryTranslation(method.SummaryLines, context);
+            _summary = SummaryTranslation.For(method.SummaryLines, context);
 
             var unscopedVariables = context.GetUnscopedVariablesFor(method);
 

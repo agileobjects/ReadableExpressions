@@ -25,6 +25,7 @@
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslatable _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
+        private MethodExpression _currentMethod;
 
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
         {
@@ -164,7 +165,15 @@
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 
                 case Block:
-                    return new BlockTranslation((BlockExpression)expression, this);
+                    var block = (BlockExpression)expression;
+
+                    if (_currentMethod?.Body != block && 
+                        _expressionAnalysis.MethodsByInlineBlock.TryGetValue(block, out var method))
+                    {
+                        return MethodCallTranslation.For(method, this);
+                    }
+
+                    return new BlockTranslation(block, this);
 
                 case Call:
                     return MethodCallTranslation.For((MethodCallExpression)expression, this);
@@ -268,7 +277,7 @@
                             return new ClassTranslation((ClassExpression)expression, this);
 
                         case Method:
-                            return new MethodTranslation((MethodExpression)expression, this);
+                            return new MethodTranslation(_currentMethod = (MethodExpression)expression, this);
 
                         case Comment:
                             return new CommentTranslation((CommentExpression)expression, this);

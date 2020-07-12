@@ -10,6 +10,10 @@
     internal static class RuntimeVariablesTranslation
     {
         public static ITranslation For(RuntimeVariablesExpression runtimeVariables, ITranslationContext context)
-            => new ParameterSetTranslation(runtimeVariables.Variables, context).WithTypes(ExpressionType.RuntimeVariables, runtimeVariables.Type);
+        {
+            return ParameterSetTranslation
+                .For(runtimeVariables.Variables, context)
+                .WithTypes(ExpressionType.RuntimeVariables, runtimeVariables.Type);
+        }
     }
 }

@@ -94,7 +94,7 @@
 
             return variablesByType.ToDictionary(
                 grp => (ITranslation)context.GetTranslationFor(grp.Key),
-                grp => new ParameterSetTranslation(grp, context)
+                grp => ParameterSetTranslation.For(grp.ToList(), context)
                     .WithoutParentheses()
                     .WithoutTypeNames(context));
         }

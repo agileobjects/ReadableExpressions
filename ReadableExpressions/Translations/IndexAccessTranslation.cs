@@ -44,7 +44,7 @@
             ITranslationContext context)
             : this(
                 context.GetTranslationFor(subject),
-                new ParameterSetTranslation(arguments, context))
+                ParameterSetTranslation.For(arguments, context))
         {
         }
 

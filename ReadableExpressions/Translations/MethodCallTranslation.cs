@@ -13,6 +13,7 @@
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
+    using ReadableExpressions.SourceCode;
     using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -27,7 +28,7 @@
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
             var method = new BclMethodWrapper(invocationMethod);
-            var parameters = new ParameterSetTranslation(method, invocation.Arguments, context).WithParentheses();
+            var parameters = ParameterSetTranslation.For(method, invocation.Arguments, context).WithParentheses();
             var subject = context.GetTranslationFor(invocation.Expression);
 
             if (subject.NodeType == Lambda)
@@ -58,14 +59,14 @@
             }
 
             var method = new BclMethodWrapper(methodCall.Method);
-            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
+            var parameters = ParameterSetTranslation.For(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
             {
                 return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
-            var subject = GetSubjectTranslation(methodCall, context);
+            var subject = methodCall.GetSubjectTranslation(context);
 
             if (IsIndexedPropertyAccess(methodCall))
             {
@@ -98,7 +99,9 @@
                   (methodCall.Method.Name == nameof(string.Concat));
         }
 
-        public static ITranslation GetSubjectTranslation(MethodCallExpression methodCall, ITranslationContext context)
+        public static ITranslation GetSubjectTranslation(
+            this MethodCallExpression methodCall,
+            ITranslationContext context)
         {
             return context.GetTranslationFor(methodCall.GetSubject()) ??
                    context.GetTranslationFor(methodCall.Method.DeclaringType);
@@ -113,6 +116,29 @@
                 .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
 
             return property?.GetIndexParameters().Any() == true;
+        }
+
+        public static ITranslation For(MethodExpression methodExpr, ITranslationContext context)
+        {
+            var thisTranslation = new FixedValueTranslation(
+                MemberAccess,
+                "this",
+                typeof(object),
+                TokenType.Keyword,
+                context);
+
+            var method = methodExpr.Method;
+
+            var parameters = ParameterSetTranslation
+                .For(method, methodExpr.Parameters, context)
+                .WithParentheses();
+
+            return new StandardMethodCallTranslation(
+                Call,
+                thisTranslation,
+                method,
+                parameters,
+                context);
         }
 
         public static ITranslation ForCustomMethodCast(
@@ -139,7 +165,7 @@
                 Dynamic,
                 subjectTranslation,
                 method,
-                new ParameterSetTranslation(arguments, context).WithParentheses(),
+                ParameterSetTranslation.For(arguments, context).WithParentheses(),
                 context);
         }
 
