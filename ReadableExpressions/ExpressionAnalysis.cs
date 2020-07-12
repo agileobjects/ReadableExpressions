@@ -37,6 +37,7 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
+        private ICollection<BlockExpression> _inlineBlocks;
         private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
 
         private ExpressionAnalysis(TranslationSettings settings)
@@ -72,7 +73,7 @@
             {
                 _requiredNamespaces.Sort(UsingsComparer.Instance);
             }
-            else
+            else if (_settings.CollectRequiredNamespaces)
             {
                 _requiredNamespaces = Enumerable<string>.EmptyList;
             }
@@ -85,8 +86,6 @@
         #endregion
 
         public IList<string> RequiredNamespaces => _requiredNamespaces;
-
-        public ICollection<BlockExpression> InlineBlocks { get; private set; }
 
         public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
@@ -301,7 +300,7 @@
                                 return;
 
                             case SourceCodeExpressionType.Class:
-                                Visit(((ClassExpression)expression).Methods);
+                                Visit((ClassExpression)expression);
                                 return;
 
                             case SourceCodeExpressionType.Method:
@@ -377,13 +376,13 @@
 
         private void AddInlineBlockIfRequired(BlockExpression block)
         {
-            if (ShouldAddInlineBlock(block))
+            if (AddInlineBlock(block))
             {
-                (InlineBlocks ??= new List<BlockExpression>()).Add(block);
+                (_inlineBlocks ??= new List<BlockExpression>()).Add(block);
             }
         }
 
-        private bool ShouldAddInlineBlock(BlockExpression block)
+        private bool AddInlineBlock(BlockExpression block)
         {
             if (!_settings.CollectInlineBlocks ||
                 (_constructs == null) ||
@@ -417,6 +416,28 @@
             }
 
             return false;
+        }
+
+        private void Visit(ClassExpression @class)
+        {
+            _inlineBlocks?.Clear();
+
+            Visit(@class.Methods);
+
+            if (_inlineBlocks?.Any() != true)
+            {
+                return;
+            }
+
+            foreach (var inlineBlock in _inlineBlocks)
+            {
+                var inlineBlockMethod = MethodExpression
+                    .For(@class, inlineBlock, _settings);
+
+                Visit(inlineBlockMethod);
+
+                @class.AddMethod(inlineBlockMethod);
+            }
         }
 
         private void Visit(ConditionalExpression conditional)
@@ -510,7 +531,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-        VisitValue:
+            VisitValue:
             Visit(@goto.Value);
         }
 

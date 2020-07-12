@@ -19,6 +19,14 @@
     {
         private readonly Expression _body;
         private readonly TranslationSettings _settings;
+        private readonly List<MethodExpression> _methods;
+        private readonly Dictionary<Type, List<MethodExpression>> _methodsByReturnType;
+        private ReadOnlyCollection<MethodExpression> _readOnlyMethods;
+#if FEATURE_READONLYDICTIONARY
+        private ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> _readOnlyMethodsByReturnType;
+#else
+        private IDictionary<Type, ReadOnlyCollection<MethodExpression>> _readOnlyMethodsByReturnType;
+#endif
         private string _name;
         private Type _type;
 
@@ -45,8 +53,12 @@
             _body = body;
 
             var method = MethodExpression.For(this, body, settings);
-            Methods = method.ToReadOnlyCollection();
-            MethodsByReturnType = GetMethodsByReturnType(method);
+            _methods = new List<MethodExpression> { method };
+
+            _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>
+            {
+                { method.ReturnType, new List<MethodExpression> { method } }
+            };
         }
 
         internal ClassExpression(
@@ -56,23 +68,15 @@
             : this(parent, Enumerable<string>.EmptyArray, settings)
         {
             _body = body;
+            _methods = new List<MethodExpression>();
+            _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
 
-            var expressions = body.Expressions;
-            var elementCount = expressions.Count;
-            var methods = new MethodExpression[elementCount];
-            var methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
-
-            for (var i = 0; i < elementCount; ++i)
+            foreach (var expression in body.Expressions)
             {
-                var expression = expressions[i];
-
                 var method = MethodExpression.For(this, expression, settings);
-                methods[i] = method;
-                AddTypedMethod(methodsByReturnType, method);
+                _methods.Add(method);
+                AddTypedMethod(method);
             }
-
-            Methods = methods.ToReadOnlyCollection();
-            MethodsByReturnType = GetMethodsByReturnType(methodsByReturnType);
         }
 
         internal ClassExpression(
@@ -91,23 +95,25 @@
             {
                 var method = methodBuilders[0].Build(this, settings);
                 _body = method.Definition;
-                Methods = method.ToReadOnlyCollection();
-                MethodsByReturnType = GetMethodsByReturnType(method);
+                _methods = new List<MethodExpression> { method };
+                _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>
+                {
+                    { method.ReturnType, new List<MethodExpression> { method } }
+                };
                 return;
             }
 
-            var methods = new MethodExpression[methodCount];
-            var methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
+            _methods = new List<MethodExpression>();
+            _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
 
-            for (var i = 0; i < methodCount; ++i)
+            foreach (var methodBuilder in methodBuilders)
             {
-                var method = methods[i] = methodBuilders[i].Build(this, settings);
-                AddTypedMethod(methodsByReturnType, method);
+                var method = methodBuilder.Build(this, settings);
+                _methods.Add(method);
+                AddTypedMethod(method);
             }
 
-            _body = Block(methods.ProjectToArray(m => (Expression)m));
-            Methods = methods.ToReadOnlyCollection();
-            MethodsByReturnType = GetMethodsByReturnType(methodsByReturnType);
+            _body = Block(_methods.ProjectToArray(m => (Expression)m));
         }
 
         private ClassExpression(
@@ -122,59 +128,16 @@
 
         #region Setup
 
-        private static void AddTypedMethod(
-            IDictionary<Type, List<MethodExpression>> methodsByReturnType,
-            MethodExpression method)
+        private void AddTypedMethod(MethodExpression method)
         {
-            if (!methodsByReturnType.TryGetValue(method.ReturnType, out var typedMethods))
+            if (!_methodsByReturnType.TryGetValue(method.ReturnType, out var typedMethods))
             {
-                methodsByReturnType.Add(
+                _methodsByReturnType.Add(
                     method.ReturnType,
                     typedMethods = new List<MethodExpression>());
             }
 
             typedMethods.Add(method);
-        }
-
-#if FEATURE_READONLYDICTIONARY
-        private ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
-#else
-        private IDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
-#endif
-            MethodExpression method)
-        {
-            return new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(1)
-            {
-                [method.ReturnType] = Methods
-            }
-#if FEATURE_READONLYDICTIONARY
-            .ToReadOnlyDictionary()
-#endif
-            ;
-        }
-
-#if FEATURE_READONLYDICTIONARY
-        private static ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
-#else
-        private static IDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType(
-#endif
-            Dictionary<Type, List<MethodExpression>> methodsByReturnType)
-        {
-            var readonlyMethodsByReturnType =
-                new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(methodsByReturnType.Count);
-
-            foreach (var methodAndReturnType in methodsByReturnType)
-            {
-                readonlyMethodsByReturnType.Add(
-                    methodAndReturnType.Key,
-                    methodAndReturnType.Value.ToReadOnlyCollection());
-            }
-
-            return readonlyMethodsByReturnType
-#if FEATURE_READONLYDICTIONARY
-                .ToReadOnlyDictionary()
-#endif
-            ;
         }
 
         #endregion
@@ -227,21 +190,55 @@
         public string Name
             => _name ??= _settings.ClassNameFactory.Invoke(Parent, this);
 
+        internal void AddMethod(MethodExpression method)
+        {
+            _methods.Add(method);
+            _readOnlyMethods = null;
+
+            AddTypedMethod(method);
+            _readOnlyMethodsByReturnType = null;
+        }
+
         /// <summary>
         /// Gets the <see cref="MethodExpression"/>s which make up this <see cref="ClassExpression"/>'s
         /// methods.
         /// </summary>
-        public ReadOnlyCollection<MethodExpression> Methods { get; }
+        public ReadOnlyCollection<MethodExpression> Methods
+            => _readOnlyMethods ??= _methods.ToReadOnlyCollection();
 
         /// <summary>
         /// Gets the <see cref="MethodExpression"/>s which make up this <see cref="ClassExpression"/>'s
         /// methods, kyed by their return type.
         /// </summary>
 #if FEATURE_READONLYDICTIONARY
-        public ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType { get; }
+        public ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType
 #else
-        public IDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType { get; }
+        public IDictionary<Type, ReadOnlyCollection<MethodExpression>> MethodsByReturnType
 #endif
+            => _readOnlyMethodsByReturnType ??= GetMethodsByReturnType();
+
+#if FEATURE_READONLYDICTIONARY
+        private ReadOnlyDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType()
+#else
+        private IDictionary<Type, ReadOnlyCollection<MethodExpression>> GetMethodsByReturnType()
+#endif
+        {
+            var readonlyMethodsByReturnType =
+                new Dictionary<Type, ReadOnlyCollection<MethodExpression>>(_methodsByReturnType.Count);
+
+            foreach (var methodAndReturnType in _methodsByReturnType)
+            {
+                readonlyMethodsByReturnType.Add(
+                    methodAndReturnType.Key,
+                    methodAndReturnType.Value.ToReadOnlyCollection());
+            }
+
+            return readonlyMethodsByReturnType
+#if FEATURE_READONLYDICTIONARY
+                    .ToReadOnlyDictionary()
+#endif
+                ;
+        }
 
         /// <summary>
         /// Gets the index of this <see cref="ClassExpression"/> in the set of generated classes.

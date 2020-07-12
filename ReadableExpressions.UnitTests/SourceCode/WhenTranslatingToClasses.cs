@@ -74,51 +74,6 @@ public class GeneratedExpressionClass
         }
 
         [Fact]
-        public void ShouldExtractAMultiStatementIfTestToAPrivateMethod()
-        {
-            var intVariable = Parameter(typeof(int), "input");
-
-            var yepOrNopeBlock = Block(
-                IfThen(
-                    Block(
-                        new[]{ intVariable },
-                        Assign(
-                            intVariable, 
-                            Call(typeof(Console), "Read", Type.EmptyTypes)),
-                        Condition(
-                            GreaterThan(intVariable, Constant(100)),
-                            Constant(false),
-                            Constant(true))),
-                    Constant("Yep")),
-                Constant("Nope"));
-
-            var translated = yepOrNopeBlock.ToSourceCodeClass();
-
-            const string EXPECTED = @"
-public class GeneratedExpressionClass
-{
-    public string GetString()
-    {
-        if (GetBool())
-        {
-            return ""Yep"";
-        }
-
-        return ""Nope"";
-    }
-
-    private bool GetBool()
-    {
-        var input = Console.Read();
-
-        return (input > 100) ? false : true;
-    }
-}";
-            EXPECTED.ShouldBeCompilableClass();
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
-
-        [Fact]
         public void ShouldUseACustomClassName()
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
@@ -144,7 +99,7 @@ public class MyVoidClass0
 
             var translated = doNothing.ToSourceCodeClass(s => s
                 .NameClassesUsing(ctx => "MySpecialClass")
-                .NameMethodsUsing((clsExp, mCtx) => 
+                .NameMethodsUsing((clsExp, mCtx) =>
                     $"{clsExp.Name}{mCtx.ReturnTypeName}Method_{clsExp.Index + 1}_{mCtx.Index + 1}"));
 
             const string EXPECTED = @"

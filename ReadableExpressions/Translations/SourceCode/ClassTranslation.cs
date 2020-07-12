@@ -29,7 +29,7 @@
             _methods = new ITranslation[_methodCount];
 
             var translationSize =
-                _summary.TranslationSize + 
+                _summary.TranslationSize +
                 "public ".Length +
                 _classString.Length +
                 @class.Name.Length +
@@ -38,7 +38,7 @@
             var keywordFormattingSize = context.GetKeywordFormattingSize();
 
             var formattingSize =
-               _summary.FormattingSize + 
+               _summary.FormattingSize +
                 keywordFormattingSize + // <- for accessibility
                 keywordFormattingSize; // <- for 'class'
 
@@ -67,9 +67,9 @@
 
         public Type Type => _class.Type;
 
-        public int TranslationSize { get; }
+        public int TranslationSize { get; private set; }
 
-        public int FormattingSize { get; }
+        public int FormattingSize { get; private set; }
 
         public int GetIndentSize()
         {
