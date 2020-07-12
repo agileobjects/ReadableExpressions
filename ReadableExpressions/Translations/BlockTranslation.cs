@@ -320,7 +320,7 @@
 
                 switch (_statements[0].NodeType)
                 {
-                    case Conditional when !ConditionalTranslation.IsTernary(_statements[0].Expression):
+                    case Conditional when !_statements[0].Expression.IsTernary():
                     case Switch:
                         writer.WriteNewLineToTranslation();
                         break;
@@ -385,7 +385,7 @@
             private bool WriteBlankLineBefore()
             {
                 return (NodeType == Label) ||
-                      ((NodeType == Conditional) && !ConditionalTranslation.IsTernary(Expression));
+                      ((NodeType == Conditional) && !Expression.IsTernary());
             }
 
             public ExpressionType NodeType { get; }

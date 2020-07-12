@@ -37,6 +37,7 @@
         public static TranslationSettings SetDefaultSourceCodeOptions(TranslationSettings settings)
         {
             settings.CollectRequiredNamespaces = true;
+            settings.CollectInlineBlocks = true;
             settings.Namespace = "GeneratedExpressionCode";
             settings.ClassNameFactory = (sc, classCtx) => sc.GetClassName(classCtx);
             settings.MethodNameFactory = (sc, cls, methodCtx) => cls.GetMethodName(methodCtx);
@@ -47,6 +48,8 @@
         #endregion 
 
         public bool CollectRequiredNamespaces { get; private set; }
+
+        public bool CollectInlineBlocks { get; private set; }
 
         /// <summary>
         /// Fully qualify type names with their namespaces.

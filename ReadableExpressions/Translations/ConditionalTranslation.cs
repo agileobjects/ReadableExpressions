@@ -20,7 +20,7 @@
                 return new IfStatementTranslation(conditional, context);
             }
 
-            if (IsTernary(conditional))
+            if (conditional.IsTernary())
             {
                 return new TernaryTranslation(conditional, context);
             }
@@ -39,7 +39,7 @@
                    !conditional.HasReturnType();
         }
 
-        public static bool IsTernary(Expression conditional) => conditional.HasReturnType();
+        public static bool IsTernary(this Expression conditional) => conditional.HasReturnType();
 
         private abstract class ConditionalTranslationBase : ITranslation
         {

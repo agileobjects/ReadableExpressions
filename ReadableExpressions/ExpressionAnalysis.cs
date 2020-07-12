@@ -11,6 +11,7 @@
     using Extensions;
     using NetStandardPolyfills;
     using SourceCode;
+    using Translations;
     using Translations.Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -84,6 +85,8 @@
         #endregion
 
         public IList<string> RequiredNamespaces => _requiredNamespaces;
+
+        public ICollection<BlockExpression> InlineBlocks { get; private set; }
 
         public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
@@ -355,6 +358,8 @@
 
         private void Visit(BlockExpression block)
         {
+            AddInlineBlockIfRequired(block);
+
             if (_blocks == null)
             {
                 _blocks = new Stack<BlockExpression>();
@@ -368,6 +373,50 @@
             Visit(block.Variables);
 
             _blocks.Pop();
+        }
+
+        private void AddInlineBlockIfRequired(BlockExpression block)
+        {
+            if (ShouldAddInlineBlock(block))
+            {
+                (InlineBlocks ??= new List<BlockExpression>()).Add(block);
+            }
+        }
+
+        private bool ShouldAddInlineBlock(BlockExpression block)
+        {
+            if (!_settings.CollectInlineBlocks ||
+                (_constructs == null) ||
+                (block.Expressions.Count == 1))
+            {
+                return false;
+            }
+
+            var containingConstruct = _constructs.Peek();
+
+            switch (containingConstruct)
+            {
+                case Expression expression:
+                    switch (expression.NodeType)
+                    {
+                        case Conditional:
+                            var conditional = (ConditionalExpression)expression;
+
+                            if (conditional.Test == block)
+                            {
+                                return true;
+                            }
+
+                            return
+                                 conditional.IsTernary() &&
+                                (conditional.IfTrue == block ||
+                                 conditional.IfFalse == block);
+                    }
+
+                    break;
+            }
+
+            return false;
         }
 
         private void Visit(ConditionalExpression conditional)
@@ -461,7 +510,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
@@ -518,7 +567,7 @@
                     else if (methodCallChain[0].ToString().Contains(" ... "))
                     {
                         // Expression.ToString() replaces multiple lines with ' ... ';
-                        // potential fragile, but works unless MS change it:
+                        // potentially fragile, but works unless MS change it:
                         _chainedMethodCalls.AddRange(methodCallChain);
                     }
                 }
