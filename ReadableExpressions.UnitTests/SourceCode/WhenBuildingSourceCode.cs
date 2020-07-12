@@ -64,6 +64,46 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldBuildNamedClassesAndMethodsWithSummaries()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            const string CLASS_SUMMARY = @"
+This is my class!
+Isn't it great?";
+
+            const string METHOD_SUMMARY = @"
+This is my method!
+It's even better.";
+
+            var translated = SourceCode(cfg => cfg
+                .WithClass("MyClass", CLASS_SUMMARY.TrimStart(), cls => cls
+                    .WithMethod("MyMethod", METHOD_SUMMARY.TrimStart(), doNothing)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    /// <summary>
+    /// This is my class!
+    /// Isn't it great?
+    /// </summary>
+    public class MyClass
+    {
+        /// <summary>
+        /// This is my method!
+        /// It's even better.
+        /// </summary>
+        public void MyMethod()
+        {
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldBuildMultipleClassesAndMethods()
         {
             var doNothing = Lambda<Action>(Default(typeof(void)));
@@ -113,6 +153,19 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldErrorIfNullClassNameSpecified()
+        {
+            Should.Throw<ArgumentException>(() =>
+            {
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                SourceCode(cfg => cfg
+                    .WithClass(null, cls => cls
+                        .WithMethod(doNothing)));
+            });
+        }
+
+        [Fact]
         public void ShouldErrorIfDuplicateClassNamesSpecified()
         {
             var configEx = Should.Throw<InvalidOperationException>(() =>
@@ -128,6 +181,20 @@ namespace GeneratedExpressionCode
 
             configEx.Message.ShouldContain("Duplicate class name");
             configEx.Message.ShouldContain("MyClass");
+        }
+
+        [Fact]
+        public void ShouldErrorIfNullMethodNameSpecified()
+        {
+            Should.Throw<ArgumentException>(() =>
+            {
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                SourceCode(cfg => cfg
+                    .WithClass(cls => cls
+                        .WithMethod("MyMethod", doNothing)
+                        .WithMethod(null, doNothing)));
+            });
         }
 
         [Fact]

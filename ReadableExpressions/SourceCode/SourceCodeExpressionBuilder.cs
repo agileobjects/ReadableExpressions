@@ -33,11 +33,37 @@
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
-            return ((ISourceCodeExpressionSettings)this).WithClass(null, configuration);
+            return AddClass(name: null, summary: null, configuration);
         }
 
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
             string name,
+            Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Null or blank class name supplied");
+            }
+
+            return AddClass(name, summary: null, configuration);
+        }
+
+        ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
+            string name,
+            string summary,
+            Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Null or blank class summary supplied");
+            }
+
+            return AddClass(name, summary, configuration);
+        }
+
+        private ISourceCodeExpressionSettings AddClass(
+            string name,
+            string summary,
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
             if ((name != null) && _classBuilders.Any(b => b.Name == name))
@@ -46,7 +72,7 @@
                     $"Duplicate class name '{name}' specified.");
             }
 
-            var builder = new ClassExpressionBuilder(name);
+            var builder = new ClassExpressionBuilder(name, summary);
             configuration.Invoke(builder);
 
             _classBuilders.Add(builder);

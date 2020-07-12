@@ -24,7 +24,7 @@
             ITranslationContext context)
         {
             _class = @class;
-            _summary = new SummaryTranslation(_class.SummaryLines, context);
+            _summary = new SummaryTranslation(@class.SummaryLines, context);
             _methodCount = @class.Methods.Count;
             _methods = new ITranslation[_methodCount];
 

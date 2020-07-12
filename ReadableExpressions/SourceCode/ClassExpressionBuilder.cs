@@ -16,20 +16,46 @@
         private readonly IList<MethodExpressionBuilder> _methodBuilders;
         private readonly IList<string> _summaryLines;
 
-        public ClassExpressionBuilder(string name)
+        public ClassExpressionBuilder(string name, string summary)
         {
             Name = name;
             _methodBuilders = new List<MethodExpressionBuilder>();
-            _summaryLines = Enumerable<string>.EmptyArray;
+            _summaryLines = summary.SplitToLines();
         }
 
         public string Name { get; }
 
         IClassExpressionSettings IClassExpressionSettings.WithMethod(LambdaExpression definition)
-            => ((IClassExpressionSettings)this).WithMethod(null, definition);
+            => AddMethod(name: null, summary: null, definition);
 
         IClassExpressionSettings IClassExpressionSettings.WithMethod(
             string name,
+            LambdaExpression definition)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Null or blank method name supplied");
+            }
+
+            return AddMethod(name, summary: null, definition);
+        }
+
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(
+            string name,
+            string summary,
+            LambdaExpression definition)
+        {
+            if (string.IsNullOrEmpty(summary))
+            {
+                throw new ArgumentException("Null or blank method summary supplied");
+            }
+
+            return AddMethod(name, summary, definition);
+        }
+
+        private IClassExpressionSettings AddMethod(
+            string name,
+            string summary,
             LambdaExpression definition)
         {
             if ((name != null) && _methodBuilders.Any(mb => mb.Name == name))
@@ -38,7 +64,7 @@
                     $"Duplicate method name '{name}' specified.");
             }
 
-            _methodBuilders.Add(new MethodExpressionBuilder(name, definition));
+            _methodBuilders.Add(new MethodExpressionBuilder(name, summary, definition));
             return this;
         }
 

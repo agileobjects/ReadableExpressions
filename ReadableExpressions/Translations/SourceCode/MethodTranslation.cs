@@ -16,14 +16,16 @@
     internal class MethodTranslation : ITranslation
     {
         private readonly MethodExpression _method;
-        private readonly ITranslation _bodyTranslation;
+        private readonly ITranslatable _summary;
         private readonly ITranslatable _definitionTranslation;
+        private readonly ITranslation _bodyTranslation;
 
         public MethodTranslation(
             MethodExpression method,
             ITranslationContext context)
         {
             _method = method;
+            _summary = new SummaryTranslation(method.SummaryLines, context);
 
             var unscopedVariables = context.GetUnscopedVariablesFor(method);
 
@@ -42,10 +44,12 @@
             _bodyTranslation = bodyCodeBlock;
 
             TranslationSize =
+                _summary.TranslationSize + 
                 _definitionTranslation.TranslationSize +
                 _bodyTranslation.TranslationSize;
 
             FormattingSize =
+                _summary.FormattingSize + 
                 _definitionTranslation.FormattingSize +
                 _bodyTranslation.FormattingSize;
         }
@@ -74,6 +78,7 @@
 
         public void WriteTo(TranslationWriter writer)
         {
+            _summary.WriteTo(writer);
             _definitionTranslation.WriteTo(writer);
             _bodyTranslation.WriteTo(writer);
         }

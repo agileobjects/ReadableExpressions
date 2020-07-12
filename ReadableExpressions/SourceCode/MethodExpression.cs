@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -16,16 +17,17 @@
     /// </summary>
     public class MethodExpression : Expression, IMethodNamingContext
     {
-        private readonly ClassExpression _parent;
         private readonly TranslationSettings _settings;
 
         private MethodExpression(
             ClassExpression parent,
             string name,
+            IList<string> summaryLines,
             LambdaExpression definition,
             TranslationSettings settings)
         {
-            _parent = parent;
+            Parent = parent;
+            SummaryLines = summaryLines;
             Definition = definition;
             _settings = settings;
 
@@ -69,16 +71,27 @@
                 ? (LambdaExpression)expression
                 : expression.ToLambdaExpression();
 
-            return For(parent, null, definition, settings);
+            return For(
+                parent,
+                name: null,
+                summaryLines: Enumerable<string>.EmptyArray,
+                definition,
+                settings);
         }
 
         internal static MethodExpression For(
             ClassExpression parent,
             string name,
+            IList<string> summaryLines,
             LambdaExpression definition,
             TranslationSettings settings)
         {
-            return new MethodExpression(parent, name, definition, settings);
+            return new MethodExpression(
+                parent,
+                name,
+                summaryLines,
+                definition,
+                settings);
         }
 
         #endregion
@@ -111,6 +124,21 @@
             visitor.Visit(Body);
             return this;
         }
+
+        /// <summary>
+        /// Gets this <see cref="MethodExpression"/>'s parent <see cref="ClassExpression"/>.
+        /// </summary>
+        public ClassExpression Parent { get; }
+
+        /// <summary>
+        /// Gets the summary text describing this <see cref="MethodExpression"/>, if set.
+        /// </summary>
+        public IList<string> SummaryLines { get; }
+
+        /// <summary>
+        /// Gets the name of this <see cref="MethodExpression"/>.
+        /// </summary>
+        public string Name => Method.Name;
 
         /// <summary>
         /// Gets the return type of this <see cref="MethodExpression"/>, which is the return type
@@ -146,7 +174,7 @@
 
         LambdaExpression IMethodNamingContext.MethodLambda => Definition;
 
-        int IMethodNamingContext.Index => _parent?.Methods.IndexOf(this) ?? 0;
+        int IMethodNamingContext.Index => Parent?.Methods.IndexOf(this) ?? 0;
 
         #endregion
 
@@ -169,7 +197,7 @@
                 _settings = settings;
             }
 
-            private ClassExpression Parent => _method._parent;
+            private ClassExpression Parent => _method.Parent;
 
             public Type DeclaringType => null;
 
