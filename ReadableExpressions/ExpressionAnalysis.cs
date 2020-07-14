@@ -438,7 +438,7 @@
             foreach (var inlineBlock in _inlineBlocks)
             {
                 var inlineBlockMethod = MethodExpression
-                    .For(@class, inlineBlock, _settings);
+                    .For(@class, inlineBlock, _settings, isPublic: false);
 
                 @class.AddMethod(inlineBlockMethod);
 

@@ -4,9 +4,11 @@
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
+    using static ReadableExpression;
 #else
     using Fact = NUnit.Framework.TestAttribute;
     using static Microsoft.Scripting.Ast.Expression;
+    using static ReadableExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -20,9 +22,9 @@
             var yepOrNopeBlock = Block(
                 IfThen(
                     Block(
-                        new[]{ intVariable },
+                        new[] { intVariable },
                         Assign(
-                            intVariable, 
+                            intVariable,
                             Call(typeof(Console), "Read", Type.EmptyTypes)),
                         Condition(
                             GreaterThan(intVariable, Constant(100)),
@@ -31,26 +33,34 @@
                     Constant("Yep")),
                 Constant("Nope"));
 
-            var translated = yepOrNopeBlock.ToSourceCodeClass();
+            var translated = SourceCode(sc => sc
+                .WithClass(cls => cls
+                    .WithMethod(yepOrNopeBlock)))
+                .ToSourceCode();
 
             const string EXPECTED = @"
-public class GeneratedExpressionClass
+using System;
+
+namespace GeneratedExpressionCode
 {
-    public string GetString()
+    public class GeneratedExpressionClass
     {
-        if (this.GetBool())
+        public string GetString()
         {
-            return ""Yep"";
+            if (this.GetBool())
+            {
+                return ""Yep"";
+            }
+
+            return ""Nope"";
         }
 
-        return ""Nope"";
-    }
+        private bool GetBool()
+        {
+            var input = Console.Read();
 
-    private bool GetBool()
-    {
-        var input = Console.Read();
-
-        return (input > 100) ? false : true;
+            return (input > 100) ? false : true;
+        }
     }
 }";
             EXPECTED.ShouldBeCompilableClass();

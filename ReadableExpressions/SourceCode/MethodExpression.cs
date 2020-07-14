@@ -24,6 +24,7 @@
             string name,
             IList<string> summaryLines,
             LambdaExpression definition,
+            bool isPublic,
             TranslationSettings settings)
         {
             Parent = parent;
@@ -54,7 +55,12 @@
                 Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
             }
 
-            Method = new MethodExpressionMethod(this, name, parameters, settings);
+            Method = new MethodExpressionMethod(
+                this,
+                name,
+                parameters,
+                isPublic,
+                settings);
         }
 
         #region Factory Methods
@@ -65,32 +71,36 @@
         internal static MethodExpression For(
             ClassExpression parent,
             Expression expression,
-            TranslationSettings settings)
+            TranslationSettings settings,
+            bool isPublic = true)
         {
-            var definition = (expression.NodeType == ExpressionType.Lambda)
-                ? (LambdaExpression)expression
-                : expression.ToLambdaExpression();
-
             return For(
                 parent,
                 name: null,
                 summaryLines: Enumerable<string>.EmptyArray,
-                definition,
-                settings);
+                expression,
+                settings,
+                isPublic);
         }
 
         internal static MethodExpression For(
             ClassExpression parent,
             string name,
             IList<string> summaryLines,
-            LambdaExpression definition,
-            TranslationSettings settings)
+            Expression expression,
+            TranslationSettings settings,
+            bool isPublic = true)
         {
+            var definition = (expression.NodeType == ExpressionType.Lambda)
+                ? (LambdaExpression)expression
+                : expression.ToLambdaExpression();
+
             return new MethodExpression(
                 parent,
                 name,
                 summaryLines,
                 definition,
+                isPublic,
                 settings);
         }
 
@@ -189,11 +199,13 @@
                 MethodExpression method,
                 string name,
                 IParameter[] parameters,
+                bool isPublic,
                 TranslationSettings settings)
             {
                 _method = method;
                 _name = name;
                 _parameters = parameters;
+                IsPublic = isPublic;
                 _settings = settings;
             }
 
@@ -201,7 +213,7 @@
 
             public Type DeclaringType => null;
 
-            public bool IsPublic => true;
+            public bool IsPublic { get; }
 
             public bool IsProtectedInternal => false;
 
@@ -209,7 +221,7 @@
 
             public bool IsProtected => false;
 
-            public bool IsPrivate => false;
+            public bool IsPrivate => !IsPublic;
 
             public bool IsAbstract => false;
 
