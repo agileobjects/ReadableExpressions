@@ -36,6 +36,27 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldTranslateADefaultVoidExpressionToASourceCodeMethod()
+        {
+            var doNothing = Default(typeof(void));
+
+            var translated = doNothing.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public void DoAction()
+        {
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAParameterlessLambdaFuncToASourceCodeMethod()
         {
             var returnOneThousand = CreateLambda(() => 1000);
@@ -105,6 +126,34 @@ namespace GeneratedExpressionCode
     }
 }";
             EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeNonScopeVariablesAsMethodParameters()
+        {
+            var int1Variable = Parameter(typeof(int), "int1");
+            var int2Variable = Variable(typeof(int), "int2");
+            var addInts = Add(int1Variable, int2Variable);
+
+            var translated = addInts.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt
+        (
+            int int1,
+            int int2
+        )
+        {
+            return int1 + int2;
+        }
+    }
+}";
+            EXPECTED.ShouldBeCompilableClass();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
