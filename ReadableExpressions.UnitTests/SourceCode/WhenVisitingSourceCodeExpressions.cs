@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System.Collections.Generic;
+    using ReadableExpressions.SourceCode;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -16,7 +17,7 @@
     public class WhenVisitingSourceCodeExpressions : TestClassBase
     {
         [Fact]
-        public void ShouldVisitASourceCodeExpression()
+        public void ShouldVisitSourceCodeExpressions()
         {
             var returnOneThousand = CreateLambda(() => 1000);
 
@@ -27,34 +28,9 @@
             visitor.Visit(sourceCode);
 
             visitor.VisitedExpressions.ShouldContain(returnOneThousand.Body);
-        }
-
-        [Fact]
-        public void ShouldVisitAClassExpression()
-        {
-            var returnOneThousand = CreateLambda(() => 1000);
-
-            var @class = ReadableExpression.Class(returnOneThousand);
-
-            var visitor = new VisitationHelper();
-
-            visitor.Visit(@class);
-
-            visitor.VisitedExpressions.ShouldContain(returnOneThousand.Body);
-        }
-
-        [Fact]
-        public void ShouldVisitAMethodExpression()
-        {
-            var returnOneThousand = CreateLambda(() => 1000);
-
-            var @class = ReadableExpression.Method(returnOneThousand);
-
-            var visitor = new VisitationHelper();
-
-            visitor.Visit(@class);
-
-            visitor.VisitedExpressions.ShouldContain(returnOneThousand.Body);
+            visitor.SourceCodeVisited.ShouldBeTrue();
+            visitor.ClassVisited.ShouldBeTrue();
+            visitor.MethodVisited.ShouldBeTrue();
         }
 
         #region Helper Members
@@ -68,9 +44,30 @@
 
             public IList<Expression> VisitedExpressions { get; }
 
+            public bool SourceCodeVisited { get; private set; }
+
+            public bool ClassVisited { get; private set; }
+
+            public bool MethodVisited { get; private set; }
+
             public override Expression Visit(Expression node)
             {
                 VisitedExpressions.Add(node);
+
+                switch (node)
+                {
+                    case SourceCodeExpression _:
+                        SourceCodeVisited = true;
+                        break;
+
+                    case ClassExpression _:
+                        ClassVisited = true;
+                        break;
+
+                    case MethodExpression _:
+                        MethodVisited = true;
+                        break;
+                }
 
                 return base.Visit(node);
             }

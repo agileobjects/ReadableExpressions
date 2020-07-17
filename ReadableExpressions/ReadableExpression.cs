@@ -54,46 +54,6 @@
             return new SourceCodeExpression(content, settings);
         }
 
-        /// <summary>
-        /// Create a <see cref="ClassExpression"/> representing a source code class with the given
-        /// <paramref name="singleMethod"/>.
-        /// </summary>
-        /// <param name="singleMethod">
-        /// An Expression defining the <see cref="ClassExpression"/>'s single method.
-        /// </param>
-        /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <returns>A <see cref="ClassExpression"/> representing a source code class.</returns>
-        public static ClassExpression Class(
-            Expression singleMethod,
-            Func<IClassTranslationSettings, IClassTranslationSettings> configuration = null)
-        {
-            return singleMethod?.ToClassExpression(configuration, out _);
-        }
-
-        internal static ClassExpression ToClassExpression(
-            this Expression content,
-            Func<IClassTranslationSettings, IClassTranslationSettings> configuration,
-            out TranslationSettings settings)
-        {
-            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
-
-            return new ClassExpression(content, settings);
-        }
-
-        /// <summary>
-        /// Create a <see cref="MethodExpression"/> representing a source code method with the given
-        /// <paramref name="method"/> definition.
-        /// </summary>
-        /// <param name="method">An Expression defining the <see cref="MethodExpression"/>.</param>
-        /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <returns>A <see cref="MethodExpression"/> representing a source code method.</returns>
-        public static MethodExpression Method(
-            Expression method,
-            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
-        {
-            return method?.ToMethodExpression(configuration, out _);
-        }
-
         internal static MethodExpression ToMethodExpression(
             this Expression content,
             Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration,
