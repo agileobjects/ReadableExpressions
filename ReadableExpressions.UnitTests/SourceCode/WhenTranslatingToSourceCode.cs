@@ -153,7 +153,39 @@ namespace GeneratedExpressionCode
         }
     }
 }";
-            EXPECTED.ShouldBeCompilableClass();
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldRecogniseBlockVariablesAsInScope()
+        {
+            var intParameter = Parameter(typeof(int), "scopedInt");
+            var intVariable = Variable(typeof(int), "blockScopedInt");
+            var assignBlockInt = Assign(intVariable, Constant(1));
+            var addInts = Add(intVariable, intParameter);
+            var block = Block(new[] { intVariable }, assignBlockInt, addInts);
+            var addIntsLambda = Lambda<Func<int, int>>(block, intParameter);
+
+            var translated = addIntsLambda.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt
+        (
+            int scopedInt
+        )
+        {
+            var blockScopedInt = 1;
+
+            return blockScopedInt + scopedInt;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

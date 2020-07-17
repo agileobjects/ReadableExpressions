@@ -77,22 +77,6 @@
                 .ToSourceCode();
         }
 
-        /// <summary>
-        /// Translates the given <paramref name="expression"/> to a source-code string,
-        /// formatted as a method.
-        /// </summary>
-        /// <param name="expression">The Expression to translate to source code.</param>
-        /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <returns>The translated <paramref name="expression"/>, formatted as a method.</returns>
-        public static string ToSourceCodeMethod(
-            this Expression expression,
-            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration = null)
-        {
-            return expression?
-                .ToMethodExpression(configuration, out var settings)
-                .Translate(settings);
-        }
-
         internal static string Translate(this Expression expression, TranslationSettings settings)
             => new ExpressionTranslation(expression, settings).GetTranslation();
 

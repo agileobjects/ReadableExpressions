@@ -65,9 +65,6 @@
 
         #region Factory Methods
 
-        internal static MethodExpression For(Expression expression, TranslationSettings settings)
-            => For(null, expression, settings);
-
         internal static MethodExpression For(
             ClassExpression parent,
             Expression expression,

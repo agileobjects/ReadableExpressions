@@ -54,16 +54,6 @@
             return new SourceCodeExpression(content, settings);
         }
 
-        internal static MethodExpression ToMethodExpression(
-            this Expression content,
-            Func<IMethodTranslationSettings, IMethodTranslationSettings> configuration,
-            out TranslationSettings settings)
-        {
-            settings = GetTranslationSettings(configuration, (cfg, s) => cfg.Invoke(s));
-
-            return MethodExpression.For(content, settings);
-        }
-
         /// <summary>
         /// Create a <see cref="CommentExpression"/> representing a code comment with the 
         /// given <paramref name="text"/>.

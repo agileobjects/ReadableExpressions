@@ -11,12 +11,6 @@
 
     public static class FluentAssertionExtensions
     {
-        public static void ShouldBeCompilableMethod(this string methodCode)
-            => ShouldBeCompilableClass("public class GeneratedExpressionClass { " + methodCode + " }");
-
-        public static void ShouldBeCompilableClass(this string classCode)
-            => ShouldCompile("namespace GeneratedExpressionCode { " + classCode + " }");
-
         public static void ShouldCompile(this string sourceCode)
         {
 #if FEATURE_COMPILATION

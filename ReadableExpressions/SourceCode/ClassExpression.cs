@@ -30,11 +30,6 @@
         private string _name;
         private Type _type;
 
-        internal ClassExpression(Expression body, TranslationSettings settings)
-            : this(null, Enumerable<string>.EmptyArray, body, settings)
-        {
-        }
-
         internal ClassExpression(
             SourceCodeExpression parent,
             Expression body,

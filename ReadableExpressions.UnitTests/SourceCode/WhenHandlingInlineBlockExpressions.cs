@@ -65,7 +65,7 @@ namespace GeneratedExpressionCode
         }
     }
 }";
-            EXPECTED.ShouldBeCompilableClass();
+            EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
     }
