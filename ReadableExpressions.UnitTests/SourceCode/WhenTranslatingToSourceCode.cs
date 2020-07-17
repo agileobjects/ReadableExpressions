@@ -207,12 +207,12 @@ namespace {typeof(WhenTranslatingToSourceCode).Namespace}
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = doNothing.ToSourceCode(s => s
-                .NameClassesUsing((sc, ctx) => $"Class_{ctx.Index}"));
+                .NameClassesUsing((sc, ctx) => $"My{ctx.TypeName}Class_{ctx.Index}"));
 
             const string EXPECTED = @"
 namespace GeneratedExpressionCode
 {
-    public class Class_0
+    public class MyVoidClass_0
     {
         public void DoAction()
         {
@@ -237,6 +237,30 @@ namespace GeneratedExpressionCode
     public class GeneratedExpressionClass
     {
         public void Method_0_0()
+        {
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldUseACustomClassAndMethodName()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCode(s => s
+                .NameClassesUsing(ctx => "MySpecialClass")
+                .NameMethodsUsing((clsExp, mCtx) =>
+                    $"{clsExp.Name}{mCtx.ReturnTypeName}Method_{clsExp.Index + 1}_{mCtx.Index + 1}"));
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class MySpecialClass
+    {
+        public void MySpecialClassVoidMethod_1_1()
         {
         }
     }

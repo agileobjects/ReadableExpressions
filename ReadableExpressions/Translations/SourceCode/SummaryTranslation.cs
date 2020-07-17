@@ -39,7 +39,7 @@
         #region Factory Method
 
         public static ITranslatable For(IList<string> textLines, ITranslationContext context)
-            => textLines.Any() ? _empty : new SummaryTranslation(textLines, context);
+            => textLines.Any() ? new SummaryTranslation(textLines, context) : _empty;
 
         #endregion
 
