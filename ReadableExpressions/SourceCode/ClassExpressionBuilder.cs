@@ -25,38 +25,33 @@
 
         public string Name { get; }
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(LambdaExpression definition)
-            => AddMethod(name: null, summary: null, definition);
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(Expression body)
+            => AddMethod(name: null, summary: null, body);
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(
-            string name,
-            LambdaExpression definition)
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(string name,
+            Expression body)
         {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException("Null or blank method name supplied");
             }
 
-            return AddMethod(name, summary: null, definition);
+            return AddMethod(name, summary: null, body);
         }
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(
-            string name,
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(string name,
             string summary,
-            LambdaExpression definition)
+            Expression body)
         {
             if (string.IsNullOrEmpty(summary))
             {
                 throw new ArgumentException("Null or blank method summary supplied");
             }
 
-            return AddMethod(name, summary, definition);
+            return AddMethod(name, summary, body);
         }
 
-        private IClassExpressionSettings AddMethod(
-            string name,
-            string summary,
-            LambdaExpression definition)
+        private IClassExpressionSettings AddMethod(string name, string summary, Expression body)
         {
             if ((name != null) && _methodBuilders.Any(mb => mb.Name == name))
             {
@@ -64,7 +59,7 @@
                     $"Duplicate method name '{name}' specified.");
             }
 
-            _methodBuilders.Add(new MethodExpressionBuilder(name, summary, definition));
+            _methodBuilders.Add(new MethodExpressionBuilder(name, summary, body));
             return this;
         }
 

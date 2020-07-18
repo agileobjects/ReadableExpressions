@@ -15,10 +15,10 @@
         public MethodExpressionBuilder(
             string name,
             string summary,
-            LambdaExpression definition)
+            Expression body)
         {
             Name = name;
-            Definition = definition;
+            Definition = body.ToLambdaExpression();
             _summaryLines = summary.SplitToLines();
         }
 

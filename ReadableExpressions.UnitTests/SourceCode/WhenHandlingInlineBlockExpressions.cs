@@ -33,11 +33,9 @@
                     Constant("Yep")),
                 Constant("Nope"));
 
-            var yepOrNopeLambda = Lambda<Func<string>>(yepOrNopeBlock);
-
             var translated = SourceCode(sc => sc
                 .WithClass(cls => cls
-                    .WithMethod(yepOrNopeLambda)))
+                    .WithMethod(yepOrNopeBlock)))
                 .ToSourceCode();
 
             const string EXPECTED = @"

@@ -17,6 +17,11 @@
         public static LambdaExpression ToLambdaExpression(
             this Expression expression)
         {
+            if (expression.NodeType == ExpressionType.Lambda)
+            {
+                return (LambdaExpression)expression;
+            }
+
             var lambdaType = expression.HasReturnType()
                 ? GetFuncType(expression.Type)
                 : GetActionType();

@@ -13,41 +13,38 @@
     {
         /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,
-        /// using the given <paramref name="definition"/>.
+        /// using the given <paramref name="body"/>.
         /// </summary>
-        /// <param name="definition">
-        /// The LambdaExpression from which to create the <see cref="MethodExpression"/>'s parameters
-        /// and body.
+        /// <param name="body">
+        /// The Expression from which to create the <see cref="MethodExpression"/>'s parameters and
+        /// body.
         /// </param>
         /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
-        IClassExpressionSettings WithMethod(LambdaExpression definition);
+        IClassExpressionSettings WithMethod(Expression body);
 
         /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,
-        /// using the given <paramref name="name"/> and <paramref name="definition"/>.
+        /// using the given <paramref name="name"/> and <paramref name="body"/>.
         /// </summary>
         /// <param name="name">The name of the <see cref="MethodExpression"/> to create.</param>
-        /// <param name="definition">
-        /// The LambdaExpression from which to create the <see cref="MethodExpression"/>'s parameters
-        /// and body.
+        /// <param name="body">
+        /// The Expression from which to create the <see cref="MethodExpression"/>'s parameters and
+        /// body.
         /// </param>
         /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
-        IClassExpressionSettings WithMethod(string name, LambdaExpression definition);
+        IClassExpressionSettings WithMethod(string name, Expression body);
 
         /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,
-        /// using the given <paramref name="name"/> and <paramref name="definition"/>.
+        /// using the given <paramref name="name"/> and <paramref name="body"/>.
         /// </summary>
         /// <param name="name">The name of the <see cref="MethodExpression"/> to create.</param>
         /// <param name="summary">The summary documentation of the <see cref="MethodExpression"/> to create.</param>
-        /// <param name="definition">
-        /// The LambdaExpression from which to create the <see cref="MethodExpression"/>'s parameters
-        /// and body.
+        /// <param name="body">
+        /// The Expression from which to create the <see cref="MethodExpression"/>'s parameters and
+        /// body.
         /// </param>
         /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
-        IClassExpressionSettings WithMethod(
-            string name,
-            string summary,
-            LambdaExpression definition);
+        IClassExpressionSettings WithMethod(string name, string summary, Expression body);
     }
 }
