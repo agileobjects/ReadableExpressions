@@ -59,31 +59,6 @@
         }
 
         [DebuggerStepThrough]
-        public static IList<T> Combine<T>(this ICollection<T> first, IList<T> second)
-        {
-            var secondCount = second.Count;
-            var combined = new T[first.Count + secondCount];
-            var index = 0;
-
-            foreach (var item in first)
-            {
-                combined[index] = item;
-
-                ++index;
-            }
-
-            for (var i = 0; i < secondCount;)
-            {
-                combined[index] = second[i];
-                
-                ++index;
-                ++i;
-            }
-
-            return combined;
-        }
-
-        [DebuggerStepThrough]
         public static IEnumerable<T> Filter<T>(this IEnumerable<T> items, Func<T, bool> predicate)
         {
             foreach (var item in items)
@@ -104,7 +79,7 @@
         [DebuggerStepThrough]
         public static T FirstOrDefault<T>(this IList<T> items, Func<T, bool> predicate)
         {
-            for (var i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count;)
             {
                 var item = items[i];
 
@@ -112,6 +87,8 @@
                 {
                     return item;
                 }
+
+                ++i;
             }
 
             return default(T);

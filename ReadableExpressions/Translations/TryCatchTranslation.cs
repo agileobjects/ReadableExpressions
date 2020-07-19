@@ -28,7 +28,7 @@
         public TryCatchTranslation(TryExpression tryCatchFinally, ITranslationContext context)
         {
             Type = tryCatchFinally.Type;
-            _isNonVoidTryCatch = Type != typeof(void);
+            _isNonVoidTryCatch = tryCatchFinally.HasReturnType();
 
             _bodyTranslation = GetReturnableBlockTranslation(tryCatchFinally.Body, context);
 

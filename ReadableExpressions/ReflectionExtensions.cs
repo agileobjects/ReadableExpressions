@@ -25,7 +25,7 @@
                 return "[Type not found]";
             }
 
-            var settings = configuration.GetBufferSettings();
+            var settings = configuration.GetTranslationSettings();
             var translation = new TypeDefinitionTranslation(type, settings);
             var writer = new TranslationWriter(settings, translation);
 
@@ -47,7 +47,7 @@
                 return "[Constructor not found]";
             }
 
-            var settings = configuration.GetBufferSettings();
+            var settings = configuration.GetTranslationSettings();
             var translation = new ConstructorDefinitionTranslation(ctor, settings);
             var writer = new TranslationWriter(settings, translation);
 
@@ -69,7 +69,7 @@
                 return "[Method not found]";
             }
 
-            var settings = configuration.GetBufferSettings();
+            var settings = configuration.GetTranslationSettings();
             var translation = MethodDefinitionTranslation.For(method, settings);
             var writer = new TranslationWriter(settings, translation);
 
@@ -91,14 +91,14 @@
                 return "[Property not found]";
             }
 
-            var settings = configuration.GetBufferSettings();
+            var settings = configuration.GetTranslationSettings();
             var translation = new PropertyDefinitionTranslation(property, settings);
             var writer = new TranslationWriter(settings, translation);
 
             return writer.GetContent();
         }
 
-        private static ITranslationSettings GetBufferSettings(
+        private static ITranslationSettings GetTranslationSettings(
             this Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration)
         {
             return configuration?.Invoke(new TranslationFormattingSettings()) ?? TranslationFormattingSettings.Default;

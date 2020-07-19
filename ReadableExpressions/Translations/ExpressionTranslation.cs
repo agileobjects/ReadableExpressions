@@ -15,14 +15,14 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class ExpressionTreeTranslation : ITranslationContext
+    internal class ExpressionTranslation : ITranslationContext
     {
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private readonly ITranslation _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public ExpressionTreeTranslation(Expression expression, TranslationSettings settings)
+        public ExpressionTranslation(Expression expression, TranslationSettings settings)
         {
             _settings = settings;
             _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
@@ -54,8 +54,8 @@
         ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _expressionAnalysis.JoinedAssignmentVariables;
 
-        bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
-            => _expressionAnalysis.IsNotJoinedAssignment(expression);
+        bool ITranslationContext.IsJoinedAssignment(Expression expression)
+            => _expressionAnalysis.IsJoinedAssignment(expression);
 
         bool ITranslationContext.IsCatchBlockVariable(Expression expression)
             => _expressionAnalysis.IsCatchBlockVariable(expression);

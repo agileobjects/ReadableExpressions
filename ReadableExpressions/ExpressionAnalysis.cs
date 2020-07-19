@@ -67,10 +67,10 @@
 
         public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
 
-        public bool IsNotJoinedAssignment(Expression expression)
+        public bool IsJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != ExpressionType.Assign) ||
-                   _joinedAssignments?.Contains((BinaryExpression)expression) != true;
+            return (expression.NodeType == ExpressionType.Assign) &&
+                   _joinedAssignments?.Contains((BinaryExpression)expression) == true;
         }
 
         public bool IsCatchBlockVariable(Expression variable)

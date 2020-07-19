@@ -30,14 +30,14 @@
             TranslationSettings translationSettings,
             ITranslationFormatter formatter)
         {
-            var buffer = new TranslationWriter(
+            var writer = new TranslationWriter(
                 formatter,
                 translationSettings.Indent,
                 (type.FullName ?? type.ToString()).Length);
 
-            buffer.WriteFriendlyName(type, translationSettings);
+            writer.WriteFriendlyName(type, translationSettings);
 
-            return buffer.GetContent();
+            return writer.GetContent();
         }
 
         internal static void WriteFriendlyName(this TranslationWriter writer, Type type)

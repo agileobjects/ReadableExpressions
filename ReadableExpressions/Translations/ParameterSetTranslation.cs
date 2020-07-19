@@ -38,37 +38,6 @@
             Count = 1;
         }
 
-        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
-#if NET35
-            : this(null, parameters.Cast<Expression>().ToArray(), context)
-#else
-            : this(null, parameters.ToArray(), context)
-#endif
-        {
-        }
-
-        public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
-#if NET35
-            : this(null, parameters.Cast<Expression>(), parameters.Count, context)
-#else
-            : this(null, parameters, parameters.Count, context)
-#endif
-        {
-        }
-
-        public ParameterSetTranslation(ICollection<Expression> parameters, ITranslationContext context)
-            : this(null, parameters, parameters.Count, context)
-        {
-        }
-
-        public ParameterSetTranslation(
-            IMethod method,
-            ICollection<Expression> parameters,
-            ITranslationContext context)
-            : this(method, parameters, parameters.Count, context)
-        {
-        }
-
         private ParameterSetTranslation(
             IMethod method,
             IEnumerable<Expression> parameters,
@@ -122,7 +91,7 @@
                     {
                         translation = new MethodGroupTranslation(
                             Lambda,
-                            MethodCallTranslation.GetSubjectTranslation(lambdaBodyMethodCall, context),
+                            lambdaBodyMethodCall.GetSubjectTranslation(context),
                             lambdaBodyMethodCall.Method,
                             context);
 
@@ -184,12 +153,13 @@
 
             foreach (var parameter in parameters)
             {
-                // params arrays are always the last parameter:
+                // params arrays are always the last parameter - if it's
+                // not a NewArrayExpression it's a single Expression which
+                // returns an Array, and doesn't need to be deconstructed:
                 if ((i == (methodParameters.Count - 1)) &&
-                     methodParameters[i].IsParamsArray())
+                    methodParameters[i].IsParamsArray() &&
+                    parameter is NewArrayExpression paramsArray)
                 {
-                    var paramsArray = (NewArrayExpression)parameter;
-
                     if (paramsArray.Expressions.Count > 0)
                     {
                         foreach (var paramsArrayValue in paramsArray.Expressions)
@@ -226,7 +196,9 @@
             return context.GetTranslationFor(parameter);
         }
 
-        private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
+        private static bool CanBeConvertedToMethodGroup(
+            Expression argument,
+            out MethodCallExpression lambdaBodyMethodCall)
         {
             if (argument.NodeType != Lambda)
             {
@@ -264,6 +236,35 @@
 
             return allArgumentTypesMatch;
         }
+
+        #region Factory Methods
+
+        public static ParameterSetTranslation For<TParameterExpression>(
+            ICollection<TParameterExpression> parameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
+            return For(method: null, parameters, context);
+        }
+
+        public static ParameterSetTranslation For<TParameterExpression>(
+            IMethod method,
+            ICollection<TParameterExpression> parameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
+            return new ParameterSetTranslation(
+                method,
+#if NET35
+                parameters.Cast<Expression>().ToArray(),
+#else
+                parameters,
+#endif
+                parameters.Count,
+                context);
+        }
+
+        #endregion
 
         public int TranslationSize { get; private set; }
 

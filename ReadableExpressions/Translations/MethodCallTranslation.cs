@@ -27,7 +27,7 @@
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
             var method = new BclMethodWrapper(invocationMethod);
-            var parameters = new ParameterSetTranslation(method, invocation.Arguments, context).WithParentheses();
+            var parameters = ParameterSetTranslation.For(method, invocation.Arguments, context).WithParentheses();
             var subject = context.GetTranslationFor(invocation.Expression);
 
             if (subject.NodeType == Lambda)
@@ -44,7 +44,7 @@
             {
                 var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
 
-                if (methodCall.Method.ReturnType != typeof(void))
+                if (methodCall.HasReturnType())
                 {
                     return getterTranslation;
                 }
@@ -58,14 +58,14 @@
             }
 
             var method = new BclMethodWrapper(methodCall.Method);
-            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
+            var parameters = ParameterSetTranslation.For(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
             {
                 return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
-            var subject = GetSubjectTranslation(methodCall, context);
+            var subject = methodCall.GetSubjectTranslation(context);
 
             if (IsIndexedPropertyAccess(methodCall))
             {
@@ -98,7 +98,9 @@
                   (methodCall.Method.Name == nameof(string.Concat));
         }
 
-        public static ITranslation GetSubjectTranslation(MethodCallExpression methodCall, ITranslationContext context)
+        public static ITranslation GetSubjectTranslation(
+            this MethodCallExpression methodCall,
+            ITranslationContext context)
         {
             return context.GetTranslationFor(methodCall.GetSubject()) ??
                    context.GetTranslationFor(methodCall.Method.DeclaringType);
@@ -139,7 +141,7 @@
                 Dynamic,
                 subjectTranslation,
                 method,
-                new ParameterSetTranslation(arguments, context).WithParentheses(),
+                ParameterSetTranslation.For(arguments, context).WithParentheses(),
                 context);
         }
 
@@ -212,8 +214,8 @@
             {
                 var indentSize = _subjectTranslation.GetIndentSize();
 
-                indentSize += _isPartOfMethodCallChain 
-                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength 
+                indentSize += _isPartOfMethodCallChain
+                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength
                     : _methodInvocationTranslation.GetLineCount();
 
                 return indentSize;
@@ -221,8 +223,8 @@
 
             public int GetLineCount()
             {
-                var lineCount = 
-                    _subjectTranslation.GetLineCount() + 
+                var lineCount =
+                    _subjectTranslation.GetLineCount() +
                     _methodInvocationTranslation.GetLineCount();
 
                 if (_isPartOfMethodCallChain)
@@ -266,7 +268,7 @@
                 _parameters = parameters;
                 _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
                 _explicitGenericArgumentCount = _explicitGenericArguments.Length;
-                
+
                 TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
 
                 FormattingSize =

@@ -12,7 +12,7 @@
     {
         protected NewingTranslationBase(NewExpression newing, ITranslationContext context)
         {
-            Parameters = new ParameterSetTranslation(
+            Parameters = ParameterSetTranslation.For(
                 new CtorInfoWrapper(newing.Constructor),
                 newing.Arguments,
                 context);

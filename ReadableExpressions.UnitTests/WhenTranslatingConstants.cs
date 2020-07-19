@@ -485,7 +485,7 @@
     internal class Generic<T1, T2, T3> { }
     // ReSharper restore UnusedTypeParameter
 
-    internal enum OddNumber
+    public enum OddNumber
     {
         One = 1
     }
