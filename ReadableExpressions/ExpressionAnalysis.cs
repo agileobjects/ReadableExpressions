@@ -645,6 +645,8 @@
         {
             AddNamespaceIfRequired(method);
 
+            var inlineBlockCount = _inlineBlocks?.Count ?? 0;
+
             Visit(method.Parameters);
             Visit(method.Body);
 

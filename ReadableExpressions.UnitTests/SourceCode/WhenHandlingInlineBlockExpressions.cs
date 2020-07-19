@@ -66,5 +66,66 @@ namespace GeneratedExpressionCode
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldExtractInlineConditionalBranchesToPrivateMethods()
+        {
+            var intParameter1 = Parameter(typeof(int), "i");
+            var intParameter2 = Parameter(typeof(int), "j");
+
+            var conditional = Condition(
+                GreaterThan(intParameter1, Constant(3)),
+                Block(
+                    Assign(intParameter2, Constant(2)),
+                    Multiply(intParameter1, intParameter2)),
+                Block(
+                    Assign(intParameter2, Constant(3)),
+                    Multiply(intParameter1, intParameter2)));
+
+            var translated = SourceCode(sc => sc
+                .WithClass(cls => cls
+                    .WithMethod(conditional)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt1
+        (
+            int i,
+            int j
+        )
+        {
+            return (i > 3) ? this.GetInt2(i, j) : this.GetInt3(i, j);
+        }
+
+        private int GetInt2
+        (
+            int i,
+            int j
+        )
+        {
+            j = 2;
+
+            return i * j;
+        }
+
+        private int GetInt3
+        (
+            int i,
+            int j
+        )
+        {
+            j = 3;
+
+            return i * j;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
