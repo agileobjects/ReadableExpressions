@@ -52,7 +52,7 @@
         /// True if the given <paramref name="expression"/> represents an assignment where the assigned
         /// variable is declared as part of the assignment statement, otherwise false.
         /// </returns>
-        bool IsNotJoinedAssignment(Expression expression);
+        bool IsJoinedAssignment(Expression expression);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="expression"/> is the Exception

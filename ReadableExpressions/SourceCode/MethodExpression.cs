@@ -88,9 +88,7 @@
             TranslationSettings settings,
             bool isPublic = true)
         {
-            var definition = (expression.NodeType == ExpressionType.Lambda)
-                ? (LambdaExpression)expression
-                : expression.ToLambdaExpression();
+            var definition = expression.ToLambdaExpression();
 
             return new MethodExpression(
                 parent,

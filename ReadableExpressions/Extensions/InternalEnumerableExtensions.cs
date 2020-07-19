@@ -22,7 +22,7 @@
 
         public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T[] items)
             => new ReadOnlyCollection<T>(items);
-        
+
 #if FEATURE_READONLYDICTIONARY
         public static ReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TKey, TValue>(
             this IDictionary<TKey, TValue> dictionary)
@@ -35,33 +35,32 @@
             Func<TItem, TResult> projector)
         {
             var itemCount = items.Count;
-            var result = new TResult[itemCount];
 
-            for (var i = 0; i < itemCount; ++i)
+            switch (itemCount)
             {
-                result[i] = projector.Invoke(items[i]);
+                case 0:
+                    return Enumerable<TResult>.EmptyArray;
+
+                case 1:
+                    return new[] { projector.Invoke(items[0]) };
+
+                default:
+
+                    var result = new TResult[itemCount];
+
+                    for (var i = 0; i < itemCount; ++i)
+                    {
+                        result[i] = projector.Invoke(items[i]);
+                    }
+
+                    return result;
             }
-
-            return result;
-        }
-
-        public static TResult[] ProjectToArray<TItem, TResult>(
-            this IList<TItem> items,
-            Func<TItem, int, TResult> projector)
-        {
-            var itemCount = items.Count;
-            var result = new TResult[itemCount];
-
-            for (var i = 0; i < itemCount; ++i)
-            {
-                result[i] = projector.Invoke(items[i], i);
-            }
-
-            return result;
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, TResult> projector)
         {
             foreach (var item in items)
             {
@@ -70,7 +69,9 @@
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, int, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, int, TResult> projector)
         {
             var i = 0;
 

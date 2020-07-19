@@ -98,13 +98,13 @@ namespace GeneratedExpressionCode
             int j
         )
         {
-            return (i > 3) ? this.GetInt2(i, j) : this.GetInt3(i, j);
+            return (i > 3) ? this.GetInt2(j, i) : this.GetInt3(j, i);
         }
 
         private int GetInt2
         (
-            int i,
-            int j
+            int j,
+            int i
         )
         {
             j = 2;
@@ -114,8 +114,8 @@ namespace GeneratedExpressionCode
 
         private int GetInt3
         (
-            int i,
-            int j
+            int j,
+            int i
         )
         {
             j = 3;

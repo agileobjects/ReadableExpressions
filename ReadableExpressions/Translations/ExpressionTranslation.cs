@@ -62,8 +62,8 @@
         ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _expressionAnalysis.JoinedAssignmentVariables;
 
-        bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
-            => _expressionAnalysis.IsNotJoinedAssignment(expression);
+        bool ITranslationContext.IsJoinedAssignment(Expression expression)
+            => _expressionAnalysis.IsJoinedAssignment(expression);
 
         bool ITranslationContext.IsCatchBlockVariable(Expression expression)
             => _expressionAnalysis.IsCatchBlockVariable(expression);
@@ -168,7 +168,7 @@
                     var block = (BlockExpression)expression;
 
                     if (_currentMethod?.Body != block && 
-                        _expressionAnalysis.MethodsByInlineBlock.TryGetValue(block, out var method))
+                        _expressionAnalysis.IsMethodBlock(block, out var method))
                     {
                         return MethodCallTranslation.For(method, this);
                     }

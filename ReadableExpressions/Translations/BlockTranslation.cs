@@ -124,9 +124,9 @@
 
                 if (Include(expression, block, context))
                 {
-                    var statementTranslation = context.IsNotJoinedAssignment(expression)
-                        ? new BlockStatementTranslation(expression, context)
-                        : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+                    var statementTranslation = context.IsJoinedAssignment(expression)
+                        ? new BlockAssignmentStatementTranslation((BinaryExpression)expression, context)
+                        : new BlockStatementTranslation(expression, context);
 
                     translations[statementIndex] = statementTranslation;
                     statementTranslationsSize += statementTranslation.TranslationSize;

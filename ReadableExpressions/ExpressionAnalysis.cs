@@ -29,9 +29,7 @@
         private IList<ParameterExpression> _joinedAssignmentVariables;
         private ICollection<BinaryExpression> _joinedAssignments;
         private ICollection<Expression> _assignedAssignments;
-        private List<ParameterExpression> _blockVariables;
         private Stack<BlockExpression> _blocks;
-        private ICollection<BlockExpression> _inlineBlocks;
         private Stack<object> _constructs;
         private ICollection<ParameterExpression> _catchBlockVariables;
         private ICollection<LabelTarget> _namedLabelTargets;
@@ -40,6 +38,10 @@
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
         private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
         private Dictionary<BlockExpression, MethodExpression> _methodsByInlineBlock;
+        private bool _isSourceCodeAnalysis;
+        private ClassExpression _currentClass;
+        private Queue<ICollection<ParameterExpression>> _scopedVariables;
+        private Stack<List<ParameterExpression>> _unscopedVariables;
 
         private ExpressionAnalysis(TranslationSettings settings)
         {
@@ -92,10 +94,10 @@
 
         public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
 
-        public bool IsNotJoinedAssignment(Expression expression)
+        public bool IsJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != Assign) ||
-                   _joinedAssignments?.Contains((BinaryExpression)expression) != true;
+            return (expression.NodeType == Assign) &&
+                   _joinedAssignments?.Contains((BinaryExpression)expression) == true;
         }
 
         public bool IsCatchBlockVariable(Expression variable)
@@ -123,8 +125,16 @@
         public Dictionary<MethodExpression, List<ParameterExpression>> UnscopedVariablesByMethod
             => _unscopedVariablesByMethod ??= EmptyDictionary<MethodExpression, List<ParameterExpression>>.Instance;
 
-        public Dictionary<BlockExpression, MethodExpression> MethodsByInlineBlock
-            => _methodsByInlineBlock ??= EmptyDictionary<BlockExpression, MethodExpression>.Instance;
+        public bool IsMethodBlock(BlockExpression block, out MethodExpression blockMethod)
+        {
+            if (_methodsByInlineBlock == null)
+            {
+                blockMethod = null;
+                return false;
+            }
+
+            return _methodsByInlineBlock.TryGetValue(block, out blockMethod);
+        }
 
         private void Visit(Expression expression)
         {
@@ -300,6 +310,7 @@
                         switch ((SourceCodeExpressionType)expression.NodeType)
                         {
                             case SourceCodeExpressionType.SourceCode:
+                                _isSourceCodeAnalysis = true;
                                 Visit(((SourceCodeExpression)expression).Classes);
                                 return;
 
@@ -323,14 +334,9 @@
 
         private void Visit(BinaryExpression binary)
         {
-            if ((binary.NodeType == Assign) &&
-                (binary.Left.NodeType == Parameter) &&
-               (_joinedAssignmentVariables?.Contains(binary.Left) != true) &&
-               (_assignedAssignments?.Contains(binary) != true))
+            if (IsJoinableVariableAssignment(binary, out var variable))
             {
-                var variable = (ParameterExpression)binary.Left;
-
-                if (VariableHasNotYetBeenAccessed(variable))
+                if (IsFirstAccess(variable))
                 {
                     if (_constructs?.Any() == true)
                     {
@@ -339,8 +345,9 @@
                     }
 
                     (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
-                    (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
                     (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
+
+                    AddVariableAccess(variable);
                 }
 
                 AddAssignmentIfAppropriate(binary.Right);
@@ -356,37 +363,86 @@
             Visit(binary.Right);
         }
 
-        private bool VariableHasNotYetBeenAccessed(Expression variable)
+        private bool IsJoinableVariableAssignment(
+            BinaryExpression binary,
+            out ParameterExpression variable)
+        {
+            if (binary.NodeType != Assign ||
+                binary.Left.NodeType != Parameter ||
+               _assignedAssignments?.Contains(binary) == true)
+            {
+                variable = null;
+                return false;
+            }
+
+            variable = (ParameterExpression)binary.Left;
+
+            if (_isSourceCodeAnalysis && !IsInScope(variable))
+            {
+                return false;
+            }
+
+            return _joinedAssignmentVariables?.Contains(variable) != true;
+        }
+
+        private bool IsFirstAccess(Expression variable)
             => _accessedVariables?.Contains(variable) != true;
+
+        private void AddVariableAccess(ParameterExpression variable)
+            => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
 
         private void Visit(BlockExpression block)
         {
-            AddInlineBlockIfRequired(block);
+            VisitVariableOwner(
+                block,
+                block.Variables,
+                b =>
+                {
+                    var convertToMethod = ConvertToMethod(b);
 
-            if (_blocks == null)
-            {
-                _blocks = new Stack<BlockExpression>();
-                _blockVariables = new List<ParameterExpression>();
-            }
+                    if (convertToMethod)
+                    {
+                        CollectUnscopedVariables();
+                    }
 
-            _blockVariables.AddRange(block.Variables);
-            _blocks.Push(block);
+                    (_blocks ??= new Stack<BlockExpression>()).Push(b);
 
-            Visit(block.Expressions);
-            Visit(block.Variables);
+                    Visit(b.Expressions);
+                    Visit(b.Variables);
 
-            _blocks.Pop();
+                    _blocks.Pop();
+
+                    if (!convertToMethod)
+                    {
+                        return;
+                    }
+
+                    Expression methodBody = b;
+
+                    var unscopedVariables = _unscopedVariables.Pop();
+
+                    if (unscopedVariables.Any())
+                    {
+                        methodBody = methodBody.ToLambdaExpression(unscopedVariables);
+                    }
+
+                    var inlineBlockMethod = MethodExpression
+                        .For(_currentClass, methodBody, _settings, isPublic: false);
+
+                    _currentClass.AddMethod(inlineBlockMethod);
+
+                    (_methodsByInlineBlock ??= new Dictionary<BlockExpression, MethodExpression>())
+                        .Add(b, inlineBlockMethod);
+                });
         }
 
-        private void AddInlineBlockIfRequired(BlockExpression block)
+        private void CollectUnscopedVariables()
         {
-            if (AddInlineBlock(block))
-            {
-                (_inlineBlocks ??= new List<BlockExpression>()).Add(block);
-            }
+            (_unscopedVariables ??= new Stack<List<ParameterExpression>>())
+                .Push(new List<ParameterExpression>());
         }
 
-        private bool AddInlineBlock(BlockExpression block)
+        private bool ConvertToMethod(BlockExpression block)
         {
             if (!_settings.CollectInlineBlocks ||
                 (_constructs == null) ||
@@ -424,26 +480,8 @@
 
         private void Visit(ClassExpression @class)
         {
-            _inlineBlocks?.Clear();
-
+            _currentClass = @class;
             Visit(@class.Methods);
-
-            if (_inlineBlocks?.Any() != true)
-            {
-                return;
-            }
-
-            _methodsByInlineBlock ??= new Dictionary<BlockExpression, MethodExpression>();
-
-            foreach (var inlineBlock in _inlineBlocks)
-            {
-                var inlineBlockMethod = MethodExpression
-                    .For(@class, inlineBlock, _settings, isPublic: false);
-
-                @class.AddMethod(inlineBlockMethod);
-
-                _methodsByInlineBlock.Add(inlineBlock, inlineBlockMethod);
-            }
         }
 
         private void Visit(ConditionalExpression conditional)
@@ -537,7 +575,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-        VisitValue:
+            VisitValue:
             Visit(@goto.Value);
         }
 
@@ -607,7 +645,7 @@
                     var argument = methodCall.Arguments[i];
 
                     if ((argument.NodeType == Parameter) &&
-                        VariableHasNotYetBeenAccessed(argument))
+                        IsFirstAccess(argument))
                     {
                         (_inlineOutputVariables ??= new List<ParameterExpression>())
                             .Add((ParameterExpression)argument);
@@ -643,38 +681,25 @@
 
         private void Visit(MethodExpression method)
         {
-            AddNamespaceIfRequired(method);
+            VisitVariableOwner(
+                method,
+                method.Definition.Parameters,
+                m =>
+                {
+                    AddNamespaceIfRequired(method);
+                    CollectUnscopedVariables();
 
-            var inlineBlockCount = _inlineBlocks?.Count ?? 0;
+                    Visit(method.Parameters);
+                    Visit(method.Body);
 
-            Visit(method.Parameters);
-            Visit(method.Body);
+                    var unscopedVariables = _unscopedVariables.Pop();
 
-            if (_accessedVariables == null)
-            {
-                return;
-            }
-
-            var unscopedVariablesQuery = _accessedVariables
-                .Except(method.Parameters.ProjectToArray(p => p.ParameterExpression));
-
-            if (_blockVariables?.Any() == true)
-            {
-                unscopedVariablesQuery = unscopedVariablesQuery.Except(_blockVariables);
-            }
-
-            if (_catchBlockVariables?.Any() == true)
-            {
-                unscopedVariablesQuery = unscopedVariablesQuery.Except(_catchBlockVariables);
-            }
-
-            var unscopedVariables = unscopedVariablesQuery.ToList();
-
-            if (unscopedVariables.Any())
-            {
-                (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
-                    .Add(method, unscopedVariables);
-            }
+                    if (unscopedVariables.Any())
+                    {
+                        (_unscopedVariablesByMethod ??= new Dictionary<MethodExpression, List<ParameterExpression>>())
+                            .Add(method, unscopedVariables);
+                    }
+                });
         }
 
         private void Visit(MethodParameterExpression methodParameter)
@@ -738,10 +763,12 @@
                 return;
             }
 
-            if (VariableHasNotYetBeenAccessed(variable))
+            if (IsFirstAccess(variable))
             {
-                (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+                AddVariableAccess(variable);
             }
+
+            AddVariableAccessInScope(variable);
 
             if (_joinedAssignmentVariables?.Contains(variable) != true)
             {
@@ -768,6 +795,28 @@
             _joinedAssignmentVariables.Remove(variable);
             _joinedAssignments.Remove(joinedAssignmentData.Assignment);
             _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
+        }
+
+        private void AddVariableAccessInScope(ParameterExpression variable)
+        {
+            if (!_isSourceCodeAnalysis || IsInScope(variable))
+            {
+                return;
+            }
+
+            foreach (var variableSet in _unscopedVariables)
+            {
+                if (!variableSet.Contains(variable))
+                {
+                    variableSet.Add(variable);
+                }
+            }
+        }
+
+        private bool IsInScope(ParameterExpression variable)
+        {
+            return _scopedVariables?
+                .Any(variablesCollection => variablesCollection.Contains(variable)) == true;
         }
 
         private void Visit(SwitchExpression @switch)
@@ -811,19 +860,34 @@
         {
             var catchVariable = @catch.Variable;
 
+            ICollection<ParameterExpression> variables;
+
             if (catchVariable != null)
             {
-                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(catchVariable);
-
                 AddNamespaceIfRequired(catchVariable);
+
+                (_catchBlockVariables ??= new List<ParameterExpression>())
+                    .Add(catchVariable);
+
+                variables = new[] { catchVariable };
+            }
+            else
+            {
+                variables = Enumerable<ParameterExpression>.EmptyArray;
             }
 
-            VisitConstruct(@catch, c =>
-            {
-                Visit(c.Variable);
-                Visit(c.Filter);
-                Visit(c.Body);
-            });
+            VisitVariableOwner(
+                @catch,
+                variables,
+                c =>
+                {
+                    VisitConstruct(c, cc =>
+                    {
+                        Visit(cc.Variable);
+                        Visit(cc.Filter);
+                        Visit(cc.Body);
+                    });
+                });
         }
 
         private void Visit(IList<ParameterExpression> parameters)
@@ -837,17 +901,64 @@
         private void Visit<TExpression>(IList<TExpression> expressions)
             where TExpression : Expression
         {
-            for (int i = 0, n = expressions.Count; i < n; ++i)
+            var expressionCount = expressions.Count;
+
+            switch (expressionCount)
             {
-                Visit(expressions[i]);
+                case 0:
+                    return;
+
+                case 1:
+                    Visit(expressions[0]);
+                    return;
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        Visit(expressions[i]);
+
+                        ++i;
+
+                        if (i == expressionCount)
+                        {
+                            return;
+                        }
+                    }
             }
+
         }
 
-        private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> baseMethod)
+        private void VisitVariableOwner<TExpression>(
+            TExpression expression,
+            ICollection<ParameterExpression> variables,
+            Action<TExpression> visitAction)
+        {
+            if (!_isSourceCodeAnalysis || !variables.Any())
+            {
+                visitAction.Invoke(expression);
+                return;
+            }
+
+            AddScopedVariables(variables);
+
+            visitAction.Invoke(expression);
+
+            RemoveScopedVariables();
+        }
+
+        private void AddScopedVariables(ICollection<ParameterExpression> inScopeVariables)
+        {
+            (_scopedVariables ??= new Queue<ICollection<ParameterExpression>>())
+                .Enqueue(inScopeVariables);
+        }
+
+        private void RemoveScopedVariables() => _scopedVariables.Dequeue();
+
+        private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> visitAction)
         {
             (_constructs ??= new Stack<object>()).Push(expression);
 
-            baseMethod.Invoke(expression);
+            visitAction.Invoke(expression);
 
             _constructs.Pop();
         }
