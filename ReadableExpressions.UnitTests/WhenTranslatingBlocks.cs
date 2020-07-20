@@ -607,6 +607,8 @@ catch
             var emptyBlock = Block(Default(typeof(void)));
 
             var translated = ToReadableString(emptyBlock);
+
+            translated.ShouldBeNull();
         }
 
         #region Helper Classes
