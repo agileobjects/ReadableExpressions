@@ -26,6 +26,7 @@
         private readonly bool _hasVariables;
         private readonly IList<BlockStatementTranslation> _statements;
         private readonly int _statementCount;
+        private readonly bool _isEmpty;
         private readonly bool _hasGoto;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
@@ -40,7 +41,15 @@
                 out var hasMultiStatementStatement,
                 out var statementTranslationsSize,
                 out var statementsFormattingSize,
-                out _hasGoto);
+                out _hasGoto,
+                out _isEmpty);
+
+
+            if (_isEmpty)
+            {
+                IsTerminated = true;
+                return;
+            }
 
             _statementCount = _statements.Count;
             IsMultiStatement = hasMultiStatementStatement || (_statementCount > 1) || _hasVariables;
@@ -105,7 +114,8 @@
             out bool hasMultiStatementStatement,
             out int statementTranslationsSize,
             out int statementsFormattingSize,
-            out bool hasGoto)
+            out bool hasGoto,
+            out bool isEmpty)
         {
             var expressions = block.Expressions;
             var expressionCount = expressions.Count;
@@ -164,6 +174,14 @@
                     break;
                 }
             }
+
+            if (statementIndex == 0)
+            {
+                isEmpty = true;
+                return Enumerable<BlockStatementTranslation>.EmptyArray;
+            }
+
+            isEmpty = false;
 
             if (statementIndex == expressionCount)
             {
@@ -270,6 +288,11 @@
 
         public int GetIndentSize()
         {
+            if (_isEmpty)
+            {
+                return 0;
+            }
+
             var indentSize = 0;
 
             for (var i = 0; ;)
@@ -287,6 +310,11 @@
 
         public int GetLineCount()
         {
+            if (_isEmpty)
+            {
+                return 0;
+            }
+
             var lineCount = _variables.Count;
 
             for (var i = 0; ;)
@@ -304,6 +332,11 @@
 
         public void WriteTo(TranslationWriter writer)
         {
+            if (_isEmpty)
+            {
+                return;
+            }
+
             if (_hasVariables)
             {
                 foreach (var parametersByType in _variables)

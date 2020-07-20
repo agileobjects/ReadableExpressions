@@ -36,6 +36,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="..\ReadableExpressions.UnitTests\ShouldExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />

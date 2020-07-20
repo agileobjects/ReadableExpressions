@@ -215,12 +215,13 @@
                             continue;
                         }
 
-                        if (j > methodArgumentCount)
+                        if (j < methodArgumentCount)
                         {
-                            return null;
+                            genericArguments[i] = methodArguments[j].Type;
+                            break;
                         }
 
-                        genericArguments[i] = methodArguments[j].Type;
+                        return null;
                     }
                 }
 

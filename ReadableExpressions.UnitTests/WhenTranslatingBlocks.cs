@@ -600,6 +600,17 @@ catch
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/78
+        [Fact]
+        public void ShouldHandleAnEmptyBlock()
+        {
+            var emptyBlock = Block(Default(typeof(void)));
+
+            var translated = ToReadableString(emptyBlock);
+
+            translated.ShouldBeNull();
+        }
+
         #region Helper Classes
 
         private class Company
