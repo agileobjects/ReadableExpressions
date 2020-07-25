@@ -11,7 +11,6 @@
     using Extensions;
     using NetStandardPolyfills;
     using SourceCode;
-    using Translations;
     using Translations.Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -37,8 +36,9 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
         private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
-        private Dictionary<BlockExpression, MethodExpression> _methodsByInlineBlock;
+        private Dictionary<BlockExpression, MethodExpression> _methodsByConvertedBlock;
         private bool _isSourceCodeAnalysis;
+        private bool _isMultilineBlockContext;
         private ClassExpression _currentClass;
         private Queue<ICollection<ParameterExpression>> _scopedVariables;
         private Stack<List<ParameterExpression>> _unscopedVariables;
@@ -127,13 +127,13 @@
 
         public bool IsMethodBlock(BlockExpression block, out MethodExpression blockMethod)
         {
-            if (_methodsByInlineBlock == null)
+            if (_methodsByConvertedBlock == null)
             {
                 blockMethod = null;
                 return false;
             }
 
-            return _methodsByInlineBlock.TryGetValue(block, out blockMethod);
+            return _methodsByConvertedBlock.TryGetValue(block, out blockMethod);
         }
 
         private void Visit(Expression expression)
@@ -179,6 +179,7 @@
                     case TypeAs:
                     case UnaryPlus:
                     case Unbox:
+                        _isMultilineBlockContext = false;
                         expression = ((UnaryExpression)expression).Operand;
                         continue;
 
@@ -237,6 +238,7 @@
                         return;
 
                     case Dynamic:
+                        _isMultilineBlockContext = false;
                         Visit(((DynamicExpression)expression).Arguments);
                         return;
 
@@ -253,6 +255,7 @@
                         return;
 
                     case Label:
+                        _isMultilineBlockContext = false;
                         expression = ((LabelExpression)expression).DefaultValue;
                         continue;
 
@@ -265,6 +268,7 @@
                         return;
 
                     case Loop:
+                        _isMultilineBlockContext = true;
                         expression = ((LoopExpression)expression).Body;
                         continue;
 
@@ -303,6 +307,7 @@
 
                     case TypeEqual:
                     case TypeIs:
+                        _isMultilineBlockContext = false;
                         expression = ((TypeBinaryExpression)expression).Expression;
                         continue;
 
@@ -334,6 +339,8 @@
 
         private void Visit(BinaryExpression binary)
         {
+            _isMultilineBlockContext = false;
+
             if (IsJoinableVariableAssignment(binary, out var variable))
             {
                 if (IsFirstAccess(variable))
@@ -398,7 +405,7 @@
                 block.Variables,
                 b =>
                 {
-                    var convertToMethod = ConvertToMethod(b);
+                    var convertToMethod = ShouldConvertToMethod(b);
 
                     if (convertToMethod)
                     {
@@ -407,7 +414,7 @@
 
                     (_blocks ??= new Stack<BlockExpression>()).Push(b);
 
-                    Visit(b.Expressions);
+                    VisitMultilineBlockContext(b.Expressions);
                     Visit(b.Variables);
 
                     _blocks.Pop();
@@ -426,13 +433,13 @@
                         methodBody = methodBody.ToLambdaExpression(unscopedVariables);
                     }
 
-                    var inlineBlockMethod = MethodExpression
+                    var convertedBlockMethod = MethodExpression
                         .For(_currentClass, methodBody, _settings, isPublic: false);
 
-                    _currentClass.AddMethod(inlineBlockMethod);
+                    _currentClass.AddMethod(convertedBlockMethod);
 
-                    (_methodsByInlineBlock ??= new Dictionary<BlockExpression, MethodExpression>())
-                        .Add(b, inlineBlockMethod);
+                    (_methodsByConvertedBlock ??= new Dictionary<BlockExpression, MethodExpression>())
+                        .Add(b, convertedBlockMethod);
                 });
         }
 
@@ -442,40 +449,12 @@
                 .Push(new List<ParameterExpression>());
         }
 
-        private bool ConvertToMethod(BlockExpression block)
+        private bool ShouldConvertToMethod(BlockExpression block)
         {
-            if (!_settings.CollectInlineBlocks ||
-                (_constructs == null) ||
-                (block.Expressions.Count == 1))
-            {
-                return false;
-            }
-
-            var containingConstruct = _constructs.Peek();
-
-            switch (containingConstruct)
-            {
-                case Expression expression:
-                    switch (expression.NodeType)
-                    {
-                        case Conditional:
-                            var conditional = (ConditionalExpression)expression;
-
-                            if (conditional.Test == block)
-                            {
-                                return true;
-                            }
-
-                            return
-                                 conditional.IsTernary() &&
-                                (conditional.IfTrue == block ||
-                                 conditional.IfFalse == block);
-                    }
-
-                    break;
-            }
-
-            return false;
+            return
+                _settings.CollectInlineBlocks &&
+               !_isMultilineBlockContext &&
+                (block.Expressions.Count != 1);
         }
 
         private void Visit(ClassExpression @class)
@@ -486,6 +465,8 @@
 
         private void Visit(ConditionalExpression conditional)
         {
+            _isMultilineBlockContext = false;
+
             VisitConstruct(conditional, c =>
             {
                 Visit(c.Test);
@@ -555,6 +536,8 @@
 
         private void Visit(GotoExpression @goto)
         {
+            _isMultilineBlockContext = false;
+
             if (@goto.Kind != GotoExpressionKind.Goto)
             {
                 goto VisitValue;
@@ -575,18 +558,22 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
         private void Visit(IndexExpression index)
         {
+            _isMultilineBlockContext = false;
+
             Visit(index.Object);
             Visit(index.Arguments);
         }
 
         private void Visit(InvocationExpression invocation)
         {
+            _isMultilineBlockContext = false;
+
             Visit(invocation.Arguments);
             Visit(invocation.Expression);
         }
@@ -594,7 +581,7 @@
         private void Visit(LambdaExpression lambda)
         {
             Visit(lambda.Parameters);
-            Visit(lambda.Body);
+            VisitMultilineBlockContext(lambda.Body);
         }
 
         private void Visit(ListInitExpression init)
@@ -605,6 +592,8 @@
 
         private void Visit(MemberExpression memberAccess)
         {
+            _isMultilineBlockContext = false;
+
             if (memberAccess.Expression != null)
             {
                 Visit(memberAccess.Expression);
@@ -617,6 +606,8 @@
 
         private void Visit(MethodCallExpression methodCall)
         {
+            _isMultilineBlockContext = false;
+
             if (_chainedMethodCalls?.Contains(methodCall) != true)
             {
                 var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
@@ -690,7 +681,7 @@
                     CollectUnscopedVariables();
 
                     Visit(method.Parameters);
-                    Visit(method.Body);
+                    VisitMultilineBlockContext(method.Body);
 
                     var unscopedVariables = _unscopedVariables.Pop();
 
@@ -707,6 +698,8 @@
 
         private void Visit(NewExpression newing)
         {
+            _isMultilineBlockContext = false;
+
             AddNamespaceIfRequired(newing.Type);
             Visit(newing.Arguments);
         }
@@ -754,7 +747,12 @@
             }
         }
 
-        private void Visit(NewArrayExpression na) => Visit(na.Expressions);
+        private void Visit(NewArrayExpression newArray)
+        {
+            _isMultilineBlockContext = false;
+
+            Visit(newArray.Expressions);
+        }
 
         private void Visit(ParameterExpression variable)
         {
@@ -821,6 +819,8 @@
 
         private void Visit(SwitchExpression @switch)
         {
+            _isMultilineBlockContext = false;
+
             Visit(@switch.SwitchValue);
 
             for (int i = 0, n = @switch.Cases.Count; i < n; ++i)
@@ -828,7 +828,7 @@
                 Visit(@switch.Cases[i]);
             }
 
-            Visit(@switch.DefaultBody);
+            VisitMultilineBlockContext(@switch.DefaultBody);
         }
 
         private void Visit(SwitchCase @case)
@@ -836,7 +836,7 @@
             VisitConstruct(@case, c =>
             {
                 Visit(c.TestValues);
-                Visit(c.Body);
+                VisitMultilineBlockContext(c.Body);
             });
         }
 
@@ -844,15 +844,15 @@
         {
             VisitConstruct(@try, t =>
             {
-                Visit(t.Body);
+                VisitMultilineBlockContext(t.Body);
 
                 for (int i = 0, n = t.Handlers.Count; i < n; ++i)
                 {
                     Visit(t.Handlers[i]);
                 }
 
-                Visit(t.Finally);
-                Visit(t.Fault);
+                VisitMultilineBlockContext(t.Finally);
+                VisitMultilineBlockContext(t.Fault);
             });
         }
 
@@ -884,8 +884,8 @@
                     VisitConstruct(c, cc =>
                     {
                         Visit(cc.Variable);
-                        Visit(cc.Filter);
-                        Visit(cc.Body);
+                        VisitMultilineBlockContext(cc.Filter);
+                        VisitMultilineBlockContext(cc.Body);
                     });
                 });
         }
@@ -961,6 +961,21 @@
             visitAction.Invoke(expression);
 
             _constructs.Pop();
+        }
+
+        private void VisitMultilineBlockContext<TExpression>(IList<TExpression> expressions)
+            where TExpression : Expression
+        {
+            _isMultilineBlockContext = true;
+            Visit(expressions);
+            _isMultilineBlockContext = false;
+        }
+
+        private void VisitMultilineBlockContext(Expression expression)
+        {
+            _isMultilineBlockContext = true;
+            Visit(expression);
+            _isMultilineBlockContext = false;
         }
 
         private void AddAssignmentIfAppropriate(Expression assignedValue)

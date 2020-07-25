@@ -127,5 +127,68 @@ namespace GeneratedExpressionCode
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldExtractInlineBinaryOperandBlocksToPrivateMethods()
+        {
+            var intParameter1 = Parameter(typeof(int), "i");
+            var intParameter2 = Parameter(typeof(int), "j");
+            var intVariable1 = Variable(typeof(int), "k");
+            var intVariable2 = Variable(typeof(int), "l");
+
+            var yepOrNope = Condition(
+                GreaterThan(
+                    Block(
+                        new[] { intVariable1 },
+                        Assign(intVariable1, Constant(2)),
+                        Multiply(intParameter1, intVariable1)),
+                    Block(
+                        new[] { intVariable2 },
+                        Assign(intVariable2, Constant(3)),
+                        Multiply(intParameter2, intVariable2))
+                ),
+                Constant("Yep"),
+                Constant("Nope"));
+
+            var translated = yepOrNope.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public string GetString
+        (
+            int i,
+            int j
+        )
+        {
+            return (this.GetInt1(i) > this.GetInt2(j)) ? ""Yep"" : ""Nope"";
+        }
+
+        private int GetInt1
+        (
+            int i
+        )
+        {
+            var k = 2;
+
+            return i * k;
+        }
+
+        private int GetInt2
+        (
+            int j
+        )
+        {
+            var l = 3;
+
+            return j * l;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
     }
 }
