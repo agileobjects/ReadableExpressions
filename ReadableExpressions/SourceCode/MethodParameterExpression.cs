@@ -6,7 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Translations.Reflection;
+    using ReadableExpressions.Translations.Reflection;
 
     /// <summary>
     /// Represents a method parameter in a class in a piece of source code.

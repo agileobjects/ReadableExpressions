@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using ReadableExpressions.SourceCode;
 
     internal interface ITranslationContext
     {
@@ -14,11 +13,6 @@
         /// Gets the <see cref="TranslationSettings"/> to use for translation in this context.
         /// </summary>
         TranslationSettings Settings { get; }
-
-        /// <summary>
-        /// Gets the namespaces required by the translated Expression.
-        /// </summary>
-        IList<string> RequiredNamespaces { get; }
 
         /// <summary>
         /// Gets the variables in the translated Expression which are first used as an output
@@ -108,8 +102,6 @@
         /// this Type is declared.
         /// </returns>
         int? GetUnnamedVariableNumberOrNull(ParameterExpression variable);
-
-        IList<ParameterExpression> GetUnscopedVariablesFor(MethodExpression method);
 
         ITranslation GetTranslationFor(Expression expression);
     }

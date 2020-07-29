@@ -15,7 +15,7 @@
     public class WhenHandlingInlineBlockExpressions
     {
         [Fact]
-        public void ShouldExtractAnInlineIfTestBlockToAPrivateMethod()
+        public void ShouldExtractAMultilineIfTestBlockToAPrivateMethod()
         {
             var intVariable = Parameter(typeof(int), "input");
 
@@ -68,7 +68,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldExtractInlineConditionalBranchesToPrivateMethods()
+        public void ShouldExtractMultilineConditionalBranchesToPrivateMethods()
         {
             var intParameter1 = Parameter(typeof(int), "i");
             var intParameter2 = Parameter(typeof(int), "j");
@@ -129,7 +129,7 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
-        public void ShouldExtractInlineBinaryOperandBlocksToPrivateMethods()
+        public void ShouldExtractMultilineBinaryOperandBlocksToPrivateMethods()
         {
             var intParameter1 = Parameter(typeof(int), "i");
             var intParameter2 = Parameter(typeof(int), "j");
@@ -184,6 +184,72 @@ namespace GeneratedExpressionCode
             var l = 3;
 
             return j * l;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldExtractNestedMultilineBlocksToPrivateMethods()
+        {
+            var parameterI = Parameter(typeof(int), "i");
+            var variableJ = Variable(typeof(int), "j");
+            var variableK = Variable(typeof(int), "k");
+            var variableL = Variable(typeof(int), "l");
+
+            var assignNestedBlockResult = Block(
+                new[] { variableJ },
+                Assign(
+                    variableJ,
+                    Block(
+                        new[] { variableK },
+                        Assign(variableK, Constant(2)),
+                        Multiply(variableK, Block(
+                            new[] { variableL },
+                            Assign(variableL, Constant(3)),
+                            Multiply(parameterI, variableL))))
+                    ),
+                variableJ);
+
+            var assignmentLambda = Lambda<Func<int, int>>(assignNestedBlockResult, parameterI);
+
+            var translated = assignmentLambda.ToSourceCode();
+
+            const string EXPECTED = @"
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public int GetInt1
+        (
+            int i
+        )
+        {
+            var j = this.GetInt3(i);
+
+            return j;
+        }
+
+        private int GetInt3
+        (
+            int i
+        )
+        {
+            var k = 2;
+
+            return k * this.GetInt2(i);
+        }
+
+        private int GetInt2
+        (
+            int i
+        )
+        {
+            var l = 3;
+
+            return i * l;
         }
     }
 }";

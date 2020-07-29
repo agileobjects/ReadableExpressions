@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.SourceCode.Translations
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,9 @@
     using System.Linq.Expressions;
 #endif
     using Interfaces;
-    using ReadableExpressions.SourceCode;
+    using ReadableExpressions.Translations;
+    using ReadableExpressions.Translations.Interfaces;
+    using SourceCode;
 
     internal class SourceCodeTranslation : ITranslation
     {
@@ -23,7 +25,7 @@
 
         public SourceCodeTranslation(
             SourceCodeExpression sourceCode,
-            ITranslationContext context)
+            ISourceCodeTranslationContext context)
         {
             _namespaces = context.RequiredNamespaces;
             _namespaceCount = context.RequiredNamespaces.Count;
@@ -106,8 +108,8 @@
 
         public int GetLineCount()
         {
-            var lineCount = 
-                _namespaceCount + 
+            var lineCount =
+                _namespaceCount +
                 3; // <- for braces and namespace declaration
 
             if (_namespaceCount > 0)
@@ -139,7 +141,7 @@
                     writer.WriteToTranslation(';');
                     writer.WriteNewLineToTranslation();
                 }
-            
+
                 writer.WriteNewLineToTranslation();
             }
 

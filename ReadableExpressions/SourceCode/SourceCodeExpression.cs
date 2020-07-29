@@ -3,12 +3,14 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
     using Extensions;
+    using Translations;
 
     /// <summary>
     /// Represents a piece of complete source code.
@@ -31,13 +33,17 @@
                     Classes = @class.ToReadOnlyCollection();
                     break;
 
-                case ExpressionType.Block when settings.GenerateSingleClass:
-                    @class = new ClassExpression(this, (BlockExpression)content, settings);
-                    Classes = @class.ToReadOnlyCollection();
-                    break;
-
                 case ExpressionType.Block:
-                    var expressions = ((BlockExpression)content).Expressions;
+                    var block = (BlockExpression)content;
+
+                    if (GenerateSingleClass(block))
+                    {
+                        @class = new ClassExpression(this, block, settings);
+                        Classes = @class.ToReadOnlyCollection();
+                        break;
+                    }
+
+                    var expressions = block.Expressions;
                     var elementCount = expressions.Count;
                     var classes = new List<ClassExpression>(elementCount);
                     var summaryLines = Enumerable<string>.EmptyArray;
@@ -46,9 +52,9 @@
                     {
                         var expression = expressions[i];
 
-                        if (expression is CommentExpression comment)
+                        if (expression.IsComment())
                         {
-                            summaryLines = comment.TextLines;
+                            summaryLines = ((CommentExpression)expression).TextLines;
                             continue;
                         }
 
@@ -65,6 +71,17 @@
                     content = content.ToLambdaExpression();
                     goto case ExpressionType.Lambda;
             }
+        }
+
+        private bool GenerateSingleClass(BlockExpression block)
+        {
+            if (_settings.GenerateSingleClass)
+            {
+                return true;
+            }
+
+            return !block.Expressions.All(exp =>
+                exp.IsComment() || exp.NodeType == ExpressionType.Lambda);
         }
 
         internal SourceCodeExpression(
@@ -154,6 +171,7 @@
         /// The translated <see cref="SourceCodeExpression"/>, formatted as one or more classes with
         /// one or more methods in a namespace.
         /// </returns>
-        public string ToSourceCode() => this.Translate(_settings);
+        public string ToSourceCode()
+            => new SourceCodeExpressionTranslation(this, _settings).GetTranslation();
     }
 }

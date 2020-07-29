@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.SourceCode.Translations
 {
     using System;
     using System.Collections.Generic;
@@ -7,8 +7,10 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Interfaces;
-    using ReadableExpressions.SourceCode;
+    using ReadableExpressions.Translations;
+    using ReadableExpressions.Translations.Interfaces;
+    using ReadableExpressions.Translations.SourceCode;
+    using SourceCode;
 
     internal class ClassTranslation : ITranslation
     {

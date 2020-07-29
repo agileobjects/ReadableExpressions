@@ -7,39 +7,41 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
+    using AgileObjects.ReadableExpressions.SourceCode;
     using Initialisations;
     using Interfaces;
-    using ReadableExpressions.SourceCode;
     using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static ReadableExpressions.SourceCode.SourceCodeExpressionType;
 
     internal class ExpressionTranslation : ITranslationContext
     {
+        private readonly Expression _expression;
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
-        private readonly ITranslatable _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
-        private MethodExpression _currentMethod;
 
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
+            : this(expression, ExpressionAnalysis.For(expression, settings), settings)
         {
+        }
+
+        protected ExpressionTranslation(
+            Expression expression,
+            ExpressionAnalysis expressionAnalysis,
+            TranslationSettings settings)
+        {
+            _expression = expression;
             _settings = settings;
-            _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
-            _root = GetTranslationFor(expression);
+            _expressionAnalysis = expressionAnalysis;
         }
 
         #region ITranslationContext Members
 
         TranslationSettings ITranslationContext.Settings => _settings;
-
-        IList<string> ITranslationContext.RequiredNamespaces
-            => _expressionAnalysis.RequiredNamespaces;
 
         ICollection<ParameterExpression> ITranslationContext.InlineOutputVariables
             => _expressionAnalysis.InlineOutputVariables;
@@ -89,13 +91,7 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
-        IList<ParameterExpression> ITranslationContext.GetUnscopedVariablesFor(MethodExpression method)
-        {
-            return _expressionAnalysis.UnscopedVariablesByMethod.TryGetValue(method, out var variables)
-                ? variables : Enumerable<ParameterExpression>.EmptyList;
-        }
-
-        public ITranslation GetTranslationFor(Expression expression)
+        public virtual ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)
             {
@@ -165,15 +161,7 @@
                     return new ArrayLengthTranslation((UnaryExpression)expression, this);
 
                 case Block:
-                    var block = (BlockExpression)expression;
-
-                    if (_currentMethod?.Body != block && 
-                        _expressionAnalysis.IsMethodBlock(block, out var method))
-                    {
-                        return MethodCallTranslation.For(method, this);
-                    }
-
-                    return new BlockTranslation(block, this);
+                    return new BlockTranslation((BlockExpression)expression, this);
 
                 case Call:
                     return MethodCallTranslation.For((MethodCallExpression)expression, this);
@@ -267,33 +255,20 @@
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
 
+                case (ExpressionType)SourceCodeExpressionType.Comment:
+                    return new CommentTranslation((CommentExpression)expression, this);
+
                 default:
-                    switch ((SourceCodeExpressionType)expression.NodeType)
-                    {
-                        case SourceCodeExpressionType.SourceCode:
-                            return new SourceCodeTranslation((SourceCodeExpression)expression, this);
-
-                        case Class:
-                            return new ClassTranslation((ClassExpression)expression, this);
-
-                        case Method:
-                            return new MethodTranslation(_currentMethod = (MethodExpression)expression, this);
-
-                        case Comment:
-                            return new CommentTranslation((CommentExpression)expression, this);
-                    }
-
-                    break;
+                    return new FixedValueTranslation(expression, this);
             }
-
-            return new FixedValueTranslation(expression, this);
         }
 
         #endregion
 
         public string GetTranslation()
         {
-            var writer = new TranslationWriter(_settings, _root);
+            var root = GetTranslationFor(_expression);
+            var writer = new TranslationWriter(_settings, root);
 
             return writer.GetContent();
         }

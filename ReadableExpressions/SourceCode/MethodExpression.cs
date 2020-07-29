@@ -10,7 +10,7 @@
 #endif
     using Api;
     using Extensions;
-    using Translations.Reflection;
+    using ReadableExpressions.Translations.Reflection;
 
     /// <summary>
     /// Represents a method in a class in a piece of source code.

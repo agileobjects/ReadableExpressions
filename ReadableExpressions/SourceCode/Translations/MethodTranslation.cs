@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.SourceCode.Translations
 {
     using System;
     using System.Collections.Generic;
@@ -10,8 +10,11 @@
 #endif
     using Extensions;
     using Interfaces;
-    using ReadableExpressions.SourceCode;
-    using Reflection;
+    using SourceCode;
+    using ReadableExpressions.Translations;
+    using ReadableExpressions.Translations.Interfaces;
+    using ReadableExpressions.Translations.Reflection;
+    using ReadableExpressions.Translations.SourceCode;
 
     internal class MethodTranslation : ITranslation
     {
@@ -22,7 +25,7 @@
 
         public MethodTranslation(
             MethodExpression method,
-            ITranslationContext context)
+            ISourceCodeTranslationContext context)
         {
             _method = method;
             _summary = SummaryTranslation.For(method.SummaryLines, context);
@@ -44,12 +47,12 @@
             _bodyTranslation = bodyCodeBlock;
 
             TranslationSize =
-                _summary.TranslationSize + 
+                _summary.TranslationSize +
                 _definitionTranslation.TranslationSize +
                 _bodyTranslation.TranslationSize;
 
             FormattingSize =
-                _summary.FormattingSize + 
+                _summary.FormattingSize +
                 _definitionTranslation.FormattingSize +
                 _bodyTranslation.FormattingSize;
         }

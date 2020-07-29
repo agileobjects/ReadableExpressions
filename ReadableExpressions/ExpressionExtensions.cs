@@ -49,8 +49,9 @@
             }
 
             var settings = configuration.GetTranslationSettings();
+            var translation = new ExpressionTranslation(expression, settings);
 
-            return expression.Translate(settings);
+            return translation.GetTranslation();
         }
 
         /// <summary>
@@ -76,9 +77,6 @@
                 .ToSourceCodeExpression(configuration)
                 .ToSourceCode();
         }
-
-        internal static string Translate(this Expression expression, TranslationSettings settings)
-            => new ExpressionTranslation(expression, settings).GetTranslation();
 
         internal static TranslationSettings GetTranslationSettings(
             this Func<ITranslationSettings, ITranslationSettings> configuration)
