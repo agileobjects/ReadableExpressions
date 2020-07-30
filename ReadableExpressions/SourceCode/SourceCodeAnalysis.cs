@@ -111,7 +111,7 @@
             Visit(@class.Methods);
         }
 
-        private void Visit(ConstantExpression constant)
+        protected override void Visit(ConstantExpression constant)
         {
             if (constant.Type.IsEnum())
             {
@@ -128,13 +128,15 @@
         private void Visit(DefaultExpression @default)
             => AddNamespaceIfRequired(@default);
 
-        private void Visit(MemberExpression memberAccess)
+        protected override Expression Visit(MemberExpression memberAccess)
         {
             if (memberAccess.Expression == null)
             {
                 // Static member access
                 AddNamespaceIfRequired(memberAccess.Member.DeclaringType);
             }
+
+            return base.Visit(memberAccess);
         }
 
         protected override void Visit(MethodCallExpression methodCall)

@@ -92,6 +92,31 @@ namespace GeneratedExpressionCode
         }
 
         [Fact]
+        public void ShouldIncludeAUsingFromAnArrayNewing()
+        {
+            var createStreamArray = Lambda<Func<object>>(
+                NewArrayBounds(typeof(Stream), Constant(5)));
+
+            var translated = createStreamArray.ToSourceCode();
+
+            const string EXPECTED = @"
+using System.IO;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass
+    {
+        public object GetObject()
+        {
+            return new Stream[5];
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldIncludeAUsingFromAnEnumMember()
         {
             var getEnumIntValue = CreateLambda<object>(() => (OddNumber?)OddNumber.One);

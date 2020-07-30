@@ -117,6 +117,10 @@
 
                 switch (expression.NodeType)
                 {
+                    case Constant:
+                        Visit((ConstantExpression)expression);
+                        return;
+
                     case ArrayLength:
                     case ExpressionType.Convert:
                     case ConvertChecked:
@@ -227,7 +231,7 @@
                         continue;
 
                     case MemberAccess:
-                        expression = ((MemberExpression)expression).Expression;
+                        expression = Visit((MemberExpression)expression);
                         continue;
 
                     case MemberInit:
@@ -344,7 +348,9 @@
             });
         }
 
-
+        protected virtual void Visit(ConstantExpression constant)
+        {
+        }
 
         private void Visit(GotoExpression @goto)
         {
@@ -395,6 +401,9 @@
             Visit(init.NewExpression);
             Visit(init.Initializers);
         }
+
+        protected virtual Expression Visit(MemberExpression memberAccess)
+            => memberAccess.Expression;
 
         protected virtual void Visit(MethodCallExpression methodCall)
         {
@@ -451,8 +460,8 @@
 
         protected virtual void Visit(NewExpression newing)
         {
-            
-                Visit(newing.Arguments);
+
+            Visit(newing.Arguments);
         }
 
         private void Visit(IList<ElementInit> elementInits)
