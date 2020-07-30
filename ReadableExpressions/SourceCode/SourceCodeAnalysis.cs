@@ -85,26 +85,20 @@
                     Visit((MemberExpression)expression);
                     break;
 
-                default:
-                    switch ((SourceCodeExpressionType)expression.NodeType)
-                    {
-                        case SourceCodeExpressionType.SourceCode:
-                            Visit(((SourceCodeExpression)expression).Classes);
-                            break;
+                case (ExpressionType)SourceCodeExpressionType.SourceCode:
+                    Visit(((SourceCodeExpression)expression).Classes);
+                    return;
 
-                        case SourceCodeExpressionType.Class:
-                            Visit((ClassExpression)expression);
-                            break;
+                case (ExpressionType)SourceCodeExpressionType.Class:
+                    Visit((ClassExpression)expression);
+                    return;
 
-                        case SourceCodeExpressionType.Method:
-                            Visit((MethodExpression)expression);
-                            break;
+                case (ExpressionType)SourceCodeExpressionType.Method:
+                    Visit((MethodExpression)expression);
+                    return;
 
-                        case SourceCodeExpressionType.MethodParameter:
-                            Visit((MethodParameterExpression)expression);
-                            break;
-                    }
-
+                case (ExpressionType)SourceCodeExpressionType.MethodParameter:
+                    Visit((MethodParameterExpression)expression);
                     return;
             }
 
@@ -157,6 +151,14 @@
             }
 
             base.Visit(methodCall);
+        }
+
+        private void Visit(MethodExpression method)
+        {
+            AddNamespaceIfRequired(method);
+
+            Visit(method.Parameters);
+            Visit(method.Body);
         }
 
         private void Visit(MethodParameterExpression methodParameter)

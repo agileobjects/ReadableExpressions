@@ -11,7 +11,6 @@
     using SourceCode;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
-    using ReadableExpressions.Translations.SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -64,26 +63,26 @@
                 return null;
             }
 
-            if (expression.NodeType == Block)
+            switch (expression.NodeType)
             {
-                var block = (BlockExpression)expression;
+                case Block:
+                    var block = (BlockExpression)expression;
 
-                if (_currentMethod.Body != block &&
-                    _analysis.IsMethodBlock(block, out var method))
-                {
-                    return MethodCallTranslation.For(method, this);
-                }
-            }
+                    if (_currentMethod.Body != block &&
+                        _analysis.IsMethodBlock(block, out var method))
+                    {
+                        return MethodCallTranslation.For(method, this);
+                    }
 
-            switch ((SourceCodeExpressionType)expression.NodeType)
-            {
-                case SourceCode:
+                    break;
+
+                case (ExpressionType)SourceCode:
                     return new SourceCodeTranslation((SourceCodeExpression)expression, this);
 
-                case Class:
+                case (ExpressionType)Class:
                     return new ClassTranslation((ClassExpression)expression, this);
 
-                case Method:
+                case (ExpressionType)Method:
                     return new MethodTranslation(_currentMethod = (MethodExpression)expression, this);
             }
 
