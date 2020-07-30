@@ -328,7 +328,7 @@
         private void AddVariableAccess(ParameterExpression variable)
             => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
 
-        private void Visit(BlockExpression block)
+        protected virtual void Visit(BlockExpression block)
         {
             (_blocks ??= new Stack<BlockExpression>()).Push(block);
 
@@ -510,7 +510,7 @@
         protected virtual void Visit(NewArrayExpression newArray)
             => Visit(newArray.Expressions);
 
-        private void Visit(ParameterExpression variable)
+        protected virtual void Visit(ParameterExpression variable)
         {
             if (variable == null)
             {

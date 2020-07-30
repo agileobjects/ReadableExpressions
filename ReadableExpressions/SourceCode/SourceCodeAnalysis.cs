@@ -13,6 +13,7 @@
 
     internal class SourceCodeAnalysis : ExpressionAnalysis
     {
+        private readonly Stack<MethodScope> _methodScopes;
         private List<string> _requiredNamespaces;
         private ClassExpression _currentClass;
         private Dictionary<BlockExpression, MethodExpression> _methodsByConvertedBlock;
@@ -20,6 +21,7 @@
         private SourceCodeAnalysis(TranslationSettings settings)
             : base(settings)
         {
+            _methodScopes = new Stack<MethodScope>();
             _methodsByConvertedBlock = new Dictionary<BlockExpression, MethodExpression>();
         }
 
@@ -50,6 +52,8 @@
         }
 
         #endregion
+
+        private MethodScope CurrentScope => _methodScopes.Peek();
 
         public IList<string> RequiredNamespaces => _requiredNamespaces;
 
@@ -105,6 +109,12 @@
             base.Visit(expression);
         }
 
+        protected override void Visit(BlockExpression block)
+        {
+            CurrentScope.Add(block.Variables);
+            base.Visit(block);
+        }
+
         private void Visit(ClassExpression @class)
         {
             _currentClass = @class;
@@ -157,10 +167,14 @@
 
         private void Visit(MethodExpression method)
         {
+            _methodScopes.Push(new MethodScope(method));
+
             AddNamespaceIfRequired(method);
 
             Visit(method.Parameters);
             Visit(method.Body);
+
+            _methodScopes.Pop().Finalise();
         }
 
         private void Visit(MethodParameterExpression methodParameter)
@@ -178,6 +192,12 @@
             base.Visit(newing);
         }
 
+        protected override void Visit(ParameterExpression variable)
+        {
+            CurrentScope.VariableAccessed(variable);
+            base.Visit(variable);
+        }
+
         protected override void Visit(CatchBlock @catch)
         {
             var catchVariable = @catch.Variable;
@@ -185,6 +205,7 @@
             if (catchVariable != null)
             {
                 AddNamespaceIfRequired(catchVariable);
+                CurrentScope.Add(catchVariable);
             }
 
             base.Visit(@catch);
@@ -229,6 +250,42 @@
             if (!_requiredNamespaces.Contains(@namespace))
             {
                 _requiredNamespaces.Add(@namespace);
+            }
+        }
+
+        private class MethodScope
+        {
+            private readonly MethodExpression _method;
+            private readonly List<ParameterExpression> _inScopeVariables;
+            private readonly IList<ParameterExpression> _unscopedVariables;
+
+            public MethodScope(MethodExpression method)
+            {
+                _method = method;
+                _inScopeVariables = new List<ParameterExpression>(method.Definition.Parameters);
+                _unscopedVariables = new List<ParameterExpression>();
+            }
+
+            public void Add(ParameterExpression inScopeVariable)
+                => _inScopeVariables.Add(inScopeVariable);
+
+            public void Add(IEnumerable<ParameterExpression> inScopeVariables)
+                => _inScopeVariables.AddRange(inScopeVariables);
+
+            public void VariableAccessed(ParameterExpression variable)
+            {
+                if (!_inScopeVariables.Contains(variable) &&
+                    !_unscopedVariables.Contains(variable))
+                {
+                    _unscopedVariables.Add(variable);
+                }
+            }
+
+            public void Finalise()
+            {
+                if (_unscopedVariables.Any())
+                {
+                }
             }
         }
     }
