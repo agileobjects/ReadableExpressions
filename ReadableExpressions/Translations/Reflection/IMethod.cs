@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
+    using System.Collections.Generic;
 
     internal interface IMethod
     {
@@ -32,7 +33,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         Type[] GetGenericArguments();
 
-        IParameter[] GetParameters();
+        IList<IParameter> GetParameters();
 
         Type ReturnType { get; }
     }

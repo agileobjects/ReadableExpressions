@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
+    using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
@@ -41,7 +42,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public virtual Type[] GetGenericArguments()
             => _genericArguments ??= _method.GetGenericArguments();
 
-        public IParameter[] GetParameters()
+        public IList<IParameter> GetParameters()
         {
             return _parameters ??= _method
                 .GetParameters()

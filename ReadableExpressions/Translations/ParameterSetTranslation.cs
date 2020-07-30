@@ -63,7 +63,7 @@
 
             Count = count;
 
-            IParameter[] methodParameters;
+            IList<IParameter> methodParameters;
 
             if (methodProvided)
             {
@@ -122,7 +122,7 @@
                         WithParentheses();
                     }
 
-                CreateCodeBlock:
+                    CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 

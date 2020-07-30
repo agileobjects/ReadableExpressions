@@ -1,15 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode.Translations
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
-    using Interfaces;
     using SourceCode;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
@@ -23,20 +19,14 @@
         private readonly ITranslatable _definitionTranslation;
         private readonly ITranslation _bodyTranslation;
 
-        public MethodTranslation(
-            MethodExpression method,
-            ISourceCodeTranslationContext context)
+        public MethodTranslation(MethodExpression method, ITranslationContext context)
         {
             _method = method;
             _summary = SummaryTranslation.For(method.SummaryLines, context);
 
-            var unscopedVariables = context.GetUnscopedVariablesFor(method);
-
-            var methodObj = unscopedVariables.Any()
-                ? new AugmentedMethod(method.Method, unscopedVariables)
-                : method.Method;
-
-            _definitionTranslation = new MethodDefinitionTranslation(methodObj, context.Settings);
+            _definitionTranslation = new MethodDefinitionTranslation(
+                method.Method,
+                context.Settings);
 
             var bodyCodeBlock = context
                 .GetCodeBlockTranslationFor(method.Body)
@@ -85,61 +75,5 @@
             _definitionTranslation.WriteTo(writer);
             _bodyTranslation.WriteTo(writer);
         }
-
-        #region Helper Members
-
-        private class AugmentedMethod : IMethod
-        {
-            private readonly IMethod _wrappedMethod;
-            private readonly IParameter[] _parameters;
-
-            public AugmentedMethod(
-                IMethod wrappedMethod,
-                IEnumerable<ParameterExpression> unscopedVariables)
-            {
-                _wrappedMethod = wrappedMethod;
-
-                _parameters = wrappedMethod
-                    .GetParameters()
-                    .Concat(unscopedVariables.Select(p => (IParameter)new MethodParameterExpression(p)))
-                    .ToArray();
-            }
-
-            public Type DeclaringType => _wrappedMethod.DeclaringType;
-
-            public bool IsPublic => _wrappedMethod.IsPublic;
-
-            public bool IsProtectedInternal => _wrappedMethod.IsProtectedInternal;
-
-            public bool IsInternal => _wrappedMethod.IsInternal;
-
-            public bool IsProtected => _wrappedMethod.IsProtected;
-
-            public bool IsPrivate => _wrappedMethod.IsPrivate;
-
-            public bool IsAbstract => _wrappedMethod.IsAbstract;
-
-            public bool IsStatic => _wrappedMethod.IsStatic;
-
-            public bool IsVirtual => _wrappedMethod.IsVirtual;
-
-            public string Name => _wrappedMethod.Name;
-
-            public bool IsGenericMethod => _wrappedMethod.IsGenericMethod;
-
-            public bool IsExtensionMethod => _wrappedMethod.IsExtensionMethod;
-
-            public Type ReturnType => _wrappedMethod.ReturnType;
-
-            public IMethod GetGenericMethodDefinition()
-                => _wrappedMethod.GetGenericMethodDefinition();
-
-            public Type[] GetGenericArguments()
-                => _wrappedMethod.GetGenericArguments();
-
-            public IParameter[] GetParameters() => _parameters;
-        }
-
-        #endregion
     }
 }

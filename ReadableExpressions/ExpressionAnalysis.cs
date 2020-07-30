@@ -9,7 +9,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -31,7 +30,6 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
-        private Dictionary<MethodExpression, List<ParameterExpression>> _unscopedVariablesByMethod;
 
         protected ExpressionAnalysis(TranslationSettings settings)
         {
@@ -102,9 +100,6 @@
                 .GroupBy(variable => variable.Type)
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
                  EmptyDictionary<Type, ParameterExpression[]>.Instance;
-
-        public Dictionary<MethodExpression, List<ParameterExpression>> UnscopedVariablesByMethod
-            => _unscopedVariablesByMethod ??= EmptyDictionary<MethodExpression, List<ParameterExpression>>.Instance;
 
         protected virtual void Visit(Expression expression)
         {
@@ -325,7 +320,7 @@
         private bool IsFirstAccess(Expression variable)
             => _accessedVariables?.Contains(variable) != true;
 
-        private void AddVariableAccess(ParameterExpression variable)
+        protected virtual void AddVariableAccess(ParameterExpression variable)
             => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
 
         protected virtual void Visit(BlockExpression block)
@@ -374,7 +369,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-        VisitValue:
+            VisitValue:
             Visit(@goto.Value);
         }
 
@@ -510,7 +505,7 @@
         protected virtual void Visit(NewArrayExpression newArray)
             => Visit(newArray.Expressions);
 
-        protected virtual void Visit(ParameterExpression variable)
+        private void Visit(ParameterExpression variable)
         {
             if (variable == null)
             {
@@ -639,7 +634,6 @@
                         }
                     }
             }
-
         }
 
         private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> visitAction)

@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
     using Interfaces;
     using SourceCode;
     using ReadableExpressions.Translations;
@@ -48,13 +47,6 @@
 
         IList<string> ISourceCodeTranslationContext.RequiredNamespaces
             => _analysis.RequiredNamespaces;
-
-        IList<ParameterExpression> ISourceCodeTranslationContext.GetUnscopedVariablesFor(
-            MethodExpression method)
-        {
-            return _analysis.UnscopedVariablesByMethod.TryGetValue(method, out var variables)
-                ? variables : Enumerable<ParameterExpression>.EmptyList;
-        }
 
         public override ITranslation GetTranslationFor(Expression expression)
         {

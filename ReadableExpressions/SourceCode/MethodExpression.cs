@@ -32,26 +32,26 @@
             Definition = definition;
             _settings = settings;
 
-            IParameter[] parameters;
+            List<IParameter> parameters;
 
             var parameterCount = definition.Parameters.Count;
 
             if (parameterCount != 0)
             {
                 var methodParameters = new MethodParameterExpression[parameterCount];
-                parameters = new IParameter[parameterCount];
+                parameters = new List<IParameter>(parameterCount);
 
                 for (var i = 0; i < parameterCount; i++)
                 {
-                    parameters[i] = methodParameters[i] =
-                        new MethodParameterExpression(definition.Parameters[i]);
+                    parameters.Add(methodParameters[i] =
+                        new MethodParameterExpression(definition.Parameters[i]));
                 }
 
                 Parameters = methodParameters.ToReadOnlyCollection();
             }
             else
             {
-                parameters = Enumerable<IParameter>.EmptyArray;
+                parameters = Enumerable<IParameter>.EmptyList;
                 Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
             }
 
@@ -168,7 +168,7 @@
         /// </summary>
         public Expression Body => Definition.Body;
 
-        internal IMethod Method { get; }
+        internal MethodExpressionMethod Method { get; }
 
         #region IMethodNamingContext Members
 
@@ -183,17 +183,17 @@
 
         #endregion
 
-        private class MethodExpressionMethod : IMethod
+        internal class MethodExpressionMethod : IMethod
         {
             private readonly MethodExpression _method;
-            private readonly IParameter[] _parameters;
             private readonly TranslationSettings _settings;
             private string _name;
+            private List<IParameter> _parameters;
 
             public MethodExpressionMethod(
                 MethodExpression method,
                 string name,
-                IParameter[] parameters,
+                List<IParameter> parameters,
                 bool isPublic,
                 TranslationSettings settings)
             {
@@ -238,7 +238,27 @@
             public Type[] GetGenericArguments()
                 => Enumerable<Type>.EmptyArray;
 
-            public IParameter[] GetParameters() => _parameters;
+            public IList<IParameter> GetParameters() => _parameters;
+
+            public void AddParameters(IList<ParameterExpression> parameters)
+            {
+                if (_parameters.Count != 0)
+                {
+                    _parameters.Capacity += parameters.Count;
+
+                    _parameters.AddRange(parameters.ProjectToArray(p =>
+                        new MethodParameterExpression(p)));
+
+                    return;
+                }
+
+                _parameters = new List<IParameter>(parameters.Count);
+
+                foreach (var parameter in parameters)
+                {
+                    _parameters.Add(new MethodParameterExpression(parameter));
+                }
+            }
         }
     }
 }

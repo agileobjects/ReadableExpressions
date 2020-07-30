@@ -13,15 +13,14 @@
 
     internal class SourceCodeAnalysis : ExpressionAnalysis
     {
-        private readonly Stack<MethodScope> _methodScopes;
         private List<string> _requiredNamespaces;
         private ClassExpression _currentClass;
+        private MethodScope _currentMethodScope;
         private Dictionary<BlockExpression, MethodExpression> _methodsByConvertedBlock;
 
         private SourceCodeAnalysis(TranslationSettings settings)
             : base(settings)
         {
-            _methodScopes = new Stack<MethodScope>();
             _methodsByConvertedBlock = new Dictionary<BlockExpression, MethodExpression>();
         }
 
@@ -52,8 +51,6 @@
         }
 
         #endregion
-
-        private MethodScope CurrentScope => _methodScopes.Peek();
 
         public IList<string> RequiredNamespaces => _requiredNamespaces;
 
@@ -111,7 +108,7 @@
 
         protected override void Visit(BlockExpression block)
         {
-            CurrentScope.Add(block.Variables);
+            _currentMethodScope.Add(block.Variables);
             base.Visit(block);
         }
 
@@ -167,14 +164,23 @@
 
         private void Visit(MethodExpression method)
         {
-            _methodScopes.Push(new MethodScope(method));
+            EnterMethodScope(method);
 
             AddNamespaceIfRequired(method);
 
             Visit(method.Parameters);
             Visit(method.Body);
 
-            _methodScopes.Pop().Finalise();
+            ExitMethodScope();
+        }
+
+        private void EnterMethodScope(MethodExpression method)
+            => _currentMethodScope = new MethodScope(method, _currentMethodScope);
+
+        private void ExitMethodScope()
+        {
+            _currentMethodScope.Finalise();
+            _currentMethodScope = _currentMethodScope.Parent;
         }
 
         private void Visit(MethodParameterExpression methodParameter)
@@ -192,10 +198,10 @@
             base.Visit(newing);
         }
 
-        protected override void Visit(ParameterExpression variable)
+        protected override void AddVariableAccess(ParameterExpression variable)
         {
-            CurrentScope.VariableAccessed(variable);
-            base.Visit(variable);
+            _currentMethodScope.VariableAccessed(variable);
+            base.AddVariableAccess(variable);
         }
 
         protected override void Visit(CatchBlock @catch)
@@ -205,7 +211,7 @@
             if (catchVariable != null)
             {
                 AddNamespaceIfRequired(catchVariable);
-                CurrentScope.Add(catchVariable);
+                _currentMethodScope.Add(catchVariable);
             }
 
             base.Visit(@catch);
@@ -259,12 +265,15 @@
             private readonly List<ParameterExpression> _inScopeVariables;
             private readonly IList<ParameterExpression> _unscopedVariables;
 
-            public MethodScope(MethodExpression method)
+            public MethodScope(MethodExpression method, MethodScope parent)
             {
+                Parent = parent;
                 _method = method;
                 _inScopeVariables = new List<ParameterExpression>(method.Definition.Parameters);
                 _unscopedVariables = new List<ParameterExpression>();
             }
+
+            public MethodScope Parent { get; }
 
             public void Add(ParameterExpression inScopeVariable)
                 => _inScopeVariables.Add(inScopeVariable);
@@ -274,17 +283,21 @@
 
             public void VariableAccessed(ParameterExpression variable)
             {
-                if (!_inScopeVariables.Contains(variable) &&
-                    !_unscopedVariables.Contains(variable))
+                if (_inScopeVariables.Contains(variable) ||
+                    _unscopedVariables.Contains(variable))
                 {
-                    _unscopedVariables.Add(variable);
+                    return;
                 }
+
+                _unscopedVariables.Add(variable);
+                Parent?.VariableAccessed(variable);
             }
 
             public void Finalise()
             {
                 if (_unscopedVariables.Any())
                 {
+                    _method.Method.AddParameters(_unscopedVariables);
                 }
             }
         }

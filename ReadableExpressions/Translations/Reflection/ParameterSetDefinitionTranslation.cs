@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+    using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
     using Formatting;
@@ -8,7 +9,7 @@
     internal class ParameterSetDefinitionTranslation : ITranslatable
     {
         private readonly TranslationSettings _settings;
-        private readonly IParameter[] _parameters;
+        private readonly IList<IParameter> _parameters;
         private readonly int _parameterCount;
         private readonly ITranslatable[] _parameterTranslations;
         private readonly bool _isExtensionMethod;
@@ -26,7 +27,7 @@
         {
             _settings = settings;
             _parameters = method.GetParameters();
-            _parameterCount = _parameters.Length;
+            _parameterCount = _parameters.Count;
 
             if (_parameterCount == 0)
             {

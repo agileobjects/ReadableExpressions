@@ -263,7 +263,7 @@
 
                 public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
 
-                public IParameter[] GetParameters() => Enumerable<IParameter>.EmptyArray;
+                public IList<IParameter> GetParameters() => Enumerable<IParameter>.EmptyArray;
 
                 public Type ReturnType => typeof(void);
             }
