@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -10,18 +11,23 @@
     using Extensions;
     using NetStandardPolyfills;
     using ReadableExpressions.Translations.Reflection;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class SourceCodeAnalysis : ExpressionAnalysis
     {
+        private readonly Stack<Expression> _expressions;
         private List<string> _requiredNamespaces;
-        private ClassExpression _currentClass;
         private MethodScope _currentMethodScope;
         private Dictionary<BlockExpression, MethodExpression> _methodsByConvertedBlock;
 
         private SourceCodeAnalysis(TranslationSettings settings)
             : base(settings)
         {
-            _methodsByConvertedBlock = new Dictionary<BlockExpression, MethodExpression>();
+            _expressions = new Stack<Expression>();
         }
 
         #region Factory Method
@@ -72,50 +78,91 @@
                 return;
             }
 
+            _expressions.Push(expression);
+
             switch (expression.NodeType)
             {
-                case ExpressionType.Constant:
-                    Visit((ConstantExpression)expression);
-                    break;
+                case Block when ExtractToMethod((BlockExpression)expression, out var blockMethod):
+                    Visit(blockMethod);
+                    goto SkipBaseVisit;
 
-                case ExpressionType.Default:
+                case Default:
                     Visit((DefaultExpression)expression);
-                    break;
-
-                case ExpressionType.MemberAccess:
-                    Visit((MemberExpression)expression);
                     break;
 
                 case (ExpressionType)SourceCodeExpressionType.SourceCode:
                     Visit(((SourceCodeExpression)expression).Classes);
-                    return;
+                    goto SkipBaseVisit;
 
                 case (ExpressionType)SourceCodeExpressionType.Class:
-                    Visit((ClassExpression)expression);
-                    return;
+                    Visit(((ClassExpression)expression).Methods);
+                    goto SkipBaseVisit;
 
                 case (ExpressionType)SourceCodeExpressionType.Method:
                     Visit((MethodExpression)expression);
-                    return;
+                    goto SkipBaseVisit;
 
                 case (ExpressionType)SourceCodeExpressionType.MethodParameter:
                     Visit((MethodParameterExpression)expression);
-                    return;
+                    goto SkipBaseVisit;
             }
 
             base.Visit(expression);
+
+            SkipBaseVisit:
+            _expressions.Pop();
+        }
+
+        private bool ExtractToMethod(BlockExpression block, out MethodExpression blockMethod)
+        {
+            if (ExtractToMethod(block))
+            {
+                blockMethod = _currentMethodScope.CreateMethodFor(block);
+
+                (_methodsByConvertedBlock ??= new Dictionary<BlockExpression, MethodExpression>())
+                    .Add(block, blockMethod);
+
+                return true;
+            }
+
+            blockMethod = null;
+            return false;
+        }
+
+        private bool ExtractToMethod(BlockExpression block)
+        {
+            var parentExpression = _expressions.ElementAt(1);
+
+            switch (parentExpression.NodeType)
+            {
+                case Block:
+                case Lambda:
+                case Loop:
+                case Quote:
+                case Try:
+                case (ExpressionType)SourceCodeExpressionType.Method:
+                    return false;
+
+                case Switch:
+                    var @switch = (SwitchExpression)parentExpression;
+
+                    if (block == @switch.DefaultBody ||
+                        @switch.Cases.Any(@case => block == @case.Body))
+                    {
+                        return false;
+                    }
+
+                    goto default;
+
+                default:
+                    return block.Expressions.Count > 1;
+            }
         }
 
         protected override void Visit(BlockExpression block)
         {
             _currentMethodScope.Add(block.Variables);
             base.Visit(block);
-        }
-
-        private void Visit(ClassExpression @class)
-        {
-            _currentClass = @class;
-            Visit(@class.Methods);
         }
 
         protected override void Visit(ConstantExpression constant)
@@ -175,7 +222,7 @@
         }
 
         private void EnterMethodScope(MethodExpression method)
-            => _currentMethodScope = new MethodScope(method, _currentMethodScope);
+            => _currentMethodScope = new MethodScope(method, _currentMethodScope, Settings);
 
         private void ExitMethodScope()
         {
@@ -262,13 +309,18 @@
         private class MethodScope
         {
             private readonly MethodExpression _method;
+            private readonly TranslationSettings _settings;
             private readonly List<ParameterExpression> _inScopeVariables;
             private readonly IList<ParameterExpression> _unscopedVariables;
 
-            public MethodScope(MethodExpression method, MethodScope parent)
+            public MethodScope(
+                MethodExpression method,
+                MethodScope parent,
+                TranslationSettings settings)
             {
-                Parent = parent;
                 _method = method;
+                Parent = parent;
+                _settings = settings;
                 _inScopeVariables = new List<ParameterExpression>(method.Definition.Parameters);
                 _unscopedVariables = new List<ParameterExpression>();
             }
@@ -291,6 +343,18 @@
 
                 _unscopedVariables.Add(variable);
                 Parent?.VariableAccessed(variable);
+            }
+
+            public MethodExpression CreateMethodFor(Expression block)
+            {
+                var blockMethod = MethodExpression.For(
+                    _method.Parent,
+                    block,
+                    _settings,
+                    isPublic: false);
+
+                _method.Parent.AddMethod(blockMethod);
+                return blockMethod;
             }
 
             public void Finalise()

@@ -12,7 +12,7 @@
 
     [NUnit.Framework.TestFixture]
 #endif
-    public class WhenHandlingInlineBlockExpressions
+    public class WhenExtractingMultilineBlockMethods
     {
         [Fact]
         public void ShouldExtractAMultilineIfTestBlockToAPrivateMethod()

@@ -453,11 +453,7 @@
             }
         }
 
-        protected virtual void Visit(NewExpression newing)
-        {
-
-            Visit(newing.Arguments);
-        }
+        protected virtual void Visit(NewExpression newing) => Visit(newing.Arguments);
 
         private void Visit(IList<ElementInit> elementInits)
         {
