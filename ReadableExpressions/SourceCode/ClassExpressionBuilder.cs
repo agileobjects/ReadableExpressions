@@ -26,34 +26,32 @@
         public string Name { get; }
 
         IClassExpressionSettings IClassExpressionSettings.WithMethod(Expression body)
-            => AddMethod(name: null, summary: null, body);
+            => AddMethod(name: null, summary: null, body, allowNullName: true);
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(string name,
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(
+            string name,
             Expression body)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Null or blank method name supplied");
-            }
-
             return AddMethod(name, summary: null, body);
         }
 
-        IClassExpressionSettings IClassExpressionSettings.WithMethod(string name,
+        IClassExpressionSettings IClassExpressionSettings.WithMethod(
+            string name,
             string summary,
             Expression body)
         {
-            if (string.IsNullOrEmpty(summary))
-            {
-                throw new ArgumentException("Null or blank method summary supplied");
-            }
-
             return AddMethod(name, summary, body);
         }
 
-        private IClassExpressionSettings AddMethod(string name, string summary, Expression body)
+        private IClassExpressionSettings AddMethod(
+            string name,
+            string summary,
+            Expression body,
+            bool allowNullName = false)
         {
-            if ((name != null) && _methodBuilders.Any(mb => mb.Name == name))
+            name.ThrowIfInvalidName<ArgumentException>("Method", allowNullName);
+
+            if (!allowNullName && _methodBuilders.Any(mb => mb.Name == name))
             {
                 throw new InvalidOperationException(
                     $"Duplicate method name '{name}' specified.");

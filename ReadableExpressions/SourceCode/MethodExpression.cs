@@ -48,7 +48,7 @@
                 {
                     var parameter = new MethodParameterExpression(definition.Parameters[i]);
                     parameters.Add(parameter);
-                    _parameters.Add(parameter);;
+                    _parameters.Add(parameter); ;
                 }
             }
             else
@@ -179,7 +179,7 @@
 
             for (var i = 0; i < parameterCount; ++i)
             {
-                iParameters[i] = methodParameters[i] = 
+                iParameters[i] = methodParameters[i] =
                     new MethodParameterExpression(parameters[i]);
             }
 
@@ -250,8 +250,15 @@
 
             public bool IsVirtual => false;
 
-            public string Name =>
-                _name ??= _settings.MethodNameFactory.Invoke(Parent?.Parent, Parent, _method);
+            public string Name => _name ??= GetName();
+
+            private string GetName()
+            {
+                return _settings
+                    .MethodNameFactory
+                    .Invoke(Parent?.Parent, Parent, _method)
+                    .ThrowIfInvalidName<InvalidOperationException>("Method");
+            }
 
             public bool IsGenericMethod => false;
 

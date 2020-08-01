@@ -182,8 +182,15 @@
         /// <summary>
         /// Gets the name of this <see cref="ClassExpression"/>.
         /// </summary>
-        public string Name
-            => _name ??= _settings.ClassNameFactory.Invoke(Parent, this);
+        public string Name => _name ??= GetName();
+
+        private string GetName()
+        {
+            return _settings
+                .ClassNameFactory
+                .Invoke(Parent, this)
+                .ThrowIfInvalidName<InvalidOperationException>("Class");
+        }
 
         internal void AddMethod(MethodExpression method)
         {

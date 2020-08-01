@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Api;
+    using Extensions;
 
     internal class SourceCodeExpressionBuilder :
         TranslationSettings,
@@ -33,18 +34,13 @@
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
-            return AddClass(name: null, summary: null, configuration);
+            return AddClass(name: null, summary: null, configuration, allowNullName: true);
         }
 
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithClass(
             string name,
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Null or blank class name supplied");
-            }
-
             return AddClass(name, summary: null, configuration);
         }
 
@@ -53,20 +49,18 @@
             string summary,
             Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException("Null or blank class summary supplied");
-            }
-
             return AddClass(name, summary, configuration);
         }
 
         private ISourceCodeExpressionSettings AddClass(
             string name,
             string summary,
-            Func<IClassExpressionSettings, IClassExpressionSettings> configuration)
+            Func<IClassExpressionSettings, IClassExpressionSettings> configuration,
+            bool allowNullName = false)
         {
-            if ((name != null) && _classBuilders.Any(b => b.Name == name))
+            name.ThrowIfInvalidName<ArgumentException>("Class", allowNullName);
+
+            if (!allowNullName && _classBuilders.Any(b => b.Name == name))
             {
                 throw new InvalidOperationException(
                     $"Duplicate class name '{name}' specified.");
