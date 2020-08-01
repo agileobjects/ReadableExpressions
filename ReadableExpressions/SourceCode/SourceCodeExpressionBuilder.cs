@@ -69,11 +69,20 @@
             var builder = new ClassExpressionBuilder(name, summary);
             configuration.Invoke(builder);
 
+            builder.Validate();
             _classBuilders.Add(builder);
             return this;
         }
 
         public SourceCodeExpression Build()
-            => new SourceCodeExpression(_classBuilders, this);
+        {
+            if (!_classBuilders.Any())
+            {
+                throw new InvalidOperationException(
+                    "At least one class must be specified");
+            }
+
+            return new SourceCodeExpression(_classBuilders, this);
+        }
     }
 }

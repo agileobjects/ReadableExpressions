@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using ReadableExpressions.SourceCode;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -14,6 +15,19 @@
 #endif
     public class WhenBuildingSourceCodeIncorrectly
     {
+        [Fact]
+        public void ShouldErrorIfNoClassesSpecified()
+        {
+            var classEx = Should.Throw<InvalidOperationException>(() =>
+            {
+                SourceCode(cfg => cfg
+                    .WithNamespaceOf<CommentExpression>())
+                    .ToSourceCode();
+            });
+
+            classEx.Message.ShouldContain("class must be specified");
+        }
+
         [Fact]
         public void ShouldErrorIfNullClassNameSpecified()
         {
@@ -75,6 +89,19 @@
 
             configEx.Message.ShouldContain("Duplicate class name");
             configEx.Message.ShouldContain("MyClass");
+        }
+
+        [Fact]
+        public void ShouldErrorIfNoMethodsSpecified()
+        {
+            var methodEx = Should.Throw<InvalidOperationException>(() =>
+            {
+                SourceCode(cfg => cfg
+                    .WithClass(cls => cls))
+                    .ToSourceCode();
+            });
+
+            methodEx.Message.ShouldContain("method must be specified");
         }
 
         [Fact]

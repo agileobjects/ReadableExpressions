@@ -61,6 +61,19 @@
             return this;
         }
 
+        public void Validate()
+        {
+            if (_methodBuilders.Any())
+            {
+                return;
+            }
+
+            var name = Name != null ? $" for class '{Name}'" : null;
+
+            throw new InvalidOperationException(
+                "At least one method must be specified" + name);
+        }
+
         public ClassExpression Build(
             SourceCodeExpression parent,
             TranslationSettings settings)
