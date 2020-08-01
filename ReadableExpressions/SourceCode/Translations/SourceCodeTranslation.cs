@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Interfaces;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
@@ -19,6 +20,7 @@
 
         private readonly IList<string> _namespaces;
         private readonly int _namespaceCount;
+        private readonly bool _hasNamespace;
         private readonly SourceCodeExpression _sourceCode;
         private readonly IList<ITranslation> _classes;
         private readonly int _classCount;
@@ -29,18 +31,22 @@
         {
             _namespaces = context.RequiredNamespaces;
             _namespaceCount = context.RequiredNamespaces.Count;
+            _hasNamespace = !sourceCode.Namespace.IsNullOrWhiteSpace();
             _sourceCode = sourceCode;
             _classCount = sourceCode.Classes.Count;
             _classes = new ITranslation[_classCount];
 
-            var translationSize =
-                _namespace.Length +
-                sourceCode.Namespace.Length +
-                6; // <- for opening and closing braces
+            var translationSize = 6; // <- for opening and closing braces
+
+            if (_hasNamespace)
+            {
+                translationSize += _namespace.Length + sourceCode.Namespace.Length;
+            }
 
             var keywordFormattingSize = context.GetKeywordFormattingSize();
 
-            var formattingSize = keywordFormattingSize; // <- for 'namespace'
+            var formattingSize =
+                _hasNamespace ? keywordFormattingSize : 0;
 
             if (_namespaceCount != 0)
             {
@@ -145,9 +151,12 @@
                 writer.WriteNewLineToTranslation();
             }
 
-            writer.WriteKeywordToTranslation(_namespace);
-            writer.WriteToTranslation(_sourceCode.Namespace);
-            writer.WriteOpeningBraceToTranslation();
+            if (_hasNamespace)
+            {
+                writer.WriteKeywordToTranslation(_namespace);
+                writer.WriteToTranslation(_sourceCode.Namespace);
+                writer.WriteOpeningBraceToTranslation();
+            }
 
             for (var i = 0; ;)
             {
@@ -164,7 +173,10 @@
                 writer.WriteNewLineToTranslation();
             }
 
-            writer.WriteClosingBraceToTranslation();
+            if (_hasNamespace)
+            {
+                writer.WriteClosingBraceToTranslation();
+            }
         }
     }
 }

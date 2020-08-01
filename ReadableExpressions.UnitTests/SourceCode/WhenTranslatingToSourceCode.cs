@@ -136,7 +136,7 @@ namespace GeneratedExpressionCode
             var int2Variable = Variable(typeof(int), "int2");
             var addInts = Add(int1Variable, int2Variable);
 
-            var translated = addInts.ToSourceCode();
+            var translated = SourceCode(addInts).ToSourceCode();
 
             const string EXPECTED = @"
 namespace GeneratedExpressionCode
@@ -205,6 +205,44 @@ namespace AgileObjects.GeneratedStuff
         public void DoAction()
         {
         }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldAllowANullNamespace()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCode(s => s
+                .WithNamespace(null));
+
+            const string EXPECTED = @"
+public class GeneratedExpressionClass
+{
+    public void DoAction()
+    {
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldAllowABlankNamespace()
+        {
+            var doNothing = Lambda<Action>(Default(typeof(void)));
+
+            var translated = doNothing.ToSourceCode(s => s
+                .WithNamespace(string.Empty));
+
+            const string EXPECTED = @"
+public class GeneratedExpressionClass
+{
+    public void DoAction()
+    {
     }
 }";
             EXPECTED.ShouldCompile();
