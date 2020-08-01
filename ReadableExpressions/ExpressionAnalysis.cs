@@ -314,13 +314,16 @@
 
             variable = (ParameterExpression)binary.Left;
 
-            return _joinedAssignmentVariables?.Contains(variable) != true;
+            return IsAssignmentJoinable(variable);
         }
+
+        protected virtual bool IsAssignmentJoinable(ParameterExpression variable)
+            => _joinedAssignmentVariables?.Contains(variable) != true;
 
         private bool IsFirstAccess(Expression variable)
             => _accessedVariables?.Contains(variable) != true;
 
-        protected virtual void AddVariableAccess(ParameterExpression variable)
+        private void AddVariableAccess(ParameterExpression variable)
             => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
 
         protected virtual void Visit(BlockExpression block)
@@ -369,7 +372,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
@@ -501,7 +504,7 @@
         protected virtual void Visit(NewArrayExpression newArray)
             => Visit(newArray.Expressions);
 
-        private void Visit(ParameterExpression variable)
+        protected virtual void Visit(ParameterExpression variable)
         {
             if (variable == null)
             {

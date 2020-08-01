@@ -227,22 +227,22 @@ namespace GeneratedExpressionCode
             int i
         )
         {
-            var j = this.GetInt3(i);
+            var j = this.GetInt2(i);
 
             return j;
         }
 
-        private int GetInt3
+        private int GetInt2
         (
             int i
         )
         {
             var k = 2;
 
-            return k * this.GetInt2(i);
+            return k * this.GetInt3(i);
         }
 
-        private int GetInt2
+        private int GetInt3
         (
             int i
         )

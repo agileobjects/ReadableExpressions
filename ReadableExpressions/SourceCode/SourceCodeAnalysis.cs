@@ -109,7 +109,7 @@
 
             base.Visit(expression);
 
-            SkipBaseVisit:
+        SkipBaseVisit:
             _expressions.Pop();
         }
 
@@ -163,6 +163,16 @@
         {
             _currentMethodScope.Add(block.Variables);
             base.Visit(block);
+        }
+
+        protected override bool IsAssignmentJoinable(ParameterExpression variable)
+        {
+            if (_currentMethodScope.IsMethodParameter(variable))
+            {
+                return false;
+            }
+
+            return base.IsAssignmentJoinable(variable);
         }
 
         protected override void Visit(ConstantExpression constant)
@@ -245,10 +255,10 @@
             base.Visit(newing);
         }
 
-        protected override void AddVariableAccess(ParameterExpression variable)
+        protected override void Visit(ParameterExpression variable)
         {
             _currentMethodScope.VariableAccessed(variable);
-            base.AddVariableAccess(variable);
+            base.Visit(variable);
         }
 
         protected override void Visit(CatchBlock @catch)
@@ -345,6 +355,13 @@
                 Parent?.VariableAccessed(variable);
             }
 
+            public bool IsMethodParameter(ParameterExpression parameter)
+            {
+                VariableAccessed(parameter);
+
+                return _unscopedVariables.Contains(parameter);
+            }
+
             public MethodExpression CreateMethodFor(Expression block)
             {
                 var blockMethod = MethodExpression.For(
@@ -361,7 +378,7 @@
             {
                 if (_unscopedVariables.Any())
                 {
-                    _method.Method.AddParameters(_unscopedVariables);
+                    _method.AddParameters(_unscopedVariables);
                 }
             }
         }

@@ -18,6 +18,9 @@
     public class MethodExpression : Expression, IMethodNamingContext
     {
         private readonly TranslationSettings _settings;
+        private readonly MethodExpressionMethod _method;
+        private List<MethodParameterExpression> _parameters;
+        private ReadOnlyCollection<MethodParameterExpression> _readOnlyParameters;
 
         private MethodExpression(
             ClassExpression parent,
@@ -38,24 +41,23 @@
 
             if (parameterCount != 0)
             {
-                var methodParameters = new MethodParameterExpression[parameterCount];
+                _parameters = new List<MethodParameterExpression>(parameterCount);
                 parameters = new List<IParameter>(parameterCount);
 
-                for (var i = 0; i < parameterCount; i++)
+                for (var i = 0; i < parameterCount; ++i)
                 {
-                    parameters.Add(methodParameters[i] =
-                        new MethodParameterExpression(definition.Parameters[i]));
+                    var parameter = new MethodParameterExpression(definition.Parameters[i]);
+                    parameters.Add(parameter);
+                    _parameters.Add(parameter);;
                 }
-
-                Parameters = methodParameters.ToReadOnlyCollection();
             }
             else
             {
+                _parameters = Enumerable<MethodParameterExpression>.EmptyList;
                 parameters = Enumerable<IParameter>.EmptyList;
-                Parameters = Enumerable<MethodParameterExpression>.EmptyReadOnlyCollection;
             }
 
-            Method = new MethodExpressionMethod(
+            _method = new MethodExpressionMethod(
                 this,
                 name,
                 parameters,
@@ -155,7 +157,8 @@
         /// Gets the <see cref="MethodParameterExpression"/>s describing the parameters of this
         /// <see cref="MethodExpression"/>.
         /// </summary>
-        public ReadOnlyCollection<MethodParameterExpression> Parameters { get; }
+        public ReadOnlyCollection<MethodParameterExpression> Parameters
+            => _readOnlyParameters ??= _parameters.ToReadOnlyCollection();
 
         /// <summary>
         /// Gets the LambdaExpression describing the parameters and body of this
@@ -168,7 +171,30 @@
         /// </summary>
         public Expression Body => Definition.Body;
 
-        internal MethodExpressionMethod Method { get; }
+        internal void AddParameters(IList<ParameterExpression> parameters)
+        {
+            var parameterCount = parameters.Count;
+            var methodParameters = new MethodParameterExpression[parameterCount];
+            var iParameters = new IParameter[parameterCount];
+
+            for (var i = 0; i < parameterCount; ++i)
+            {
+                iParameters[i] = methodParameters[i] = 
+                    new MethodParameterExpression(parameters[i]);
+            }
+
+            if (_parameters.Count == 0)
+            {
+                _parameters = new List<MethodParameterExpression>();
+            }
+
+            _parameters.AddRange(methodParameters);
+            _readOnlyParameters = null;
+
+            _method.AddParameters(iParameters);
+        }
+
+        internal IMethod Method => _method;
 
         #region IMethodNamingContext Members
 
@@ -240,24 +266,14 @@
 
             public IList<IParameter> GetParameters() => _parameters;
 
-            public void AddParameters(IList<ParameterExpression> parameters)
+            public void AddParameters(IList<IParameter> parameters)
             {
-                if (_parameters.Count != 0)
+                if (_parameters.Count == 0)
                 {
-                    _parameters.Capacity += parameters.Count;
-
-                    _parameters.AddRange(parameters.ProjectToArray(p =>
-                        new MethodParameterExpression(p)));
-
-                    return;
+                    _parameters = new List<IParameter>(parameters.Count);
                 }
 
-                _parameters = new List<IParameter>(parameters.Count);
-
-                foreach (var parameter in parameters)
-                {
-                    _parameters.Add(new MethodParameterExpression(parameter));
-                }
+                _parameters.AddRange(parameters);
             }
         }
     }
