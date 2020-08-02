@@ -99,6 +99,25 @@
         }
 
         [Fact]
+        public void ShouldErrorIfCommentAndLambdaBlockHasInvalidExpression()
+        {
+            var invalidBlockEx = Should.Throw<NotSupportedException>(() =>
+            {
+                var doNothingComment = Comment("NOTHIIIING");
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                var block = Block(
+                    doNothingComment,
+                    doNothing,
+                    Multiply(Constant(3), Constant(5)));
+
+                block.ToSourceCode();
+            });
+
+            invalidBlockEx.Message.ShouldContain("LambdaExpressions with optional Comments");
+        }
+
+        [Fact]
         public void ShouldErrorIfCommentAndLambdaBlockHasInvalidOrder()
         {
             var invalidBlockEx = Should.Throw<NotSupportedException>(() =>
@@ -110,6 +129,48 @@
                     doNothingComment,
                     doNothingComment,
                     doNothing);
+
+                block.ToSourceCode();
+            });
+
+            invalidBlockEx.Message.ShouldContain("LambdaExpressions with optional Comments");
+        }
+
+        [Fact]
+        public void ShouldErrorIfNestedCommentAndLambdaBlockHasInvalidOrder()
+        {
+            var invalidBlockEx = Should.Throw<NotSupportedException>(() =>
+            {
+                var doNothingComment = Comment("NOTHIIIING");
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                var block = Block(
+                    Block(
+                        doNothingComment,
+                        doNothing,
+                        doNothingComment));
+
+                block.ToSourceCode();
+            });
+
+            invalidBlockEx.Message.ShouldContain("LambdaExpressions with optional Comments");
+        }
+
+        [Fact]
+        public void ShouldErrorIfNestedCommentAndLambdaBlockHasInvalidExpression()
+        {
+            var invalidBlockEx = Should.Throw<NotSupportedException>(() =>
+            {
+                var doNothingComment = Comment("NOTHIIIING");
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                var block = Block(
+                    Block(
+                        doNothingComment,
+                        doNothing,
+                        doNothingComment,
+                        doNothing),
+                    Divide(Constant(10), Constant(2)));
 
                 block.ToSourceCode();
             });

@@ -77,8 +77,8 @@
                 switch (expressionType)
                 {
                     case ExpressionType.Block:
-                        if (isCommentsAndMethods ||
-                            HasValidExpressions((BlockExpression)expression, out isNestedBlocks))
+                        if (isCommentsAndMethods || 
+                           !HasValidExpressions((BlockExpression)expression, out isNestedBlocks))
                         {
                             return false;
                         }
@@ -111,7 +111,7 @@
                 previousExpressionType = expressionType;
             }
 
-            return true;
+            return previousExpressionType != COMMENT;
         }
 
         private IEnumerable<ClassExpression> EnumerateClasses(BlockExpression block)
