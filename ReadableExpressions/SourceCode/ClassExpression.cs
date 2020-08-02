@@ -77,12 +77,17 @@
         internal ClassExpression(
             SourceCodeExpression parent,
             string name,
+            IList<Type> interfaceTypes,
             IList<string> summaryLines,
             IList<MethodExpressionBuilder> methodBuilders,
             TranslationSettings settings)
             : this(parent, summaryLines, settings)
         {
             _name = name;
+
+            Interfaces = interfaceTypes != null
+                ? new ReadOnlyCollection<Type>(interfaceTypes)
+                : Enumerable<Type>.EmptyReadOnlyCollection;
 
             var methodCount = methodBuilders.Count;
 
@@ -191,6 +196,11 @@
                 .Invoke(Parent, this)
                 .ThrowIfInvalidName<InvalidOperationException>("Class");
         }
+
+        /// <summary>
+        /// Gets the interface types implemented by this <see cref="ClassExpression"/>.
+        /// </summary>
+        public ReadOnlyCollection<Type> Interfaces { get; }
 
         internal void AddMethod(MethodExpression method)
         {

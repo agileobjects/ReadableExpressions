@@ -95,7 +95,7 @@
                     goto SkipBaseVisit;
 
                 case (ExpressionType)SourceCodeExpressionType.Class:
-                    Visit(((ClassExpression)expression).Methods);
+                    Visit((ClassExpression)expression);
                     goto SkipBaseVisit;
 
                 case (ExpressionType)SourceCodeExpressionType.Method:
@@ -173,6 +173,12 @@
             }
 
             return base.IsAssignmentJoinable(variable);
+        }
+
+        private void Visit(ClassExpression @class)
+        {
+            AddNamespacesIfRequired(@class.Interfaces);
+            Visit(@class.Methods);
         }
 
         protected override void Visit(ConstantExpression constant)

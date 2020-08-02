@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.SourceCode.Api
 {
+    using System;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -11,6 +12,26 @@
     /// </summary>
     public interface IClassExpressionSettings
     {
+        /// <summary>
+        /// Configures the <see cref="ClassExpression"/> being built to implement the given
+        /// <typeparamref name="TInterface"/> .
+        /// </summary>
+        /// <typeparam name="TInterface">
+        /// The type of interface the <see cref="ClassExpression"/> being built should implement.
+        /// </typeparam>
+        /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
+        IClassExpressionSettings Implementing<TInterface>() where TInterface : class;
+
+        /// <summary>
+        /// Configures the <see cref="ClassExpression"/> being built to implement the given
+        /// <paramref name="interface"/> .
+        /// </summary>
+        /// <param name="interface">
+        /// The type of interface the <see cref="ClassExpression"/> being built should implement.
+        /// </param>
+        /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
+        IClassExpressionSettings Implementing(Type @interface);
+
         /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,
         /// using the given <paramref name="body"/>.

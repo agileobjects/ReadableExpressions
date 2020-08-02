@@ -151,5 +151,42 @@ namespace GeneratedExpressionCode
             EXPECTED.ShouldCompile();
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldBuildAnImplementationClassAndMethod()
+        {
+            var sayHello = Lambda<Func<string>>(Constant("Hello!"));
+
+            var translated = SourceCode(cfg => cfg
+                .WithClass(cls => cls
+                    .Implementing<IMessager>()
+                    .WithMethod(sayHello)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+
+namespace GeneratedExpressionCode
+{
+    public class Messager : WhenBuildingSourceCode.IMessager
+    {
+        public string GetMessage()
+        {
+            return ""Hello!"";
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        #region Helper Members
+
+        public interface IMessager
+        {
+            string GetMessage();
+        }
+
+        #endregion
     }
 }

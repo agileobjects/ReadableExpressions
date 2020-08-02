@@ -18,7 +18,9 @@
 
         private readonly ClassExpression _class;
         private readonly ITranslatable _summary;
+        private readonly IList<ITranslation> _interfaces;
         private readonly IList<ITranslation> _methods;
+        private readonly int _interfaceCount;
         private readonly int _methodCount;
 
         public ClassTranslation(
@@ -27,6 +29,8 @@
         {
             _class = @class;
             _summary = SummaryTranslation.For(@class.SummaryLines, context);
+            _interfaceCount = @class.Interfaces.Count;
+
             _methodCount = @class.Methods.Count;
             _methods = new ITranslation[_methodCount];
 
@@ -44,10 +48,31 @@
                 keywordFormattingSize + // <- for accessibility
                 keywordFormattingSize; // <- for 'class'
 
+            if (_interfaceCount != 0)
+            {
+                translationSize += 3; // <- for ' : '
+                _interfaces = new ITranslation[_interfaceCount];
+
+                for (var i = 0; ;)
+                {
+                    var @interface = _interfaces[i] = context.GetTranslationFor(@class.Interfaces[i]);
+                    translationSize += @interface.TranslationSize;
+                    formattingSize += @interface.FormattingSize;
+
+                    ++i;
+
+                    if (i == _interfaceCount)
+                    {
+                        break;
+                    }
+
+                    translationSize += 2; // <- for separator
+                }
+            }
+
             for (var i = 0; ;)
             {
                 var method = _methods[i] = context.GetTranslationFor(@class.Methods[i]);
-
                 translationSize += method.TranslationSize;
                 formattingSize += method.FormattingSize;
 
@@ -113,6 +138,26 @@
 
             writer.WriteKeywordToTranslation("public " + _classString);
             writer.WriteTypeNameToTranslation(_class.Name);
+
+            if (_interfaceCount != 0)
+            {
+                writer.WriteToTranslation(" : ");
+
+                for (var i = 0; ;)
+                {
+                    _interfaces[i].WriteTo(writer);
+
+                    ++i;
+
+                    if (i == _interfaceCount)
+                    {
+                        break;
+                    }
+
+                    writer.WriteToTranslation(", ");
+                }
+            }
+
             writer.WriteOpeningBraceToTranslation();
 
             for (var i = 0; ;)
