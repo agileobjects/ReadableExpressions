@@ -24,47 +24,34 @@
         {
             Content = content;
 
-            ClassExpression @class;
-
             switch (content.NodeType)
             {
                 case ExpressionType.Lambda:
-                    @class = new ClassExpression(this, content, settings);
-                    Classes = @class.ToReadOnlyCollection();
+                    Classes = new ClassExpression(this, content, settings).ToReadOnlyCollection();
                     break;
 
                 case ExpressionType.Block:
                     var block = (BlockExpression)content;
 
-                    if (GenerateSingleClass(block))
+                    if (!HasValidExpressions(block, out var isNestedBlocks))
                     {
-                        @class = new ClassExpression(this, block, settings);
-                        Classes = @class.ToReadOnlyCollection();
-                        break;
+                        throw InvalidBlockStructure();
                     }
 
-                    var expressions = block.Expressions;
-                    var elementCount = expressions.Count;
-                    var classes = new List<ClassExpression>(elementCount);
-                    var summaryLines = Enumerable<string>.EmptyArray;
+                    IEnumerable<ClassExpression> classes;
 
-                    for (var i = 0; i < elementCount; ++i)
+                    if (isNestedBlocks)
                     {
-                        var expression = expressions[i];
-
-                        if (expression.IsComment())
-                        {
-                            summaryLines = ((CommentExpression)expression).TextLines;
-                            continue;
-                        }
-
-                        @class = new ClassExpression(this, summaryLines, expression, settings);
-                        classes.Add(@class);
-
-                        summaryLines = Enumerable<string>.EmptyArray;
+                        classes = block
+                            .Expressions
+                            .SelectMany(exp => EnumerateClasses((BlockExpression)exp));
+                    }
+                    else
+                    {
+                        classes = EnumerateClasses(block);
                     }
 
-                    Classes = classes.ToReadOnlyCollection();
+                    Classes = classes.ToList().ToReadOnlyCollection();
                     break;
 
                 default:
@@ -73,16 +60,96 @@
             }
         }
 
-        private bool GenerateSingleClass(BlockExpression block)
+        #region Setup
+
+        private static bool HasValidExpressions(BlockExpression block, out bool isNestedBlocks)
+        {
+            const ExpressionType COMMENT = (ExpressionType)SourceCodeExpressionType.Comment;
+
+            isNestedBlocks = false;
+            var isCommentsAndMethods = false;
+            var previousExpressionType = default(ExpressionType);
+
+            foreach (var expression in block.Expressions)
+            {
+                var expressionType = expression.NodeType;
+
+                switch (expressionType)
+                {
+                    case ExpressionType.Block:
+                        if (isCommentsAndMethods ||
+                            HasValidExpressions((BlockExpression)expression, out isNestedBlocks))
+                        {
+                            return false;
+                        }
+
+                        isNestedBlocks = true;
+                        continue;
+
+                    case COMMENT:
+                    case ExpressionType.Lambda:
+                        if (isNestedBlocks)
+                        {
+                            return false;
+                        }
+
+                        isCommentsAndMethods = true;
+
+                        if (expressionType == COMMENT &&
+                            previousExpressionType != default &&
+                            previousExpressionType != ExpressionType.Lambda)
+                        {
+                            return false;
+                        }
+
+                        break;
+
+                    default:
+                        return false;
+                }
+
+                previousExpressionType = expressionType;
+            }
+
+            return true;
+        }
+
+        private IEnumerable<ClassExpression> EnumerateClasses(BlockExpression block)
         {
             if (_settings.GenerateSingleClass)
             {
-                return true;
+                yield return new ClassExpression(this, block, _settings);
+                yield break;
             }
 
-            return !block.Expressions.All(exp =>
-                exp.IsComment() || exp.NodeType == ExpressionType.Lambda);
+            var expressions = block.Expressions;
+            var elementCount = expressions.Count;
+            var summaryLines = Enumerable<string>.EmptyArray;
+
+            for (var i = 0; i < elementCount; ++i)
+            {
+                var expression = expressions[i];
+
+                if (expression.IsComment())
+                {
+                    summaryLines = ((CommentExpression)expression).TextLines;
+                    continue;
+                }
+
+                yield return new ClassExpression(this, summaryLines, expression, _settings);
+                summaryLines = Enumerable<string>.EmptyArray;
+            }
         }
+
+        private static NotSupportedException InvalidBlockStructure()
+        {
+            return new NotSupportedException(
+                "Source code can only be generated from BlockExpressions made up of " +
+                "LambdaExpressions with optional Comments, or BlockExpressions made " +
+                "up of LambdaExpressions with optional Comments");
+        }
+
+        #endregion
 
         internal SourceCodeExpression(
             IList<ClassExpressionBuilder> classBuilders,

@@ -12,7 +12,7 @@
 
     [NUnit.Framework.TestFixture]
 #endif
-    public class WhenGeneratingSourceCodeIncorrectly
+    public class WhenTranslatingToSourceCodeIncorrectly
     {
         [Fact]
         public void ShouldErrorIfNullCustomClassName()
@@ -96,6 +96,25 @@
             });
 
             methodNameEx.Message.ShouldContain("invalid method name");
+        }
+
+        [Fact]
+        public void ShouldErrorIfCommentAndLambdaBlockHasInvalidOrder()
+        {
+            var invalidBlockEx = Should.Throw<NotSupportedException>(() =>
+            {
+                var doNothingComment = Comment("NOTHIIIING");
+                var doNothing = Lambda<Action>(Default(typeof(void)));
+
+                var block = Block(
+                    doNothingComment,
+                    doNothingComment,
+                    doNothing);
+
+                block.ToSourceCode();
+            });
+
+            invalidBlockEx.Message.ShouldContain("LambdaExpressions with optional Comments");
         }
     }
 }
