@@ -24,13 +24,13 @@
 
         /// <summary>
         /// Configures the <see cref="ClassExpression"/> being built to implement the given
-        /// <paramref name="interface"/> .
+        /// <paramref name="interfaces"/> .
         /// </summary>
-        /// <param name="interface">
-        /// The type of interface the <see cref="ClassExpression"/> being built should implement.
+        /// <param name="interfaces">
+        /// The type of interfaces the <see cref="ClassExpression"/> being built should implement.
         /// </param>
         /// <returns>These <see cref="IClassExpressionSettings"/>, to support a fluent interface.</returns>
-        IClassExpressionSettings Implementing(Type @interface);
+        IClassExpressionSettings Implementing(params Type[] interfaces);
 
         /// <summary>
         /// Add a <see cref="MethodExpression"/> to the <see cref="ClassExpression"/> being built,

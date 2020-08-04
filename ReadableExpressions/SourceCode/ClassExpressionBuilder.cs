@@ -15,7 +15,7 @@
     {
         private readonly IList<MethodExpressionBuilder> _methodBuilders;
         private readonly IList<string> _summaryLines;
-        private IList<Type> _interfaceTypes;
+        private List<Type> _interfaceTypes;
 
         public ClassExpressionBuilder(string name, string summary)
         {
@@ -27,18 +27,20 @@
         public string Name { get; }
 
         public IClassExpressionSettings Implementing<TInterface>() where TInterface : class
-            => AddInterface(typeof(TInterface));
+            => Implementing(typeof(TInterface));
 
-        public IClassExpressionSettings Implementing(Type @interface)
-            => AddInterface(@interface);
+        public IClassExpressionSettings Implementing(params Type[] interfaces)
+            => AddInterfaces(interfaces);
 
-        private ClassExpressionBuilder AddInterface(Type interfaceType)
+        private ClassExpressionBuilder AddInterfaces(IEnumerable<Type> interfaceTypes)
         {
-            _interfaceTypes ??= new List<Type>();
-
-            if (!_interfaceTypes.Contains(interfaceType))
+            if (_interfaceTypes == null)
             {
-                _interfaceTypes.Add(interfaceType);
+                _interfaceTypes = new List<Type>(interfaceTypes);
+            }
+            else
+            {
+                _interfaceTypes.AddRange(interfaceTypes.Except(_interfaceTypes));
             }
 
             return this;

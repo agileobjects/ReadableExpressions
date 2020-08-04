@@ -180,11 +180,51 @@ namespace GeneratedExpressionCode
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldBuildAClassWithMultipleImplementationMethods()
+        {
+            var sayHello = Lambda<Func<string>>(Constant("Hello!"));
+            var return123 = Lambda<Func<int>>(Constant(123));
+
+            var translated = SourceCode(cfg => cfg
+                .WithClass(cls => cls
+                    .Implementing(typeof(IMessager), typeof(INumberSource))
+                    .WithMethod(sayHello)
+                    .WithMethod(return123)))
+                .ToSourceCode();
+
+            const string EXPECTED = @"
+using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+
+namespace GeneratedExpressionCode
+{
+    public class GeneratedExpressionClass : WhenBuildingSourceCode.IMessager, WhenBuildingSourceCode.INumberSource
+    {
+        public string GetMessage()
+        {
+            return ""Hello!"";
+        }
+
+        public int GetNumber()
+        {
+            return 123;
+        }
+    }
+}";
+            EXPECTED.ShouldCompile();
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Members
 
         public interface IMessager
         {
             string GetMessage();
+        }
+
+        public interface INumberSource
+        {
+            int GetNumber();
         }
 
         #endregion
