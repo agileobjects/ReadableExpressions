@@ -17,6 +17,7 @@
 
     internal class ExpressionAnalysis
     {
+        private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
         private ICollection<ParameterExpression> _accessedVariables;
         private IList<ParameterExpression> _inlineOutputVariables;
@@ -33,10 +34,8 @@
 
         protected ExpressionAnalysis(TranslationSettings settings)
         {
-            Settings = settings;
+            _settings = settings;
         }
-
-        protected TranslationSettings Settings { get; }
 
         #region Factory Method
 
@@ -372,7 +371,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-        VisitValue:
+            VisitValue:
             Visit(@goto.Value);
         }
 
@@ -426,7 +425,7 @@
                 }
             }
 
-            if (Settings.DeclareOutParamsInline)
+            if (_settings.DeclareOutParamsInline)
             {
                 for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
                 {

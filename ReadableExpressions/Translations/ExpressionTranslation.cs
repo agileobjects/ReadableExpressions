@@ -7,15 +7,14 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using AgileObjects.ReadableExpressions.SourceCode;
     using Initialisations;
     using Interfaces;
-    using SourceCode;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static ReadableExpressionConstants;
 
     internal class ExpressionTranslation : ITranslationContext
     {
@@ -255,7 +254,7 @@
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
 
-                case (ExpressionType)SourceCodeExpressionType.Comment:
+                case (ExpressionType)CommentExpressionType:
                     return new CommentTranslation((CommentExpression)expression, this);
 
                 default:

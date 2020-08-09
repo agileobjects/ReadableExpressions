@@ -64,6 +64,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visuali
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visualizers.Vs10.ObjectSource", "ReadableExpressions.Visualizers.Vs10.ObjectSource\ReadableExpressions.Visualizers.Vs10.ObjectSource.csproj", "{DA28DD2A-8D1B-4976-AD3C-69F80C1165E8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Build", "ReadableExpressions.Build\ReadableExpressions.Build.csproj", "{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -243,6 +245,14 @@ Global
 		{DA28DD2A-8D1B-4976-AD3C-69F80C1165E8}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{DA28DD2A-8D1B-4976-AD3C-69F80C1165E8}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA28DD2A-8D1B-4976-AD3C-69F80C1165E8}.Release|x86.Build.0 = Release|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Debug|x86.Build.0 = Debug|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Release|x86.ActiveCfg = Release|Any CPU
+		{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

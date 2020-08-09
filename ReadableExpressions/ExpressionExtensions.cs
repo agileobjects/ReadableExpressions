@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using SourceCode.Api;
     using Translations;
 #if NET35
     using LinqExpression = System.Linq.Expressions.Expression;
@@ -52,30 +51,6 @@
             var translation = new ExpressionTranslation(expression, settings);
 
             return translation.GetTranslation();
-        }
-
-        /// <summary>
-        /// Translates the given <paramref name="expression"/> to a complete source-code string,
-        /// formatted as one or more classes with one or more methods in a namespace.
-        /// </summary>
-        /// <param name="expression">The Expression to translate to source code.</param>
-        /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <remarks>
-        /// To create multiple classes, supply a BlockExpression directly containing multiple
-        /// LambdaExpressions. To generate a single class with multiple methods instead, use the
-        /// CreateSingleClass configuration option.
-        /// </remarks>
-        /// <returns>
-        /// The translated <paramref name="expression"/>, formatted as one or more classes with one
-        /// or more methods in a namespace.
-        /// </returns>
-        public static string ToSourceCode(
-            this Expression expression,
-            Func<ISourceCodeTranslationSettings, ISourceCodeTranslationSettings> configuration = null)
-        {
-            return expression?
-                .ToSourceCodeExpression(configuration)
-                .ToSourceCode();
         }
 
         internal static TranslationSettings GetTranslationSettings(
