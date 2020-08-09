@@ -14,7 +14,8 @@
     {
         /// <summary>
         /// Configures the <see cref="ClassExpression"/> being built to implement the given
-        /// <typeparamref name="TInterface"/> .
+        /// <typeparamref name="TInterface"/>. If a single configured Method matches a single
+        /// interface method declaration, it will be named after that interface method.
         /// </summary>
         /// <typeparam name="TInterface">
         /// The type of interface the <see cref="ClassExpression"/> being built should implement.
@@ -24,7 +25,8 @@
 
         /// <summary>
         /// Configures the <see cref="ClassExpression"/> being built to implement the given
-        /// <paramref name="interfaces"/> .
+        /// <paramref name="interfaces"/>. If a single configured Method matches a single
+        /// interface method declaration, it will be named after that interface method.
         /// </summary>
         /// <param name="interfaces">
         /// The type of interfaces the <see cref="ClassExpression"/> being built should implement.

@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
 {
     using System;
+    using System.Reflection;
     using ReadableExpressions.SourceCode;
 #if !NET35
     using Xunit;
@@ -105,6 +106,24 @@
         }
 
         [Fact]
+        public void ShouldErrorIfAmbiguousInterfacesImplemented()
+        {
+            var interfaceEx = Should.Throw<AmbiguousMatchException>(() =>
+            {
+                var getString = Lambda<Func<string>>(Default(typeof(string)));
+
+                SourceCode(cfg => cfg
+                    .WithClass(cls => cls
+                        .Implementing(typeof(IMessager), typeof(IRandomStringFactory))
+                        .WithMethod(getString)))
+                    .ToSourceCode();
+            });
+
+            interfaceEx.Message.ShouldContain("'(): string'");
+            interfaceEx.Message.ShouldContain("matches multiple interface methods");
+        }
+
+        [Fact]
         public void ShouldErrorIfNullMethodNameSpecified()
         {
             var methodNameEx = Should.Throw<ArgumentException>(() =>
@@ -165,5 +184,19 @@
             configEx.Message.ShouldContain("Duplicate method name");
             configEx.Message.ShouldContain("MyMethod");
         }
+
+        #region Helper Members
+
+        public interface IMessager
+        {
+            string GetMessage();
+        }
+
+        public interface IRandomStringFactory
+        {
+            string Generate();
+        }
+
+        #endregion
     }
 }
