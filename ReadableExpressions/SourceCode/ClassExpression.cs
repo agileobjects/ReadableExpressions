@@ -45,6 +45,7 @@
             TranslationSettings settings)
             : this(parent, summaryLines, settings)
         {
+            Interfaces = Enumerable<Type>.EmptyReadOnlyCollection;
             _body = body;
 
             var method = MethodExpression.For(this, body, settings);
@@ -62,6 +63,7 @@
             TranslationSettings settings)
             : this(parent, Enumerable<string>.EmptyArray, settings)
         {
+            Interfaces = Enumerable<Type>.EmptyReadOnlyCollection;
             _body = body;
             _methods = new List<MethodExpression>();
             _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
