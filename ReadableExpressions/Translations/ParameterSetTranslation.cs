@@ -18,6 +18,9 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
+    /// <summary>
+    /// An <see cref="ITranslatable"/> which translates a set of Expressions representing parameters.
+    /// </summary>
     internal class ParameterSetTranslation : ITranslatable
     {
         private const int _splitArgumentsThreshold = 3;
@@ -28,6 +31,14 @@
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParameterSetTranslation"/> class with a single
+        /// <see cref="IParameter"/>.
+        /// </summary>
+        /// <param name="parameter">The single <see cref="IParameter"/> to translate.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the  Expression translation's context.
+        /// </param>
         public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
             _settings = context.Settings;
@@ -265,12 +276,21 @@
 
         #endregion
 
+        /// <inheritdoc />
         public int TranslationSize { get; private set; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
+        /// <summary>
+        /// Gets the number of parameters described by this <see cref="ParameterSetTranslation"/>.
+        /// </summary>
         public int Count { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="ParameterSetTranslation"/> describes an
+        /// empty set of parameters.
+        /// </summary>
         public bool None => Count == 0;
 
         public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];

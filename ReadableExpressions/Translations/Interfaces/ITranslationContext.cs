@@ -7,7 +7,10 @@
     using System.Linq.Expressions;
 #endif
 
-    internal interface ITranslationContext
+    /// <summary>
+    /// Implementing classes will provide information about an Expression translation's context.
+    /// </summary>
+    public interface ITranslationContext
     {
         /// <summary>
         /// Gets the <see cref="TranslationSettings"/> to use for translation in this context.
@@ -103,6 +106,11 @@
         /// </returns>
         int? GetUnnamedVariableNumberOrNull(ParameterExpression variable);
 
+        /// <summary>
+        /// Gets the <see cref="ITranslation"/> for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression for which to get an <see cref="ITranslation"/>.</param>
+        /// <returns>The <see cref="ITranslation"/> for the given <paramref name="expression"/>.</returns>
         ITranslation GetTranslationFor(Expression expression);
     }
 }

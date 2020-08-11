@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Interfaces;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;

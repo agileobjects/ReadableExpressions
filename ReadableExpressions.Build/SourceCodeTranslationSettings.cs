@@ -10,7 +10,7 @@
         IClassTranslationSettings,
         IMethodTranslationSettings
     {
-        public static readonly SourceCodeTranslationSettings Default = Create();
+        public new static readonly SourceCodeTranslationSettings Default = Create();
 
         #region Factory Methods
 

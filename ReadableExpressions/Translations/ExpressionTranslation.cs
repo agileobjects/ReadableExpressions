@@ -254,7 +254,7 @@
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
 
-                case (ExpressionType)CommentExpressionType:
+                case (ExpressionType)ExpressionTypeComment:
                     return new CommentTranslation((CommentExpression)expression, this);
 
                 default:

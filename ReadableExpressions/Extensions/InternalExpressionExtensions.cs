@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using SourceCode;
 #if NET35
     using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -8,10 +7,11 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static ReadableExpressionConstants;
 
     internal static class InternalExpressionExtensions
     {
-        public static bool HasReturnType(this Expression expression) 
+        public static bool HasReturnType(this Expression expression)
             => expression.Type != typeof(void);
 
         public static bool IsReturnable(this Expression expression)
@@ -61,6 +61,6 @@
             => block.HasReturnType() && block.Result.IsReturnable();
 
         public static bool IsComment(this Expression expression)
-            => expression.NodeType == (ExpressionType)SourceCodeExpressionType.Comment;
+            => expression.NodeType == ExpressionTypeComment;
     }
 }

@@ -1,5 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
+
     /// <summary>
     /// Provides constant values used by ReadableExpressions. This type is not intended to be used
     /// by your code.
@@ -9,6 +15,6 @@
         /// <summary>
         /// Gets the numeric value used for a <see cref="CommentExpression"/>'s ExpressionType.
         /// </summary>
-        public const int CommentExpressionType = 1004;
+        public const ExpressionType ExpressionTypeComment = (ExpressionType)1004;
     }
 }

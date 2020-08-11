@@ -30,6 +30,6 @@
         /// <summary>
         /// 1004. A source code comment.
         /// </summary>
-        Comment = CommentExpressionType
+        Comment = ExpressionTypeComment
     }
 }

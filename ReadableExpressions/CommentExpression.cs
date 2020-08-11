@@ -31,7 +31,7 @@
         /// Gets the ExpressionType value (1004) indicating the type of this
         /// <see cref="CommentExpression"/> as an ExpressionType.
         /// </summary>
-        public override ExpressionType NodeType => (ExpressionType)CommentExpressionType;
+        public override ExpressionType NodeType => (ExpressionType)ExpressionTypeComment;
 
         /// <summary>
         /// Gets the type of this <see cref="CommentExpression"/> - typeof(string).

@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 #if NET35
     using static Microsoft.Scripting.Ast.Expression;
 #else

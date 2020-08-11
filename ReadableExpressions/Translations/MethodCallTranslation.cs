@@ -13,7 +13,6 @@
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
-    using ReadableExpressions.SourceCode;
     using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -118,7 +117,11 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
-        public static ITranslation For(MethodExpression methodExpr, ITranslationContext context)
+        public static ITranslation For<TParameterExpression>(
+            IMethod method,
+            ICollection<TParameterExpression> methodParameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
         {
             var thisTranslation = new FixedValueTranslation(
                 MemberAccess,
@@ -127,10 +130,8 @@
                 TokenType.Keyword,
                 context);
 
-            var method = methodExpr.Method;
-
             var parameters = ParameterSetTranslation
-                .For(method, methodExpr.Parameters, context)
+                .For(method, methodParameters, context)
                 .WithParentheses();
 
             return new StandardMethodCallTranslation(

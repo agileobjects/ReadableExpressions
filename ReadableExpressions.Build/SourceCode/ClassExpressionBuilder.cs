@@ -9,6 +9,7 @@
     using System.Linq.Expressions;
 #endif
     using Api;
+    using Extensions;
 
     internal class ClassExpressionBuilder : IClassExpressionSettings
     {
