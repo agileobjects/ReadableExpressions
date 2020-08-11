@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
     using System.Collections.Generic;
@@ -7,6 +7,7 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using NetStandardPolyfills;
+    using ReadableExpressions.Build;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -187,7 +188,7 @@ namespace GeneratedExpressionCode
 
             const string EXPECTED = @"
 using System.Text.RegularExpressions;
-using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+using AgileObjects.ReadableExpressions.UnitTests.Build;
 
 namespace GeneratedExpressionCode
 {
@@ -224,7 +225,7 @@ namespace GeneratedExpressionCode
             var translated = lambda.ToSourceCode();
 
             const string EXPECTED = @"
-using AgileObjects.ReadableExpressions.UnitTests.SourceCode;
+using AgileObjects.ReadableExpressions.UnitTests.Build;
 
 namespace GeneratedExpressionCode
 {

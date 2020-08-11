@@ -1,6 +1,7 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
+    using ReadableExpressions.Build;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;

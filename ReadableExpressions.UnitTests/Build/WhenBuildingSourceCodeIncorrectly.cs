@@ -1,16 +1,15 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
     using System.Reflection;
-    using ReadableExpressions.SourceCode;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
-    using static ReadableExpression;
+    using static ReadableExpressions.Build.ReadableSourceCodeExpression;
 #else
     using Fact = NUnit.Framework.TestAttribute;
     using static Microsoft.Scripting.Ast.Expression;
-    using static ReadableExpression;
+    using static ReadableExpressions.Build.ReadableSourceCodeExpression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -81,7 +80,7 @@
             {
                 var doNothing = Lambda<Action>(Default(typeof(void)));
 
-                ReadableExpression.SourceCode(cfg => cfg
+                SourceCode(cfg => cfg
                     .WithClass("MyClass", cls => cls
                         .WithMethod(doNothing))
                     .WithClass("MyClass", cls => cls

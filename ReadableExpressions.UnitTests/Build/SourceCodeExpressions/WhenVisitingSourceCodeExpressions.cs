@@ -1,12 +1,13 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build.SourceCodeExpressions
 {
     using System.Collections.Generic;
-    using ReadableExpressions.SourceCode;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using ReadableExpressions.Build;
+    using ReadableExpressions.Build.SourceCode;
 #if !NET35
     using Xunit;
 #else
@@ -21,7 +22,7 @@
         {
             var returnOneThousand = CreateLambda(() => 1000);
 
-            var sourceCode = ReadableExpression.SourceCode(returnOneThousand);
+            var sourceCode = ReadableSourceCodeExpression.SourceCode(returnOneThousand);
 
             var visitor = new VisitationHelper();
 

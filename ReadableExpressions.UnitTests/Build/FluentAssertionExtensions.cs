@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.SourceCode
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
 #if FEATURE_COMPILATION
     using System;
