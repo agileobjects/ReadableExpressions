@@ -1,12 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode
 {
     using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
-    using Extensions;
+    using AgileObjects.ReadableExpressions.Extensions;
 
     internal class MethodExpressionBuilder
     {

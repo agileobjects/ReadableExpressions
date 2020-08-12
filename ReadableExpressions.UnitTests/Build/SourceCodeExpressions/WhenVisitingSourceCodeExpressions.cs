@@ -1,20 +1,12 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build.SourceCodeExpressions
+﻿#if FEATURE_BUILD
+namespace AgileObjects.ReadableExpressions.UnitTests.Build.SourceCodeExpressions
 {
     using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
     using ReadableExpressions.Build;
     using ReadableExpressions.Build.SourceCode;
-#if !NET35
     using Xunit;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
 
-    [NUnit.Framework.TestFixture]
-#endif
     public class WhenVisitingSourceCodeExpressions : TestClassBase
     {
         [Fact]
@@ -77,3 +69,4 @@
         #endregion
     }
 }
+#endif

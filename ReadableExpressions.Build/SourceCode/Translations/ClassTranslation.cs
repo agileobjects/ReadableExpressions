@@ -2,11 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
 

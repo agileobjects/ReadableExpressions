@@ -1,19 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode.Translations
 {
     using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
     using Interfaces;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
-#if NET35
-    using static Microsoft.Scripting.Ast.ExpressionType;
-#else
     using static System.Linq.Expressions.ExpressionType;
-#endif
     using static SourceCodeExpressionType;
 
     internal class SourceCodeExpressionTranslation :

@@ -2,11 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.ObjectModel;
     using System.Diagnostics;
 #if NET35
     using System.Linq;
-    using Microsoft.Scripting.Utils;
 #endif
 
     internal static class InternalEnumerableExtensions
@@ -14,22 +12,6 @@
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
 
-        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T item)
-            => new[] { item }.ToReadOnlyCollection();
-
-        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this List<T> items)
-            => new ReadOnlyCollection<T>(items);
-
-        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this T[] items)
-            => new ReadOnlyCollection<T>(items);
-
-#if FEATURE_READONLYDICTIONARY
-        public static ReadOnlyDictionary<TKey, TValue> ToReadOnlyDictionary<TKey, TValue>(
-            this IDictionary<TKey, TValue> dictionary)
-        {
-            return new ReadOnlyDictionary<TKey, TValue>(dictionary);
-        }
-#endif
         public static TResult[] ProjectToArray<TItem, TResult>(
             this IList<TItem> items,
             Func<TItem, TResult> projector)

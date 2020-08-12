@@ -1,4 +1,5 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
+﻿#if FEATURE_BUILD
+namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
 #if FEATURE_COMPILATION
     using System;
@@ -49,3 +50,4 @@
         }
     }
 }
+#endif

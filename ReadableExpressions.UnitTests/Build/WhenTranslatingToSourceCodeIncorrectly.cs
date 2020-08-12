@@ -1,18 +1,12 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
+﻿#if FEATURE_BUILD
+namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
     using ReadableExpressions.Build;
-#if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
     using static ReadableExpression;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
-    using static ReadableExpression;
 
-    [NUnit.Framework.TestFixture]
-#endif
     public class WhenTranslatingToSourceCodeIncorrectly
     {
         [Fact]
@@ -180,3 +174,4 @@
         }
     }
 }
+#endif

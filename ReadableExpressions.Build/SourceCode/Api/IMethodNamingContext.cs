@@ -1,11 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode.Api
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
 
     /// <summary>
     /// Provides information with which to name a <see cref="MethodExpression"/>.

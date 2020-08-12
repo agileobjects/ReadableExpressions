@@ -4,11 +4,8 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
+    using AgileObjects.ReadableExpressions.Extensions;
     using Extensions;
     using Translations;
 
@@ -77,7 +74,7 @@
                 switch (expressionType)
                 {
                     case ExpressionType.Block:
-                        if (isCommentsAndMethods || 
+                        if (isCommentsAndMethods ||
                            !HasValidExpressions((BlockExpression)expression, out isNestedBlocks))
                         {
                             return false;
@@ -124,7 +121,7 @@
 
             var expressions = block.Expressions;
             var elementCount = expressions.Count;
-            var summaryLines = Enumerable<string>.EmptyArray;
+            var summaryLines = Extensions.Enumerable<string>.EmptyArray;
 
             for (var i = 0; i < elementCount; ++i)
             {
@@ -137,7 +134,7 @@
                 }
 
                 yield return new ClassExpression(this, summaryLines, expression, _settings);
-                summaryLines = Enumerable<string>.EmptyArray;
+                summaryLines = Extensions.Enumerable<string>.EmptyArray;
             }
         }
 

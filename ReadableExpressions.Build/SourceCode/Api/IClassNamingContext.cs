@@ -2,11 +2,7 @@
 {
     using System;
     using System.Collections.ObjectModel;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
 
     /// <summary>
     /// Provides information with which to name a <see cref="ClassExpression"/>.

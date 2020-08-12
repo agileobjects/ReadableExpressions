@@ -2,17 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
-    using Extensions;
-#if NET35
-    using static Microsoft.Scripting.Ast.Expression;
-#else
+    using AgileObjects.ReadableExpressions.Extensions;
     using static System.Linq.Expressions.Expression;
-#endif
 
     internal static class SourceCodeExtensions
     {

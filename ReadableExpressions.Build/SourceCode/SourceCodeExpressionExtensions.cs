@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode
 {
+    using AgileObjects.ReadableExpressions.Extensions;
     using Api;
-    using Extensions;
 
     internal static class SourceCodeExpressionExtensions
     {

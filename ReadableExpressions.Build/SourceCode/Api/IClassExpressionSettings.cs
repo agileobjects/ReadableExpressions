@@ -1,11 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode.Api
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
 
     /// <summary>
     /// Provides configuration options to control aspects of <see cref="ClassExpression"/> creation.

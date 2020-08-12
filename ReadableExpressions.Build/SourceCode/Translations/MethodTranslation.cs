@@ -1,11 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Build.SourceCode.Translations
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Interfaces;
     using ReadableExpressions.Translations.Reflection;

@@ -1,4 +1,5 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
+﻿#if FEATURE_BUILD
+namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
     using System.Collections.Generic;
@@ -8,15 +9,9 @@
     using System.Text.RegularExpressions;
     using NetStandardPolyfills;
     using ReadableExpressions.Build;
-#if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
 
-    [NUnit.Framework.TestFixture]
-#endif
     public class WhenGeneratingSourceCodeUsings : TestClassBase
     {
         [Fact]
@@ -436,3 +431,4 @@ namespace GeneratedExpressionCode
         #endregion
     }
 }
+#endif

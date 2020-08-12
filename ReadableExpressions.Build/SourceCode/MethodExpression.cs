@@ -3,13 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
     using Api;
     using Extensions;
+    using ReadableExpressions.Extensions;
     using ReadableExpressions.Translations.Reflection;
 
     /// <summary>
@@ -53,8 +50,8 @@
             }
             else
             {
-                _parameters = Enumerable<MethodParameterExpression>.EmptyList;
-                parameters = Enumerable<IParameter>.EmptyList;
+                _parameters = Extensions.Enumerable<MethodParameterExpression>.EmptyList;
+                parameters = Extensions.Enumerable<IParameter>.EmptyList;
             }
 
             _method = new MethodExpressionMethod(
@@ -76,7 +73,7 @@
             return For(
                 parent,
                 name: null,
-                summaryLines: Enumerable<string>.EmptyArray,
+                summaryLines: ReadableExpressions.Extensions.Enumerable<string>.EmptyArray,
                 expression,
                 settings,
                 isPublic);
@@ -269,7 +266,7 @@
             public IMethod GetGenericMethodDefinition() => null;
 
             public Type[] GetGenericArguments()
-                => Enumerable<Type>.EmptyArray;
+                => ReadableExpressions.Extensions.Enumerable<Type>.EmptyArray;
 
             public IList<IParameter> GetParameters() => _parameters;
 

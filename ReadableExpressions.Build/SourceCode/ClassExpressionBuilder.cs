@@ -3,13 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
     using System.Linq.Expressions;
-#endif
+    using AgileObjects.ReadableExpressions.Extensions;
     using Api;
-    using Extensions;
 
     internal class ClassExpressionBuilder : IClassExpressionSettings
     {

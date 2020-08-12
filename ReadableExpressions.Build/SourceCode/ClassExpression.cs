@@ -3,14 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
-#if NET35
-    using Microsoft.Scripting.Ast;
-    using Microsoft.Scripting.Utils;
-#else
     using System.Linq.Expressions;
-#endif
     using Api;
     using Extensions;
+    using ReadableExpressions.Extensions;
 
     /// <summary>
     /// Represents a class in a piece of source code.
@@ -34,7 +30,7 @@
             SourceCodeExpression parent,
             Expression body,
             SourceCodeTranslationSettings settings)
-            : this(parent, Enumerable<string>.EmptyArray, body, settings)
+            : this(parent, Extensions.Enumerable<string>.EmptyArray, body, settings)
         {
         }
 
@@ -45,7 +41,7 @@
             SourceCodeTranslationSettings settings)
             : this(parent, summaryLines, settings)
         {
-            Interfaces = Enumerable<Type>.EmptyReadOnlyCollection;
+            Interfaces = Extensions.Enumerable<Type>.EmptyReadOnlyCollection;
             _body = body;
 
             var method = MethodExpression.For(this, body, settings);
@@ -61,9 +57,9 @@
             SourceCodeExpression parent,
             BlockExpression body,
             SourceCodeTranslationSettings settings)
-            : this(parent, Enumerable<string>.EmptyArray, settings)
+            : this(parent, Extensions.Enumerable<string>.EmptyArray, settings)
         {
-            Interfaces = Enumerable<Type>.EmptyReadOnlyCollection;
+            Interfaces = Extensions.Enumerable<Type>.EmptyReadOnlyCollection;
             _body = body;
             _methods = new List<MethodExpression>();
             _methodsByReturnType = new Dictionary<Type, List<MethodExpression>>();
@@ -89,7 +85,7 @@
 
             Interfaces = interfaceTypes != null
                 ? new ReadOnlyCollection<Type>(interfaceTypes)
-                : Enumerable<Type>.EmptyReadOnlyCollection;
+                : Extensions.Enumerable<Type>.EmptyReadOnlyCollection;
 
             var methodCount = methodBuilders.Count;
 

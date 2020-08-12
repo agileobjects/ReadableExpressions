@@ -2,8 +2,8 @@
 {
     using System.Linq;
     using System.Reflection;
+    using AgileObjects.ReadableExpressions.Extensions;
     using Api;
-    using Extensions;
     using NetStandardPolyfills;
 
     internal static class ClassExpressionExtensions
