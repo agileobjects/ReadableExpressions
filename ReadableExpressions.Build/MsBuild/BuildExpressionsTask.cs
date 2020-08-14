@@ -1,8 +1,12 @@
 ﻿// ReSharper disable once CheckNamespace
 namespace ReBuild
 {
+    using System;
+    using AgileObjects.ReadableExpressions.Build.Compilation;
     using AgileObjects.ReadableExpressions.Build.Configuration;
+    using AgileObjects.ReadableExpressions.Build.Logging;
     using AgileObjects.ReadableExpressions.Build.SourceCode;
+    using static AgileObjects.ReadableExpressions.Build.BuildConstants;
     using MsBuildTask = Microsoft.Build.Utilities.Task;
 
     /// <summary>
@@ -10,23 +14,39 @@ namespace ReBuild
     /// </summary>
     public class BuildExpressionsTask : MsBuildTask
     {
+        private readonly ILogger _logger;
+        private readonly IConfigManager _configManager;
+        private readonly ICompiler _compiler;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BuildExpressionsTask"/> class.
         /// </summary>
         public BuildExpressionsTask()
             : this(
+                new MsBuildTaskLogger(),
 #if NETFRAMEWORK
-                new NetFrameworkConfigManager()
+                new NetFrameworkConfigManager(),
 #else
-                new NetStandardConfigManager()
+                new NetStandardConfigManager(),
+#endif
+#if NETFRAMEWORK
+                new NetFrameworkCompiler()
+#else
+                null
 #endif
                 )
         {
+            ((MsBuildTaskLogger)_logger).SetTask(this);
         }
 
-        internal BuildExpressionsTask(IConfigManager configManager)
+        internal BuildExpressionsTask(
+            ILogger logger,
+            IConfigManager configManager,
+            ICompiler compiler)
         {
-            ConfigManager = configManager;
+            _logger = logger;
+            _configManager = configManager;
+            _compiler = compiler;
         }
 
         /// <summary>
@@ -35,8 +55,6 @@ namespace ReBuild
         /// </summary>
         public string ContentRoot { get; set; }
 
-        internal IConfigManager ConfigManager { get; }
-
         /// <summary>
         /// Generates a source code file from a <see cref="SourceCodeExpression"/>.
         /// </summary>
@@ -44,17 +62,39 @@ namespace ReBuild
         {
             try
             {
-                var config = ConfigManager.GetConfigOrNull(ContentRoot);
+                var config = _configManager
+                    .GetConfigOrNull(ContentRoot, out var configFile);
 
                 if (config == null)
                 {
-                    return false;
+                    _logger.Info($"Config file '{_configManager.ConfigFileName}' could not be found");
+                    return true;
+                }
+
+                if (config.Empty)
+                {
+                    _configManager.SetDefaults(configFile);
+                    config.InputFile = DefaultInputFile;
+                    config.OutputFile = DefaultOutputFile;
+                }
+
+                var compilationResult = _compiler.Compile(config.InputFile);
+
+                if (compilationResult.Failed)
+                {
+                    _logger.Error("Expression compilation failed:");
+
+                    foreach (var error in compilationResult.Errors)
+                    {
+                        _logger.Error(error);
+                    }
                 }
 
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.Error(ex);
                 return false;
             }
         }
