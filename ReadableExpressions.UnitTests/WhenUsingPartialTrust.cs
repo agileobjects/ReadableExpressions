@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System;
     using System.Security;
     using System.Security.Policy;
+    using Common;
     using Microsoft.CSharp.RuntimeBinder;
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -89,7 +90,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var intVariable = Variable(typeof(int), "i");
             var assignment = Assign(intVariable, Constant(0));
-            var translated = TestClassBase.ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("i = 0");
         }
@@ -122,7 +123,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var intVariable = Variable(typeof(int), "i");
             var intIsLong = TypeEqual(intVariable, typeof(long));
-            var translated = TestClassBase.ToReadableString(intIsLong);
+            var translated = intIsLong.ToReadableString();
 
             translated.ShouldBe("i TypeOf typeof(long)");
         }
@@ -131,7 +132,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var objectVariable = Variable(typeof(object), "o");
             var objectIsString = TypeEqual(objectVariable, typeof(string));
-            var translated = TestClassBase.ToReadableString(objectIsString);
+            var translated = objectIsString.ToReadableString();
 
             translated.ShouldBe("o is string");
         }

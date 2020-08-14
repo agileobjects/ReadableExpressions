@@ -1,11 +1,10 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Common
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using NetStandardPolyfills;
-    using ReadableExpressions.Extensions;
 
     public static class FluentAssertionExtensions
     {
@@ -396,8 +395,8 @@
             if (!(actual is TExpected))
             {
                 Asplode(
-                    "An object of type " + typeof(TExpected).GetFriendlyName(),
-                    actual.GetType().GetFriendlyName());
+                    "An object of type " + typeof(TExpected).Name,
+                    actual.GetType().Name);
             }
         }
 

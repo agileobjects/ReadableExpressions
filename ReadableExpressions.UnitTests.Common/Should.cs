@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AgileObjects.ReadableExpressions.UnitTests
+namespace AgileObjects.ReadableExpressions.UnitTests.Common
 {
     public static class Should
     {

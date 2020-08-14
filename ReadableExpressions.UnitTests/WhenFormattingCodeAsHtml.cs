@@ -6,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
+    using Common;
     using NetStandardPolyfills;
     using Visualizers.ObjectSource.Formatting;
     using Xunit;

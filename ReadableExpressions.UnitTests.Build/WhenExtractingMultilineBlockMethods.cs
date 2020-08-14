@@ -1,7 +1,7 @@
-﻿#if FEATURE_BUILD
-namespace AgileObjects.ReadableExpressions.UnitTests.Build
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
+    using Common;
     using ReadableExpressions.Build;
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -253,4 +253,3 @@ namespace GeneratedExpressionCode
         }
     }
 }
-#endif

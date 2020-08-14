@@ -3,8 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <LangVersion>8.0</LangVersion>
-    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests</AssemblyName>
-    <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.Build</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.UnitTests.Build</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
     <NoWarn>0649;1701;1702</NoWarn>
@@ -12,12 +12,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TRACE;FEATURE_EF;FEATURE_PARTIAL_TRUST;FEATURE_DYNAMIC;FEATURE_HTML;FEATURE_COMPILATION</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.6.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -28,10 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.Build\ReadableExpressions.Build.csproj" />
     <ProjectReference Include="..\ReadableExpressions.UnitTests.Common\ReadableExpressions.UnitTests.Common.csproj" />
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
-    <ProjectReference Include="..\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj" />
-    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 
 </Project>

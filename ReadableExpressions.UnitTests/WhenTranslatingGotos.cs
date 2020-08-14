@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -44,7 +45,7 @@
                 labelTwo,
                 writeTwo.Body);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 if (i == 1)
@@ -83,7 +84,7 @@ Console.Write(""Two"");
 
             var ifTrueGoto = IfThen(Constant(true), gotoBlock);
 
-            var translated = ToReadableString(ifTrueGoto);
+            var translated = ifTrueGoto.ToReadableString();
 
             const string EXPECTED = @"
 if (true)
@@ -113,7 +114,7 @@ if (true)
             var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
-            var translated = ToReadableString(gotoLambda);
+            var translated = gotoLambda.ToReadableString();
 
             const string EXPECTED = @"
 i =>
@@ -147,7 +148,7 @@ i =>
             var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
             gotoLambda.Compile();
 
-            var translated = ToReadableString(gotoLambda);
+            var translated = gotoLambda.ToReadableString();
 
             const string EXPECTED = @"
 i =>
@@ -181,7 +182,7 @@ i =>
                 ifLessThanOneReturnTrue,
                 Label(returnLabelTarget, Constant(false)));
 
-            var translated = ToReadableString(testBlock);
+            var translated = testBlock.ToReadableString();
 
             const string EXPECTED = @"
 if (i < 1)
@@ -227,7 +228,7 @@ return
     return i;
 };";
 
-            var translated = ToReadableString(returnBlock);
+            var translated = returnBlock.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -264,7 +265,7 @@ return
 
     return i;
 };";
-            var translated = ToReadableString(returnBlock);
+            var translated = returnBlock.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

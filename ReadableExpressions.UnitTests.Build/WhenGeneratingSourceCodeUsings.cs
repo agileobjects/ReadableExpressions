@@ -1,5 +1,4 @@
-﻿#if FEATURE_BUILD
-namespace AgileObjects.ReadableExpressions.UnitTests.Build
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     using System;
     using System.Collections.Generic;
@@ -7,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests.Build
     using System.Linq;
     using System.Text;
     using System.Text.RegularExpressions;
+    using Common;
     using NetStandardPolyfills;
     using ReadableExpressions.Build;
     using Xunit;
@@ -431,4 +431,3 @@ namespace GeneratedExpressionCode
         #endregion
     }
 }
-#endif

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -29,7 +30,7 @@
 
             var longArgumentListBlock = Block(new[] { helperVariable }, helperAssignment);
 
-            var translated = ToReadableString(longArgumentListBlock);
+            var translated = longArgumentListBlock.ToReadableString();
 
             const string EXPECTED = @"
 var helper = new HelperClass(
@@ -57,7 +58,7 @@ var helper = new HelperClass(
                 intVariable,
                 intVariable);
 
-            var translated = ToReadableString(intsMethodCall);
+            var translated = intsMethodCall.ToReadableString();
 
             const string EXPECTED = @"
 helper.GiveMeFourInts(
@@ -79,7 +80,7 @@ helper.GiveMeFourInts(
             var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
             var intsMethodCall = Call(helperVariable, intsMethod, longVariable, longVariable, longVariable);
 
-            var translated = ToReadableString(intsMethodCall);
+            var translated = intsMethodCall.ToReadableString();
 
             const string EXPECTED = @"
 helper.GiveMeSomeInts(
@@ -99,7 +100,7 @@ helper.GiveMeSomeInts(
 
             var longArgumentListBlock = Block(new[] { longVariable, threeIntsAction }, threeIntsCall);
 
-            var translated = ToReadableString(longArgumentListBlock);
+            var translated = longArgumentListBlock.ToReadableString();
 
             const string EXPECTED = @"
 int thisVariableReallyHasAVeryLongNameIndeed;
@@ -120,7 +121,7 @@ threeIntsAction.Invoke(
                     ? veryLongNamedVariable * veryLongNamedVariable
                     : veryLongNamedVariable * veryLongNamedVariable * veryLongNamedVariable);
 
-            var translated = ToReadableString(longTernary);
+            var translated = longTernary.ToReadableString();
 
             const string EXPECTED = @"
 veryLongNamedVariable => (veryLongNamedVariable > 10)
@@ -140,7 +141,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
                         : veryLongNamedVariable - veryLongNamedVariable
                     : veryLongNamedVariable * veryLongNamedVariable + veryLongNamedVariable);
 
-            var translated = ToReadableString(longTernary);
+            var translated = longTernary.ToReadableString();
 
             const string EXPECTED = @"
 veryLongNamedVariable => (veryLongNamedVariable > 10)
@@ -165,7 +166,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
 
             var ternary = Condition(oneEqualsTwo, defaultInt, threeIntsCall);
 
-            var translated = ToReadableString(ternary);
+            var translated = ternary.ToReadableString();
 
             const string EXPECTED = @"
 (1 == 2)
@@ -189,7 +190,7 @@ veryLongNamedVariable => (veryLongNamedVariable > 10)
 
             var assignment = Assign(intVariable, threeIntsCall);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             const string EXPECTED = @"
 value = threeIntsFunc.Invoke(
@@ -211,7 +212,7 @@ value = threeIntsFunc.Invoke(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, longArgument, longArgument, longArgument);
 
-            var translated = ToReadableString(creation, s => s.IndentUsing("  "));
+            var translated = creation.ToReadableString(s => s.IndentUsing("  "));
 
             const string EXPECTED = @"
 new 
@@ -240,7 +241,7 @@ new
                 nameAssignment,
                 getNameCall);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 string name;
@@ -261,7 +262,7 @@ return getName.Invoke();";
 
             var block = Block(new[] { intsVariable }, assignment);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             translated.ShouldBe("IEnumerable<int> ints = new int[2];");
         }
@@ -284,7 +285,7 @@ return getName.Invoke();";
             var assignResult = Assign(resultVariable, newArrayOrList);
             var assignBlock = Block(new[] { resultVariable }, assignResult);
 
-            var translated = ToReadableString(assignBlock);
+            var translated = assignBlock.ToReadableString();
 
             translated.ShouldBe("ICollection<int?> result = (i == 1) ? new int?[0] : new List<int?>();");
         }
@@ -308,7 +309,7 @@ return getName.Invoke();";
                 Block(writeNameTwiceAssignment),
                 Block(nameAssignment, writeNameTwiceCall));
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 string name;
@@ -340,7 +341,7 @@ writeNameTwice.Invoke();";
                 variable1Block,
                 variable2Block);
 
-            var translated = ToReadableString(assign1Or2);
+            var translated = assign1Or2.ToReadableString();
 
             const string EXPECTED = @"
 if (true)
@@ -368,7 +369,7 @@ else
             var tryCatch = TryCatch(assignmentBlock, catchBlock);
             var tryCatchBlock = Block(new[] { intVariable }, tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 int number;
@@ -434,7 +435,7 @@ catch
             var overallCatchBlock = Catch(typeof(Exception), Constant(-1L));
             var overallTryCatch = TryCatch(overallBlock, overallCatchBlock);
 
-            var translated = ToReadableString(overallTryCatch);
+            var translated = overallTryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -505,7 +506,7 @@ WhenFormattingCode.JoinStrings(
     ""k"",
     ""]"")";
 
-            var translated = ToReadableString(stringJoiner.Body);
+            var translated = stringJoiner.Body.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -533,7 +534,7 @@ if (WhenFormattingCode.JoinStrings(
     ""]"") != string.Empty)
 {
 }";
-            var translated = ToReadableString(ifTestDoNothing);
+            var translated = ifTestDoNothing.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -542,7 +543,7 @@ if (WhenFormattingCode.JoinStrings(
         public void ShouldTranslateAnExtensionExpressionType()
         {
             var extension = new ExtensionExpression();
-            var translated = ToReadableString(extension);
+            var translated = extension.ToReadableString();
 
             extension.ToString().ShouldBe(translated);
         }
@@ -551,7 +552,7 @@ if (WhenFormattingCode.JoinStrings(
         public void ShouldTranslateAnUnknownExpressionType()
         {
             var unknown = new UnknownExpression();
-            var translated = ToReadableString(unknown);
+            var translated = unknown.ToReadableString();
 
             unknown.ToString().ShouldBe(translated);
         }
@@ -574,7 +575,7 @@ if (WhenFormattingCode.JoinStrings(
                 emptyString.Body,
                 intToStringCall);
 
-            var translated = ToReadableString(toStringOrEmptyString);
+            var translated = toStringOrEmptyString.ToReadableString();
 
             translated.ShouldBe("(i == 1) ? string.Empty : ((int)o).ToString()");
         }
@@ -590,7 +591,7 @@ if (WhenFormattingCode.JoinStrings(
             var stringArrayVariable = Variable(typeof(string[]), "strings");
             var assignment = Assign(stringArrayVariable, intArrayConverter.Body);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe(
                 "strings = ((int[])ints)" +
@@ -611,7 +612,7 @@ if (WhenFormattingCode.JoinStrings(
             const string EXPECTED = "strings.Select((str, i) => string.Join(i + \": \", str)).ToArray()";
 #endif
 
-            var translated = ToReadableString(stringsConverter.Body);
+            var translated = stringsConverter.Body.ToReadableString();
 
             translated.ShouldBe(EXPECTED);
         }
@@ -628,7 +629,7 @@ if (WhenFormattingCode.JoinStrings(
             var assignInvokeResult = Assign(result, lambdaInvocation);
 
             const string EXPECTED = "result = ((a, b) => a + b).Invoke(1, 2)";
-            var translated = ToReadableString(assignInvokeResult);
+            var translated = assignInvokeResult.ToReadableString();
 
             translated.ShouldBe(EXPECTED);
         }
@@ -650,7 +651,7 @@ if (WhenFormattingCode.JoinStrings(
             var lambdaMethod = typeof(HelperClass).GetPublicStaticMethod("GiveMeALambda");
             var lambdaMethodCall = Call(lambdaMethod, stringLambda);
 
-            var translated = ToReadableString(lambdaMethodCall);
+            var translated = lambdaMethodCall.ToReadableString();
 
             const string EXPECTED = @"
 HelperClass.GiveMeALambda((string1, string2) =>
@@ -667,7 +668,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
         {
             var selectTimeSpans = CreateLambda(() => new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays));
 
-            var translated = ToReadableString(selectTimeSpans.Body);
+            var translated = selectTimeSpans.Body.ToReadableString();
 
             translated.ShouldBe("new[] { 1d, 2d, 3d }.Select(TimeSpan.FromDays)");
         }
@@ -678,7 +679,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var selectStrings = CreateLambda((IntConverter converter)
                 => new[] { 1, 2, 3 }.Select(converter.Convert));
 
-            var translated = ToReadableString(selectStrings.Body);
+            var translated = selectStrings.Body.ToReadableString();
 
             translated.ShouldBe("new[] { 1, 2, 3 }.Select(converter.Convert)");
         }
@@ -690,7 +691,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
 
             var selectStrings = CreateLambda(() => new[] { 1, 2, 3 }.Select(intConverter));
 
-            var translated = ToReadableString(selectStrings.Body);
+            var translated = selectStrings.Body.ToReadableString();
 
             translated.ShouldBe("new[] { 1, 2, 3 }.Select(intConverter)");
         }
@@ -701,7 +702,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var allItemsContained = CreateLambda((List<int> list, IEnumerable<int> items)
                 => list.All(i => items.Contains(i)));
 
-            var translated = ToReadableString(allItemsContained.Body);
+            var translated = allItemsContained.Body.ToReadableString();
 
             translated.ShouldBe("list.All(items.Contains)");
         }
@@ -712,7 +713,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var parseTimeSpans = CreateLambda((List<double> list)
                  => list.Select(i => TimeSpan.FromDays(i)));
 
-            var translated = ToReadableString(parseTimeSpans.Body);
+            var translated = parseTimeSpans.Body.ToReadableString();
 
             translated.ShouldBe("list.Select(TimeSpan.FromDays)");
         }
@@ -723,7 +724,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var copy = CreateLambda((List<int> list, ICollection<int> items) =>
                 list.ForEach(i => items.Add(i)));
 
-            var translated = ToReadableString(copy.Body);
+            var translated = copy.Body.ToReadableString();
 
             translated.ShouldBe("list.ForEach(items.Add)");
         }
@@ -736,7 +737,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var listContainsEvaluator = CreateLambda((List<int> list, int i)
                 => evaluatorInvoker.Invoke(x => list.Contains(x), i));
 
-            var translated = ToReadableString(listContainsEvaluator.Body);
+            var translated = listContainsEvaluator.Body.ToReadableString();
 
             translated.ShouldBe("evaluatorInvoker.Invoke(list.Contains, i)");
         }
@@ -747,7 +748,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var copy = CreateLambda((List<int> list, ICollection<string> items)
                  => list.ForEach(i => items.Add(i.ToString())));
 
-            var translated = ToReadableString(copy.Body);
+            var translated = copy.Body.ToReadableString();
 
             translated.ShouldBe("list.ForEach(i => items.Add(i.ToString()))");
         }
@@ -760,7 +761,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var listContainsEvaluator = CreateLambda((List<int> list, int i)
                 => evaluatorInvoker.Invoke(x => list.Contains(x), i));
 
-            var translated = ToReadableString(listContainsEvaluator.Body);
+            var translated = listContainsEvaluator.Body.ToReadableString();
 
             translated.ShouldBe("evaluatorInvoker.Invoke(x => (bool?)list.Contains(x), i)");
         }
@@ -777,7 +778,7 @@ HelperClass.GiveMeALambda((string1, string2) =>
                     .OrderByDescending(i => i)
                     .ToList());
 
-            var translated = ToReadableString(longMethodChain.Body);
+            var translated = longMethodChain.Body.ToReadableString();
 
             const string EXPECTED = @"
 Enumerable
@@ -809,7 +810,7 @@ Enumerable
             var intsMethod = helper.Type.GetPublicInstanceMethod(nameof(HelperClass.GiveMeSomeInts));
             var methodCall = Call(helper, intsMethod, defaultInt, valueOrDefaultBlock, defaultInt);
 
-            var translated = ToReadableString(methodCall);
+            var translated = methodCall.ToReadableString();
 
             const string EXPECTED = @"
 new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
@@ -828,7 +829,7 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
         [Fact]
         public void ShouldTranslateNullToNull()
         {
-            var translated = ToReadableString(default(Expression));
+            var translated = default(Expression).ToReadableString();
 
             translated.ShouldBeNull();
         }
@@ -844,7 +845,7 @@ new HelperClass(default(int), default(int), default(int)).GiveMeSomeInts(
 
             var longChainblock = Block(longCallChain.Body, longCallChain.Body);
 
-            var translated = ToReadableString(longChainblock);
+            var translated = longChainblock.ToReadableString();
 
             const string EXPECTED = @"
 list
@@ -873,7 +874,7 @@ return list
 
             var block = Block(new[] { intVariable }, ifIntEqualsZeroDoNothing);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 int i;
@@ -898,7 +899,7 @@ if (i == 0)
                 ifIntEqualsOneDoNothing,
                 ifIntEqualsOneDoNothing);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 int i;
@@ -934,7 +935,7 @@ if (i == 1)
 
             var block = Block(memoryStreamInit, ifIntEqualsOneDoNothing);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 new MemoryStream
@@ -980,7 +981,7 @@ if (i == 1)
             var addMethod = collectionVariable.Type.GetPublicInstanceMethod("Add");
             var addMethodCall = Call(collectionVariable, addMethod, tryCatch);
 
-            var translated = ToReadableString(addMethodCall);
+            var translated = addMethodCall.ToReadableString();
 
             const string EXPECTED = @"
 ints.Add(

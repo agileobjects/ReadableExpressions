@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -17,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var addInts = CreateLambda((int i1, int i2) => i1 + i2);
 
-            var translated = ToReadableString(addInts);
+            var translated = addInts.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 + i2");
         }
@@ -34,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 intParameter1,
                 intParameter2);
 
-            var translated = ToReadableString(checkedAdditionLambda);
+            var translated = checkedAdditionLambda.ToReadableString();
 
             translated.ShouldBe("(a, b) => checked(a + b)");
         }
@@ -44,7 +45,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var subtractInts = CreateLambda((int i1, int i2) => i1 - i2);
 
-            var translated = ToReadableString(subtractInts);
+            var translated = subtractInts.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 - i2");
         }
@@ -61,7 +62,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
                 intParameter1,
                 intParameter2);
 
-            var translated = ToReadableString(checkedSubtractionLambda);
+            var translated = checkedSubtractionLambda.ToReadableString();
 
             translated.ShouldBe("(a, b) => checked(a - b)");
         }
@@ -71,7 +72,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var negateInts = CreateLambda((int i) => -i);
 
-            var translated = ToReadableString(negateInts);
+            var translated = negateInts.ToReadableString();
 
             translated.ShouldBe("i => -i");
         }
@@ -83,7 +84,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var checkedNegation = NegateChecked(intParameter);
             var checkedNegationLambda = Lambda<Func<int, int>>(checkedNegation, intParameter);
 
-            var translated = ToReadableString(checkedNegationLambda);
+            var translated = checkedNegationLambda.ToReadableString();
 
             translated.ShouldBe("i => -i");
         }
@@ -93,7 +94,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var multiplyInts = CreateLambda((int i1, int i2) => i1 * i2);
 
-            var translated = ToReadableString(multiplyInts);
+            var translated = multiplyInts.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 * i2");
         }
@@ -120,7 +121,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Parameter(typeof(int), "i");
             var checkedMultiplication = MultiplyChecked(valueOneBlock, intVariable);
 
-            var translated = ToReadableString(checkedMultiplication);
+            var translated = checkedMultiplication.ToReadableString();
 
             const string EXPECTED = @"
 checked
@@ -143,7 +144,7 @@ checked
             var variableTwo = Variable(typeof(double), "d2");
             var varOneToThePowerOfVarTwo = Power(variableOne, variableTwo);
 
-            var translated = ToReadableString(varOneToThePowerOfVarTwo);
+            var translated = varOneToThePowerOfVarTwo.ToReadableString();
 
             translated.ShouldBe("d1 ** d2");
         }
@@ -153,7 +154,7 @@ checked
         {
             var divideInts = CreateLambda((int i1, int i2) => i1 / i2);
 
-            var translated = ToReadableString(divideInts);
+            var translated = divideInts.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 / i2");
         }
@@ -163,7 +164,7 @@ checked
         {
             var findModulo = CreateLambda((int i1, int i2) => i1 % i2);
 
-            var translated = ToReadableString(findModulo.Body);
+            var translated = findModulo.Body.ToReadableString();
 
             translated.ShouldBe("i1 % i2");
         }
@@ -173,7 +174,7 @@ checked
         {
             var operationWithBrackets = CreateLambda((int i1, int i2) => (i1 / i2) * i1);
 
-            var translated = ToReadableString(operationWithBrackets);
+            var translated = operationWithBrackets.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => (i1 / i2) * i1");
         }
@@ -184,7 +185,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var increment = Increment(intVariable);
 
-            var translated = ToReadableString(increment);
+            var translated = increment.ToReadableString();
 
             translated.ShouldBe("++i");
         }
@@ -195,7 +196,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var preIncrement = PreIncrementAssign(intVariable);
 
-            var translated = ToReadableString(preIncrement);
+            var translated = preIncrement.ToReadableString();
 
             translated.ShouldBe("++i");
         }
@@ -206,7 +207,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var postIncrement = PostIncrementAssign(intVariable);
 
-            var translated = ToReadableString(postIncrement);
+            var translated = postIncrement.ToReadableString();
 
             translated.ShouldBe("i++");
         }
@@ -217,7 +218,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var decrement = Decrement(intVariable);
 
-            var translated = ToReadableString(decrement);
+            var translated = decrement.ToReadableString();
 
             translated.ShouldBe("--i");
         }
@@ -228,7 +229,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var preDecrement = PreDecrementAssign(intVariable);
 
-            var translated = ToReadableString(preDecrement);
+            var translated = preDecrement.ToReadableString();
 
             translated.ShouldBe("--i");
         }
@@ -239,7 +240,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var postDecrement = PostDecrementAssign(intVariable);
 
-            var translated = ToReadableString(postDecrement);
+            var translated = postDecrement.ToReadableString();
 
             translated.ShouldBe("i--");
         }
@@ -249,7 +250,7 @@ checked
         {
             var mather = CreateLambda((int i, int j, int k) => (i + j) * k);
 
-            var translated = ToReadableString(mather.Body);
+            var translated = mather.Body.ToReadableString();
 
             translated.ShouldBe("(i + j) * k");
         }

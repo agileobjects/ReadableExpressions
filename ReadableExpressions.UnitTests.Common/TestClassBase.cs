@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Common
 {
     using System;
 #if NET35
@@ -23,7 +23,7 @@
         protected static LambdaExpression CreateLambda<TArg1, TArg2>(LinqExp.Expression<Action<TArg1, TArg2>> linqLambda)
             => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
-        internal static LambdaExpression CreateLambda<TReturn>(LinqExp.Expression<Func<TReturn>> linqLambda)
+        public static LambdaExpression CreateLambda<TReturn>(LinqExp.Expression<Func<TReturn>> linqLambda)
             => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
         protected static LambdaExpression CreateLambda<TArg, TReturn>(LinqExp.Expression<Func<TArg, TReturn>> linqLambda)
@@ -35,25 +35,22 @@
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TArg3, TReturn>> linqLambda)
             => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 
-        internal static string ToReadableString(Expression expression, Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        public static string ToReadableString(Expression expression, Func<ITranslationSettings, ITranslationSettings> configuration = null)
             => expression.ToReadableString(configuration);
 #else
         protected static LambdaExpression CreateLambda(Expression<Action> lambda) => lambda;
 
         protected static LambdaExpression CreateLambda<TArg>(Expression<Action<TArg>> lambda) => lambda;
-        
+
         protected static LambdaExpression CreateLambda<TArg1, TArg2>(Expression<Action<TArg1, TArg2>> lambda) => lambda;
 
-        internal static LambdaExpression CreateLambda<TReturn>(Expression<Func<TReturn>> lambda) => lambda;
+        public static LambdaExpression CreateLambda<TReturn>(Expression<Func<TReturn>> lambda) => lambda;
 
         protected static LambdaExpression CreateLambda<TArg, TReturn>(Expression<Func<TArg, TReturn>> lambda) => lambda;
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TReturn>(Expression<Func<TArg1, TArg2, TReturn>> lambda) => lambda;
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(Expression<Func<TArg1, TArg2, TArg3, TReturn>> lambda) => lambda;
-
-        internal static string ToReadableString(Expression expression, Func<ITranslationSettings, ITranslationSettings> configuration = null) 
-            => expression.ToReadableString(configuration);
 #endif
     }
 }

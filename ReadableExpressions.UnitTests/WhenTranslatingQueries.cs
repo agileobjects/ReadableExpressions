@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.ComponentModel.DataAnnotations;
     using System.Data.Entity;
     using System.Linq;
+    using Common;
     using Xunit;
 
     public class WhenTranslatingQueries : TestClassBase

@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using Xunit;
@@ -19,7 +20,7 @@
         {
             var intToDouble = CreateLambda((int i) => (double)i);
 
-            var translated = ToReadableString(intToDouble);
+            var translated = intToDouble.ToReadableString();
 
             translated.ShouldBe("i => (double)i");
         }
@@ -32,7 +33,7 @@
 
             var checkedCastLambda = Lambda<Func<int, short>>(checkedCast, intParameter);
 
-            var translated = ToReadableString(checkedCastLambda);
+            var translated = checkedCastLambda.ToReadableString();
 
             translated.ShouldBe("i => (short)i");
         }
@@ -42,7 +43,7 @@
         {
             var longToNullable = CreateLambda((long l) => (long?)l);
 
-            var translated = ToReadableString(longToNullable);
+            var translated = longToNullable.ToReadableString();
 
             translated.ShouldBe("l => (long?)l");
         }
@@ -52,7 +53,7 @@
         {
             var castDateTimeHour = CreateLambda((object o) => ((DateTime)o).Hour);
 
-            var translated = ToReadableString(castDateTimeHour);
+            var translated = castDateTimeHour.ToReadableString();
 
             translated.ShouldBe("o => ((DateTime)o).Hour");
         }
@@ -62,7 +63,7 @@
         {
             var negator = CreateLambda((bool b) => !b);
 
-            var translated = ToReadableString(negator);
+            var translated = negator.ToReadableString();
 
             translated.ShouldBe("b => !b");
         }
@@ -72,7 +73,7 @@
         {
             var streamAsDisposable = CreateLambda((Stream stream) => stream as IDisposable);
 
-            var translated = ToReadableString(streamAsDisposable.Body);
+            var translated = streamAsDisposable.Body.ToReadableString();
 
             translated.ShouldBe("stream as IDisposable");
         }
@@ -83,7 +84,7 @@
             var objectVariable = Variable(typeof(object), "o");
             var unboxObjectToInt = Unbox(objectVariable, typeof(int));
 
-            var translated = ToReadableString(unboxObjectToInt);
+            var translated = unboxObjectToInt.ToReadableString();
 
             translated.ShouldBe("(int)o");
         }
@@ -102,7 +103,7 @@
 
             var stringToIntParseLambda = Lambda<Func<string, int>>(body, stringParameter);
 
-            var translated = ToReadableString(stringToIntParseLambda.Body);
+            var translated = stringToIntParseLambda.Body.ToReadableString();
 
             translated.ShouldBe("int.Parse(str)");
         }
