@@ -16,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
         {
             var sourceTree = SyntaxFactory.ParseSyntaxTree(expressionBuilderSource);
 
-            var outputStream = new MemoryStream();
+            using var outputStream = new MemoryStream();
 
             var compilationResult = CSharpCompilation
                 .Create("ExpressionBuildOutput.dll")

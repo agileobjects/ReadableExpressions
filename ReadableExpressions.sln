@@ -66,11 +66,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Visuali
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.Build", "ReadableExpressions.Build\ReadableExpressions.Build.csproj", "{B5F3D2CC-5F3F-4006-865F-F28A9376B6BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.UnitTests.Common", "ReadableExpressions.UnitTests.Common\ReadableExpressions.UnitTests.Common.csproj", "{7000A01B-B4DA-4F30-87FF-B3EA4057BBE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests.Common", "ReadableExpressions.UnitTests.Common\ReadableExpressions.UnitTests.Common.csproj", "{7000A01B-B4DA-4F30-87FF-B3EA4057BBE5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests.Build", "ReadableExpressions.UnitTests.Build\ReadableExpressions.UnitTests.Build.csproj", "{D5535CE8-7855-49EA-A8AA-1ADA2E9C0177}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests.Build.NetCore3.1", "ReadableExpressions.UnitTests.Build.NetCore3.1\ReadableExpressions.UnitTests.Build.NetCore3.1.csproj", "{74BF086D-1394-48DE-9347-CD2E9A35CAC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReadableExpressions.Build.Console", "ReadableExpressions.Build.Console\ReadableExpressions.Build.Console.csproj", "{EACB4487-216A-4545-B9AB-8037C0B26177}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -283,6 +285,14 @@ Global
 		{74BF086D-1394-48DE-9347-CD2E9A35CAC6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{74BF086D-1394-48DE-9347-CD2E9A35CAC6}.Release|x86.ActiveCfg = Release|Any CPU
 		{74BF086D-1394-48DE-9347-CD2E9A35CAC6}.Release|x86.Build.0 = Release|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Debug|x86.Build.0 = Debug|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Release|x86.ActiveCfg = Release|Any CPU
+		{EACB4487-216A-4545-B9AB-8037C0B26177}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -315,6 +325,7 @@ Global
 		{7000A01B-B4DA-4F30-87FF-B3EA4057BBE5} = {E2401C71-C5F2-46FB-B5A3-E6EFB85106B9}
 		{D5535CE8-7855-49EA-A8AA-1ADA2E9C0177} = {E2401C71-C5F2-46FB-B5A3-E6EFB85106B9}
 		{74BF086D-1394-48DE-9347-CD2E9A35CAC6} = {E2401C71-C5F2-46FB-B5A3-E6EFB85106B9}
+		{EACB4487-216A-4545-B9AB-8037C0B26177} = {E2401C71-C5F2-46FB-B5A3-E6EFB85106B9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7EFE121E-7A84-43A4-8C76-7EE70DF2736A}
