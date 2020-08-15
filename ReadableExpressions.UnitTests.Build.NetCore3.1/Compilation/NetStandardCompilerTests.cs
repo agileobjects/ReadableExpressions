@@ -2,9 +2,9 @@
 {
     using ReadableExpressions.Build.Compilation;
 
-    public class NetFrameworkCompilerTests : CompilerTestsBase
+    public class NetStandardCompilerTests : CompilerTestsBase
     {
         internal override ICompiler CreateCompiler()
-            => new NetFrameworkCompiler();
+            => new NetStandardCompiler();
     }
 }

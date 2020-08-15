@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\ReadableExpressions.UnitTests.Build\**\*.cs" Exclude="..\ReadableExpressions.UnitTests.Build\obj\**\*.cs;">
+    <Compile Include="..\ReadableExpressions.UnitTests.Build\**\*.cs" Exclude="..\ReadableExpressions.UnitTests.Build\obj\**\*.cs;..\ReadableExpressions.UnitTests.Build\**\*NetFramework*.cs;">
       <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
