@@ -2,6 +2,6 @@
 {
     internal interface ICompiler
     {
-        CompilationResult Compile(string inputFile);
+        CompilationResult Compile(string expressionBuilderSource);
     }
 }

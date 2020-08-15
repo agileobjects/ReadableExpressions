@@ -7,13 +7,13 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
 
     internal class NetFrameworkCompiler : ICompiler
     {
-        public CompilationResult Compile(string inputFile)
+        public CompilationResult Compile(string expressionBuilderSource)
         {
             var codeProvider = new CSharpCodeProvider();
             var parameters = new CompilerParameters { GenerateInMemory = true };
 
             var compilationResult = codeProvider
-                .CompileAssemblyFromFile(parameters, inputFile);
+                .CompileAssemblyFromSource(parameters, expressionBuilderSource);
 
             if (compilationResult.Errors.HasErrors)
             {

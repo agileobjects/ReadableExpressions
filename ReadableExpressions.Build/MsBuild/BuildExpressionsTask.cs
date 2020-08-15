@@ -32,7 +32,7 @@ namespace ReBuild
                 new MsBuildTaskLogger(),
                 BclFileManager.Instance,
 #if NETFRAMEWORK
-                new NetFrameworkConfigManager(),
+                new NetFrameworkConfigManager(BclFileManager.Instance),
 #else
                 new NetStandardConfigManager(BclFileManager.Instance),
 #endif
@@ -78,15 +78,23 @@ namespace ReBuild
                     config.InputFile = DefaultInputFile;
                 }
 
+                if (!_fileManager.Exists(config.InputFile))
+                {
+                    _logger.Warning($"Input file {config.InputFile} not found");
+                    return false;
+                }
+
+                _logger.Info($"Using input file {config.InputFile}");
+
                 if (string.IsNullOrEmpty(config.OutputFile))
                 {
                     config.OutputFile = DefaultOutputFile;
                 }
 
-                _logger.Info($"Using input file {config.InputFile}");
                 _logger.Info($"Using output file {config.OutputFile}");
 
-                var compilationResult = _compiler.Compile(config.InputFile);
+                var expressionBuilderSource = _fileManager.Read(config.InputFile);
+                var compilationResult = _compiler.Compile(expressionBuilderSource);
 
                 if (compilationResult.Failed)
                 {

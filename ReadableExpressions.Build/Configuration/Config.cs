@@ -5,8 +5,5 @@
         public string InputFile { get; set; }
 
         public string OutputFile { get; set; }
-
-        public bool Empty
-            => string.IsNullOrEmpty(InputFile) && string.IsNullOrEmpty(OutputFile);
     }
 }

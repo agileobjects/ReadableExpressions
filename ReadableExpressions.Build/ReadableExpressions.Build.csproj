@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net461;netstandard1.3</TargetFrameworks>
+    <TargetFrameworks>net461;netstandard1.5</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -24,7 +24,7 @@
     <Authors>Steve Wilkes</Authors>
     <Company>AgileObjects Ltd</Company>
     <Title>AgileObjects.ReadableExpressions.Build</Title>
-    <Description>Targets .NET 4.6.1+ and .NET Standard 1.3+</Description>
+    <Description>Targets .NET 4.6.1+ and .NET Standard 1.5+</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
@@ -36,7 +36,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
     <DefineConstants>$(DefineConstants);NET_STANDARD;FEATURE_READONLYDICTIONARY</DefineConstants>
   </PropertyGroup>
 
@@ -55,9 +55,10 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.3' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.5' ">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="1.3.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
