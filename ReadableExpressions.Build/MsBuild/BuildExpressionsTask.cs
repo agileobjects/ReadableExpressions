@@ -167,16 +167,23 @@ namespace ReBuild
 
         private static Type GetBuilderTypeOrThrow(CompilationResult compilationResult)
         {
-            var builderType = compilationResult
+            var builderTypes = compilationResult
                 .CompiledAssembly
-                .GetType(InputClass, throwOnError: false, ignoreCase: false);
+                .GetTypes()
+                .Where(t => t.Name == InputClass)
+                .ToList();
 
-            if (builderType == null)
+            if (builderTypes.Count == 0)
             {
-                throw new NotSupportedException($"Expected Type {InputClass} not found");
+                throw new NotSupportedException($"Expected input Type {InputClass} not found");
             }
 
-            return builderType;
+            if (builderTypes.Count > 1)
+            {
+                throw new NotSupportedException($"Multiple {InputClass} Types found");
+            }
+
+            return builderTypes[0];
         }
 
         private static MethodInfo GetBuildMethodOrThrow(Type builderType)

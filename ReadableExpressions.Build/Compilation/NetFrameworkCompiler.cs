@@ -4,7 +4,6 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
     using System;
     using System.CodeDom.Compiler;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using Microsoft.CSharp;
 
@@ -23,7 +22,7 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
             };
 
             parameters.ReferencedAssemblies.AddRange(referenceAssemblyTypes
-                .Select(GetAssemblyFileName).ToArray());
+                .Select(GetAssemblyFilePath).ToArray());
 
             var compilationResult = codeProvider
                 .CompileAssemblyFromSource(parameters, expressionBuilderSource);
@@ -46,8 +45,7 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
             };
         }
 
-        private static string GetAssemblyFileName(Type type)
-            => Path.GetFileName(type.Assembly.Location);
+        private static string GetAssemblyFilePath(Type type) => type.Assembly.Location;
     }
 }
 #endif

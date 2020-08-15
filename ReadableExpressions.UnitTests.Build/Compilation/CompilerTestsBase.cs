@@ -67,7 +67,11 @@ namespace MyNamespace
                 .CompiledAssembly
                 .ShouldNotBeNull();
 
-            var testType = compiledAssembly.GetType("MyNamespace.MyClass").ShouldNotBeNull();
+            var testType = compiledAssembly
+                .GetTypes()
+                .FirstOrDefault(t => t.Name == "MyClass")
+                .ShouldNotBeNull();
+
             var testMethod = testType.GetPublicStaticMethod("GetInts").ShouldNotBeNull();
 
             testMethod
