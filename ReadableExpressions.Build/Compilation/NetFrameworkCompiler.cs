@@ -1,16 +1,29 @@
 ﻿#if NETFRAMEWORK
 namespace AgileObjects.ReadableExpressions.Build.Compilation
 {
+    using System;
     using System.CodeDom.Compiler;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using Microsoft.CSharp;
 
     internal class NetFrameworkCompiler : ICompiler
     {
-        public CompilationResult Compile(string expressionBuilderSource)
+        public CompilationResult Compile(
+            string expressionBuilderSource,
+            ICollection<Type> referenceAssemblyTypes)
         {
             var codeProvider = new CSharpCodeProvider();
-            var parameters = new CompilerParameters { GenerateInMemory = true };
+
+            var parameters = new CompilerParameters
+            {
+                GenerateInMemory = true,
+                TreatWarningsAsErrors = false
+            };
+
+            parameters.ReferencedAssemblies.AddRange(referenceAssemblyTypes
+                .Select(GetAssemblyFileName).ToArray());
 
             var compilationResult = codeProvider
                 .CompileAssemblyFromSource(parameters, expressionBuilderSource);
@@ -32,6 +45,9 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
                 CompiledAssembly = compilationResult.CompiledAssembly
             };
         }
+
+        private static string GetAssemblyFileName(Type type)
+            => Path.GetFileName(type.Assembly.Location);
     }
 }
 #endif

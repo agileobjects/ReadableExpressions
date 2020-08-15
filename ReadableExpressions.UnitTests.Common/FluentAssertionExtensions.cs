@@ -390,14 +390,19 @@
             return dictionary;
         }
 
-        public static void ShouldBeOfType<TExpected>(this object actual)
+        public static TExpected ShouldBeOfType<TExpected>(this object actual)
+            where TExpected : class
         {
-            if (!(actual is TExpected))
+            var expected = actual as TExpected;
+
+            if (expected == null)
             {
                 Asplode(
                     "An object of type " + typeof(TExpected).Name,
                     actual.GetType().Name);
             }
+
+            return expected;
         }
 
         public static void ShouldContain<T>(this IList<T> actual, T expected)

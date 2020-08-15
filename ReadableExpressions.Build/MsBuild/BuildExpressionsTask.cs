@@ -2,10 +2,13 @@
 namespace ReBuild
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Reflection;
     using AgileObjects.NetStandardPolyfills;
+    using AgileObjects.ReadableExpressions;
+    using AgileObjects.ReadableExpressions.Build;
     using AgileObjects.ReadableExpressions.Build.Compilation;
     using AgileObjects.ReadableExpressions.Build.Configuration;
     using AgileObjects.ReadableExpressions.Build.Io;
@@ -94,7 +97,10 @@ namespace ReBuild
                 _logger.Info($"Using output file {config.OutputFile}");
 
                 var expressionBuilderSource = _fileManager.Read(config.InputFile);
-                var compilationResult = _compiler.Compile(expressionBuilderSource);
+                var referenceAssemblyTypes = GetReferenceAssemblyTypes(expressionBuilderSource);
+
+                var compilationResult = _compiler
+                    .Compile(expressionBuilderSource, referenceAssemblyTypes);
 
                 if (compilationResult.Failed)
                 {
@@ -124,6 +130,24 @@ namespace ReBuild
                 _logger.Error(ex);
                 return false;
             }
+        }
+
+        private static ICollection<Type> GetReferenceAssemblyTypes(string expressionBuilderSource)
+        {
+            var referenceAssemblyTypes = new List<Type>
+            {
+                typeof(object),
+                typeof(AssemblyExtensionsPolyfill),
+                typeof(ReadableExpression),
+                typeof(ReadableSourceCodeExpression)
+            };
+
+            if (expressionBuilderSource.Contains("using System.Linq"))
+            {
+                referenceAssemblyTypes.Add(typeof(Enumerable));
+            }
+
+            return referenceAssemblyTypes;
         }
 
         private static SourceCodeExpression GetSourceCodeExpressionOrThrow(

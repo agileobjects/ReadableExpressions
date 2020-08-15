@@ -1,18 +1,21 @@
 ﻿#if NET_STANDARD
 namespace AgileObjects.ReadableExpressions.Build.Compilation
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.Loader;
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;
     using NetStandardPolyfills;
-    using SourceCode;
     using static Microsoft.CodeAnalysis.OutputKind;
 
     internal class NetStandardCompiler : ICompiler
     {
-        public CompilationResult Compile(string expressionBuilderSource)
+        public CompilationResult Compile(
+            string expressionBuilderSource,
+            ICollection<Type> referenceAssemblyTypes)
         {
             var sourceTree = SyntaxFactory.ParseSyntaxTree(expressionBuilderSource);
 
@@ -21,9 +24,7 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
             var compilationResult = CSharpCompilation
                 .Create("ExpressionBuildOutput.dll")
                 .WithOptions(new CSharpCompilationOptions(DynamicallyLinkedLibrary))
-                .AddReferences(
-                    CreateReference<object>(),
-                    CreateReference<SourceCodeExpression>())
+                .AddReferences(referenceAssemblyTypes.Select(CreateReference))
                 .AddSyntaxTrees(sourceTree)
                 .Emit(outputStream);
 
@@ -43,9 +44,9 @@ namespace AgileObjects.ReadableExpressions.Build.Compilation
             return new CompilationResult { CompiledAssembly = compiledAssembly };
         }
 
-        private static MetadataReference CreateReference<T>()
+        private static MetadataReference CreateReference(Type assemblyType)
         {
-            var assemblyLocation = typeof(T).GetAssembly().Location;
+            var assemblyLocation = assemblyType.GetAssembly().Location;
             var assemblyReference = MetadataReference.CreateFromFile(assemblyLocation);
 
             return assemblyReference;
