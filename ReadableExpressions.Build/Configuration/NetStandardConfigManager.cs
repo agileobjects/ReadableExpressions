@@ -2,20 +2,26 @@
 namespace AgileObjects.ReadableExpressions.Build.Configuration
 {
     using System.IO;
+    using Io;
     using Microsoft.Extensions.Configuration;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using static BuildConstants;
 
     internal class NetStandardConfigManager : IConfigManager
     {
+        private readonly IFileManager _fileManager;
+
+        public NetStandardConfigManager(IFileManager fileManager)
+        {
+            _fileManager = fileManager;
+        }
+
         public string ConfigFileName => "appsettings.json";
 
-        public Config GetConfigOrNull(string contentRoot, out FileInfo configFile)
+        public Config GetConfigOrNull(string contentRoot)
         {
-            configFile = new FileInfo(Path.Combine(contentRoot, "appsettings.json"));
+            var configFilePath = Path.Combine(contentRoot, ConfigFileName);
 
-            if (!configFile.Exists)
+            if (!_fileManager.Exists(configFilePath))
             {
                 return null;
             }
@@ -31,24 +37,6 @@ namespace AgileObjects.ReadableExpressions.Build.Configuration
                 InputFile = appSettings[$"appSettings:{InputFileKey}"],
                 OutputFile = appSettings[$"appSettings:{OutputFileKey}"]
             };
-        }
-
-        public void SetDefaults(FileInfo configFile)
-        {
-            var configJsonString = File.ReadAllText(configFile.FullName);
-            var configJson = JObject.Parse(configJsonString);
-
-            if (!configJson.TryGetValue("appSettings", out var appSettingsJson) ||
-                appSettingsJson == null)
-            {
-                appSettingsJson = new JObject();
-            }
-
-            appSettingsJson[InputFileKey] = DefaultInputFile;
-            appSettingsJson[OutputFileKey] = DefaultOutputFile;
-
-            configJsonString = JsonConvert.SerializeObject(configJson, Formatting.Indented);
-            File.WriteAllText(configFile.FullName, configJsonString);
         }
     }
 }

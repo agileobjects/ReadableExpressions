@@ -2,8 +2,13 @@
 namespace ReBuild
 {
     using System;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+    using AgileObjects.NetStandardPolyfills;
     using AgileObjects.ReadableExpressions.Build.Compilation;
     using AgileObjects.ReadableExpressions.Build.Configuration;
+    using AgileObjects.ReadableExpressions.Build.Io;
     using AgileObjects.ReadableExpressions.Build.Logging;
     using AgileObjects.ReadableExpressions.Build.SourceCode;
     using static AgileObjects.ReadableExpressions.Build.BuildConstants;
@@ -15,6 +20,7 @@ namespace ReBuild
     public class BuildExpressionsTask : MsBuildTask
     {
         private readonly ILogger _logger;
+        private readonly IFileManager _fileManager;
         private readonly IConfigManager _configManager;
         private readonly ICompiler _compiler;
 
@@ -24,10 +30,11 @@ namespace ReBuild
         public BuildExpressionsTask()
             : this(
                 new MsBuildTaskLogger(),
+                BclFileManager.Instance,
 #if NETFRAMEWORK
                 new NetFrameworkConfigManager(),
 #else
-                new NetStandardConfigManager(),
+                new NetStandardConfigManager(BclFileManager.Instance),
 #endif
 #if NETFRAMEWORK
                 new NetFrameworkCompiler()
@@ -41,10 +48,12 @@ namespace ReBuild
 
         internal BuildExpressionsTask(
             ILogger logger,
+            IFileManager fileManager,
             IConfigManager configManager,
             ICompiler compiler)
         {
             _logger = logger;
+            _fileManager = fileManager;
             _configManager = configManager;
             _compiler = compiler;
         }
@@ -62,21 +71,20 @@ namespace ReBuild
         {
             try
             {
-                var config = _configManager
-                    .GetConfigOrNull(ContentRoot, out var configFile);
+                var config = _configManager.GetConfigOrNull(ContentRoot) ?? new Config();
 
-                if (config == null)
+                if (string.IsNullOrEmpty(config.InputFile))
                 {
-                    _logger.Info($"Config file '{_configManager.ConfigFileName}' could not be found");
-                    return true;
+                    config.InputFile = DefaultInputFile;
                 }
 
-                if (config.Empty)
+                if (string.IsNullOrEmpty(config.OutputFile))
                 {
-                    _configManager.SetDefaults(configFile);
-                    config.InputFile = DefaultInputFile;
                     config.OutputFile = DefaultOutputFile;
                 }
+
+                _logger.Info($"Using input file {config.InputFile}");
+                _logger.Info($"Using output file {config.OutputFile}");
 
                 var compilationResult = _compiler.Compile(config.InputFile);
 
@@ -88,8 +96,19 @@ namespace ReBuild
                     {
                         _logger.Error(error);
                     }
+
+                    return false;
                 }
 
+                _logger.Info("Expression compilation succeeded");
+
+                var sourceCodeExpression = GetSourceCodeExpressionOrThrow(compilationResult);
+
+                _fileManager.Write(
+                    Path.Combine(ContentRoot, config.OutputFile),
+                    sourceCodeExpression.ToSourceCode());
+
+                _logger.Info("Expression compilation output updated");
                 return true;
             }
             catch (Exception ex)
@@ -97,6 +116,60 @@ namespace ReBuild
                 _logger.Error(ex);
                 return false;
             }
+        }
+
+        private static SourceCodeExpression GetSourceCodeExpressionOrThrow(
+            CompilationResult compilationResult)
+        {
+            var builderType = GetBuilderTypeOrThrow(compilationResult);
+            var buildMethod = GetBuildMethodOrThrow(builderType);
+            var buildMethodResult = buildMethod.Invoke(null, Array.Empty<object>());
+
+            if (buildMethodResult == null)
+            {
+                throw new InvalidOperationException($"{InputClass}.{InputMethod} returned null");
+            }
+
+            return (SourceCodeExpression)buildMethodResult;
+        }
+
+        private static Type GetBuilderTypeOrThrow(CompilationResult compilationResult)
+        {
+            var builderType = compilationResult
+                .CompiledAssembly
+                .GetType(InputClass, throwOnError: false, ignoreCase: false);
+
+            if (builderType == null)
+            {
+                throw new NotSupportedException($"Expected Type {InputClass} not found");
+            }
+
+            return builderType;
+        }
+
+        private static MethodInfo GetBuildMethodOrThrow(Type builderType)
+        {
+            var buildMethod = builderType.GetPublicStaticMethod(InputMethod);
+
+            if (buildMethod == null)
+            {
+                throw new NotSupportedException(
+                    $"Expected public, static method {InputClass}.{InputMethod} not found");
+            }
+
+            if (buildMethod.GetParameters().Any())
+            {
+                throw new NotSupportedException(
+                    $"Expected method {InputClass}.{InputMethod} to be parameterless");
+            }
+
+            if (buildMethod.ReturnType != typeof(SourceCodeExpression))
+            {
+                throw new NotSupportedException(
+                    $"Expected method {InputClass}.{InputMethod} to return {nameof(SourceCodeExpression)}");
+            }
+
+            return buildMethod;
         }
     }
 }

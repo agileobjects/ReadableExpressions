@@ -3,52 +3,48 @@ namespace AgileObjects.ReadableExpressions.Build.Configuration
 {
     using System.Configuration;
     using System.IO;
+    using Io;
     using static BuildConstants;
 
     internal class NetFrameworkConfigManager : IConfigManager
     {
+        private readonly IFileManager _fileManager;
+
+        public NetFrameworkConfigManager(IFileManager fileManager)
+        {
+            _fileManager = fileManager;
+        }
+
         public string ConfigFileName => "web.config/app.config";
 
-        public Config GetConfigOrNull(string contentRoot, out FileInfo configFile)
+        public Config GetConfigOrNull(string contentRoot)
         {
-            var webConfigFile = new FileInfo(Path.Combine(contentRoot, "web.config"));
+            var configFilePath = Path.Combine(contentRoot, "web.config");
 
-            if (webConfigFile.Exists)
+            if (_fileManager.Exists(configFilePath))
             {
-                return GetConfig(configFile = webConfigFile);
+                return GetConfig(configFilePath);
             }
 
-            var appConfigFile = new FileInfo(Path.Combine(contentRoot, "app.config"));
+            configFilePath = Path.Combine(contentRoot, "app.config");
 
-            if (appConfigFile.Exists)
+            if (_fileManager.Exists(configFilePath))
             {
-                return GetConfig(configFile = appConfigFile);
+                return GetConfig(configFilePath);
             }
 
-            configFile = null;
             return null;
         }
 
-        private static Config GetConfig(FileSystemInfo configFile)
+        private static Config GetConfig(string configFilePath)
         {
-            var exeConfig = GetConfiguration(configFile);
+            var exeConfig = ConfigurationManager.OpenExeConfiguration(configFilePath);
 
             return new Config
             {
                 InputFile = exeConfig.AppSettings.Settings[InputFileKey]?.Value,
                 OutputFile = exeConfig.AppSettings.Settings[OutputFileKey]?.Value
             };
-        }
-
-        private static Configuration GetConfiguration(FileSystemInfo configFile)
-            => ConfigurationManager.OpenExeConfiguration(configFile.FullName);
-
-        public void SetDefaults(FileInfo configFile)
-        {
-            var exeConfig = GetConfiguration(configFile);
-            exeConfig.AppSettings.Settings.Add(InputFileKey, DefaultInputFile);
-            exeConfig.AppSettings.Settings.Add(OutputFileKey, DefaultOutputFile);
-            exeConfig.Save(ConfigurationSaveMode.Modified);
         }
     }
 }
