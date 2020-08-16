@@ -60,15 +60,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="ExpressionBuilder.cs" />
-    <Compile Remove="ExpressionBuilderOutput.cs" />
+    <Compile Remove="ExpressionBuilder*.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="ExpressionBuilder.cs" PackagePath="content\" />
-    <Content Include="ExpressionBuilder.cs" PackagePath="contentFiles\" />
-    <Content Include="ExpressionBuilderOutput.cs"  PackagePath="content\" />
-    <Content Include="ExpressionBuilderOutput.cs"  PackagePath="contentFiles\" />
+    <Content Include="ExpressionBuilder*.cs" PackagePath="content\" />
   </ItemGroup>
 
   <ItemGroup>
