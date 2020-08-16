@@ -19,12 +19,15 @@
         }
 
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithNamespaceOf<T>()
-        {
-            SetNamespace(typeof(T).Namespace);
-            return this;
-        }
+            => SetNamespaceTo(typeof(T).Namespace);
+
+        ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithNamespaceOf(Type type)
+            => SetNamespaceTo(type.Namespace);
 
         ISourceCodeExpressionSettings ISourceCodeExpressionSettings.WithNamespace(string @namespace)
+            => SetNamespaceTo(@namespace);
+
+        private ISourceCodeExpressionSettings SetNamespaceTo(string @namespace)
         {
             SetNamespace(@namespace);
             return this;

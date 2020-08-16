@@ -16,6 +16,13 @@
         ISourceCodeExpressionSettings WithNamespaceOf<T>();
 
         /// <summary>
+        /// Add generated classes to the namespace of the given <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The type the namespace of which the generated code should use.</param>
+        /// <returns>These <see cref="ISourceCodeExpressionSettings"/>, to support a fluent interface.</returns>
+        ISourceCodeExpressionSettings WithNamespaceOf(Type type);
+
+        /// <summary>
         /// Add generated classes to the given <paramref name="namespace"/>.
         /// </summary>
         /// <param name="namespace">The namespace in which to create generated classes.</param>

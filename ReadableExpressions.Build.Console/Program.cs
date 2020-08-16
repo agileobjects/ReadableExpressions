@@ -1,4 +1,4 @@
-﻿namespace ReadableExpressions.Build.Console
+﻿namespace AgileObjects.ReadableExpressions.Build.Console
 {
     public class Program
     {

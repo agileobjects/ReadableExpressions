@@ -39,12 +39,13 @@ namespace GeneratedStuffs.Yo
             var doNothing = Lambda<Action>(Default(typeof(void)));
 
             var translated = SourceCode(cfg => cfg
+                .WithNamespaceOf(GetType())
                 .WithClass("MyClass", cls => cls
                     .WithMethod("MyMethod", doNothing)))
                 .ToSourceCode();
 
             const string EXPECTED = @"
-namespace GeneratedExpressionCode
+namespace AgileObjects.ReadableExpressions.UnitTests.Build
 {
     public class MyClass
     {
