@@ -42,7 +42,7 @@ namespace ReBuild
 #if NETFRAMEWORK
                 new NetFrameworkCompiler()
 #else
-                null
+                new NetStandardCompiler()
 #endif
                 )
         {
