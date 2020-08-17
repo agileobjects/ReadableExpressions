@@ -14,20 +14,36 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static ReadableExpressionConstants;
 
-    internal class ExpressionTranslation : ITranslationContext
+    /// <summary>
+    /// The root class which translates an Expression. Also provides the default
+    /// <see cref="ITranslationContext"/> implementation.
+    /// </summary>
+    public class ExpressionTranslation : ITranslationContext
     {
         private readonly Expression _expression;
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
             : this(expression, ExpressionAnalysis.For(expression, settings), settings)
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="expressionAnalysis">
+        /// The <see cref="ExpressionAnalysis"/> describing the <paramref name="expression"/>.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
         protected ExpressionTranslation(
             Expression expression,
             ExpressionAnalysis expressionAnalysis,
@@ -66,8 +82,8 @@
         bool ITranslationContext.IsJoinedAssignment(Expression expression)
             => _expressionAnalysis.IsJoinedAssignment(expression);
 
-        bool ITranslationContext.IsCatchBlockVariable(Expression expression)
-            => _expressionAnalysis.IsCatchBlockVariable(expression);
+        bool ITranslationContext.IsCatchBlockVariable(Expression variable)
+            => _expressionAnalysis.IsCatchBlockVariable(variable);
 
         bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
             => _expressionAnalysis.IsReferencedByGoto(labelTarget);
@@ -90,6 +106,7 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
+        /// <inheritdoc />
         public virtual ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)
@@ -254,7 +271,7 @@
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
 
-                case (ExpressionType)ExpressionTypeComment:
+                case CommentExpression.ExpressionType:
                     return new CommentTranslation((CommentExpression)expression, this);
 
                 default:
@@ -264,6 +281,10 @@
 
         #endregion
 
+        /// <summary>
+        /// Gets the source-code string translation of the given Expression.
+        /// </summary>
+        /// <returns>The source-code string translation of the given Expression.</returns>
         public string GetTranslation()
         {
             var root = GetTranslationFor(_expression);

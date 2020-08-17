@@ -36,7 +36,13 @@
             return GetVariableNameInPascalCase(type, configuration.GetTranslationSettings());
         }
 
-        internal static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
+        /// <summary>
+        /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the variable name.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use for the variable naming.</param>
+        /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
             => GetVariableName(type, settings).ToPascalCase();
 
         private static string GetVariableName(Type type, TranslationSettings settings)

@@ -51,5 +51,16 @@
 
             return null;
         }
+
+        /// <summary>
+        /// Determines if this <paramref name="expression"/> is a <see cref="CommentExpression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression for which to make the determination.</param>
+        /// <returns>
+        /// Trueif this <paramref name="expression"/> is a <see cref="CommentExpression"/>, otherwise
+        /// false.
+        /// </returns>
+        public static bool IsComment(this Expression expression)
+            => expression.NodeType == CommentExpression.ExpressionType;
     }
 }

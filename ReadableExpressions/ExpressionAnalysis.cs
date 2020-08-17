@@ -15,7 +15,10 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class ExpressionAnalysis
+    /// <summary>
+    /// Contains information about an analysed Expression.
+    /// </summary>
+    public class ExpressionAnalysis
     {
         private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
@@ -32,6 +35,12 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
+        /// </summary>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> being used in the current Expression translation.
+        /// </param>
         protected ExpressionAnalysis(TranslationSettings settings)
         {
             _settings = settings;
@@ -39,6 +48,14 @@
 
         #region Factory Method
 
+        /// <summary>
+        /// Create an <see cref="ExpressionAnalysis"/> for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to analyse.</param>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> for the current Expression translation.
+        /// </param>
+        /// <returns>The <see cref="ExpressionAnalysis"/>.</returns>
         public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
             switch (expression.NodeType)
@@ -59,6 +76,11 @@
             return analysis;
         }
 
+        /// <summary>
+        /// Finalises this <see cref="ExpressionAnalysis"/>, ensuring any required members are
+        /// initialised.
+        /// </summary>
+        /// <returns>This finalised <see cref="ExpressionAnalysis"/>.</returns>
         protected virtual ExpressionAnalysis Finalise()
         {
             _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
@@ -68,31 +90,86 @@
 
         #endregion
 
+        /// <summary>
+        /// Gets the variables in the translated Expression which are first used as an output
+        /// parameter argument.
+        /// </summary>
         public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
+        /// <summary>
+        /// Gets the variables which can be declared as part of their initial assignment statement.
+        /// </summary>
         public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
+        /// assignment where the assigned variable is declared as part of the assignment statement.
+        /// </summary>
+        /// <param name="expression">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> represents an assignment where the assigned
+        /// variable is declared as part of the assignment statement, otherwise false.
+        /// </returns>
         public bool IsJoinedAssignment(Expression expression)
         {
             return (expression.NodeType == Assign) &&
                    _joinedAssignments?.Contains((BinaryExpression)expression) == true;
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
+        /// variable in a Catch block.
+        /// </summary>
+        /// <param name="variable">The Expression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="variable"/> is the Exception variable in a Catch block,
+        /// otherwise false.
+        /// </returns>
         public bool IsCatchBlockVariable(Expression variable)
         {
             return (variable.NodeType == Parameter) &&
                   (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// <see cref="GotoExpression"/>.
+        /// </summary>
+        /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
+        /// otherwise false.
+        /// </returns>
         public bool IsReferencedByGoto(LabelTarget labelTarget)
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
+        /// final statement in a block, and so should be rendered as a return statement.
+        /// </summary>
+        /// <param name="goto">The GotoExpression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// otherwise false.
+        /// </returns>
         public bool GoesToReturnLabel(GotoExpression @goto)
             => _gotoReturnGotos?.Contains(@goto) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
+        /// of multiple method calls.
+        /// </summary>
+        /// <param name="methodCall">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
+        /// otherwise false.
+        /// </returns>
         public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
             => _chainedMethodCalls?.Contains(methodCall) == true;
 
+        /// <summary>
+        /// Gets a Dictionary of ParameterExpression variables, keyed by their Type.
+        /// </summary>
         public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
             => _unnamedVariablesByType ??= _accessedVariables?
                 .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
@@ -100,6 +177,10 @@
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
                  EmptyDictionary<Type, ParameterExpression[]>.Instance;
 
+        /// <summary>
+        /// Visits the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to visit.</param>
         protected virtual void Visit(Expression expression)
         {
             while (true)
@@ -316,6 +397,15 @@
             return IsAssignmentJoinable(variable);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the assignment of the given <paramref name="variable"/>
+        /// can be joined with its declaration.
+        /// </summary>
+        /// <param name="variable">The variable for which to make the determination.</param>
+        /// <returns>
+        /// True if the assignment of the given <paramref name="variable"/> can be joined with its
+        /// declaration, otherwise false.
+        /// </returns>
         protected virtual bool IsAssignmentJoinable(ParameterExpression variable)
             => _joinedAssignmentVariables?.Contains(variable) != true;
 
@@ -325,6 +415,10 @@
         private void AddVariableAccess(ParameterExpression variable)
             => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
 
+        /// <summary>
+        /// Visits the given <paramref name="block"/>.
+        /// </summary>
+        /// <param name="block">The BlockExpression to visit.</param>
         protected virtual void Visit(BlockExpression block)
         {
             (_blocks ??= new Stack<BlockExpression>()).Push(block);
@@ -345,6 +439,10 @@
             });
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="constant"/>.
+        /// </summary>
+        /// <param name="constant">The ConstantExpression to visit.</param>
         protected virtual void Visit(ConstantExpression constant)
         {
         }
@@ -371,7 +469,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
@@ -399,9 +497,18 @@
             Visit(init.Initializers);
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="memberAccess"/>.
+        /// </summary>
+        /// <param name="memberAccess">The MemberExpression to visit.</param>
+        /// <returns>The Expression on which to continue analysis.</returns>
         protected virtual Expression Visit(MemberExpression memberAccess)
             => memberAccess.Expression;
 
+        /// <summary>
+        /// Visits the given <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">The MethodCallExpression to visit.</param>
         protected virtual void Visit(MethodCallExpression methodCall)
         {
             if (_chainedMethodCalls?.Contains(methodCall) != true)
@@ -455,6 +562,10 @@
             }
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="newing"/>.
+        /// </summary>
+        /// <param name="newing">The NewExpression to visit.</param>
         protected virtual void Visit(NewExpression newing) => Visit(newing.Arguments);
 
         private void Visit(IList<ElementInit> elementInits)
@@ -500,9 +611,17 @@
             }
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="newArray"/>.
+        /// </summary>
+        /// <param name="newArray">The NewArrayExpression to visit.</param>
         protected virtual void Visit(NewArrayExpression newArray)
             => Visit(newArray.Expressions);
 
+        /// <summary>
+        /// Visits the given <paramref name="variable"/>.
+        /// </summary>
+        /// <param name="variable">The ParameterExpression to visit.</param>
         protected virtual void Visit(ParameterExpression variable)
         {
             if (variable == null)
@@ -579,6 +698,10 @@
             });
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="catch"/>.
+        /// </summary>
+        /// <param name="catch">The CatchBlock to visit.</param>
         protected virtual void Visit(CatchBlock @catch)
         {
             var catchVariable = @catch.Variable;
@@ -605,6 +728,10 @@
             }
         }
 
+        /// <summary>
+        /// Visits the given <paramref name="expressions"/>.
+        /// </summary>
+        /// <param name="expressions">The Expressions to visit.</param>
         protected void Visit<TExpression>(IList<TExpression> expressions)
             where TExpression : Expression
         {

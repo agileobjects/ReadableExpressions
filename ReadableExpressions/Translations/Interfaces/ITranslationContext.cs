@@ -52,15 +52,15 @@
         bool IsJoinedAssignment(Expression expression);
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="expression"/> is the Exception
+        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
         /// variable in a Catch block.
         /// </summary>
-        /// <param name="expression">The expression for which to make the determination.</param>
+        /// <param name="variable">The Expression for which to make the determination.</param>
         /// <returns>
-        /// True if the given <paramref name="expression"/> is the Exception variable in a Catch block,
+        /// True if the given <paramref name="variable"/> is the Exception variable in a Catch block,
         /// otherwise false.
         /// </returns>
-        bool IsCatchBlockVariable(Expression expression);
+        bool IsCatchBlockVariable(Expression variable);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a

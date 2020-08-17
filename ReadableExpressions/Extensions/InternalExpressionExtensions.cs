@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
     using static System.Linq.Expressions.ExpressionType;
 #endif
-    using static ReadableExpressionConstants;
 
     internal static class InternalExpressionExtensions
     {
@@ -59,8 +58,5 @@
 
         public static bool IsReturnable(this BlockExpression block)
             => block.HasReturnType() && block.Result.IsReturnable();
-
-        public static bool IsComment(this Expression expression)
-            => expression.NodeType == ExpressionTypeComment;
     }
 }
