@@ -76,16 +76,7 @@ namespace ReBuild
             {
                 var config = _configManager.GetConfigOrNull(ContentRoot) ?? new Config();
 
-                if (string.IsNullOrEmpty(config.InputFile))
-                {
-                    config.InputFile = DefaultInputFile;
-                }
-
-                if (!_fileManager.Exists(config.InputFile))
-                {
-                    _logger.Warning($"Input file {config.InputFile} not found");
-                    return false;
-                }
+                EnsureInputFile(config);
 
                 _logger.Info($"Using input file {config.InputFile}");
 
@@ -130,6 +121,31 @@ namespace ReBuild
                 _logger.Error(ex);
                 return false;
             }
+        }
+
+        private void EnsureInputFile(Config config)
+        {
+            if (string.IsNullOrEmpty(config.InputFile))
+            {
+                config.InputFile = DefaultInputFile;
+            }
+
+            if (_fileManager.Exists(config.InputFile))
+            {
+                return;
+            }
+
+            _logger.Info($"Creating default input file {config.InputFile}...");
+
+            var inputFilePath = Path.Combine(
+                typeof(BuildExpressionsTask).GetAssembly().Location,
+                "../../..",
+                "content",
+                config.InputFile);
+
+            var inputFileContent = _fileManager.Read(inputFilePath);
+
+            _fileManager.Write(Path.Combine(ContentRoot, config.InputFile), inputFileContent);
         }
 
         private static ICollection<Type> GetReferenceAssemblyTypes(string expressionBuilderSource)
