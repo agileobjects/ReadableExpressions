@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Formatting;
     using Interfaces;
 
@@ -81,29 +82,6 @@
         public static ITranslation WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
             => new ModifiedTranslation(translatable, nodeType, type);
 
-        public static void WriteOpeningBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
-        {
-            if (startOnNewLine && writer.TranslationQuery(q => !q.TranslationEndsWith('{')))
-            {
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.WriteToTranslation('{');
-            writer.WriteNewLineToTranslation();
-            writer.Indent();
-        }
-
-        public static void WriteClosingBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
-        {
-            if (startOnNewLine)
-            {
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.Unindent();
-            writer.WriteToTranslation('}');
-        }
-
         public static void WriteInParentheses(this ITranslation translation, TranslationWriter writer)
         {
             writer.WriteToTranslation('(');
@@ -146,11 +124,5 @@
 
         public static void WriteControlStatementToTranslation(this TranslationWriter writer, string statement)
             => writer.WriteToTranslation(statement, TokenType.ControlStatement);
-
-        public static void WriteKeywordToTranslation(this TranslationWriter writer, string keyword)
-            => writer.WriteToTranslation(keyword, TokenType.Keyword);
-
-        public static void WriteTypeNameToTranslation(this TranslationWriter writer, string name)
-            => writer.WriteToTranslation(name, TokenType.TypeName);
     }
 }

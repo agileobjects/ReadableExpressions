@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using Extensions;
     using Formatting;
     using Interfaces;
 

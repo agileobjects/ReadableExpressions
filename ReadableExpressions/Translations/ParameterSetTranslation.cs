@@ -140,7 +140,7 @@
                     // TODO: Only use code blocks where useful:
                     var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
 
-                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda(context))
+                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda)
                     {
                         singleParameterIsMultiLineLambda = true;
                         parameterCodeBlock.WithSingleLamdaParameterFormatting();

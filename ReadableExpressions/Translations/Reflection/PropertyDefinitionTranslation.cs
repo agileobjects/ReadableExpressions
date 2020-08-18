@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
+    using Extensions;
     using Interfaces;
 #if NETSTANDARD
     using NetStandardPolyfills;

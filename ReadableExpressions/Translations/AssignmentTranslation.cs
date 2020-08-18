@@ -1,12 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-    using Interfaces;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
+    using Interfaces;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -110,7 +111,7 @@
                     : valueBlock.WithoutBraces().WithoutTermination();
             }
 
-            if (valueBlock.IsMultiStatementLambda(context))
+            if (valueBlock.IsMultiStatementLambda)
             {
                 return valueBlock.WithoutBraces();
             }

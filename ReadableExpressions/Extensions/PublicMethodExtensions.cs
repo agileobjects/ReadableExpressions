@@ -1,13 +1,26 @@
-namespace AgileObjects.ReadableExpressions.Translations.Reflection
+namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Extensions;
     using NetStandardPolyfills;
+    using Translations.Reflection;
 
-    internal static class MethodExtensions
+    /// <summary>
+    /// Provides extension methods to use with <see cref="IMethod"/> implementations.
+    /// </summary>
+    public static class PublicMethodExtensions
     {
+        /// <summary>
+        /// Gets the Types of this <see cref="IMethod"/>'s generic arguments, if they are not all
+        /// implicitly specified by its arguments.
+        /// </summary>
+        /// <param name="method">The <see cref="IMethod"/> for which to retrieve the argument Types.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <returns>
+        /// The Types of this <see cref="IMethod"/>'s generic arguments if they are not all implicitly
+        /// specified by its arguments, otherwise an empty Type array.
+        /// </returns>
         public static IList<Type> GetRequiredExplicitGenericArguments(
             this IMethod method,
             TranslationSettings settings)
@@ -27,7 +40,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                     requiredGenericParameterTypes);
             }
 
-            return requiredGenericParameterTypes.Any()
+            return InternalEnumerableExtensions.Any(requiredGenericParameterTypes)
                 ? method.GetGenericArguments()
                 : Enumerable<Type>.EmptyArray;
         }

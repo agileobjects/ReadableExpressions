@@ -4,6 +4,7 @@
 #if NETSTANDARD
     using System.Reflection;
 #endif
+    using Extensions;
     using NetStandardPolyfills;
     using Interfaces;
 

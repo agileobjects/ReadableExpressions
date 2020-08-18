@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Text.RegularExpressions;
+    using Extensions;
     using Formatting;
     using Interfaces;
     using NetStandardPolyfills;
