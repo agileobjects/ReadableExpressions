@@ -6,7 +6,11 @@
     using NetStandardPolyfills;
     using static MethodTranslationHelpers;
 
-    internal class MethodDefinitionTranslation : ITranslatable
+    /// <summary>
+    /// An <see cref="ITranslatable"/> for a method definition, including accessibility, scope, generic
+    /// arguments and method arguments.
+    /// </summary>
+    public class MethodDefinitionTranslation : ITranslatable
     {
         private readonly string _accessibility;
         private readonly string _modifiers;
@@ -17,6 +21,14 @@
         private readonly int _genericArgumentCount;
         private readonly ITranslatable _parametersTranslation;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MethodDefinitionTranslation"/> class for
+        /// the given <paramref name="method"/>.
+        /// </summary>
+        /// <param name="method">
+        /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public MethodDefinitionTranslation(
             IMethod method,
             TranslationSettings settings)
@@ -88,6 +100,13 @@
             }
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslatable"/> for the given <paramref name="method"/>, handling
+        /// properties and operators as well as regular methods.
+        /// </summary>
+        /// <param name="method">The MethodInfo for which to create the <see cref="ITranslatable"/>.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <returns>An <see cref="ITranslatable"/> for the given <paramref name="method"/>.</returns>
         public static ITranslatable For(MethodInfo method, TranslationSettings settings)
         {
             if (method.IsPropertyGetterOrSetterCall(out var property))
@@ -108,14 +127,19 @@
             return new MethodDefinitionTranslation(new BclMethodWrapper(method), settings);
         }
 
+        /// <inheritdoc />
         public int TranslationSize { get; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
+        /// <inheritdoc />
         public int GetIndentSize() => _parametersTranslation.GetIndentSize();
 
+        /// <inheritdoc />
         public int GetLineCount() => _parametersTranslation.GetLineCount() + 1;
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
             writer.WriteKeywordToTranslation(_accessibility + _modifiers);

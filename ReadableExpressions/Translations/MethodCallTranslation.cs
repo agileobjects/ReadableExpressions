@@ -20,8 +20,19 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal static class MethodCallTranslation
+    /// <summary>
+    /// Provides methods for creating <see cref="ITranslation"/>s for different types of methods call.
+    /// </summary>
+    public static class MethodCallTranslation
     {
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="invocation"/>.
+        /// </summary>
+        /// <param name="invocation">The InvocationExpression for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="invocation"/>.</returns>
         public static ITranslation For(InvocationExpression invocation, ITranslationContext context)
         {
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
@@ -38,6 +49,14 @@
             return new StandardMethodCallTranslation(Invoke, subject, method, parameters, context);
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">The MethodCallExpression for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="methodCall"/>.</returns>
         public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
             if (methodCall.Method.IsPropertyGetterOrSetterCall(out var property))
@@ -98,6 +117,16 @@
                   (methodCall.Method.Name == nameof(string.Concat));
         }
 
+        /// <summary>
+        /// Get an <see cref="ITranslation"/> for the subject of this <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">
+        /// The MethodCallExpression for which to retrieve the subject <see cref="ITranslation"/>.
+        /// </param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns></returns>
         public static ITranslation GetSubjectTranslation(
             this MethodCallExpression methodCall,
             ITranslationContext context)
@@ -117,6 +146,15 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="method"/>.
+        /// </summary>
+        /// <param name="method">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="methodParameters">Expressions describing the <paramref name="method"/>'s parameters.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="method"/>.</returns>
         public static ITranslation For<TParameterExpression>(
             IMethod method,
             ICollection<TParameterExpression> methodParameters,
@@ -142,6 +180,18 @@
                 context);
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given custom type <paramref name="castMethod"/>.
+        /// </summary>
+        /// <param name="typeNameTranslation">
+        /// An <see cref="ITranslation"/> for the type to which the cast is being performed.
+        /// </param>
+        /// <param name="castMethod">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="castValue">An <see cref="ITranslation"/> for the value being cast.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="castMethod"/>.</returns>
         public static ITranslation ForCustomMethodCast(
             ITranslation typeNameTranslation,
             IMethod castMethod,
@@ -156,6 +206,18 @@
                 context);
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given dynamic <paramref name="method"/>.
+        /// </summary>
+        /// <param name="subjectTranslation">
+        /// An <see cref="ITranslation"/> for the object on which the dynamic method call is performed.
+        /// </param>
+        /// <param name="method">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="arguments">Expressions describing the <paramref name="method"/>'s arguments.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="method"/>.</returns>
         public static ITranslation ForDynamicMethodCall(
             ITranslation subjectTranslation,
             IMethod method,
