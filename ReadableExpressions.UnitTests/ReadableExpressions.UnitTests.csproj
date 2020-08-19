@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TRACE;FEATURE_EF;FEATURE_PARTIAL_TRUST;FEATURE_DYNAMIC;FEATURE_HTML;FEATURE_COMPILATION</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;FEATURE_EF;FEATURE_PARTIAL_TRUST;FEATURE_DYNAMIC;FEATURE_HTML</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
