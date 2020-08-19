@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
+    using Extensions;
     using Interfaces;
     using static MethodTranslationHelpers;
 
@@ -13,7 +14,7 @@
         public OperatorDefinitionTranslation(
             MethodInfo @operator,
             string typeKeyword,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _modifiers = GetAccessibility(@operator) + "static " + typeKeyword + " operator ";
 

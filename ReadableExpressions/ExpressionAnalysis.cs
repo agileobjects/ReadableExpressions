@@ -9,8 +9,16 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
-    internal class ExpressionAnalysis
+    /// <summary>
+    /// Contains information about an analysed Expression.
+    /// </summary>
+    public class ExpressionAnalysis
     {
         private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
@@ -27,23 +35,37 @@
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
-        public ExpressionAnalysis(TranslationSettings settings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
+        /// </summary>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> being used in the current Expression translation.
+        /// </param>
+        protected ExpressionAnalysis(TranslationSettings settings)
         {
             _settings = settings;
         }
 
         #region Factory Method
 
+        /// <summary>
+        /// Create an <see cref="ExpressionAnalysis"/> for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to analyse.</param>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> for the current Expression translation.
+        /// </param>
+        /// <returns>The <see cref="ExpressionAnalysis"/>.</returns>
         public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
             switch (expression.NodeType)
             {
-                case ExpressionType.DebugInfo:
-                case ExpressionType.Default:
-                case ExpressionType.Extension:
-                case ExpressionType.Parameter:
-                case ExpressionType.RuntimeVariables:
-                    return settings.EmptyAnalysis;
+                case DebugInfo:
+                case Default:
+                case Extension:
+                case Parameter:
+                case RuntimeVariables:
+                    return new ExpressionAnalysis(settings).Finalise();
             }
 
             var analysis = new ExpressionAnalysis(settings);
@@ -54,7 +76,12 @@
             return analysis;
         }
 
-        public ExpressionAnalysis Finalise()
+        /// <summary>
+        /// Finalises this <see cref="ExpressionAnalysis"/>, ensuring any required members are
+        /// initialised.
+        /// </summary>
+        /// <returns>This finalised <see cref="ExpressionAnalysis"/>.</returns>
+        protected virtual ExpressionAnalysis Finalise()
         {
             _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
             _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
@@ -63,31 +90,86 @@
 
         #endregion
 
+        /// <summary>
+        /// Gets the variables in the translated Expression which are first used as an output
+        /// parameter argument.
+        /// </summary>
         public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
 
+        /// <summary>
+        /// Gets the variables which can be declared as part of their initial assignment statement.
+        /// </summary>
         public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
 
-        public bool IsNotJoinedAssignment(Expression expression)
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
+        /// assignment where the assigned variable is declared as part of the assignment statement.
+        /// </summary>
+        /// <param name="expression">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> represents an assignment where the assigned
+        /// variable is declared as part of the assignment statement, otherwise false.
+        /// </returns>
+        public bool IsJoinedAssignment(Expression expression)
         {
-            return (expression.NodeType != ExpressionType.Assign) ||
-                   _joinedAssignments?.Contains((BinaryExpression)expression) != true;
+            return (expression.NodeType == Assign) &&
+                   _joinedAssignments?.Contains((BinaryExpression)expression) == true;
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
+        /// variable in a Catch block.
+        /// </summary>
+        /// <param name="variable">The Expression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="variable"/> is the Exception variable in a Catch block,
+        /// otherwise false.
+        /// </returns>
         public bool IsCatchBlockVariable(Expression variable)
         {
-            return (variable.NodeType == ExpressionType.Parameter) &&
+            return (variable.NodeType == Parameter) &&
                   (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// <see cref="GotoExpression"/>.
+        /// </summary>
+        /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
+        /// otherwise false.
+        /// </returns>
         public bool IsReferencedByGoto(LabelTarget labelTarget)
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
+        /// final statement in a block, and so should be rendered as a return statement.
+        /// </summary>
+        /// <param name="goto">The GotoExpression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// otherwise false.
+        /// </returns>
         public bool GoesToReturnLabel(GotoExpression @goto)
             => _gotoReturnGotos?.Contains(@goto) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
+        /// of multiple method calls.
+        /// </summary>
+        /// <param name="methodCall">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
+        /// otherwise false.
+        /// </returns>
         public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
             => _chainedMethodCalls?.Contains(methodCall) == true;
 
+        /// <summary>
+        /// Gets a Dictionary of ParameterExpression variables, keyed by their Type.
+        /// </summary>
         public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
             => _unnamedVariablesByType ??= _accessedVariables?
                 .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
@@ -95,7 +177,11 @@
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
                  EmptyDictionary<Type, ParameterExpression[]>.Instance;
 
-        private void Visit(Expression expression)
+        /// <summary>
+        /// Visits the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to visit.</param>
+        protected virtual void Visit(Expression expression)
         {
             while (true)
             {
@@ -106,156 +192,154 @@
 
                 switch (expression.NodeType)
                 {
-                    case ExpressionType.Constant:
-                    case ExpressionType.DebugInfo:
-                    case ExpressionType.Default:
-                    case ExpressionType.Extension:
+                    case Constant:
+                        Visit((ConstantExpression)expression);
                         return;
 
-                    case ExpressionType.ArrayLength:
+                    case ArrayLength:
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
-                    case ExpressionType.Decrement:
-                    case ExpressionType.Increment:
-                    case ExpressionType.IsFalse:
-                    case ExpressionType.IsTrue:
-                    case ExpressionType.Negate:
-                    case ExpressionType.NegateChecked:
-                    case ExpressionType.Not:
-                    case ExpressionType.OnesComplement:
-                    case ExpressionType.PostDecrementAssign:
-                    case ExpressionType.PostIncrementAssign:
-                    case ExpressionType.PreDecrementAssign:
-                    case ExpressionType.PreIncrementAssign:
-                    case ExpressionType.Quote:
-                    case ExpressionType.Throw:
-                    case ExpressionType.TypeAs:
-                    case ExpressionType.UnaryPlus:
-                    case ExpressionType.Unbox:
+                    case ConvertChecked:
+                    case Decrement:
+                    case Increment:
+                    case IsFalse:
+                    case IsTrue:
+                    case Negate:
+                    case NegateChecked:
+                    case Not:
+                    case OnesComplement:
+                    case PostDecrementAssign:
+                    case PostIncrementAssign:
+                    case PreDecrementAssign:
+                    case PreIncrementAssign:
+                    case Quote:
+                    case Throw:
+                    case TypeAs:
+                    case UnaryPlus:
+                    case Unbox:
                         expression = ((UnaryExpression)expression).Operand;
                         continue;
 
-                    case ExpressionType.Add:
-                    case ExpressionType.AddAssign:
-                    case ExpressionType.AddAssignChecked:
-                    case ExpressionType.AddChecked:
-                    case ExpressionType.And:
-                    case ExpressionType.AndAlso:
-                    case ExpressionType.AndAssign:
-                    case ExpressionType.ArrayIndex:
-                    case ExpressionType.Assign:
-                    case ExpressionType.Coalesce:
-                    case ExpressionType.Divide:
-                    case ExpressionType.DivideAssign:
-                    case ExpressionType.Equal:
-                    case ExpressionType.ExclusiveOr:
-                    case ExpressionType.ExclusiveOrAssign:
-                    case ExpressionType.GreaterThan:
-                    case ExpressionType.GreaterThanOrEqual:
-                    case ExpressionType.LeftShift:
-                    case ExpressionType.LeftShiftAssign:
-                    case ExpressionType.LessThan:
-                    case ExpressionType.LessThanOrEqual:
-                    case ExpressionType.ModuloAssign:
-                    case ExpressionType.Multiply:
-                    case ExpressionType.MultiplyAssign:
-                    case ExpressionType.MultiplyAssignChecked:
-                    case ExpressionType.MultiplyChecked:
-                    case ExpressionType.Modulo:
-                    case ExpressionType.NotEqual:
-                    case ExpressionType.Or:
-                    case ExpressionType.OrAssign:
-                    case ExpressionType.OrElse:
-                    case ExpressionType.Power:
-                    case ExpressionType.PowerAssign:
-                    case ExpressionType.RightShift:
-                    case ExpressionType.RightShiftAssign:
-                    case ExpressionType.Subtract:
-                    case ExpressionType.SubtractAssign:
-                    case ExpressionType.SubtractAssignChecked:
-                    case ExpressionType.SubtractChecked:
+                    case Add:
+                    case AddAssign:
+                    case AddAssignChecked:
+                    case AddChecked:
+                    case And:
+                    case AndAlso:
+                    case AndAssign:
+                    case ArrayIndex:
+                    case Assign:
+                    case Coalesce:
+                    case Divide:
+                    case DivideAssign:
+                    case Equal:
+                    case ExclusiveOr:
+                    case ExclusiveOrAssign:
+                    case GreaterThan:
+                    case GreaterThanOrEqual:
+                    case LeftShift:
+                    case LeftShiftAssign:
+                    case LessThan:
+                    case LessThanOrEqual:
+                    case ModuloAssign:
+                    case Multiply:
+                    case MultiplyAssign:
+                    case MultiplyAssignChecked:
+                    case MultiplyChecked:
+                    case Modulo:
+                    case NotEqual:
+                    case Or:
+                    case OrAssign:
+                    case OrElse:
+                    case Power:
+                    case PowerAssign:
+                    case RightShift:
+                    case RightShiftAssign:
+                    case Subtract:
+                    case SubtractAssign:
+                    case SubtractAssignChecked:
+                    case SubtractChecked:
                         Visit((BinaryExpression)expression);
                         return;
 
-                    case ExpressionType.Block:
+                    case Block:
                         Visit((BlockExpression)expression);
                         return;
 
-                    case ExpressionType.Call:
+                    case Call:
                         Visit((MethodCallExpression)expression);
                         return;
 
-                    case ExpressionType.Conditional:
+                    case Conditional:
                         Visit((ConditionalExpression)expression);
                         return;
 
-                    case ExpressionType.Dynamic:
+                    case Dynamic:
                         Visit(((DynamicExpression)expression).Arguments);
                         return;
 
-                    case ExpressionType.Goto:
+                    case Goto:
                         Visit((GotoExpression)expression);
                         return;
 
-                    case ExpressionType.Index:
+                    case Index:
                         Visit((IndexExpression)expression);
                         return;
 
-                    case ExpressionType.Invoke:
+                    case Invoke:
                         Visit((InvocationExpression)expression);
                         return;
 
-                    case ExpressionType.Label:
+                    case Label:
                         expression = ((LabelExpression)expression).DefaultValue;
                         continue;
 
-                    case ExpressionType.Lambda:
+                    case Lambda:
                         Visit((LambdaExpression)expression);
                         return;
 
-                    case ExpressionType.ListInit:
+                    case ListInit:
                         Visit((ListInitExpression)expression);
                         return;
 
-                    case ExpressionType.Loop:
+                    case Loop:
                         expression = ((LoopExpression)expression).Body;
                         continue;
 
-                    case ExpressionType.MemberAccess:
-                        expression = ((MemberExpression)expression).Expression;
+                    case MemberAccess:
+                        expression = Visit((MemberExpression)expression);
                         continue;
 
-                    case ExpressionType.MemberInit:
+                    case MemberInit:
                         Visit((MemberInitExpression)expression);
                         return;
 
-                    case ExpressionType.New:
+                    case New:
                         Visit((NewExpression)expression);
                         return;
 
-                    case ExpressionType.NewArrayInit:
-                    case ExpressionType.NewArrayBounds:
+                    case NewArrayInit:
+                    case NewArrayBounds:
                         Visit((NewArrayExpression)expression);
                         return;
 
-                    case ExpressionType.Parameter:
+                    case Parameter:
                         Visit((ParameterExpression)expression);
                         return;
 
-                    case ExpressionType.RuntimeVariables:
+                    case RuntimeVariables:
                         Visit(((RuntimeVariablesExpression)expression).Variables);
                         return;
 
-                    case ExpressionType.Switch:
+                    case Switch:
                         Visit((SwitchExpression)expression);
                         return;
 
-                    case ExpressionType.Try:
+                    case Try:
                         Visit((TryExpression)expression);
                         return;
 
-                    case ExpressionType.TypeEqual:
-                    case ExpressionType.TypeIs:
+                    case TypeEqual:
+                    case TypeIs:
                         expression = ((TypeBinaryExpression)expression).Expression;
                         continue;
 
@@ -267,14 +351,9 @@
 
         private void Visit(BinaryExpression binary)
         {
-            if ((binary.NodeType == ExpressionType.Assign) &&
-                (binary.Left.NodeType == ExpressionType.Parameter) &&
-               (_joinedAssignmentVariables?.Contains(binary.Left) != true) &&
-               (_assignedAssignments?.Contains(binary) != true))
+            if (IsJoinableVariableAssignment(binary, out var variable))
             {
-                var variable = (ParameterExpression)binary.Left;
-
-                if (VariableHasNotYetBeenAccessed(variable))
+                if (IsFirstAccess(variable))
                 {
                     if (_constructs?.Any() == true)
                     {
@@ -283,8 +362,9 @@
                     }
 
                     (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
-                    (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
                     (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
+
+                    AddVariableAccess(variable);
                 }
 
                 AddAssignmentIfAppropriate(binary.Right);
@@ -300,7 +380,46 @@
             Visit(binary.Right);
         }
 
-        private void Visit(BlockExpression block)
+        private bool IsJoinableVariableAssignment(
+            BinaryExpression binary,
+            out ParameterExpression variable)
+        {
+            if (binary.NodeType != Assign ||
+                binary.Left.NodeType != Parameter ||
+               _assignedAssignments?.Contains(binary) == true)
+            {
+                variable = null;
+                return false;
+            }
+
+            variable = (ParameterExpression)binary.Left;
+
+            return IsAssignmentJoinable(variable);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the assignment of the given <paramref name="variable"/>
+        /// can be joined with its declaration.
+        /// </summary>
+        /// <param name="variable">The variable for which to make the determination.</param>
+        /// <returns>
+        /// True if the assignment of the given <paramref name="variable"/> can be joined with its
+        /// declaration, otherwise false.
+        /// </returns>
+        protected virtual bool IsAssignmentJoinable(ParameterExpression variable)
+            => _joinedAssignmentVariables?.Contains(variable) != true;
+
+        private bool IsFirstAccess(Expression variable)
+            => _accessedVariables?.Contains(variable) != true;
+
+        private void AddVariableAccess(ParameterExpression variable)
+            => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+
+        /// <summary>
+        /// Visits the given <paramref name="block"/>.
+        /// </summary>
+        /// <param name="block">The BlockExpression to visit.</param>
+        protected virtual void Visit(BlockExpression block)
         {
             (_blocks ??= new Stack<BlockExpression>()).Push(block);
 
@@ -310,69 +429,22 @@
             _blocks.Pop();
         }
 
-        private bool VariableHasNotYetBeenAccessed(Expression variable)
-            => _accessedVariables?.Contains(variable) != true;
-
-        private void Visit(MethodCallExpression methodCall)
-        {
-            if (_chainedMethodCalls?.Contains(methodCall) != true)
-            {
-                var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
-
-                if (methodCallChain.Length > 1)
-                {
-                    _chainedMethodCalls ??= new List<MethodCallExpression>();
-
-                    if (methodCallChain.Length > 2)
-                    {
-                        _chainedMethodCalls.AddRange(methodCallChain);
-                    }
-                    else if (methodCallChain[0].ToString().Contains(" ... "))
-                    {
-                        // Expression.ToString() replaces multiple lines with ' ... ';
-                        // potential fragile, but works unless MS change it:
-                        _chainedMethodCalls.AddRange(methodCallChain);
-                    }
-                }
-            }
-
-            if (_settings.DeclareOutParamsInline)
-            {
-                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
-                {
-                    var argument = methodCall.Arguments[i];
-
-                    if ((argument.NodeType == ExpressionType.Parameter) &&
-                        VariableHasNotYetBeenAccessed(argument))
-                    {
-                        (_inlineOutputVariables ??= new List<ParameterExpression>())
-                            .Add((ParameterExpression)argument);
-                    }
-                }
-            }
-
-            Visit(methodCall.Object);
-            Visit(methodCall.Arguments);
-        }
-
-        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
-        {
-            while (methodCall != null)
-            {
-                yield return methodCall;
-
-                methodCall = methodCall.GetSubject() as MethodCallExpression;
-            }
-        }
-
         private void Visit(ConditionalExpression conditional)
         {
-            VisitConstruct(conditional, c =>
+            VisitConstruct(conditional, cnd =>
             {
-                Visit(c.Test);
-                Visit(c.IfTrue);
-                Visit(c.IfFalse);
+                Visit(cnd.Test);
+                Visit(cnd.IfTrue);
+                Visit(cnd.IfFalse);
             });
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="constant"/>.
+        /// </summary>
+        /// <param name="constant">The ConstantExpression to visit.</param>
+        protected virtual void Visit(ConstantExpression constant)
+        {
         }
 
         private void Visit(GotoExpression @goto)
@@ -384,7 +456,7 @@
 
             var currentBlockFinalExpression = _blocks?.Peek()?.Expressions.Last();
 
-            if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
+            if (currentBlockFinalExpression?.NodeType == Label)
             {
                 var returnLabel = (LabelExpression)currentBlockFinalExpression;
 
@@ -397,7 +469,7 @@
 
             (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
 
-            VisitValue:
+        VisitValue:
             Visit(@goto.Value);
         }
 
@@ -425,7 +497,76 @@
             Visit(init.Initializers);
         }
 
-        private void Visit(NewExpression newing) => Visit(newing.Arguments);
+        /// <summary>
+        /// Visits the given <paramref name="memberAccess"/>.
+        /// </summary>
+        /// <param name="memberAccess">The MemberExpression to visit.</param>
+        /// <returns>The Expression on which to continue analysis.</returns>
+        protected virtual Expression Visit(MemberExpression memberAccess)
+            => memberAccess.Expression;
+
+        /// <summary>
+        /// Visits the given <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">The MethodCallExpression to visit.</param>
+        protected virtual void Visit(MethodCallExpression methodCall)
+        {
+            if (_chainedMethodCalls?.Contains(methodCall) != true)
+            {
+                var methodCallChain = GetChainedMethodCalls(methodCall).ToArray();
+
+                if (methodCallChain.Length > 1)
+                {
+                    _chainedMethodCalls ??= new List<MethodCallExpression>();
+
+                    if (methodCallChain.Length > 2)
+                    {
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                    else if (methodCallChain[0].ToString().Contains(" ... "))
+                    {
+                        // Expression.ToString() replaces multiple lines with ' ... ';
+                        // potentially fragile, but works unless MS change it:
+                        _chainedMethodCalls.AddRange(methodCallChain);
+                    }
+                }
+            }
+
+            if (_settings.DeclareOutParamsInline)
+            {
+                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                {
+                    var argument = methodCall.Arguments[i];
+
+                    if ((argument.NodeType == Parameter) &&
+                        IsFirstAccess(argument))
+                    {
+                        (_inlineOutputVariables ??= new List<ParameterExpression>())
+                            .Add((ParameterExpression)argument);
+                    }
+                }
+            }
+
+            Visit(methodCall.Object);
+            Visit(methodCall.Arguments);
+        }
+
+        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(
+            MethodCallExpression methodCall)
+        {
+            while (methodCall != null)
+            {
+                yield return methodCall;
+
+                methodCall = methodCall.GetSubject() as MethodCallExpression;
+            }
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="newing"/>.
+        /// </summary>
+        /// <param name="newing">The NewExpression to visit.</param>
+        protected virtual void Visit(NewExpression newing) => Visit(newing.Arguments);
 
         private void Visit(IList<ElementInit> elementInits)
         {
@@ -470,18 +611,27 @@
             }
         }
 
-        private void Visit(NewArrayExpression na) => Visit(na.Expressions);
+        /// <summary>
+        /// Visits the given <paramref name="newArray"/>.
+        /// </summary>
+        /// <param name="newArray">The NewArrayExpression to visit.</param>
+        protected virtual void Visit(NewArrayExpression newArray)
+            => Visit(newArray.Expressions);
 
-        private void Visit(ParameterExpression variable)
+        /// <summary>
+        /// Visits the given <paramref name="variable"/>.
+        /// </summary>
+        /// <param name="variable">The ParameterExpression to visit.</param>
+        protected virtual void Visit(ParameterExpression variable)
         {
             if (variable == null)
             {
                 return;
             }
 
-            if (VariableHasNotYetBeenAccessed(variable))
+            if (IsFirstAccess(variable))
             {
-                (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+                AddVariableAccess(variable);
             }
 
             if (_joinedAssignmentVariables?.Contains(variable) != true)
@@ -548,11 +698,18 @@
             });
         }
 
-        private void Visit(CatchBlock @catch)
+        /// <summary>
+        /// Visits the given <paramref name="catch"/>.
+        /// </summary>
+        /// <param name="catch">The CatchBlock to visit.</param>
+        protected virtual void Visit(CatchBlock @catch)
         {
-            if (@catch.Variable != null)
+            var catchVariable = @catch.Variable;
+
+            if (catchVariable != null)
             {
-                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(@catch.Variable);
+                (_catchBlockVariables ??= new List<ParameterExpression>())
+                    .Add(catchVariable);
             }
 
             VisitConstruct(@catch, c =>
@@ -571,19 +728,44 @@
             }
         }
 
-        private void Visit(IList<Expression> expressions)
+        /// <summary>
+        /// Visits the given <paramref name="expressions"/>.
+        /// </summary>
+        /// <param name="expressions">The Expressions to visit.</param>
+        protected void Visit<TExpression>(IList<TExpression> expressions)
+            where TExpression : Expression
         {
-            for (int i = 0, n = expressions.Count; i < n; ++i)
+            var expressionCount = expressions.Count;
+
+            switch (expressionCount)
             {
-                Visit(expressions[i]);
+                case 0:
+                    return;
+
+                case 1:
+                    Visit(expressions[0]);
+                    return;
+
+                default:
+                    for (var i = 0; ;)
+                    {
+                        Visit(expressions[i]);
+
+                        ++i;
+
+                        if (i == expressionCount)
+                        {
+                            return;
+                        }
+                    }
             }
         }
 
-        private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> baseMethod)
+        private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> visitAction)
         {
             (_constructs ??= new Stack<object>()).Push(expression);
 
-            baseMethod.Invoke(expression);
+            visitAction.Invoke(expression);
 
             _constructs.Pop();
         }
@@ -594,16 +776,16 @@
             {
                 switch (assignedValue.NodeType)
                 {
-                    case ExpressionType.Block:
+                    case Block:
                         assignedValue = ((BlockExpression)assignedValue).Result;
                         continue;
 
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
+                    case ConvertChecked:
                         assignedValue = ((UnaryExpression)assignedValue).Operand;
                         continue;
 
-                    case ExpressionType.Assign:
+                    case Assign:
                         (_assignedAssignments ??= new List<Expression>()).Add(assignedValue);
                         break;
                 }

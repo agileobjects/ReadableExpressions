@@ -20,14 +20,25 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal static class MethodCallTranslation
+    /// <summary>
+    /// Provides methods for creating <see cref="ITranslation"/>s for different types of methods call.
+    /// </summary>
+    public static class MethodCallTranslation
     {
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="invocation"/>.
+        /// </summary>
+        /// <param name="invocation">The InvocationExpression for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="invocation"/>.</returns>
         public static ITranslation For(InvocationExpression invocation, ITranslationContext context)
         {
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
             var method = new BclMethodWrapper(invocationMethod);
-            var parameters = new ParameterSetTranslation(method, invocation.Arguments, context).WithParentheses();
+            var parameters = ParameterSetTranslation.For(method, invocation.Arguments, context).WithParentheses();
             var subject = context.GetTranslationFor(invocation.Expression);
 
             if (subject.NodeType == Lambda)
@@ -38,13 +49,21 @@
             return new StandardMethodCallTranslation(Invoke, subject, method, parameters, context);
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">The MethodCallExpression for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="methodCall"/>.</returns>
         public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
             if (methodCall.Method.IsPropertyGetterOrSetterCall(out var property))
             {
                 var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
 
-                if (methodCall.Method.ReturnType != typeof(void))
+                if (methodCall.HasReturnType())
                 {
                     return getterTranslation;
                 }
@@ -58,14 +77,14 @@
             }
 
             var method = new BclMethodWrapper(methodCall.Method);
-            var parameters = new ParameterSetTranslation(method, methodCall.Arguments, context);
+            var parameters = ParameterSetTranslation.For(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())
             {
                 return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
-            var subject = GetSubjectTranslation(methodCall, context);
+            var subject = methodCall.GetSubjectTranslation(context);
 
             if (IsIndexedPropertyAccess(methodCall))
             {
@@ -98,7 +117,19 @@
                   (methodCall.Method.Name == nameof(string.Concat));
         }
 
-        public static ITranslation GetSubjectTranslation(MethodCallExpression methodCall, ITranslationContext context)
+        /// <summary>
+        /// Get an <see cref="ITranslation"/> for the subject of this <paramref name="methodCall"/>.
+        /// </summary>
+        /// <param name="methodCall">
+        /// The MethodCallExpression for which to retrieve the subject <see cref="ITranslation"/>.
+        /// </param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns></returns>
+        public static ITranslation GetSubjectTranslation(
+            this MethodCallExpression methodCall,
+            ITranslationContext context)
         {
             return context.GetTranslationFor(methodCall.GetSubject()) ??
                    context.GetTranslationFor(methodCall.Method.DeclaringType);
@@ -115,6 +146,52 @@
             return property?.GetIndexParameters().Any() == true;
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given <paramref name="method"/>.
+        /// </summary>
+        /// <param name="method">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="methodParameters">Expressions describing the <paramref name="method"/>'s parameters.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="method"/>.</returns>
+        public static ITranslation For<TParameterExpression>(
+            IMethod method,
+            ICollection<TParameterExpression> methodParameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
+            var thisTranslation = new FixedValueTranslation(
+                MemberAccess,
+                "this",
+                typeof(object),
+                TokenType.Keyword,
+                context);
+
+            var parameters = ParameterSetTranslation
+                .For(method, methodParameters, context)
+                .WithParentheses();
+
+            return new StandardMethodCallTranslation(
+                Call,
+                thisTranslation,
+                method,
+                parameters,
+                context);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given custom type <paramref name="castMethod"/>.
+        /// </summary>
+        /// <param name="typeNameTranslation">
+        /// An <see cref="ITranslation"/> for the type to which the cast is being performed.
+        /// </param>
+        /// <param name="castMethod">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="castValue">An <see cref="ITranslation"/> for the value being cast.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="castMethod"/>.</returns>
         public static ITranslation ForCustomMethodCast(
             ITranslation typeNameTranslation,
             IMethod castMethod,
@@ -129,6 +206,18 @@
                 context);
         }
 
+        /// <summary>
+        /// Creates an <see cref="ITranslation"/> for the given dynamic <paramref name="method"/>.
+        /// </summary>
+        /// <param name="subjectTranslation">
+        /// An <see cref="ITranslation"/> for the object on which the dynamic method call is performed.
+        /// </param>
+        /// <param name="method">The <see cref="IMethod"/> for which to create the <see cref="ITranslation"/>.</param>
+        /// <param name="arguments">Expressions describing the <paramref name="method"/>'s arguments.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
+        /// <returns>An <see cref="ITranslation"/> for the given <paramref name="method"/>.</returns>
         public static ITranslation ForDynamicMethodCall(
             ITranslation subjectTranslation,
             IMethod method,
@@ -139,7 +228,7 @@
                 Dynamic,
                 subjectTranslation,
                 method,
-                new ParameterSetTranslation(arguments, context).WithParentheses(),
+                ParameterSetTranslation.For(arguments, context).WithParentheses(),
                 context);
         }
 
@@ -212,8 +301,8 @@
             {
                 var indentSize = _subjectTranslation.GetIndentSize();
 
-                indentSize += _isPartOfMethodCallChain 
-                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength 
+                indentSize += _isPartOfMethodCallChain
+                    ? _methodInvocationTranslation.GetLineCount() * _context.Settings.IndentLength
                     : _methodInvocationTranslation.GetLineCount();
 
                 return indentSize;
@@ -221,8 +310,8 @@
 
             public int GetLineCount()
             {
-                var lineCount = 
-                    _subjectTranslation.GetLineCount() + 
+                var lineCount =
+                    _subjectTranslation.GetLineCount() +
                     _methodInvocationTranslation.GetLineCount();
 
                 if (_isPartOfMethodCallChain)
@@ -266,7 +355,7 @@
                 _parameters = parameters;
                 _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
                 _explicitGenericArgumentCount = _explicitGenericArguments.Length;
-                
+
                 TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
 
                 FormattingSize =
@@ -278,23 +367,10 @@
                 ITranslationContext context,
                 out int translationsSize)
             {
-                if (!_method.IsGenericMethod)
-                {
-                    translationsSize = 0;
-                    return Enumerable<ITranslatable>.EmptyArray;
-                }
+                var requiredGenericParameterTypes = _method
+                    .GetRequiredExplicitGenericArguments(context.Settings);
 
-                var methodGenericDefinition = _method.GetGenericMethodDefinition();
-                var genericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
-
-                if (context.Settings.UseImplicitGenericParameters)
-                {
-                    RemoveSuppliedGenericTypeParameters(
-                        methodGenericDefinition.GetParameters().Project(p => p.ParameterType),
-                        genericParameterTypes);
-                }
-
-                if (!genericParameterTypes.Any())
+                if (!requiredGenericParameterTypes.Any())
                 {
                     translationsSize = 0;
                     return Enumerable<ITranslatable>.EmptyArray;
@@ -302,8 +378,7 @@
 
                 var argumentTranslationsSize = 0;
 
-                var arguments = _method
-                    .GetGenericArguments()
+                var arguments = requiredGenericParameterTypes
                     .Project(argumentType =>
                     {
                         if (argumentType.FullName == null)
@@ -323,24 +398,6 @@
                 translationsSize = argumentTranslationsSize;
 
                 return (translationsSize != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
-            }
-
-            private static void RemoveSuppliedGenericTypeParameters(
-                IEnumerable<Type> types,
-                ICollection<Type> genericParameterTypes)
-            {
-                foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
-                {
-                    if (type.IsGenericParameter && genericParameterTypes.Contains(type))
-                    {
-                        genericParameterTypes.Remove(type);
-                    }
-
-                    if (type.IsGenericType())
-                    {
-                        RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
-                    }
-                }
             }
 
             public Type Type => _method.ReturnType;

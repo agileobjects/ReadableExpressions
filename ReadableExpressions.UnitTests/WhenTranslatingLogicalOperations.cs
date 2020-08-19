@@ -1,6 +1,7 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -17,7 +18,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bothBoolsAreTheSame = CreateLambda((bool b1, bool b2) => b1 && b2);
 
-            var translated = ToReadableString(bothBoolsAreTheSame.Body);
+            var translated = bothBoolsAreTheSame.Body.ToReadableString();
 
             translated.ShouldBe("b1 && b2");
         }
@@ -27,7 +28,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bitwiseAnd = CreateLambda((bool b1, bool b2) => b1 & b2);
 
-            var translated = ToReadableString(bitwiseAnd.Body);
+            var translated = bitwiseAnd.Body.ToReadableString();
 
             translated.ShouldBe("b1 & b2");
         }
@@ -37,7 +38,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var eitherBoolsIsTrue = CreateLambda((bool b1, bool b2) => b1 || b2);
 
-            var translated = ToReadableString(eitherBoolsIsTrue.Body);
+            var translated = eitherBoolsIsTrue.Body.ToReadableString();
 
             translated.ShouldBe("b1 || b2");
         }
@@ -47,7 +48,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bitwiseOr = CreateLambda((bool b1, bool b2) => b1 | b2);
 
-            var translated = ToReadableString(bitwiseOr.Body);
+            var translated = bitwiseOr.Body.ToReadableString();
 
             translated.ShouldBe("b1 | b2");
         }
@@ -57,7 +58,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bitwiseExclusiveOr = CreateLambda((bool b1, bool b2) => b1 ^ b2);
 
-            var translated = ToReadableString(bitwiseExclusiveOr.Body);
+            var translated = bitwiseExclusiveOr.Body.ToReadableString();
 
             translated.ShouldBe("b1 ^ b2");
         }
@@ -67,7 +68,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bitwiseLeftShift = CreateLambda((int i1, int i2) => i1 << i2);
 
-            var translated = ToReadableString(bitwiseLeftShift.Body);
+            var translated = bitwiseLeftShift.Body.ToReadableString();
 
             translated.ShouldBe("i1 << i2");
         }
@@ -77,7 +78,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var bitwiseRightShift = CreateLambda((int i1, int i2) => i1 >> i2);
 
-            var translated = ToReadableString(bitwiseRightShift.Body);
+            var translated = bitwiseRightShift.Body.ToReadableString();
 
             translated.ShouldBe("i1 >> i2");
         }
@@ -88,7 +89,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Variable(typeof(int), "i");
             var unaryPlus = UnaryPlus(intVariable);
 
-            var translated = ToReadableString(unaryPlus);
+            var translated = unaryPlus.ToReadableString();
 
             translated.ShouldBe("+i");
         }
@@ -99,7 +100,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Variable(typeof(int), "i");
             var onesComplement = OnesComplement(intVariable);
 
-            var translated = ToReadableString(onesComplement);
+            var translated = onesComplement.ToReadableString();
 
             translated.ShouldBe("~i");
         }
@@ -109,7 +110,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var oneOrTwo = CreateLambda((bool? b1, bool b2) => b1 ?? b2);
 
-            var translated = ToReadableString(oneOrTwo.Body);
+            var translated = oneOrTwo.Body.ToReadableString();
 
             translated.ShouldBe("b1 ?? b2");
         }
@@ -119,7 +120,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var whatSize = CreateLambda((int i) => (i < 8) ? "Too small" : "Too big");
 
-            var translated = ToReadableString(whatSize.Body);
+            var translated = whatSize.Body.ToReadableString();
 
             translated.ShouldBe("(i < 8) ? \"Too small\" : \"Too big\"");
         }
@@ -129,7 +130,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var objectIsDisposable = CreateLambda((object o) => o is IDisposable);
 
-            var translated = ToReadableString(objectIsDisposable.Body);
+            var translated = objectIsDisposable.Body.ToReadableString();
 
             translated.ShouldBe("o is IDisposable");
         }
@@ -140,7 +141,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intVariable = Variable(typeof(int), "i");
             var intIsLong = TypeEqual(intVariable, typeof(long));
 
-            var translated = ToReadableString(intIsLong);
+            var translated = intIsLong.ToReadableString();
 
             translated.ShouldBe("false");
         }
@@ -151,7 +152,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var nullableLongVariable = Variable(typeof(long?), "l");
             var nullableLongIsNullableLong = TypeEqual(nullableLongVariable, typeof(long?));
 
-            var translated = ToReadableString(nullableLongIsNullableLong);
+            var translated = nullableLongIsNullableLong.ToReadableString();
 
             translated.ShouldBe("l != null");
         }
@@ -162,7 +163,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var intConstant = Constant(123, typeof(int));
             var intConstantIsInt = TypeEqual(intConstant, typeof(int));
 
-            var translated = ToReadableString(intConstantIsInt);
+            var translated = intConstantIsInt.ToReadableString();
 
             translated.ShouldBe("true");
         }
@@ -173,7 +174,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var objectVariable = Variable(typeof(object), "o");
             var objectIsString = TypeEqual(objectVariable, typeof(string));
 
-            var translated = ToReadableString(objectIsString);
+            var translated = objectIsString.ToReadableString();
 
             translated.ShouldBe("(o != null) && (o.GetType() == typeof(string))");
         }
@@ -184,7 +185,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "b");
             var boolIsTrue = IsTrue(boolVariable);
 
-            var translated = ToReadableString(boolIsTrue);
+            var translated = boolIsTrue.ToReadableString();
 
             translated.ShouldBe("b");
         }
@@ -195,7 +196,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "b");
             var boolIsFalse = IsFalse(boolVariable);
 
-            var translated = ToReadableString(boolIsFalse);
+            var translated = boolIsFalse.ToReadableString();
 
             translated.ShouldBe("!b");
         }

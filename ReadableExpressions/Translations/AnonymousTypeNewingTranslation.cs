@@ -8,6 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using Extensions;
     using Initialisations;
     using Interfaces;
 
@@ -31,7 +32,7 @@
             for (var i = 0; ;)
             {
                 initializers[i] = new AnonymousTypeInitializerTranslation(
-                    ctorParameters[i], 
+                    ctorParameters[i],
                     Parameters[i]);
 
                 ++i;

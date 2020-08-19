@@ -4,9 +4,9 @@
 
     internal static class DialogSettingsExtensions
     {
-        public static TranslationSettings Update(
+        public static ITranslationSettings Update(
             this VisualizerDialogSettings dialogSettings,
-            TranslationSettings settings)
+            ITranslationSettings settings)
         {
             if (dialogSettings.UseFullyQualifiedTypeNames)
             {

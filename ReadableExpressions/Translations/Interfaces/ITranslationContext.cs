@@ -7,16 +7,19 @@
     using System.Linq.Expressions;
 #endif
 
-    internal interface ITranslationContext
+    /// <summary>
+    /// Implementing classes will provide information about an Expression translation's context.
+    /// </summary>
+    public interface ITranslationContext
     {
         /// <summary>
-        /// Configuration for translation in this context
+        /// Gets the <see cref="TranslationSettings"/> to use for translation in this context.
         /// </summary>
         TranslationSettings Settings { get; }
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expression"/> which are first used as
-        /// an output parameter argument.
+        /// Gets the variables in the translated Expression which are first used as an output
+        /// parameter argument.
         /// </summary>
         ICollection<ParameterExpression> InlineOutputVariables { get; }
 
@@ -32,8 +35,8 @@
         bool ShouldBeDeclaredInline(ParameterExpression parameter);
 
         /// <summary>
-        /// Gets the variables in the translated <see cref="Expression"/> which should be declared
-        /// in the same statement in which they are assigned.
+        /// Gets the variables in the translated Expression which should be declared in the same
+        /// statement in which they are assigned.
         /// </summary>
         ICollection<ParameterExpression> JoinedAssignmentVariables { get; }
 
@@ -41,23 +44,23 @@
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an
         /// assignment where the assigned variable is declared as part of the assignment statement.
         /// </summary>
-        /// <param name="expression">The <see cref="Expression"/> to evaluate.</param>
+        /// <param name="expression">The Expression to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="expression"/> represents an assignment where the assigned
         /// variable is declared as part of the assignment statement, otherwise false.
         /// </returns>
-        bool IsNotJoinedAssignment(Expression expression);
+        bool IsJoinedAssignment(Expression expression);
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="expression"/> is the Exception
+        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
         /// variable in a Catch block.
         /// </summary>
-        /// <param name="expression">The expression for which to make the determination.</param>
+        /// <param name="variable">The Expression for which to make the determination.</param>
         /// <returns>
-        /// True if the given <paramref name="expression"/> is the Exception variable in a Catch block,
+        /// True if the given <paramref name="variable"/> is the Exception variable in a Catch block,
         /// otherwise false.
         /// </returns>
-        bool IsCatchBlockVariable(Expression expression);
+        bool IsCatchBlockVariable(Expression variable);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
@@ -85,7 +88,7 @@
         /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
         /// of multiple method calls.
         /// </summary>
-        /// <param name="methodCall">The <see cref="Expression"/> to evaluate.</param>
+        /// <param name="methodCall">The Expression to evaluate.</param>
         /// <returns>
         /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
         /// otherwise false.
@@ -103,6 +106,11 @@
         /// </returns>
         int? GetUnnamedVariableNumberOrNull(ParameterExpression variable);
 
+        /// <summary>
+        /// Gets the <see cref="ITranslation"/> for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression for which to get an <see cref="ITranslation"/>.</param>
+        /// <returns>The <see cref="ITranslation"/> for the given <paramref name="expression"/>.</returns>
         ITranslation GetTranslationFor(Expression expression);
     }
 }

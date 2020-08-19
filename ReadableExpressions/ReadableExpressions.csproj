@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
-    <TargetFrameworks>net35;net40;netstandard1.0;</TargetFrameworks>
+    <TargetFrameworks>net35;net40;netstandard1.0</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -12,13 +12,11 @@
     <AssemblyOriginatorKeyFile>..\ReadableExpressions.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    
-    <AssemblyVersion>2.5.0.0</AssemblyVersion>
-    <FileVersion>2.5.0.0</FileVersion>
-    <VersionPrefix>2.5.0</VersionPrefix>
-    <Version>2.5.0</Version>
+
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <Version>3.0.0-preview1</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
@@ -32,19 +30,14 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Wrapping long anonymous type translations
-- Support for using custom indents
-- Fixing formatted primitive variable names, re: #74
+    <PackageReleaseNotes>- Fixing empty block translation, re: #78
+- Fixing translation of non-array params argument values
 - Performance improvements
     </PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="../Icon.png" Pack="true" PackagePath="./" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
@@ -57,19 +50,23 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
+    <PackageReference Include="DynamicLanguageRuntime">
+      <Version>1.1.2</Version>
+    </PackageReference>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-    <PackageReference Include="DynamicLanguageRuntime">
-      <Version>1.1.2</Version>
-    </PackageReference>
+  <ItemGroup>
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
   </ItemGroup>
 
   <PropertyGroup>

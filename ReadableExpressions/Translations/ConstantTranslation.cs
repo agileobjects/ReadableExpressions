@@ -61,7 +61,7 @@
         }
 
         private static ITranslation FixedValueTranslation(
-            ConstantExpression constant, 
+            ConstantExpression constant,
             ITranslationContext context,
             TokenType tokenType = TokenType.Default)
         {
@@ -69,7 +69,7 @@
         }
 
         private static ITranslation FixedValueTranslation(
-            object value, 
+            object value,
             Type type,
             ITranslationContext context,
             TokenType tokenType = TokenType.Default)
@@ -77,7 +77,7 @@
             return FixedValueTranslation(value.ToString(), type, tokenType, context);
         }
 
-        private static ITranslation NullTranslation(Type type, ITranslationContext context) 
+        private static ITranslation NullTranslation(Type type, ITranslationContext context)
             => FixedValueTranslation("null", type, Keyword, context);
 
         private static ITranslation FixedValueTranslation(
@@ -158,15 +158,11 @@
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = ((string)constant.Value).Replace("\0", @"\0");
+                    var stringValue = ((string)constant.Value)
+                        .Replace("\0", @"\0")
+                        .Replace("\"", "\\\"");
 
-                    if (stringValue.IsComment())
-                    {
-                        translation = new CommentTranslation(stringValue, context);
-                        return true;
-                    }
-
-                    stringValue = "\"" + stringValue.Replace("\"", "\\\"") + "\"";
+                    stringValue = "\"" + stringValue + "\"";
                     translation = FixedValueTranslation(stringValue, typeof(string), Text, context);
                     return true;
             }
@@ -233,7 +229,7 @@
             ConstantExpression constant,
             ITranslationContext context)
         {
-            return FixedValueTranslation((long) constant.Value + "L", constant.Type, Numeric, context);
+            return FixedValueTranslation((long)constant.Value + "L", constant.Type, Numeric, context);
         }
 
         private static bool TryGetTypeTranslation(
@@ -253,7 +249,7 @@
 
         private static bool TryGetRegexTranslation(
             ConstantExpression constant,
-            ITranslationContext context, 
+            ITranslationContext context,
             out ITranslation translation)
         {
             if (constant.Type != typeof(Regex))
@@ -540,7 +536,7 @@
                     writer.WriteToTranslation(_timeSpan.Milliseconds);
                 }
 
-                EndTranslation:
+            EndTranslation:
                 writer.WriteToTranslation(')');
             }
 

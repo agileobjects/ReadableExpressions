@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.Extensions
 {
     using System.Collections.Generic;
+    using Common;
     using ReadableExpressions.Extensions;
 #if !NET35
     using Xunit;

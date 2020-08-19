@@ -12,34 +12,37 @@
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
 
-        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, TResult> projector)
+        public static TResult[] ProjectToArray<TItem, TResult>(
+            this IList<TItem> items,
+            Func<TItem, TResult> projector)
         {
             var itemCount = items.Count;
-            var result = new TResult[itemCount];
 
-            for (var i = 0; i < itemCount; ++i)
+            switch (itemCount)
             {
-                result[i] = projector.Invoke(items[i]);
+                case 0:
+                    return Enumerable<TResult>.EmptyArray;
+
+                case 1:
+                    return new[] { projector.Invoke(items[0]) };
+
+                default:
+
+                    var result = new TResult[itemCount];
+
+                    for (var i = 0; i < itemCount; ++i)
+                    {
+                        result[i] = projector.Invoke(items[i]);
+                    }
+
+                    return result;
             }
-
-            return result;
-        }
-
-        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, int, TResult> projector)
-        {
-            var itemCount = items.Count;
-            var result = new TResult[itemCount];
-
-            for (var i = 0; i < itemCount; ++i)
-            {
-                result[i] = projector.Invoke(items[i], i);
-            }
-
-            return result;
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, TResult> projector)
         {
             foreach (var item in items)
             {
@@ -48,7 +51,9 @@
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, int, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, int, TResult> projector)
         {
             var i = 0;
 
@@ -56,31 +61,6 @@
             {
                 yield return projector.Invoke(item, i++);
             }
-        }
-
-        [DebuggerStepThrough]
-        public static IList<T> Combine<T>(this ICollection<T> first, IList<T> second)
-        {
-            var secondCount = second.Count;
-            var combined = new T[first.Count + secondCount];
-            var index = 0;
-
-            foreach (var item in first)
-            {
-                combined[index] = item;
-
-                ++index;
-            }
-
-            for (var i = 0; i < secondCount;)
-            {
-                combined[index] = second[i];
-                
-                ++index;
-                ++i;
-            }
-
-            return combined;
         }
 
         [DebuggerStepThrough]
@@ -104,7 +84,7 @@
         [DebuggerStepThrough]
         public static T FirstOrDefault<T>(this IList<T> items, Func<T, bool> predicate)
         {
-            for (var i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count;)
             {
                 var item = items[i];
 
@@ -112,6 +92,8 @@
                 {
                     return item;
                 }
+
+                ++i;
             }
 
             return default(T);

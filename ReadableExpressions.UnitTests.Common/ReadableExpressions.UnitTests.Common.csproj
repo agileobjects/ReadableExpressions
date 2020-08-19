@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net35;net461;netstandard1.3</TargetFrameworks>
+    <LangVersion>8.0</LangVersion>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.Common</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.UnitTests.Common</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>0649;1701;1702</NoWarn>
+    <DebugType>full</DebugType>
+    <AssemblyOriginatorKeyFile>..\ReadableExpressions.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ClsCompliant.cs" Link="Properties\ClsCompliant.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
+  </ItemGroup>
+
+</Project>

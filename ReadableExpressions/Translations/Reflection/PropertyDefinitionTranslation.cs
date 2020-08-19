@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
+    using Extensions;
     using Interfaces;
 #if NETSTANDARD
     using NetStandardPolyfills;
@@ -18,7 +19,7 @@
 
         public PropertyDefinitionTranslation(
             PropertyInfo property,
-            ITranslationSettings settings)
+            TranslationSettings settings)
             : this(property, property.GetAccessors(nonPublic: true), settings)
         {
         }
@@ -26,7 +27,7 @@
         public PropertyDefinitionTranslation(
             PropertyInfo property,
             MethodInfo accessor,
-            ITranslationSettings settings)
+            TranslationSettings settings)
             : this(property, new[] { accessor }, settings)
         {
         }
@@ -34,7 +35,7 @@
         public PropertyDefinitionTranslation(
             PropertyInfo property,
             MethodInfo[] accessors,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             _accessibility = GetAccessibility(property);
             _modifiers = GetModifiers(accessors[0]);
@@ -121,7 +122,7 @@
             public PropertyAccessorDefinitionTranslation(
                 PropertyDefinitionTranslation parent,
                 MethodInfo accessor,
-                ITranslationSettings settings)
+                TranslationSettings settings)
             {
                 var accessibility = GetAccessibility(accessor);
                 _accessor = accessor.ReturnType != typeof(void) ? "get" : "set";

@@ -15,18 +15,43 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class ExpressionTreeTranslation : ITranslationContext
+    /// <summary>
+    /// The root class which translates an Expression. Also provides the default
+    /// <see cref="ITranslationContext"/> implementation.
+    /// </summary>
+    public class ExpressionTranslation : ITranslationContext
     {
+        private readonly Expression _expression;
         private readonly TranslationSettings _settings;
         private readonly ExpressionAnalysis _expressionAnalysis;
-        private readonly ITranslation _root;
         private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public ExpressionTreeTranslation(Expression expression, TranslationSettings settings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
+        public ExpressionTranslation(Expression expression, TranslationSettings settings)
+            : this(expression, ExpressionAnalysis.For(expression, settings), settings)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="expressionAnalysis">
+        /// The <see cref="ExpressionAnalysis"/> describing the <paramref name="expression"/>.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
+        protected ExpressionTranslation(
+            Expression expression,
+            ExpressionAnalysis expressionAnalysis,
+            TranslationSettings settings)
+        {
+            _expression = expression;
             _settings = settings;
-            _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
-            _root = GetTranslationFor(expression);
+            _expressionAnalysis = expressionAnalysis;
         }
 
         #region ITranslationContext Members
@@ -54,11 +79,11 @@
         ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
             => _expressionAnalysis.JoinedAssignmentVariables;
 
-        bool ITranslationContext.IsNotJoinedAssignment(Expression expression)
-            => _expressionAnalysis.IsNotJoinedAssignment(expression);
+        bool ITranslationContext.IsJoinedAssignment(Expression expression)
+            => _expressionAnalysis.IsJoinedAssignment(expression);
 
-        bool ITranslationContext.IsCatchBlockVariable(Expression expression)
-            => _expressionAnalysis.IsCatchBlockVariable(expression);
+        bool ITranslationContext.IsCatchBlockVariable(Expression variable)
+            => _expressionAnalysis.IsCatchBlockVariable(variable);
 
         bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
             => _expressionAnalysis.IsReferencedByGoto(labelTarget);
@@ -81,7 +106,8 @@
             return Array.IndexOf(variablesOfType, variable, 0) + 1;
         }
 
-        public ITranslation GetTranslationFor(Expression expression)
+        /// <inheritdoc />
+        public virtual ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)
             {
@@ -244,16 +270,25 @@
 
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
-            }
 
-            return new FixedValueTranslation(expression, this);
+                case CommentExpression.ExpressionType:
+                    return new CommentTranslation((CommentExpression)expression, this);
+
+                default:
+                    return new FixedValueTranslation(expression, this);
+            }
         }
 
         #endregion
 
+        /// <summary>
+        /// Gets the source-code string translation of the given Expression.
+        /// </summary>
+        /// <returns>The source-code string translation of the given Expression.</returns>
         public string GetTranslation()
         {
-            var writer = new TranslationWriter(_settings, _root);
+            var root = GetTranslationFor(_expression);
+            var writer = new TranslationWriter(_settings, root);
 
             return writer.GetContent();
         }

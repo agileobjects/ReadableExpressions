@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Interfaces;
 
     internal class LambdaTranslation : ITranslation, IPotentialMultiStatementTranslatable
@@ -18,7 +19,7 @@
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
             Type = lambda.Type;
-            _parameters = new ParameterSetTranslation(lambda.Parameters, context);
+            _parameters = ParameterSetTranslation.For(lambda.Parameters, context);
             _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
 
             TranslationSize =

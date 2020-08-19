@@ -1,13 +1,12 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Common
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using NetStandardPolyfills;
-    using ReadableExpressions.Extensions;
 
-    public static class ShouldExtensions
+    public static class FluentAssertionExtensions
     {
         public static void ShouldBeDefault<T>(this T value) => value.ShouldBe(default(T));
 
@@ -54,7 +53,7 @@
             }
         }
 
-        private static readonly MethodInfo _areEqualMethod = typeof(ShouldExtensions)
+        private static readonly MethodInfo _areEqualMethod = typeof(FluentAssertionExtensions)
             .GetNonPublicStaticMethod("AreEqual");
 
         private static bool AreEqual<TExpected, TActual>(TExpected expected, TActual actual)
@@ -203,11 +202,11 @@
             value.GetValueOrDefault().ShouldBeTrue();
         }
 
-        public static void ShouldBeTrue(this bool boolValue)
+        public static void ShouldBeTrue(this bool boolValue, string errorMessage = null)
         {
             if (boolValue != true)
             {
-                Asplode("true", "false");
+                Asplode("true", "false", errorMessage);
             }
         }
 
@@ -391,14 +390,19 @@
             return dictionary;
         }
 
-        public static void ShouldBeOfType<TExpected>(this object actual)
+        public static TExpected ShouldBeOfType<TExpected>(this object actual)
+            where TExpected : class
         {
-            if (!(actual is TExpected))
+            var expected = actual as TExpected;
+
+            if (expected == null)
             {
                 Asplode(
-                    "An object of type " + typeof(TExpected).GetFriendlyName(),
-                    actual.GetType().GetFriendlyName());
+                    "An object of type " + typeof(TExpected).Name,
+                    actual.GetType().Name);
             }
+
+            return expected;
         }
 
         public static void ShouldContain<T>(this IList<T> actual, T expected)

@@ -6,9 +6,14 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Interfaces;
 
-    internal class CodeBlockTranslation :
+    /// <summary>
+    /// An <see cref="ITranslation"/> for a potentiall multi-line source code block, providing
+    /// methods to control formatting and output.
+    /// </summary>
+    public class CodeBlockTranslation :
         ITranslation,
         IPotentialMultiStatementTranslatable,
         IPotentialSelfTerminatingTranslatable
@@ -22,6 +27,13 @@
         private bool _indentContents;
         private bool _writeBraces;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CodeBlockTranslation"/> class.
+        /// </summary>
+        /// <param name="translation">The <see cref="ITranslation"/> to create as a code block.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> in which the translation is being performed.
+        /// </param>
         public CodeBlockTranslation(ITranslation translation, ITranslationContext context)
         {
             NodeType = translation.NodeType;
@@ -53,38 +65,69 @@
             FormattingSize = formattingSize;
         }
 
+        /// <inheritdoc />
         public ExpressionType NodeType { get; }
 
+        /// <inheritdoc />
         public Type Type => _translation.Type;
 
+        /// <inheritdoc />
         public int TranslationSize { get; private set; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> contains multiple
+        /// statements.
+        /// </summary>
         public bool IsMultiStatement { get; }
 
+        /// <summary>
+        /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> ends in a terminating
+        /// character.
+        /// </summary>
         public bool IsTerminated => _ensureTerminated || _translation.IsTerminated();
 
+        /// <summary>
+        /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> will produce output
+        /// surrounded in curly braces.
+        /// </summary>
         public bool HasBraces => _writeBraces;
 
-        public bool IsMultiStatementLambda(ITranslationContext context)
+        /// <summary>
+        /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> represents a
+        /// multi-statement LambdaExpression.
+        /// </summary>
+        public bool IsMultiStatementLambda
         {
-            switch (NodeType)
+            get
             {
-                case ExpressionType.Lambda:
-                case ExpressionType.Quote when context.Settings.DoNotCommentQuotedLambdas:
-                    return IsMultiStatement;
-            }
+                switch (NodeType)
+                {
+                    case ExpressionType.Lambda:
+                    case ExpressionType.Quote when _context.Settings.DoNotCommentQuotedLambdas:
+                        return IsMultiStatement;
+                }
 
-            return false;
+                return false;
+            }
         }
 
+        /// <summary>
+        /// Ensures this <see cref="CodeBlockTranslation"/> is ended with a terminating character.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithTermination()
         {
             _ensureTerminated = true;
             return this;
         }
 
+        /// <summary>
+        /// Ensures this <see cref="CodeBlockTranslation"/> is not ended with a terminating character.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithoutTermination()
         {
             _ensureTerminated = false;
@@ -97,6 +140,11 @@
             return this;
         }
 
+        /// <summary>
+        /// Ensures this <see cref="CodeBlockTranslation"/> is formatted as a single-parameter code
+        /// block.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithSingleCodeBlockParameterFormatting()
         {
             _startOnNewLine = false;
@@ -104,12 +152,20 @@
             return this;
         }
 
+        /// <summary>
+        /// Ensures this <see cref="CodeBlockTranslation"/> is formatted as a single-parameter lambda.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public void WithSingleLamdaParameterFormatting()
         {
             _startOnNewLine = false;
             WithoutBraces();
         }
 
+        /// <summary>
+        /// Ensures the final statement in this <see cref="CodeBlockTranslation"/> includes a return keyword.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithReturnKeyword()
         {
             _ensureReturnKeyword = true;
@@ -117,6 +173,10 @@
             return this;
         }
 
+        /// <summary>
+        /// Ensures the output of this <see cref="CodeBlockTranslation"/> is wrapped in curly braces.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithBraces()
         {
             if (_writeBraces)
@@ -129,6 +189,10 @@
             return this;
         }
 
+        /// <summary>
+        /// Ensures the output of this <see cref="CodeBlockTranslation"/> is not wrapped in curly braces.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithoutBraces()
         {
             if (_writeBraces == false)
@@ -141,15 +205,20 @@
             return this;
         }
 
+        /// <summary>
+        /// Ensures the output of this <see cref="CodeBlockTranslation"/> does not start on a new line.
+        /// </summary>
+        /// <returns>This <see cref="CodeBlockTranslation"/>, to support a fluent API.</returns>
         public CodeBlockTranslation WithoutStartingNewLine()
         {
             _startOnNewLine = false;
             return this;
         }
 
-        public IParameterTranslation AsParameterTranslation()
+        internal IParameterTranslation AsParameterTranslation()
             => _translation as IParameterTranslation;
 
+        /// <inheritdoc />
         public int GetIndentSize()
         {
             if (_isEmptyTranslation)
@@ -180,6 +249,7 @@
             return indentSize;
         }
 
+        /// <inheritdoc />
         public int GetLineCount()
         {
             if (_isEmptyTranslation)
@@ -197,6 +267,7 @@
             return translationLineCount;
         }
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
             if (_writeBraces)

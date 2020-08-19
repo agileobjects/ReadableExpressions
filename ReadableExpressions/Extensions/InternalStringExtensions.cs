@@ -11,7 +11,10 @@ namespace AgileObjects.ReadableExpressions.Extensions
     {
         private static readonly string[] _newLines = { Environment.NewLine };
 
-        public static int GetLineCount(this string value) => value.Split(_newLines, None).Length;
+        public static int GetLineCount(this string value) => value.SplitToLines().Length;
+
+        public static string[] SplitToLines(this string value) 
+            => value?.Split(_newLines, None) ?? Enumerable<string>.EmptyArray;
 
         public static string ToPascalCase(this string value)
             => char.ToUpperInvariant(value[0]) + value.Substring(1);

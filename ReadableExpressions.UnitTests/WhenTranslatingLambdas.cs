@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using Xunit;
@@ -19,7 +20,7 @@
         {
             var returnOneThousand = CreateLambda(() => 1000);
 
-            var translated = ToReadableString(returnOneThousand);
+            var translated = returnOneThousand.ToReadableString();
 
             translated.ShouldBe("() => 1000");
         }
@@ -29,7 +30,7 @@
         {
             var returnArgumentPlusOneTen = CreateLambda((int i) => i + 10);
 
-            var translated = ToReadableString(returnArgumentPlusOneTen);
+            var translated = returnArgumentPlusOneTen.ToReadableString();
 
             translated.ShouldBe("i => i + 10");
         }
@@ -39,7 +40,7 @@
         {
             var convertStringsToInt = CreateLambda((string str1, string str2) => int.Parse(str1) + int.Parse(str2));
 
-            var translated = ToReadableString(convertStringsToInt);
+            var translated = convertStringsToInt.ToReadableString();
 
             translated.ShouldBe("(str1, str2) => int.Parse(str1) + int.Parse(str2)");
         }
@@ -49,7 +50,7 @@
         {
             var concatStringAndInt = CreateLambda((string strValue, int intValue) => strValue + intValue);
 
-            var translated = ToReadableString(concatStringAndInt, s => s.ShowLambdaParameterTypes);
+            var translated = concatStringAndInt.ToReadableString(s => s.ShowLambdaParameterTypes);
 
             translated.ShouldBe("(string strValue, int intValue) => strValue + intValue");
         }
@@ -60,7 +61,7 @@
             var writeLine = CreateLambda(() => Console.WriteLine());
             var writeLineInvocation = Invoke(writeLine);
 
-            var translated = ToReadableString(writeLineInvocation);
+            var translated = writeLineInvocation.ToReadableString();
 
             translated.ShouldBe("(() => Console.WriteLine()).Invoke()");
         }
@@ -73,7 +74,7 @@
 
             var quotedLambda = Quote(intToDouble);
 
-            var translated = ToReadableString(quotedLambda);
+            var translated = quotedLambda.ToReadableString();
 
             translated.ShouldBe("i => (double)i");
         }
@@ -83,7 +84,7 @@
         {
             var project = CreateLambda((IQueryable<int> items) => items.Select(item => new { Number = item }));
 
-            var translated = ToReadableString(project.Body);
+            var translated = project.Body.ToReadableString();
 
             translated.ShouldBe("items.Select(item => new { Number = item })");
         }
@@ -98,7 +99,7 @@
             var quotedInnerLambda = Quote(additionInnerLambda);
             var additionOuterLambda = Lambda(quotedInnerLambda, intA);
 
-            var translated = ToReadableString(additionOuterLambda);
+            var translated = additionOuterLambda.ToReadableString();
 
             translated.ShouldBe("a => b => a + b");
         }
@@ -110,7 +111,7 @@
 
             var quotedLambda = Quote(intToDouble);
 
-            var translated = ToReadableString(quotedLambda, o => o.ShowQuotedLambdaComments);
+            var translated = quotedLambda.ToReadableString(o => o.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
 // Quoted to induce a closure:
@@ -128,7 +129,7 @@ i => (double)i";
             var linqSelectWithUnnamed = Lambda(linqSelect.Body, stringsParameter);
             var quoted = Quote(linqSelectWithUnnamed);
 
-            var translated = ToReadableString(quoted);
+            var translated = quoted.ToReadableString();
 
             translated.ShouldBe("stringArray => ints.Select(int.Parse)");
         }
@@ -140,7 +141,7 @@ i => (double)i";
             var intVariable2 = Variable(typeof(int), "i2");
             var runtimeVariables = RuntimeVariables(intVariable1, intVariable2);
 
-            var translated = ToReadableString(runtimeVariables);
+            var translated = runtimeVariables.ToReadableString();
 
             translated.ShouldBe("(i1, i2)");
         }
@@ -160,7 +161,7 @@ i => (double)i";
                 parentEntity,
                 entityExpression);
 
-            ToReadableString(sourceLambda);
+            sourceLambda.ToReadableString();
         }
 
         #region Helper Members

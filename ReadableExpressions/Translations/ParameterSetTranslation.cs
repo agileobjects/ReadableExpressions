@@ -8,7 +8,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using System.Reflection;
     using Extensions;
     using Interfaces;
     using NetStandardPolyfills;
@@ -19,6 +18,9 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
+    /// <summary>
+    /// An <see cref="ITranslatable"/> which translates a set of Expressions representing parameters.
+    /// </summary>
     internal class ParameterSetTranslation : ITranslatable
     {
         private const int _splitArgumentsThreshold = 3;
@@ -29,6 +31,14 @@
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParameterSetTranslation"/> class with a single
+        /// <see cref="IParameter"/>.
+        /// </summary>
+        /// <param name="parameter">The single <see cref="IParameter"/> to translate.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the  Expression translation's context.
+        /// </param>
         public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
             _settings = context.Settings;
@@ -36,37 +46,6 @@
             TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
             FormattingSize = parameter.FormattingSize;
             Count = 1;
-        }
-
-        public ParameterSetTranslation(IEnumerable<ParameterExpression> parameters, ITranslationContext context)
-#if NET35
-            : this(null, parameters.Cast<Expression>().ToArray(), context)
-#else
-            : this(null, parameters.ToArray(), context)
-#endif
-        {
-        }
-
-        public ParameterSetTranslation(ICollection<ParameterExpression> parameters, ITranslationContext context)
-#if NET35
-            : this(null, parameters.Cast<Expression>(), parameters.Count, context)
-#else
-            : this(null, parameters, parameters.Count, context)
-#endif
-        {
-        }
-
-        public ParameterSetTranslation(ICollection<Expression> parameters, ITranslationContext context)
-            : this(null, parameters, parameters.Count, context)
-        {
-        }
-
-        public ParameterSetTranslation(
-            IMethod method,
-            ICollection<Expression> parameters,
-            ITranslationContext context)
-            : this(method, parameters, parameters.Count, context)
-        {
         }
 
         private ParameterSetTranslation(
@@ -95,7 +74,7 @@
 
             Count = count;
 
-            ParameterInfo[] methodParameters;
+            IList<IParameter> methodParameters;
 
             if (methodProvided)
             {
@@ -122,7 +101,7 @@
                     {
                         translation = new MethodGroupTranslation(
                             Lambda,
-                            MethodCallTranslation.GetSubjectTranslation(lambdaBodyMethodCall, context),
+                            lambdaBodyMethodCall.GetSubjectTranslation(context),
                             lambdaBodyMethodCall.Method,
                             context);
 
@@ -154,14 +133,14 @@
                         WithParentheses();
                     }
 
-                CreateCodeBlock:
+                    CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
                     // TODO: Only use code blocks where useful:
                     var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
 
-                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda(context))
+                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda)
                     {
                         singleParameterIsMultiLineLambda = true;
                         parameterCodeBlock.WithSingleLamdaParameterFormatting();
@@ -178,18 +157,19 @@
 
         private IEnumerable<Expression> GetAllParameters(
             IEnumerable<Expression> parameters,
-            IList<ParameterInfo> methodParameters)
+            IList<IParameter> methodParameters)
         {
             var i = 0;
 
             foreach (var parameter in parameters)
             {
-                // params arrays are always the last parameter:
+                // params arrays are always the last parameter - if it's
+                // not a NewArrayExpression it's a single Expression which
+                // returns an Array, and doesn't need to be deconstructed:
                 if ((i == (methodParameters.Count - 1)) &&
-                     methodParameters[i].IsParamsArray())
+                     methodParameters[i].IsParamsArray &&
+                     parameter is NewArrayExpression paramsArray)
                 {
-                    var paramsArray = (NewArrayExpression)parameter;
-
                     if (paramsArray.Expressions.Count > 0)
                     {
                         foreach (var paramsArrayValue in paramsArray.Expressions)
@@ -210,7 +190,7 @@
 
         private static ITranslation GetParameterTranslation(
             Expression parameter,
-            ParameterInfo info,
+            IParameter info,
             ITranslationContext context)
         {
             if (info.IsOut)
@@ -218,7 +198,7 @@
                 return new OutParameterTranslation(parameter, context);
             }
 
-            if (info.ParameterType.IsByRef)
+            if (info.Type.IsByRef)
             {
                 return new RefParameterTranslation(parameter, context);
             }
@@ -226,7 +206,9 @@
             return context.GetTranslationFor(parameter);
         }
 
-        private static bool CanBeConvertedToMethodGroup(Expression argument, out MethodCallExpression lambdaBodyMethodCall)
+        private static bool CanBeConvertedToMethodGroup(
+            Expression argument,
+            out MethodCallExpression lambdaBodyMethodCall)
         {
             if (argument.NodeType != Lambda)
             {
@@ -265,12 +247,50 @@
             return allArgumentTypesMatch;
         }
 
+        #region Factory Methods
+
+        public static ParameterSetTranslation For<TParameterExpression>(
+            ICollection<TParameterExpression> parameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
+            return For(method: null, parameters, context);
+        }
+
+        public static ParameterSetTranslation For<TParameterExpression>(
+            IMethod method,
+            ICollection<TParameterExpression> parameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
+            return new ParameterSetTranslation(
+                method,
+#if NET35
+                parameters.Cast<Expression>().ToArray(),
+#else
+                parameters,
+#endif
+                parameters.Count,
+                context);
+        }
+
+        #endregion
+
+        /// <inheritdoc />
         public int TranslationSize { get; private set; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
+        /// <summary>
+        /// Gets the number of parameters described by this <see cref="ParameterSetTranslation"/>.
+        /// </summary>
         public int Count { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="ParameterSetTranslation"/> describes an
+        /// empty set of parameters.
+        /// </summary>
         public bool None => Count == 0;
 
         public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];

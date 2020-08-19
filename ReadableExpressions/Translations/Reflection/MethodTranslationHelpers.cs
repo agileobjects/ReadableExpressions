@@ -39,24 +39,27 @@
             return string.Empty;
         }
 
-        public static string GetAccessibility(MethodBase method)
+        public static string GetAccessibility(MethodInfo method)
+            => GetAccessibility(new BclMethodWrapper(method));
+
+        public static string GetAccessibility(IMethod method)
         {
             if (method.IsPublic)
             {
                 return "public ";
             }
 
-            if (method.IsAssembly)
+            if (method.IsInternal)
             {
                 return "internal ";
             }
 
-            if (method.IsFamily)
+            if (method.IsProtected)
             {
                 return "protected ";
             }
 
-            if (method.IsFamilyOrAssembly)
+            if (method.IsProtectedInternal)
             {
                 return "protected internal ";
             }
@@ -69,7 +72,10 @@
             return string.Empty;
         }
 
-        public static string GetModifiers(MethodBase method)
+        public static string GetModifiers(MethodInfo method) 
+            => GetModifiers(new BclMethodWrapper(method));
+
+        public static string GetModifiers(IMethod method)
         {
             if (method.IsAbstract)
             {

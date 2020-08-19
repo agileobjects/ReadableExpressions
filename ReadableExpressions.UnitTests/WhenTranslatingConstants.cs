@@ -6,6 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -22,7 +23,7 @@
         {
             var stringConstant = Constant("hello!", typeof(string));
 
-            var translated = ToReadableString(stringConstant);
+            var translated = stringConstant.ToReadableString();
 
             translated.ShouldBe("\"hello!\"");
         }
@@ -33,7 +34,7 @@
         {
             var stringConstant = Constant("hel\0lo!", typeof(string));
 
-            var translated = ToReadableString(stringConstant);
+            var translated = stringConstant.ToReadableString();
 
             translated.ShouldBe(@"""hel\0lo!""");
         }
@@ -43,7 +44,7 @@
         {
             var boolConstant = Constant(true, typeof(bool));
 
-            var translated = ToReadableString(boolConstant);
+            var translated = boolConstant.ToReadableString();
 
             translated.ShouldBe("true");
         }
@@ -53,7 +54,7 @@
         {
             var longConstant = Constant(123L, typeof(long));
 
-            var translated = ToReadableString(longConstant);
+            var translated = longConstant.ToReadableString();
 
             translated.ShouldBe("123L");
         }
@@ -63,7 +64,7 @@
         {
             var floatConstant = Constant(890.0f, typeof(float));
 
-            var translated = ToReadableString(floatConstant);
+            var translated = floatConstant.ToReadableString();
 
             translated.ShouldBe("890f");
         }
@@ -73,7 +74,7 @@
         {
             var floatConstant = Constant(12.34f, typeof(float?));
 
-            var translated = ToReadableString(floatConstant);
+            var translated = floatConstant.ToReadableString();
 
             translated.ShouldBe("12.34f");
         }
@@ -83,7 +84,7 @@
         {
             var decimalConstant = Constant(456.00m, typeof(decimal?));
 
-            var translated = ToReadableString(decimalConstant);
+            var translated = decimalConstant.ToReadableString();
 
             translated.ShouldBe("456m");
         }
@@ -93,7 +94,7 @@
         {
             var decimalConstant = Constant(6373282.64738m, typeof(decimal));
 
-            var translated = ToReadableString(decimalConstant);
+            var translated = decimalConstant.ToReadableString();
 
             translated.ShouldBe("6373282.64738m");
         }
@@ -103,7 +104,7 @@
         {
             var doubleConstant = Constant(999.0, typeof(double));
 
-            var translated = ToReadableString(doubleConstant);
+            var translated = doubleConstant.ToReadableString();
 
             translated.ShouldBe("999d");
         }
@@ -113,7 +114,7 @@
         {
             var doubleConstant = Constant(64739.7, typeof(double));
 
-            var translated = ToReadableString(doubleConstant);
+            var translated = doubleConstant.ToReadableString();
 
             translated.ShouldBe("64739.7d");
         }
@@ -123,7 +124,7 @@
         {
             var typeConstant = Constant(typeof(long), typeof(Type));
 
-            var translated = ToReadableString(typeConstant);
+            var translated = typeConstant.ToReadableString();
 
             translated.ShouldBe("typeof(long)");
         }
@@ -136,7 +137,7 @@
             // ReSharper disable once PossibleMistakenCallToGetType.2
             var typeConstant = Constant(value, value.GetType());
 
-            var translated = ToReadableString(typeConstant);
+            var translated = typeConstant.ToReadableString();
 
             translated.ShouldBe("typeof(Dictionary<string, DateTime>)");
         }
@@ -146,7 +147,7 @@
         {
             var nullConstant = Constant(null, typeof(object));
 
-            var translated = ToReadableString(nullConstant);
+            var translated = nullConstant.ToReadableString();
 
             translated.ShouldBe("null");
         }
@@ -156,7 +157,7 @@
         {
             var enumConstant = Constant(OddNumber.One, typeof(OddNumber));
 
-            var translated = ToReadableString(enumConstant);
+            var translated = enumConstant.ToReadableString();
 
             translated.ShouldBe("OddNumber.One");
         }
@@ -166,7 +167,7 @@
         {
             var dateConstant = Constant(default(DateTime));
 
-            var translated = ToReadableString(dateConstant);
+            var translated = dateConstant.ToReadableString();
 
             translated.ShouldBe("default(DateTime)");
         }
@@ -176,7 +177,7 @@
         {
             var listConstant = Constant(default(List<string>));
 
-            var translated = ToReadableString(listConstant);
+            var translated = listConstant.ToReadableString();
 
             translated.ShouldBe("null");
         }
@@ -186,7 +187,7 @@
         {
             var dateConstant = Constant(new DateTime(2015, 07, 02));
 
-            var translated = ToReadableString(dateConstant);
+            var translated = dateConstant.ToReadableString();
 
             translated.ShouldBe("new DateTime(2015, 07, 02)");
         }
@@ -196,7 +197,7 @@
         {
             var dateConstant = Constant(new DateTime(2016, 08, 01, 10, 23, 45));
 
-            var translated = ToReadableString(dateConstant);
+            var translated = dateConstant.ToReadableString();
 
             translated.ShouldBe("new DateTime(2016, 08, 01, 10, 23, 45)");
         }
@@ -206,7 +207,7 @@
         {
             var dateConstant = Constant(new DateTime(2017, 01, 10, 00, 00, 00, 123));
 
-            var translated = ToReadableString(dateConstant);
+            var translated = dateConstant.ToReadableString();
 
             translated.ShouldBe("new DateTime(2017, 01, 10, 00, 00, 00, 123)");
         }
@@ -216,7 +217,7 @@
         {
             var timeSpanConstant = Constant(default(TimeSpan));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("default(TimeSpan)");
         }
@@ -226,7 +227,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromDays(1));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromDays(1)");
         }
@@ -236,7 +237,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromHours(2));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromHours(2)");
         }
@@ -246,7 +247,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromMinutes(10));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromMinutes(10)");
         }
@@ -256,7 +257,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromSeconds(58));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromSeconds(58)");
         }
@@ -266,7 +267,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromMilliseconds(923));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromMilliseconds(923)");
         }
@@ -276,7 +277,7 @@
         {
             var timeSpanConstant = Constant(TimeSpan.FromTicks(428));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("TimeSpan.FromTicks(428)");
         }
@@ -286,7 +287,7 @@
         {
             var timeSpanConstant = Constant(new TimeSpan(2, 3, 4, 5, 6));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("new TimeSpan(2, 3, 4, 5, 6)");
         }
@@ -296,7 +297,7 @@
         {
             var timeSpanConstant = Constant(new TimeSpan(3, 4, 5, 6));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("new TimeSpan(3, 4, 5, 6)");
         }
@@ -306,7 +307,7 @@
         {
             var timeSpanConstant = Constant(new TimeSpan(6, 5, 4));
 
-            var translated = ToReadableString(timeSpanConstant);
+            var translated = timeSpanConstant.ToReadableString();
 
             translated.ShouldBe("new TimeSpan(6, 5, 4)");
         }
@@ -316,7 +317,7 @@
         {
             var nullStringConstant = Default(typeof(string));
 
-            var translated = ToReadableString(nullStringConstant);
+            var translated = nullStringConstant.ToReadableString();
 
             translated.ShouldBe("null");
         }
@@ -326,7 +327,7 @@
         {
             var stringConstant = Constant("Escape: \"THIS\"!");
 
-            var translated = ToReadableString(stringConstant);
+            var translated = stringConstant.ToReadableString();
 
             translated.ShouldBe("\"Escape: \\\"THIS\\\"!\"");
         }
@@ -336,7 +337,7 @@
         {
             var guidConstant = Constant(default(Guid));
 
-            var translated = ToReadableString(guidConstant);
+            var translated = guidConstant.ToReadableString();
 
             translated.ShouldBe("default(Guid)");
         }
@@ -346,7 +347,7 @@
         {
             var regexConstant = Constant(new Regex("^[0-9]+$"));
 
-            var translated = ToReadableString(regexConstant);
+            var translated = regexConstant.ToReadableString();
 
             translated.ShouldBe("Regex /* ^[0-9]+$ */");
         }
@@ -357,7 +358,7 @@
             Func<object> stringFactory = () => "Factory!";
             var funcConstant = Constant(stringFactory);
 
-            var translated = ToReadableString(funcConstant);
+            var translated = funcConstant.ToReadableString();
 
             translated.ShouldBe("Func<object>");
         }
@@ -368,7 +369,7 @@
             Action<int, long> numberAdder = (i, l) => Console.WriteLine(i + l);
             var actionConstant = Constant(numberAdder);
 
-            var translated = ToReadableString(actionConstant);
+            var translated = actionConstant.ToReadableString();
 
             translated.ShouldBe("Action<int, long>");
         }
@@ -379,7 +380,7 @@
             Action<IDictionary<object, List<string>>> dictionaryPrinter = Console.WriteLine;
             var actionConstant = Constant(dictionaryPrinter);
 
-            var translated = ToReadableString(actionConstant);
+            var translated = actionConstant.ToReadableString();
 
             translated.ShouldBe("Action<IDictionary<object, List<string>>>");
         }
@@ -395,7 +396,7 @@
 
             var funcConstant = Constant(dictionaryFactory);
 
-            var translated = ToReadableString(funcConstant);
+            var translated = funcConstant.ToReadableString();
 
             translated.ShouldBe("Func<int?, FileInfo, Dictionary<IDictionary<FileInfo, string[]>, string>>");
         }
@@ -407,7 +408,7 @@
 
             var actionConstant = Constant(genericAction);
 
-            var translated = ToReadableString(actionConstant);
+            var translated = actionConstant.ToReadableString();
 
             translated.ShouldBe("Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>>");
         }
@@ -421,7 +422,7 @@
             var dbNull = Constant(DBNull.Value, typeof(DBNull));
             var setParamToDbNull = Assign(parameterValue, dbNull);
 
-            var translated = ToReadableString(setParamToDbNull);
+            var translated = setParamToDbNull.ToReadableString();
 
             translated.ShouldBe("param.Value = DBNull.Value");
         }
@@ -431,7 +432,7 @@
         {
             var objectConstant = Constant(123, typeof(object));
 
-            var translated = ToReadableString(objectConstant);
+            var translated = objectConstant.ToReadableString();
 
             translated.ShouldBe("123");
         }
@@ -444,7 +445,7 @@
 
             var lambdaConstant = Constant(lambda, lambda.GetType());
 
-            var translated = ToReadableString(lambdaConstant);
+            var translated = lambdaConstant.ToReadableString();
 
             const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
 
@@ -457,20 +458,18 @@
         {
             var stringConstant = Constant("hello!", typeof(string));
 
-            var translated = ToReadableString(
-                stringConstant, 
+            var translated = stringConstant.ToReadableString(
                 settings => settings.TranslateConstantsUsing((t, v) => "custom!"));
 
             translated.ShouldBe("custom!");
         }
-        
+
         [Fact]
         public void ShouldUseADefaultValueIfUserDefinedConstantTranslatorReturnsNull()
         {
             var stringConstant = Constant("hello!", typeof(string));
 
-            var translated = ToReadableString(
-                stringConstant, 
+            var translated = stringConstant.ToReadableString(
                 settings => settings.TranslateConstantsUsing((t, v) => null));
 
             translated.ShouldBe("null");
@@ -484,9 +483,4 @@
 
     internal class Generic<T1, T2, T3> { }
     // ReSharper restore UnusedTypeParameter
-
-    internal enum OddNumber
-    {
-        One = 1
-    }
 }

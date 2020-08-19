@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -16,7 +17,7 @@
         public void ShouldTranslateADefaultExpression()
         {
             var defaultInt = Default(typeof(uint));
-            var translated = ToReadableString(defaultInt);
+            var translated = defaultInt.ToReadableString();
 
             translated.ShouldBe("default(uint)");
         }
@@ -25,7 +26,7 @@
         public void ShouldIgnoreADefaultVoidExpression()
         {
             var defaultVoid = Default(typeof(void));
-            var translated = ToReadableString(defaultVoid);
+            var translated = defaultVoid.ToReadableString();
 
             translated.ShouldBeNull();
         }
@@ -58,7 +59,7 @@
         private static void VerifyIsEscaped(string keyword)
         {
             var variable = Variable(typeof(bool), keyword);
-            var translated = ToReadableString(variable);
+            var translated = variable.ToReadableString();
 
             translated.ShouldBe("@" + keyword);
         }
@@ -69,7 +70,7 @@
             var variable = Variable(typeof(string), "string");
             var writeLine = CreateLambda(() => Console.WriteLine("La la la"));
             var block = Block(new[] { variable }, writeLine.Body);
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 string @string;

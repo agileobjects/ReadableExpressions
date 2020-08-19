@@ -10,19 +10,23 @@
     using Interfaces;
     using NetStandardPolyfills;
 
-    internal class TypeNameTranslation : ITranslation
+    /// <summary>
+    /// An <see cref="ITranslation"/> to translate a Type name.
+    /// </summary>
+    public class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
-        private readonly ITranslationSettings _settings;
+        private readonly TranslationSettings _settings;
         private readonly bool _isObject;
         private bool _writeObjectTypeName;
 
-        public TypeNameTranslation(Type type, ITranslationContext context)
-            : this(type, context.Settings)
-        {
-        }
-
-        public TypeNameTranslation(Type type, ITranslationSettings settings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeNameTranslation"/> class for the given
+        /// <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The Type the name of which should be translated.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        public TypeNameTranslation(Type type, TranslationSettings settings)
         {
             Type = type;
             _settings = settings;
@@ -97,15 +101,19 @@
             }
         }
 
+        /// <inheritdoc />
         public ExpressionType NodeType => ExpressionType.Constant;
 
+        /// <inheritdoc />
         public Type Type { get; }
 
+        /// <inheritdoc />
         public int TranslationSize { get; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
-        public TypeNameTranslation WithObjectTypeName()
+        internal TypeNameTranslation WithObjectTypeName()
         {
             if (_isObject)
             {
@@ -115,10 +123,13 @@
             return this;
         }
 
+        /// <inheritdoc />
         public int GetIndentSize() => 0;
 
+        /// <inheritdoc />
         public int GetLineCount() => 1;
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
             if (_isObject)

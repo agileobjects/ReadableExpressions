@@ -6,6 +6,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
     using System.IO;
     using System.Linq;
     using System.Linq.Expressions;
+    using Common;
     using NetStandardPolyfills;
     using Visualizers.ObjectSource.Formatting;
     using Xunit;
@@ -278,7 +279,7 @@ Two:
 
         private static string ToReadableHtmlString(
             Expression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return expression.ToReadableString(settings =>
             {

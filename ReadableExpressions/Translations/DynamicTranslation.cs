@@ -176,7 +176,7 @@
 
             private static Type[] GetGenericArgumentsOrNull(
                 MethodInfo method,
-                Expression[] methodArguments,
+                IList<Expression> methodArguments,
                 Type methodReturnType)
             {
                 if (!method.IsGenericMethod)
@@ -185,14 +185,13 @@
                 }
 
                 var genericParameterTypes = method.GetGenericArguments();
+                var genericParameterCount = genericParameterTypes.Length;
+                var genericArguments = new Type[genericParameterCount];
+                var methodParameters = method.GetParameters();
+                var methodParameterCount = methodParameters.Length;
+                var methodArgumentCount = methodArguments.Count;
 
-                var methodParameters = method
-                    .GetParameters()
-                    .ProjectToArray((p, i) => new { Index = i, Parameter = p });
-
-                var genericArguments = new Type[genericParameterTypes.Length];
-
-                for (var i = 0; i < genericParameterTypes.Length; i++)
+                for (var i = 0; i < genericParameterCount; i++)
                 {
                     var genericParameterType = genericParameterTypes[i];
 
@@ -202,23 +201,28 @@
                         continue;
                     }
 
-                    var matchingMethodParameter = methodParameters
-                        .FirstOrDefault(p => p.Parameter.ParameterType == genericParameterType);
-
-                    if (matchingMethodParameter == null)
+                    if (methodArgumentCount == 0)
                     {
                         return null;
                     }
 
-                    var matchingMethodArgument = methodArguments
-                        .ElementAtOrDefault(matchingMethodParameter.Index);
-
-                    if (matchingMethodArgument == null)
+                    for (var j = 0; j < methodParameterCount; ++j)
                     {
+                        var parameter = methodParameters[j];
+
+                        if (parameter.ParameterType != genericParameterType)
+                        {
+                            continue;
+                        }
+
+                        if (j < methodArgumentCount)
+                        {
+                            genericArguments[i] = methodArguments[j].Type;
+                            break;
+                        }
+
                         return null;
                     }
-
-                    genericArguments[i] = matchingMethodArgument.Type;
                 }
 
                 return genericArguments;
@@ -231,6 +235,24 @@
                     Name = name;
                 }
 
+                public Type DeclaringType => null;
+
+                public bool IsPublic => false;
+
+                public bool IsProtectedInternal => false;
+
+                public bool IsInternal => false;
+
+                public bool IsProtected => false;
+
+                public bool IsPrivate => false;
+
+                public bool IsAbstract => false;
+
+                public bool IsStatic => false;
+
+                public bool IsVirtual => false;
+
                 public string Name { get; }
 
                 public bool IsGenericMethod => false;
@@ -241,7 +263,7 @@
 
                 public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
 
-                public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
+                public IList<IParameter> GetParameters() => Enumerable<IParameter>.EmptyArray;
 
                 public Type ReturnType => typeof(void);
             }

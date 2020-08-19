@@ -26,6 +26,7 @@
         private readonly bool _hasVariables;
         private readonly IList<BlockStatementTranslation> _statements;
         private readonly int _statementCount;
+        private readonly bool _isEmpty;
         private readonly bool _hasGoto;
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
@@ -40,7 +41,15 @@
                 out var hasMultiStatementStatement,
                 out var statementTranslationsSize,
                 out var statementsFormattingSize,
-                out _hasGoto);
+                out _hasGoto,
+                out _isEmpty);
+
+
+            if (_isEmpty)
+            {
+                IsTerminated = true;
+                return;
+            }
 
             _statementCount = _statements.Count;
             IsMultiStatement = hasMultiStatementStatement || (_statementCount > 1) || _hasVariables;
@@ -94,7 +103,7 @@
 
             return variablesByType.ToDictionary(
                 grp => (ITranslation)context.GetTranslationFor(grp.Key),
-                grp => new ParameterSetTranslation(grp, context)
+                grp => ParameterSetTranslation.For(grp.ToList(), context)
                     .WithoutParentheses()
                     .WithoutTypeNames(context));
         }
@@ -105,7 +114,8 @@
             out bool hasMultiStatementStatement,
             out int statementTranslationsSize,
             out int statementsFormattingSize,
-            out bool hasGoto)
+            out bool hasGoto,
+            out bool isEmpty)
         {
             var expressions = block.Expressions;
             var expressionCount = expressions.Count;
@@ -124,9 +134,9 @@
 
                 if (Include(expression, block, context))
                 {
-                    var statementTranslation = context.IsNotJoinedAssignment(expression)
-                        ? new BlockStatementTranslation(expression, context)
-                        : new BlockAssignmentStatementTranslation((BinaryExpression)expression, context);
+                    var statementTranslation = context.IsJoinedAssignment(expression)
+                        ? new BlockAssignmentStatementTranslation((BinaryExpression)expression, context)
+                        : new BlockStatementTranslation(expression, context);
 
                     translations[statementIndex] = statementTranslation;
                     statementTranslationsSize += statementTranslation.TranslationSize;
@@ -165,6 +175,14 @@
                 }
             }
 
+            if (statementIndex == 0)
+            {
+                isEmpty = true;
+                return Enumerable<BlockStatementTranslation>.EmptyArray;
+            }
+
+            isEmpty = false;
+
             if (statementIndex == expressionCount)
             {
                 return translations;
@@ -186,10 +204,10 @@
             switch (expression.NodeType)
             {
                 case Label:
-                    return (expression.Type != typeof(void)) ||
+                    return expression.HasReturnType() ||
                            context.IsReferencedByGoto(((LabelExpression)expression).Target);
 
-                case Default when expression.Type == typeof(void):
+                case Default when !expression.HasReturnType():
                     return false;
             }
 
@@ -270,6 +288,11 @@
 
         public int GetIndentSize()
         {
+            if (_isEmpty)
+            {
+                return 0;
+            }
+
             var indentSize = 0;
 
             for (var i = 0; ;)
@@ -287,6 +310,11 @@
 
         public int GetLineCount()
         {
+            if (_isEmpty)
+            {
+                return 0;
+            }
+
             var lineCount = _variables.Count;
 
             for (var i = 0; ;)
@@ -304,6 +332,11 @@
 
         public void WriteTo(TranslationWriter writer)
         {
+            if (_isEmpty)
+            {
+                return;
+            }
+
             if (_hasVariables)
             {
                 foreach (var parametersByType in _variables)
@@ -320,7 +353,7 @@
 
                 switch (_statements[0].NodeType)
                 {
-                    case Conditional when !ConditionalTranslation.IsTernary(_statements[0].Expression):
+                    case Conditional when !_statements[0].Expression.IsTernary():
                     case Switch:
                         writer.WriteNewLineToTranslation();
                         break;
@@ -385,7 +418,7 @@
             private bool WriteBlankLineBefore()
             {
                 return (NodeType == Label) ||
-                      ((NodeType == Conditional) && !ConditionalTranslation.IsTernary(Expression));
+                      ((NodeType == Conditional) && !Expression.IsTernary());
             }
 
             public ExpressionType NodeType { get; }

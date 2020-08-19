@@ -2,6 +2,6 @@
 {
     internal static class Enumerable<T>
     {
-        public static readonly T[] EmptyArray = new T[0];
+        public static readonly T[] EmptyArray = { };
     }
 }

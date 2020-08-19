@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -22,7 +23,7 @@
             var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
             var debuggedBlock = Block(debugInfo, writeHello.Body);
 
-            var translated = ToReadableString(debuggedBlock);
+            var translated = debuggedBlock.ToReadableString();
 
             var expected = $@"
 // Debug to {tempFileName}, 1, 1 -> 2, 100
@@ -40,7 +41,7 @@ Console.WriteLine(""Hello"");";
             var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
             var debuggedBlock = Block(writeHello.Body, clearDebugInfo);
 
-            var translated = ToReadableString(debuggedBlock);
+            var translated = debuggedBlock.ToReadableString();
 
             var expected = $@"
 Console.WriteLine(""Hello"");

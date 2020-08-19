@@ -1,39 +1,33 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+    using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
     using Formatting;
     using Interfaces;
-    using NetStandardPolyfills;
 
     internal class ParameterSetDefinitionTranslation : ITranslatable
     {
-        private readonly ITranslationSettings _settings;
-        private readonly ParameterInfo[] _parameters;
+        private readonly TranslationSettings _settings;
+        private readonly IList<IParameter> _parameters;
         private readonly int _parameterCount;
         private readonly ITranslatable[] _parameterTranslations;
         private readonly bool _isExtensionMethod;
 
         public ParameterSetDefinitionTranslation(
             MethodInfo method,
-            ITranslationSettings settings)
-            : this((MethodBase)method, settings)
+            TranslationSettings settings)
+            : this(new BclMethodWrapper(method), settings)
         {
-            if (method.IsExtensionMethod())
-            {
-                _isExtensionMethod = true;
-                TranslationSize += "this ".Length;
-                FormattingSize += settings.GetKeywordFormattingSize();
-            }
         }
 
         public ParameterSetDefinitionTranslation(
-            MethodBase method,
-            ITranslationSettings settings)
+            IMethod method,
+            TranslationSettings settings)
         {
             _settings = settings;
             _parameters = method.GetParameters();
-            _parameterCount = _parameters.Length;
+            _parameterCount = _parameters.Count;
 
             if (_parameterCount == 0)
             {
@@ -51,7 +45,7 @@
             for (var i = 0; ;)
             {
                 var parameter = _parameters[i];
-                var parameterType = parameter.ParameterType;
+                var parameterType = parameter.Type;
 
                 if (parameter.IsOut)
                 {
@@ -63,7 +57,7 @@
                     parameterType = parameterType.GetElementType();
                     formattingSize += keywordFormattingSize;
                 }
-                else if (i == finalParameterIndex && parameter.IsParamsArray())
+                else if (i == finalParameterIndex && parameter.IsParamsArray)
                 {
                     formattingSize += keywordFormattingSize;
                 }
@@ -87,6 +81,13 @@
 
             TranslationSize = translationSize;
             FormattingSize = formattingSize;
+
+            if (method.IsExtensionMethod)
+            {
+                _isExtensionMethod = true;
+                TranslationSize += "this ".Length;
+                FormattingSize += settings.GetKeywordFormattingSize();
+            }
         }
 
         public int TranslationSize { get; }
@@ -114,7 +115,7 @@
             for (var i = 0; ;)
             {
                 var parameter = _parameters[i];
-                var parameterType = parameter.ParameterType;
+                var parameterType = parameter.Type;
 
                 writer.WriteNewLineToTranslation();
 
@@ -130,7 +131,7 @@
                 {
                     writer.WriteKeywordToTranslation("ref ");
                 }
-                else if (i == finalParameterIndex && parameter.IsParamsArray())
+                else if (i == finalParameterIndex && parameter.IsParamsArray)
                 {
                     writer.WriteKeywordToTranslation("params ");
                 }

@@ -10,9 +10,12 @@
 
     internal static class InternalExpressionExtensions
     {
+        public static bool HasReturnType(this Expression expression)
+            => expression.Type != typeof(void);
+
         public static bool IsReturnable(this Expression expression)
         {
-            if (expression.Type == typeof(void))
+            if (!expression.HasReturnType())
             {
                 return false;
             }
@@ -54,12 +57,6 @@
         }
 
         public static bool IsReturnable(this BlockExpression block)
-            => (block.Type != typeof(void)) && block.Result.IsReturnable();
-
-        public static bool IsComment(this Expression expression)
-            => (expression.NodeType == Constant) && IsComment((ConstantExpression)expression);
-
-        private static bool IsComment(ConstantExpression constant)
-            => (constant.Value is string value) && value.IsComment();
+            => block.HasReturnType() && block.Result.IsReturnable();
     }
 }

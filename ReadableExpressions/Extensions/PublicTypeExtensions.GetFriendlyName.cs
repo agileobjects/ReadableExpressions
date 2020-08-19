@@ -18,7 +18,9 @@
         /// <param name="type">The type for which to retrieve a friendly, readable name.</param>
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
-        public static string GetFriendlyName(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
+        public static string GetFriendlyName(
+            this Type type, 
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             var settings = configuration.GetTranslationSettings();
 
@@ -30,23 +32,20 @@
             TranslationSettings translationSettings,
             ITranslationFormatter formatter)
         {
-            var buffer = new TranslationWriter(
+            var writer = new TranslationWriter(
                 formatter,
                 translationSettings.Indent,
                 (type.FullName ?? type.ToString()).Length);
 
-            buffer.WriteFriendlyName(type, translationSettings);
+            writer.WriteFriendlyName(type, translationSettings);
 
-            return buffer.GetContent();
+            return writer.GetContent();
         }
-
-        internal static void WriteFriendlyName(this TranslationWriter writer, Type type)
-            => WriteFriendlyName(writer, type, TranslationSettings.Default);
 
         internal static void WriteFriendlyName(
             this TranslationWriter writer,
             Type type,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             if (type.FullName == null)
             {
@@ -126,7 +125,7 @@
         private static void WriteTypeNamespaceIfRequired(
             this TranslationWriter writer,
             Type type,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             if (!settings.FullyQualifyTypeNames || (type.Namespace == null))
             {
@@ -146,7 +145,7 @@
         private static void WriteGenericTypeName(
             this TranslationWriter writer,
             Type genericType,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
             new GenericTypeNameWriter(writer, settings).WriteGenericTypeName(genericType);
         }
@@ -154,9 +153,9 @@
         private class GenericTypeNameWriter : GenericTypeNameWriterBase
         {
             private readonly TranslationWriter _writer;
-            private readonly ITranslationSettings _settings;
+            private readonly TranslationSettings _settings;
 
-            public GenericTypeNameWriter(TranslationWriter writer, ITranslationSettings settings)
+            public GenericTypeNameWriter(TranslationWriter writer, TranslationSettings settings)
             {
                 _writer = writer;
                 _settings = settings;
