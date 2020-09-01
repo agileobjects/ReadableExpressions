@@ -22,7 +22,7 @@
     <Authors>Steve Wilkes</Authors>
     <Company>AgileObjects Ltd</Company>
     <Title>AgileObjects.ReadableExpressions</Title>
-    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NET 3.5+ and .NET Standard 1.0+</Description>
+    <Description>A .NET 3.5+ and .NET Standard 1.0 extension method which translates Linq and DLR Expression Trees into readable C# source code.</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
