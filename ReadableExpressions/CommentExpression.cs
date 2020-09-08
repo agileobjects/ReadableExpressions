@@ -45,6 +45,13 @@
         public override Type Type => typeof(string);
 
         /// <summary>
+        /// Visits this <see cref="CommentExpression"/>.
+        /// </summary>
+        /// <param name="visitor">The visitor with which to visit this <see cref="CommentExpression"/>.</param>
+        /// <returns>This <see cref="CommentExpression"/>.</returns>
+        protected override Expression Accept(ExpressionVisitor visitor) => this;
+
+        /// <summary>
         /// Gets the double-slash-commented text.
         /// </summary>
         public string Comment { get; }

@@ -2,10 +2,13 @@
 {
     using System;
     using Common;
+    using ReadableExpressions.Extensions;
 #if !NET35
+    using System.Linq.Expressions;
     using Xunit;
     using static System.Linq.Expressions.Expression;
 #else
+    using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
     using static Microsoft.Scripting.Ast.Expression;
 
@@ -83,5 +86,42 @@ if (1 == 1)
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
+
+        [Fact]
+        public void ShouldVisitACommentExpression()
+        {
+            var comment = ReadableExpression.Comment("Why not visit THIS");
+            var visitor = CommentVisitor.Visit(comment);
+
+            visitor.CommentVisited.ShouldBeTrue();
+        }
+
+        #region Helper Members
+
+        private class CommentVisitor : ExpressionVisitor
+        {
+            public static CommentVisitor Visit(CommentExpression comment)
+            {
+                var visitor = new CommentVisitor();
+
+                visitor.Visit((Expression)comment);
+
+                return visitor;
+            }
+
+            public bool CommentVisited { get; private set; }
+
+            public override Expression Visit(Expression expression)
+            {
+                if (expression.IsComment())
+                {
+                    CommentVisited = true;
+                }
+
+                return base.Visit(expression);
+            }
+        }
+
+        #endregion
     }
 }
