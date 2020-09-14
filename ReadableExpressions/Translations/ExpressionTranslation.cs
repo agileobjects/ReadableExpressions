@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -184,6 +185,9 @@
 
                 case Conditional:
                     return ConditionalTranslation.For((ConditionalExpression)expression, this);
+
+                case Constant when expression.IsComment():
+                    return new CommentTranslation((CommentExpression)expression, this);
 
                 case Constant:
                     return ConstantTranslation.For((ConstantExpression)expression, this);

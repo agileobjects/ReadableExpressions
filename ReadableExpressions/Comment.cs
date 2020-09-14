@@ -1,6 +1,10 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System.Collections.Generic;
+#if NET35
+#else
+    using System.Linq.Expressions;
+#endif
     using Extensions;
     using static System.Environment;
 
@@ -11,9 +15,9 @@
     {
         private const string _commentString = "// ";
 
-        internal Comment(string comment)
+        internal Comment(string text)
         {
-            var textLines = comment.Trim().SplitToLines();
+            var textLines = text.Trim().SplitToLines();
 
             Text =
                 _commentString +

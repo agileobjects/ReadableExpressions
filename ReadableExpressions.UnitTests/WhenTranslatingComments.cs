@@ -88,6 +88,17 @@ if (1 == 1)
         }
 
         [Fact]
+        public void ShouldConvertACommentExpressionToAConstantExpression()
+        {
+            var comment = ReadableExpression.Comment("Gonna get constant");
+            ConstantExpression constant = comment;
+
+            constant.ShouldNotBeNull();
+            constant.Type.ShouldBe(typeof(Comment));
+            constant.Value.ShouldBeSameAs(comment.Comment);
+        }
+
+        [Fact]
         public void ShouldVisitACommentExpression()
         {
             var comment = ReadableExpression.Comment("Why not visit THIS");
@@ -111,7 +122,7 @@ if (1 == 1)
 
         private class CommentVisitor : ExpressionVisitor
         {
-            public static CommentVisitor VisitComment(Expression comment)
+            public static CommentVisitor VisitComment(CommentExpression comment)
             {
                 var visitor = new CommentVisitor();
 
@@ -122,14 +133,14 @@ if (1 == 1)
 
             public bool CommentVisited { get; private set; }
 
-            protected override Expression VisitConstant(ConstantExpression constant)
+            public override Expression Visit(Expression expression)
             {
-                if (constant.IsComment())
+                if (expression.IsComment())
                 {
                     CommentVisited = true;
                 }
 
-                return base.VisitConstant(constant);
+                return base.Visit(expression);
             }
         }
 

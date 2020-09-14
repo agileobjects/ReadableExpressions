@@ -26,11 +26,6 @@
     {
         public static ITranslation For(ConstantExpression constant, ITranslationContext context)
         {
-            if (constant.IsComment())
-            {
-                return new CommentTranslation((Comment)constant.Value, context);
-            }
-
             if (context.Settings.ConstantExpressionValueFactory != null)
             {
                 var userTranslation = context.Settings

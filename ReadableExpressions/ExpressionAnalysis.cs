@@ -193,7 +193,11 @@
                 switch (expression.NodeType)
                 {
                     case Constant:
-                        Visit((ConstantExpression)expression);
+                        if (!expression.IsComment())
+                        {
+                            Visit((ConstantExpression)expression);
+                        }
+
                         return;
 
                     case ArrayLength:

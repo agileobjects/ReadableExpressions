@@ -12,12 +12,14 @@
     public static class ReadableExpression
     {
         /// <summary>
-        /// Create a <see cref="ConstantExpression"/> representing a code comment with the 
-        /// given <paramref name="text"/>.
+        /// Creates a <see cref="CommentExpression"/> containing a <see cref="Comment"/> representing
+        /// a code comment with the given <paramref name="text"/>.
         /// </summary>
         /// <param name="text">The text of the comment to create, without slashes or /* */.</param>
-        /// <returns>A <see cref="ConstantExpression"/> representing a code comment.</returns>
-        public static ConstantExpression Comment(string text)
-            => Expression.Constant(new Comment(text), typeof(Comment));
+        /// <returns>
+        /// A <see cref="CommentExpression"/> containing a <see cref="Comment"/> representing a code comment.
+        /// </returns>
+        public static CommentExpression Comment(string text)
+            => new CommentExpression(text);
     }
 }
