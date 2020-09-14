@@ -91,34 +91,45 @@ if (1 == 1)
         public void ShouldVisitACommentExpression()
         {
             var comment = ReadableExpression.Comment("Why not visit THIS");
-            var visitor = CommentVisitor.Visit(comment);
+            var visitor = CommentVisitor.VisitComment(comment);
 
             visitor.CommentVisited.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldCompileACommentExpression()
+        {
+            var comment = ReadableExpression.Comment("Compile THIS");
+            var nullString = Default(typeof(string));
+            var nullStringLambda = Lambda<Func<string>>(Block(comment, nullString));
+            var getNullString = nullStringLambda.Compile();
+
+            getNullString.Invoke().ShouldBeNull();
         }
 
         #region Helper Members
 
         private class CommentVisitor : ExpressionVisitor
         {
-            public static CommentVisitor Visit(CommentExpression comment)
+            public static CommentVisitor VisitComment(Expression comment)
             {
                 var visitor = new CommentVisitor();
 
-                visitor.Visit((Expression)comment);
+                visitor.Visit(comment);
 
                 return visitor;
             }
 
             public bool CommentVisited { get; private set; }
 
-            public override Expression Visit(Expression expression)
+            protected override Expression VisitConstant(ConstantExpression constant)
             {
-                if (expression.IsComment())
+                if (constant.IsComment())
                 {
                     CommentVisited = true;
                 }
 
-                return base.Visit(expression);
+                return base.VisitConstant(constant);
             }
         }
 

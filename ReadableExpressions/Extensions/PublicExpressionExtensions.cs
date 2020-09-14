@@ -53,14 +53,17 @@
         }
 
         /// <summary>
-        /// Determines if this <paramref name="expression"/> is a <see cref="CommentExpression"/>.
+        /// Determines if this <paramref name="expression"/> represents a <see cref="Comment"/>.
         /// </summary>
         /// <param name="expression">The Expression for which to make the determination.</param>
         /// <returns>
-        /// Trueif this <paramref name="expression"/> is a <see cref="CommentExpression"/>, otherwise
+        /// Trueif this <paramref name="expression"/> represents a <see cref="Comment"/>, otherwise
         /// false.
         /// </returns>
         public static bool IsComment(this Expression expression)
-            => expression.NodeType == CommentExpression.ExpressionType;
+        {
+            return expression.NodeType == ExpressionType.Constant &&
+                   expression.Type == typeof(Comment);
+        }
     }
 }

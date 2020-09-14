@@ -271,9 +271,6 @@
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
 
-                case CommentExpression.ExpressionType:
-                    return new CommentTranslation((CommentExpression)expression, this);
-
                 default:
                     return new FixedValueTranslation(expression, this);
             }
