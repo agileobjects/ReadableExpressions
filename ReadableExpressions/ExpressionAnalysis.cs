@@ -93,9 +93,9 @@
         #endregion
 
         /// <summary>
-        /// Gets the Expression which was the final result of the analysis.
+        /// Gets or sets the Expression which was the final result of the analysis.
         /// </summary>
-        public Expression ResultExpression { get; private set; }
+        public Expression ResultExpression { get; protected set; }
 
         /// <summary>
         /// Gets the variables in the translated Expression which are first used as an output
