@@ -33,24 +33,22 @@
         /// <param name="expression">The Expression to translate.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
-            : this(expression, ExpressionAnalysis.For(expression, settings), settings)
+            : this(ExpressionAnalysis.For(expression, settings), settings)
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
         /// </summary>
-        /// <param name="expression">The Expression to translate.</param>
         /// <param name="expressionAnalysis">
-        /// The <see cref="ExpressionAnalysis"/> describing the <paramref name="expression"/>.
+        /// The <see cref="ExpressionAnalysis"/> describing the analysed Expression.
         /// </param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
         protected ExpressionTranslation(
-            Expression expression,
             ExpressionAnalysis expressionAnalysis,
             TranslationSettings settings)
         {
-            _expression = expression;
+            _expression = expressionAnalysis.ResultExpression;
             _settings = settings;
             _expressionAnalysis = expressionAnalysis;
         }
