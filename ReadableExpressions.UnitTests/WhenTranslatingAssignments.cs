@@ -750,7 +750,7 @@ number =
         [Fact]
         public void ShouldTranslateAnExtensionAssignment()
         {
-            var value = new ExtensionExpression(typeof(int));
+            var value = new WhenTranslatingExtensions.ExtensionExpression(typeof(int));
             var extensionVariable = Variable(value.Type, "ext");
             var assignment = Assign(extensionVariable, value);
 

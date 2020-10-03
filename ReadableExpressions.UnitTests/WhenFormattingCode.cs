@@ -540,24 +540,6 @@ if (WhenFormattingCode.JoinStrings(
         }
 
         [Fact]
-        public void ShouldTranslateAnExtensionExpressionType()
-        {
-            var extension = new ExtensionExpression();
-            var translated = extension.ToReadableString();
-
-            extension.ToString().ShouldBe(translated);
-        }
-
-        [Fact]
-        public void ShouldTranslateAnUnknownExpressionType()
-        {
-            var unknown = new UnknownExpression();
-            var translated = unknown.ToReadableString();
-
-            unknown.ToString().ShouldBe(translated);
-        }
-
-        [Fact]
         public void ShouldOnlyRemoveParenthesesIfNecessary()
         {
             var intVariable = Variable(typeof(int), "i");
@@ -1039,46 +1021,6 @@ ints.Add(
         public string Convert(int value)
         {
             return value.ToString();
-        }
-    }
-
-    internal class ExtensionExpression : Expression
-    {
-        public ExtensionExpression(Type type = null)
-        {
-            Type = type ?? typeof(object);
-        }
-
-        public override ExpressionType NodeType => ExpressionType.Extension;
-
-        public override Type Type { get; }
-
-        protected override Expression VisitChildren(ExpressionVisitor visitor)
-        {
-            // The default implementation of VisitChildren falls over 
-            // if the Expression is not reducible. Short-circuit that 
-            // with this:
-            return this;
-        }
-
-        public override string ToString() => "Exteeennndddiiiinnngg";
-    }
-
-    internal class UnknownExpression : Expression
-    {
-        public override ExpressionType NodeType => (ExpressionType)5346372;
-
-        public override Type Type => typeof(void);
-
-        protected override Expression VisitChildren(ExpressionVisitor visitor)
-        {
-            // See CommentExpression for why this is necessary:
-            return this;
-        }
-
-        public override string ToString()
-        {
-            return "You can't know me!";
         }
     }
 

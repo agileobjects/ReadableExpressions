@@ -112,6 +112,11 @@
                 return null;
             }
 
+            if (expression is ICustomTranslationExpression translationExpression)
+            {
+                return translationExpression.GetTranslation(this);
+            }
+
             switch (expression.NodeType)
             {
                 case Decrement:
