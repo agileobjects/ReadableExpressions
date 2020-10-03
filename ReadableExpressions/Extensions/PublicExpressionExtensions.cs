@@ -1,10 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using System.Collections.Generic;
     using NetStandardPolyfills;
 
     /// <summary>
@@ -64,6 +67,51 @@
         {
             return expression.NodeType == ExpressionType.Constant &&
                    expression.Type == typeof(Comment);
+        }
+
+        /// <summary>
+        /// Creates a new LambdaExpression which is like this one, but using the supplied children.
+        /// If all of the children are the same, it will return this expression.
+        /// </summary>
+        /// <param name="lambda">The LambdaExpression to update or return.</param>
+        /// <param name="body">The body of the LambdaExpression.</param>
+        /// <param name="parameters">The LambdaExpression's parameters.</param>
+        /// <returns>This expression if no children changed, or an expression with the updated children.</returns>
+        public static LambdaExpression Update(
+            this LambdaExpression lambda,
+            Expression body,
+            IEnumerable<ParameterExpression> parameters)
+        {
+            var parameterList = parameters.ToList();
+
+            if (body == lambda.Body && lambda.Parameters.SequenceEqual(parameterList))
+            {
+                return lambda;
+            }
+
+            var parameterCount = parameterList.Count;
+            var parameterTypes = parameterList.ProjectToArray(p => p.Type);
+
+            Type[] lambdaTypes;
+            Func<Type[], Type> lambdaTypeFactory;
+
+            if (lambda.ReturnType != typeof(void))
+            {
+                lambdaTypeFactory = Expression.GetFuncType;
+                lambdaTypes = new Type[parameterCount + 1];
+                parameterTypes.CopyTo(lambdaTypes, 0);
+                lambdaTypes[parameterCount] = lambda.ReturnType;
+            }
+            else
+            {
+                lambdaTypeFactory = Expression.GetActionType;
+                lambdaTypes = parameterTypes;
+            }
+
+            return Expression.Lambda(
+                lambdaTypeFactory.Invoke(lambdaTypes),
+                body,
+                parameterList);
         }
     }
 }

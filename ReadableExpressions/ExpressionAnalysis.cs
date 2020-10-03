@@ -585,29 +585,7 @@
                 return lambda;
             }
 
-            var parameterCount = parameters.Count;
-            var parameterTypes = parameters.ProjectToArray(p => p.Type);
-
-            Type[] lambdaTypes;
-            Func<Type[], Type> lambdaTypeFactory;
-
-            if (lambda.ReturnType != typeof(void))
-            {
-                lambdaTypeFactory = Expression.GetFuncType;
-                lambdaTypes = new Type[parameterCount + 1];
-                parameterTypes.CopyTo(lambdaTypes, 0);
-                lambdaTypes[parameterCount] = lambda.ReturnType;
-            }
-            else
-            {
-                lambdaTypeFactory = Expression.GetActionType;
-                lambdaTypes = parameterTypes;
-            }
-
-            return Expression.Lambda(
-                lambdaTypeFactory.Invoke(lambdaTypes),
-                body,
-                parameters);
+            return lambda.Update(body, parameters);
         }
 
         /// <summary>
@@ -1022,7 +1000,16 @@
         protected virtual Expression VisitAndConvert(UnaryExpression unary)
             => unary.Update(VisitAndConvert(unary.Operand));
 
-        private IList<ParameterExpression> VisitAndConvert(IList<ParameterExpression> parameters)
+        /// <summary>
+        /// Visits the given <paramref name="parameters"/>, returning a replacement ParameterExpression
+        /// collection if appropriate.
+        /// </summary>
+        /// <param name="parameters">The ParameterExpressions to visit.</param>
+        /// <returns>
+        /// A ParameterExpression collection to replace the given <paramref name="parameters"/>, or
+        /// the given collection if no replacement is required.
+        /// </returns>
+        protected IList<ParameterExpression> VisitAndConvert(IList<ParameterExpression> parameters)
             => VisitAndConvert(parameters, Visit);
 
         /// <summary>
@@ -1034,10 +1021,21 @@
         /// An Expression collection to replace the given <paramref name="expressions"/>, or the
         /// given collection if no replacement is required.
         /// </returns>
-        protected virtual IList<Expression> VisitAndConvert(IList<Expression> expressions)
+        protected IList<Expression> VisitAndConvert(IList<Expression> expressions)
             => VisitAndConvert(expressions, VisitAndConvert);
 
-        private static IList<TExpression> VisitAndConvert<TExpression>(
+        /// <summary>
+        /// Visits the given <paramref name="expressions"/>, returning a replacement
+        /// <typeparamref name="TExpression"/> collection if appropriate.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of Expression contained in the collection.</typeparam>
+        /// <param name="expressions">The <typeparamref name="TExpression"/>s to visit.</param>
+        /// <param name="visitor">A Func with which to process each <typeparamref name="TExpression"/>.</param>
+        /// <returns>
+        /// A <typeparamref name="TExpression"/> collection to replace the given
+        /// <paramref name="expressions"/>, or the given collection if no replacement is required.
+        /// </returns>
+        protected static IList<TExpression> VisitAndConvert<TExpression>(
             IList<TExpression> expressions,
             Func<TExpression, TExpression> visitor)
             where TExpression : Expression
@@ -1084,22 +1082,38 @@
             }
         }
 
-        private Expression VisitAndConvert<TExpression>(
+        /// <summary>
+        /// Visits the given <paramref name="subject"/> and <paramref name="expressions"/>, and uses
+        /// the <paramref name="expressionFactory"/> to create a replacement
+        /// <typeparamref name="TExpression"/> if appropriate.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of Expression to visit.</typeparam>
+        /// <param name="expression">The <typeparamref name="TExpression"/> to visit.</param>
+        /// <param name="subject">The <paramref name="expression"/>'s subject.</param>
+        /// <param name="expressions">The <paramref name="expression"/>'s expressions.</param>
+        /// <param name="expressionFactory">
+        /// A Func with which to create a new <typeparamref name="TExpression"/> instance.
+        /// </param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="expression"/>, or the given
+        /// <paramref name="expression"/> if no replacement is required.
+        /// </returns>
+        protected Expression VisitAndConvert<TExpression>(
             TExpression expression,
             Expression subject,
-            IList<Expression> arguments,
+            IList<Expression> expressions,
             Func<TExpression, Expression, IList<Expression>, Expression> expressionFactory)
             where TExpression : Expression
         {
             var updatedSubject = VisitAndConvert(subject);
-            var updatedArguments = VisitAndConvert(arguments);
+            var updatedArguments = VisitAndConvert(expressions);
 
-            if (updatedSubject == subject && updatedArguments == arguments)
+            if (updatedSubject == subject && updatedArguments == expressions)
             {
                 return expression;
             }
 
-            return expressionFactory.Invoke(expression, subject, arguments);
+            return expressionFactory.Invoke(expression, subject, expressions);
         }
 
         private TConstruct VisitConstruct<TConstruct>(
