@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System.Collections.Generic;
 #if NET35

@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     /// <summary>
     /// Implementing classes will translate an Expression to a source-code string.

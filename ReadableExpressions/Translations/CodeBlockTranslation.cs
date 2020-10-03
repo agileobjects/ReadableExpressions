@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using Interfaces;
 
     /// <summary>
     /// An <see cref="ITranslation"/> for a potentiall multi-line source code block, providing

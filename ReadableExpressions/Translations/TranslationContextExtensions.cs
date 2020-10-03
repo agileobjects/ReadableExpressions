@@ -2,7 +2,6 @@
 {
     using Extensions;
     using Formatting;
-    using Interfaces;
 
     internal static class TranslationContextExtensions
     {

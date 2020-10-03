@@ -4,7 +4,6 @@
     using System.Reflection;
     using Extensions;
     using Formatting;
-    using Interfaces;
 
     internal class ParameterSetDefinitionTranslation : ITranslatable
     {

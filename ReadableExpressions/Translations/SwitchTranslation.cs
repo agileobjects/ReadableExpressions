@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using Interfaces;
 
     internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {

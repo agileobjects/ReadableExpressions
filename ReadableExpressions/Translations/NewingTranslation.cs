@@ -8,7 +8,6 @@
 #endif
     using Extensions;
     using NetStandardPolyfills;
-    using Interfaces;
 
     internal class NewingTranslation : NewingTranslationBase, ITranslation
     {

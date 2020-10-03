@@ -9,7 +9,6 @@
 #endif
     using Extensions;
     using Formatting;
-    using Interfaces;
 
     internal static class TranslationExtensions
     {

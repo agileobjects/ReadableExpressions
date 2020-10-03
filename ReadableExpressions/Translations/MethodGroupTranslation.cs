@@ -9,7 +9,6 @@
 #endif
     using System.Reflection;
     using Extensions;
-    using Interfaces;
     using static Formatting.TokenType;
 
     internal class MethodGroupTranslation : ITranslation

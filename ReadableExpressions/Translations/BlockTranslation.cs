@@ -9,7 +9,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using Interfaces;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else

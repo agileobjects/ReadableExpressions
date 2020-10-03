@@ -1,4 +1,4 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Interfaces
+﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     /// <summary>
     /// Implementing classes will enable predicates to be defined against an Expression translation.

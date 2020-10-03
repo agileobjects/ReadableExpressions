@@ -8,7 +8,6 @@
 #endif
     using Translations;
     using Translations.Formatting;
-    using Translations.Interfaces;
 
     /// <summary>
     /// Provides extension methods to use with a <see cref="ITranslationContext"/>.

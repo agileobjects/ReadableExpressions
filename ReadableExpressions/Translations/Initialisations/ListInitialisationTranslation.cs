@@ -5,7 +5,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Interfaces;
 
     internal class ListInitialisationTranslation : InitialisationTranslationBase<ElementInit>
     {

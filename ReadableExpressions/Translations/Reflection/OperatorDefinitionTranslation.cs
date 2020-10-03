@@ -2,7 +2,6 @@
 {
     using System.Reflection;
     using Extensions;
-    using Interfaces;
     using static MethodTranslationHelpers;
 
     internal class OperatorDefinitionTranslation : ITranslatable

@@ -10,7 +10,6 @@
     using System.Reflection;
     using Extensions;
     using Initialisations;
-    using Interfaces;
 
     internal class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
     {

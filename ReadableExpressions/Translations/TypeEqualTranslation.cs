@@ -9,7 +9,6 @@
 #endif
     using System.Reflection;
     using Extensions;
-    using Interfaces;
     using NetStandardPolyfills;
 
     internal static class TypeEqualTranslation
