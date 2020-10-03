@@ -352,6 +352,9 @@
         /// </returns>
         protected virtual Expression VisitAndConvert(BinaryExpression binary)
         {
+            var isConstructAssignment = false;
+            var isJoinedAssignment = false;
+
             if (IsJoinableVariableAssignment(binary, out var variable))
             {
                 if (IsFirstAccess(variable))
@@ -360,21 +363,44 @@
                     {
                         (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
                             .Add(binary, _constructs.Peek());
+                        
+                        isConstructAssignment = true;
                     }
 
                     (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
                     (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
+                    
+                    isJoinedAssignment = true;
 
                     AddVariableAccess(variable);
                 }
 
-                AddAssignmentIfAppropriate(binary.Right);
+                AddAssignedAssignmentIfAppropriate(binary.Right);
             }
 
-            return binary.Update(
+            var updatedBinary = binary.Update(
                 VisitAndConvert(binary.Left),
                 VisitAndConvert(binary.Conversion),
                 VisitAndConvert(binary.Right));
+
+            if (updatedBinary == binary)
+            {
+                return updatedBinary;
+            }
+
+            if (isConstructAssignment)
+            {
+                _constructsByAssignment.Add(updatedBinary, _constructsByAssignment[binary]);
+                _constructsByAssignment.Remove(binary);
+            }
+
+            if (isJoinedAssignment)
+            {
+                _joinedAssignments.Add(updatedBinary);
+                _joinedAssignments.Remove(binary);
+            }
+
+            return updatedBinary;
         }
 
         private bool IsJoinableVariableAssignment(
@@ -1129,7 +1155,7 @@
             return updatedConstruct;
         }
 
-        private void AddAssignmentIfAppropriate(Expression assignedValue)
+        private void AddAssignedAssignmentIfAppropriate(Expression assignedValue)
         {
             while (true)
             {
