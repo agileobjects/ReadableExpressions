@@ -64,7 +64,6 @@
             {
                 case DebugInfo:
                 case Default:
-                case Extension:
                 case Parameter:
                 case RuntimeVariables:
                     analysis.ResultExpression = expression;
@@ -336,6 +335,14 @@
                         return VisitAndConvert((TypeBinaryExpression)expression);
 
                     default:
+                        if (expression is ICustomAnalysableExpression container)
+                        {
+                            foreach (var expr in container.Expressions)
+                            {
+                                VisitAndConvert(expr);
+                            }
+                        }
+
                         return expression;
                 }
             }
@@ -363,13 +370,13 @@
                     {
                         (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
                             .Add(binary, _constructs.Peek());
-                        
+
                         isConstructAssignment = true;
                     }
 
                     (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
                     (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
-                    
+
                     isJoinedAssignment = true;
 
                     AddVariableAccess(variable);

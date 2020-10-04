@@ -1,15 +1,18 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Collections.Generic;
     using Common;
     using Translations;
     using Translations.Formatting;
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
+    using static Microsoft.Scripting.Ast.Expression;
 
     [NUnit.Framework.TestFixture]
 #endif
@@ -40,6 +43,24 @@
             var translated = custom.ToReadableString();
 
             translated.ShouldBe(custom.ToString());
+        }
+
+        [Fact]
+        public void ShouldAnalyseACustomAnalysableExpression()
+        {
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+            var variable1Block = Block(new[] { intVariable1 }, assignVariable1);
+
+            var intVariable2 = Variable(typeof(int), "j");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+            var variable2Block = Block(new[] { intVariable2 }, assignVariable2);
+
+            var container = new TestCustomAnalysableExpression(variable1Block, variable2Block);
+
+            var analysis = ExpressionAnalysis.For(container, new TestTranslationSettings());
+
+            analysis.JoinedAssignmentVariables.ShouldBe(intVariable1, intVariable2);
         }
 
         #region Helper Members
@@ -107,6 +128,30 @@
             }
 
             public override string ToString() => "Customiiiiiize";
+        }
+
+        internal class TestCustomAnalysableExpression : Expression, ICustomAnalysableExpression
+        {
+            public TestCustomAnalysableExpression(params Expression[] expressions)
+            {
+                Expressions = expressions;
+            }
+
+            public override ExpressionType NodeType => ExpressionType.Extension;
+
+            public override Type Type => typeof(void);
+
+            protected override Expression VisitChildren(ExpressionVisitor visitor)
+            {
+                // See ExtensionExpression for why this is necessary:
+                return this;
+            }
+
+            public IEnumerable<Expression> Expressions { get; }
+        }
+
+        private class TestTranslationSettings : TranslationSettings
+        {
         }
 
         #endregion
