@@ -16,7 +16,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="TranslationSettings"/> class.
         /// </summary>
-        protected TranslationSettings()
+        protected internal TranslationSettings()
         {
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
