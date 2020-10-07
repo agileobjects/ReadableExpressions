@@ -9,7 +9,7 @@
     {
         private readonly Action<string> _logger;
         private readonly VsixManifestInstaller _vsixManifestInstaller;
-        private readonly VisualizerAssembly _visualizerAssembly;
+        private readonly Visualizer _visualizer;
         private readonly string _visualizersDirectory;
 
         public VisualizerInstaller(
@@ -17,18 +17,18 @@
             VsixManifest vsixManifest,
             RegistryKey registryKey,
             string vsInstallDirectory,
-            VisualizerAssembly visualizerAssembly)
+            Visualizer visualizer)
         {
             _logger = logger;
-            
+
             _vsixManifestInstaller = new VsixManifestInstaller(
                 logger, 
                 registryKey,
                 vsInstallDirectory, 
                 vsixManifest);
-            
-            _visualizerAssembly = visualizerAssembly;
-            VsId = _visualizerAssembly.VsYear.ToString();
+
+            _visualizer = visualizer;
+            VsId = _visualizer.VsYear.ToString();
 
             var indexOfIde = vsInstallDirectory.IndexOf("IDE", OrdinalIgnoreCase);
             var pathToCommon7 = vsInstallDirectory.Substring(0, indexOfIde);
@@ -36,27 +36,32 @@
             _visualizersDirectory = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");
         }
 
-        public string ResourceName => _visualizerAssembly.VisualizerResourceName;
+        private string ResourceName => _visualizer.VisualizerResourceName;
 
         public string VsId { get; }
 
-        public void Install()
+        public bool Install()
         {
+            Log("Installing visualizer " + ResourceName + "...");
+
+            Uninstall();
+
             // ReSharper disable once AssignNullToNotNullAttribute
             if (!Directory.Exists(_visualizersDirectory))
             {
                 Log("Skipping as directory does not exist: " + _visualizersDirectory);
-                return;
+                return false;
             }
 
-            _visualizerAssembly.Install(_visualizersDirectory);
+            _visualizer.Install(_visualizersDirectory);
             _vsixManifestInstaller.Install();
+            return true;
         }
 
         public void Uninstall()
         {
             _vsixManifestInstaller.Uninstall();
-            _visualizerAssembly.Uninstall(_visualizersDirectory);
+            _visualizer.Uninstall(_visualizersDirectory);
         }
 
         private void Log(string message) => _logger.Invoke(message);

@@ -10,16 +10,20 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
     public class VisualizerInstallationActions
     {
-        private static readonly Assembly _thisAssembly = typeof(VisualizerAssembly).Assembly;
+        private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
 
+        private static readonly Lazy<CoreAssemblies> _coreAssembliesLoader;
         private static readonly Lazy<VsixManifest> _vsixManifestLoader;
 
         private static Session _session;
 
         static VisualizerInstallationActions()
         {
+            _coreAssembliesLoader = new Lazy<CoreAssemblies>(() => new CoreAssemblies());
             _vsixManifestLoader = new Lazy<VsixManifest>(() => new VsixManifest());
         }
+
+        private static CoreAssemblies CoreAssemblies => _coreAssembliesLoader.Value;
 
         private static VsixManifest VsixManifest => _vsixManifestLoader.Value;
 
@@ -48,11 +52,10 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
                 foreach (var installer in installers)
                 {
-                    Log("Installing visualizer " + installer.ResourceName + "...");
-                    installer.Uninstall();
-                    installer.Install();
-
-                    installed.Add(" - Visual Studio " + installer.VsId);
+                    if (installer.Install())
+                    {
+                        installed.Add(" - Visual Studio " + installer.VsId);
+                    }
                 }
 
                 MessageBox.Show(
@@ -117,10 +120,9 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                 }
 
                 installers = _thisAssembly
-                    .GetManifestResourceNames()
-                    .WithExtension(".dll")
-                    .Where(IsNotObjectSourceAssembly)
-                    .Select(visualizerResourceName => new VisualizerAssembly(Log, visualizerResourceName))
+                    .GetManifestResourceNamesOfType(".dll")
+                    .Where(IsVisualizerAssembly)
+                    .Select(visualizerResourceName => new Visualizer(Log, CoreAssemblies, visualizerResourceName))
                     .SelectMany(visualizer => installerFactory.GetInstallersFor(visualizer))
                     .ToArray();
 
@@ -129,8 +131,12 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             }
         }
 
-        private static bool IsNotObjectSourceAssembly(string visualizerResourceName)
-            => !visualizerResourceName.Contains("ObjectSource");
+        private static bool IsVisualizerAssembly(string assemblyResourceName)
+        {
+            return assemblyResourceName.Contains(nameof(Visualizers)) &&
+                  !assemblyResourceName.Contains("ObjectSource") &&
+                  !CoreAssemblies.IsCoreAssembly(assemblyResourceName);
+        }
 
         private static void Log(string message) => _session?.Log(message);
     }

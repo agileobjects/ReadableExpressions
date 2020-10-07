@@ -73,4 +73,8 @@
     <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
   </PropertyGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(TargetFramework)' == 'net40' ">
+    <Exec Command="xcopy $(TargetDir)AgileObjects.NetStandardPolyfills.dll &quot;$(SolutionDir)VisualizerAssemblies&quot; /Y&#xD;&#xA;xcopy $(TargetPath) &quot;$(SolutionDir)VisualizerAssemblies&quot; /Y" />
+  </Target>
+
 </Project>

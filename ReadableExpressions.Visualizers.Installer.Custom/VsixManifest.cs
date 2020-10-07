@@ -8,7 +8,7 @@
 
     internal class VsixManifest
     {
-        private static readonly Assembly _thisAssembly = typeof(VisualizerAssembly).Assembly;
+        private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
 
         private readonly Lazy<string> _resourceNameLoader;
         private readonly Lazy<string> _contentLoader;
@@ -22,24 +22,14 @@
         #region Setup
 
         private static string GetResourceName()
-        {
-            return _thisAssembly
-                .GetManifestResourceNames()
-                .WithExtension(".vsixmanifest")
-                .First();
-        }
+            => _thisAssembly.GetManifestResourceNamesOfType(".vsixmanifest").First();
 
         private string GetContent()
         {
-            using (var resourceStream = _thisAssembly.GetManifestResourceStream(ResourceName))
-            // ReSharper disable once AssignNullToNotNullAttribute
-            using (var streamReader = new StreamReader(resourceStream))
-            {
-                return streamReader
-                    .ReadToEnd()
-                    .Replace("$version$", VersionNumber.FileVersion)
-                    .Replace("$author$", VersionNumber.CompanyName);
-            }
+            return _thisAssembly
+                .GetResourceContent(ResourceName)
+                .Replace("$version$", VersionNumber.FileVersion)
+                .Replace("$author$", VersionNumber.CompanyName);
         }
 
         #endregion
