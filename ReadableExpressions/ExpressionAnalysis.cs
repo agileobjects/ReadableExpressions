@@ -59,42 +59,42 @@
         public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
             var analysis = new ExpressionAnalysis(settings);
+            analysis.Analyse(expression);
 
+            return analysis;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
+        /// to the Expression returned from <see cref="VisitAndConvert(Expression)"/>, then calls
+        /// <see cref="Finalise"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to analyse.</param>
+        protected virtual void Analyse(Expression expression)
+        {
             switch (expression.NodeType)
             {
                 case DebugInfo:
                 case Default:
                 case Parameter:
                 case RuntimeVariables:
-                    analysis.ResultExpression = expression;
+                    ResultExpression = expression;
                     break;
 
                 default:
-                    analysis.ResultExpression = analysis.VisitAndConvert(expression);
+                    ResultExpression = VisitAndConvert(expression);
                     break;
             }
 
-            return analysis.Finalise();
+            Finalise();
         }
 
         /// <summary>
-        /// Finalises this <see cref="ExpressionAnalysis"/>, ensuring any required members are
-        /// initialised.
+        /// Gets the Expression which was the final result of the analysis.
         /// </summary>
-        /// <returns>This finalised <see cref="ExpressionAnalysis"/>.</returns>
-        protected virtual ExpressionAnalysis Finalise()
-        {
-            _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            return this;
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Gets or sets the Expression which was the final result of the analysis.
-        /// </summary>
-        public Expression ResultExpression { get; protected set; }
+        public Expression ResultExpression { get; private set; }
 
         /// <summary>
         /// Gets the variables in the translated Expression which are first used as an output
@@ -199,6 +199,12 @@
                 if (expression == null)
                 {
                     return null;
+                }
+
+                if (expression is ICustomAnalysableExpression customExpression)
+                {
+                    VisitAndConvert(customExpression);
+                    return expression;
                 }
 
                 switch (expression.NodeType)
@@ -335,14 +341,6 @@
                         return VisitAndConvert((TypeBinaryExpression)expression);
 
                     default:
-                        if (expression is ICustomAnalysableExpression container)
-                        {
-                            foreach (var expr in container.Expressions)
-                            {
-                                VisitAndConvert(expr);
-                            }
-                        }
-
                         return expression;
                 }
             }
@@ -464,6 +462,23 @@
             _blocks.Pop();
 
             return block.Update(variables, expressions);
+        }
+
+        /// <summary>
+        /// Visits and returns the Expressions contained in the given <paramref name="customExpression"/>.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of <see cref="ICustomAnalysableExpression"/> to visit.</typeparam>
+        /// <param name="customExpression">The <see cref="ICustomAnalysableExpression"/> to visit.</param>
+        /// <returns>The given <paramref name="customExpression"/>.</returns>
+        protected virtual TExpression VisitAndConvert<TExpression>(TExpression customExpression)
+            where TExpression : ICustomAnalysableExpression
+        {
+            foreach (var expr in customExpression.Expressions)
+            {
+                VisitAndConvert(expr);
+            }
+
+            return customExpression;
         }
 
         /// <summary>
@@ -1183,6 +1198,59 @@
                 }
                 break;
             }
+        }
+
+        /// <summary>
+        /// Merges the results of the given <paramref name="otherAnalysis"/> with this
+        /// <see cref="ExpressionAnalysis"/>.
+        /// </summary>
+        /// <param name="otherAnalysis">The <see cref="ExpressionAnalysis"/> to merge into this one.</param>
+        protected void Merge(ExpressionAnalysis otherAnalysis)
+        {
+            if (otherAnalysis._inlineOutputVariables != null)
+            {
+                Merge(
+                    otherAnalysis._inlineOutputVariables,
+                   _inlineOutputVariables ??= new List<ParameterExpression>());
+            }
+
+            if (otherAnalysis._joinedAssignmentVariables != null)
+            {
+                Merge(
+                    otherAnalysis._joinedAssignmentVariables,
+                   _joinedAssignmentVariables ??= new List<ParameterExpression>());
+            }
+
+            if (otherAnalysis._joinedAssignments != null)
+            {
+                Merge(
+                    otherAnalysis._joinedAssignments,
+                   _joinedAssignments ??= new List<BinaryExpression>());
+            }
+        }
+
+        private void Merge<TExpression>(
+            IEnumerable<TExpression> sourceExpressions,
+            ICollection<TExpression> targetExpressions)
+        {
+            _inlineOutputVariables ??= new List<ParameterExpression>();
+
+            foreach (var expression in sourceExpressions)
+            {
+                targetExpressions.Add(expression);
+            }
+        }
+
+        /// <summary>
+        /// Finalises this <see cref="ExpressionAnalysis"/>, ensuring any required members are
+        /// initialised.
+        /// </summary>
+        /// <returns>This finalised <see cref="ExpressionAnalysis"/>.</returns>
+        protected virtual ExpressionAnalysis Finalise()
+        {
+            _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
+            return this;
         }
     }
 }
