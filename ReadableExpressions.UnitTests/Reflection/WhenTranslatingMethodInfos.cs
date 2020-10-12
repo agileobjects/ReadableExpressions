@@ -247,7 +247,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnOpenConstrainedGenericMethodInfo()
+        public void ShouldTranslateAnOpenNewableClassConstraintGenericMethodInfo()
         {
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessNewableClassConstraintGeneric));
@@ -257,6 +257,21 @@
             const string EXPECTED = @"
 public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessNewableClassConstraintGeneric<T>()
     where T : class, new()";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenStructConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessStructConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraintGeneric<T>()
+    where T : struct";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -497,6 +512,12 @@ public static explicit operator int
 
             public T InstanceParameterlessNewableClassConstraintGeneric<T>()
                 where T : class, new()
+            {
+                return new T();
+            }
+
+            public T InstanceParameterlessStructConstraintGeneric<T>()
+                where T : struct
             {
                 return new T();
             }

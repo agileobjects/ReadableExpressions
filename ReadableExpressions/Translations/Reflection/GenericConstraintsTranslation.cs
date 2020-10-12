@@ -9,10 +9,12 @@
     {
         private const string _where = "where ";
         private const string _class = "class";
+        private const string _struct = "struct";
         private const string _new = "new()";
 
         private readonly ITranslatable _parameterNameTranslation;
         private readonly bool _isClass;
+        private readonly bool _isStruct;
         private readonly bool _isNewable;
 
         private GenericConstraintsTranslation(
@@ -30,7 +32,7 @@
 
             var formattingSize =
                 keywordFormattingSize +
-                _parameterNameTranslation.FormattingSize;
+               _parameterNameTranslation.FormattingSize;
 
             if ((constraints | ReferenceTypeConstraint) == constraints)
             {
@@ -38,8 +40,14 @@
                 formattingSize += keywordFormattingSize;
                 _isClass = true;
             }
+            else if ((constraints | NotNullableValueTypeConstraint) == constraints)
+            {
+                translationSize += _struct.Length;
+                formattingSize += keywordFormattingSize;
+                _isStruct = true;
+            }
 
-            if ((constraints | DefaultConstructorConstraint) == constraints)
+            if (_isClass && (constraints | DefaultConstructorConstraint) == constraints)
             {
                 translationSize += _new.Length;
                 formattingSize += keywordFormattingSize;
@@ -84,16 +92,27 @@
                 writer.WriteKeywordToTranslation(_class);
                 constraintWritten = true;
             }
+            else if (_isStruct)
+            {
+                writer.WriteKeywordToTranslation(_struct);
+                constraintWritten = true;
+            }
 
             if (_isNewable)
             {
-                if (constraintWritten)
-                {
-                    writer.WriteToTranslation(", ");
-                }
-
+                WriteSeparatorIfNecessary(constraintWritten, writer);
                 writer.WriteKeywordToTranslation("new");
                 writer.WriteToTranslation("()");
+            }
+        }
+
+        private static void WriteSeparatorIfNecessary(
+            bool constraintWritten,
+            TranslationWriter writer)
+        {
+            if (constraintWritten)
+            {
+                writer.WriteToTranslation(", ");
             }
         }
     }
