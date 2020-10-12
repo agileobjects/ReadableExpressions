@@ -247,6 +247,21 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnOpenConstrainedGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessNewableClassConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessNewableClassConstraintGeneric<T>()
+    where T : class, new()";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAThreeParametersTwoOpenGenericsMethodInfo()
         {
             var method = typeof(Helper)
@@ -479,6 +494,12 @@ public static explicit operator int
             }
 
             public Type InstanceParameterlessSingleGeneric<T>() => typeof(T);
+
+            public T InstanceParameterlessNewableClassConstraintGeneric<T>()
+                where T : class, new()
+            {
+                return new T();
+            }
 
             public static string StaticOutParameter(out int value)
             {

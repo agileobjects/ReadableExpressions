@@ -78,5 +78,20 @@
                     : property.GetSetter(nonPublic: true),
                 method));
         }
+
+        public static GenericParameterAttributes GetConstraints(this Type type)
+        {
+#if NETSTANDARD
+            var typeInfo = type.GetTypeInfo();
+
+            return typeInfo.IsGenericParameter
+                ? typeInfo.GenericParameterAttributes
+                : GenericParameterAttributes.None;
+#else
+            return type.IsGenericParameter
+                ? type.GenericParameterAttributes
+                : GenericParameterAttributes.None;
+#endif
+        }
     }
 }

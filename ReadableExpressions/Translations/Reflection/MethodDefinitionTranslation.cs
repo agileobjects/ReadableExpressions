@@ -11,13 +11,16 @@
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
+        private readonly TranslationSettings _settings;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly TypeNameTranslation _returnTypeTranslation;
         private readonly TypeNameTranslation _declaringTypeNameTranslation;
         private readonly string _methodName;
         private readonly ITranslatable[] _genericArgumentTranslations;
+        private readonly ITranslatable[] _constraintTranslations;
         private readonly int _genericArgumentCount;
+        private readonly int _constraintsCount;
         private readonly ITranslatable _parametersTranslation;
 
         /// <summary>
@@ -32,6 +35,7 @@
             IMethod method,
             TranslationSettings settings)
         {
+            _settings = settings;
             _accessibility = GetAccessibility(method);
             _modifiers = GetModifiers(method);
 
@@ -54,14 +58,30 @@
                 _genericArgumentCount = genericArguments.Length;
 
                 _genericArgumentTranslations = new ITranslatable[_genericArgumentCount];
+                _constraintTranslations = new ITranslatable[_genericArgumentCount];
 
                 for (var i = 0; ;)
                 {
-                    var argumentTranslation = new TypeNameTranslation(genericArguments[i], settings);
+                    var argument = genericArguments[i];
 
-                    TranslationSize += argumentTranslation.TranslationSize;
-                    FormattingSize += argumentTranslation.FormattingSize;
+                    var argumentTranslation = new TypeNameTranslation(argument, settings);
+                    var constraintsTranslation = GenericConstraintsTranslation.For(argument, settings);
+
+                    TranslationSize +=
+                        argumentTranslation.TranslationSize +
+                        constraintsTranslation.TranslationSize;
+
+                    FormattingSize +=
+                        argumentTranslation.FormattingSize +
+                        constraintsTranslation.FormattingSize;
+
                     _genericArgumentTranslations[i] = argumentTranslation;
+                    _constraintTranslations[i] = constraintsTranslation;
+
+                    if (constraintsTranslation.TranslationSize > 0)
+                    {
+                        ++_constraintsCount;
+                    }
 
                     ++i;
 
@@ -76,6 +96,7 @@
             else
             {
                 _genericArgumentTranslations = Enumerable<ITranslatable>.EmptyArray;
+                _constraintTranslations = Enumerable<ITranslatable>.EmptyArray;
             }
 
             _parametersTranslation = new ParameterSetDefinitionTranslation(method, settings);
@@ -133,10 +154,18 @@
         public int FormattingSize { get; }
 
         /// <inheritdoc />
-        public int GetIndentSize() => _parametersTranslation.GetIndentSize();
+        public int GetIndentSize()
+        {
+            return _parametersTranslation.GetIndentSize() +
+                   _constraintsCount * _settings.Indent.Length;
+        }
 
         /// <inheritdoc />
-        public int GetLineCount() => _parametersTranslation.GetLineCount() + 1;
+        public int GetLineCount()
+        {
+            return _parametersTranslation.GetLineCount() +
+                   _constraintsCount + 1;
+        }
 
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
@@ -176,6 +205,29 @@
             }
 
             _parametersTranslation.WriteTo(writer);
+
+            if (_constraintsCount == 0)
+            {
+                return;
+            }
+
+            writer.WriteNewLineToTranslation();
+            writer.Indent();
+
+            for (var i = 0; ;)
+            {
+                _constraintTranslations[i].WriteTo(writer);
+                ++i;
+
+                if (i == _constraintsCount)
+                {
+                    break;
+                }
+
+                writer.WriteNewLineToTranslation();
+            }
+
+            writer.Unindent();
         }
     }
 }
