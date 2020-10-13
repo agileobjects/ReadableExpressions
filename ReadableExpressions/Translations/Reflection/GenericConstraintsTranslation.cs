@@ -118,6 +118,8 @@
 
             if (_typeConstraintCount != 0)
             {
+                WriteSeparatorIfNecessary(constraintWritten, writer);
+
                 for (var i = 0; ;)
                 {
                     _typeConstraintTranslations[i].WriteTo(writer);

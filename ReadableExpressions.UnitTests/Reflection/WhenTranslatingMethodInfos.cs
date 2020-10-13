@@ -293,7 +293,7 @@ public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessInterfaceTyp
         }
 
         [Fact]
-        public void ShouldTranslateAnOpenClassConstraintGenericMethodInfo()
+        public void ShouldTranslateAnOpenClassTypeConstraintGenericMethodInfo()
         {
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceClassTypeConstraintGeneric));
@@ -306,6 +306,21 @@ public long WhenTranslatingMethodInfos.Helper.InstanceClassTypeConstraintGeneric
     TStream stream
 )
     where TStream : Stream";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenStructAndInterfaceTypesConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceStructAndInterfaceTypesConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public Type WhenTranslatingMethodInfos.Helper.InstanceStructAndInterfaceTypesConstraintGeneric<T>()
+    where T : struct, WhenTranslatingMethodInfos.IMarker, IDisposable";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -568,6 +583,12 @@ public static explicit operator int
                 return stream.Length;
             }
 
+            public Type InstanceStructAndInterfaceTypesConstraintGeneric<T>()
+                where T : struct, IMarker, IDisposable
+            {
+                return typeof(T);
+            }
+
             public static string StaticOutParameter(out int value)
             {
                 value = 1;
@@ -598,6 +619,10 @@ public static explicit operator int
         {
             public static implicit operator string(CustomAdder adder) => adder.ToString();
             public static explicit operator int(CustomAdder adder) => adder.GetHashCode();
+        }
+
+        internal interface IMarker
+        {
         }
 
         #endregion
