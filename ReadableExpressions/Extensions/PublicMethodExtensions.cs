@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using NetStandardPolyfills;
     using Translations.Reflection;
@@ -12,44 +13,45 @@ namespace AgileObjects.ReadableExpressions.Extensions
     public static class PublicMethodExtensions
     {
         /// <summary>
-        /// Gets the Types of this <see cref="IMethod"/>'s generic arguments, if they are not all
-        /// implicitly specified by its arguments.
+        /// Gets the Types of this <paramref name="method"/>'s <see cref="IGenericArgument"/>s, if
+        /// they are not all implicitly specified by its arguments.
         /// </summary>
         /// <param name="method">The <see cref="IMethod"/> for which to retrieve the argument Types.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         /// <returns>
-        /// The Types of this <see cref="IMethod"/>'s generic arguments if they are not all implicitly
-        /// specified by its arguments, otherwise an empty Type array.
+        /// The Types of this <paramref name="method"/>'s <see cref="IGenericArgument"/>s, if they
+        /// are not all implicitly specified by its arguments, otherwise an empty ReadOnlyCollection.
         /// </returns>
-        public static IList<Type> GetRequiredExplicitGenericArguments(
+        public static ReadOnlyCollection<IGenericArgument> GetRequiredExplicitGenericArguments(
             this IMethod method,
             TranslationSettings settings)
         {
             if (!method.IsGenericMethod)
             {
-                return Enumerable<Type>.EmptyArray;
+                return Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
             }
 
             var methodGenericDefinition = method.GetGenericMethodDefinition();
-            var requiredGenericParameterTypes = methodGenericDefinition.GetGenericArguments().ToList();
+            var genericArguments = methodGenericDefinition.GetGenericArguments();
+            var requiredGenericParameterTypes = genericArguments.Project(arg => arg.Type).ToList();
 
             if (settings.UseImplicitGenericParameters)
             {
-                RemoveSuppliedGenericTypeParameters(
+                RemoveSuppliedGenericTypeArguments(
                     methodGenericDefinition.GetParameters().Project(p => p.Type),
                     requiredGenericParameterTypes);
             }
 
-            return InternalEnumerableExtensions.Any(requiredGenericParameterTypes)
-                ? method.GetGenericArguments()
-                : Enumerable<Type>.EmptyArray;
+            return requiredGenericParameterTypes.Count != 0
+                ? genericArguments.ToReadOnlyCollection()
+                : Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
         }
 
-        private static void RemoveSuppliedGenericTypeParameters(
-            IEnumerable<Type> types,
+        private static void RemoveSuppliedGenericTypeArguments(
+            IEnumerable<Type> parameterTypes,
             ICollection<Type> genericParameterTypes)
         {
-            foreach (var type in types.Project(t => t.IsByRef ? t.GetElementType() : t))
+            foreach (var type in parameterTypes.Project(t => t.IsByRef ? t.GetElementType() : t))
             {
                 if (type.IsGenericParameter && genericParameterTypes.Contains(type))
                 {
@@ -58,7 +60,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
                 if (type.IsGenericType())
                 {
-                    RemoveSuppliedGenericTypeParameters(type.GetGenericTypeArguments(), genericParameterTypes);
+                    RemoveSuppliedGenericTypeArguments(type.GetGenericTypeArguments(), genericParameterTypes);
                 }
             }
         }

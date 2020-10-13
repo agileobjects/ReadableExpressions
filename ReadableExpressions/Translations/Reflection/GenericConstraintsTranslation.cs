@@ -1,9 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
-    using System.Reflection;
     using Extensions;
-    using static System.Reflection.GenericParameterAttributes;
 
     internal class GenericConstraintsTranslation : ITranslatable
     {
@@ -16,13 +13,14 @@
         private readonly bool _isClass;
         private readonly bool _isStruct;
         private readonly bool _isNewable;
+        private readonly int _typeConstraintCount;
+        private readonly ITranslatable[] _typeConstraintTranslations;
 
         private GenericConstraintsTranslation(
-            Type parameterType,
-            GenericParameterAttributes constraints,
+            IGenericArgument genericArgument,
             TranslationSettings settings)
         {
-            _parameterNameTranslation = new TypeNameTranslation(parameterType, settings);
+            _parameterNameTranslation = new TypeNameTranslation(genericArgument.Type, settings);
 
             var keywordFormattingSize = settings.GetKeywordFormattingSize();
 
@@ -34,24 +32,46 @@
                 keywordFormattingSize +
                _parameterNameTranslation.FormattingSize;
 
-            if ((constraints | ReferenceTypeConstraint) == constraints)
+            if (genericArgument.HasClassConstraint)
             {
                 translationSize += _class.Length;
-                formattingSize += keywordFormattingSize;
+                formattingSize += keywordFormattingSize + 2;
                 _isClass = true;
             }
-            else if ((constraints | NotNullableValueTypeConstraint) == constraints)
+
+            if (genericArgument.HasStructConstraint)
             {
                 translationSize += _struct.Length;
-                formattingSize += keywordFormattingSize;
+                formattingSize += keywordFormattingSize + 2;
                 _isStruct = true;
             }
 
-            if (_isClass && (constraints | DefaultConstructorConstraint) == constraints)
+            if (genericArgument.HasNewableConstraint)
             {
                 translationSize += _new.Length;
-                formattingSize += keywordFormattingSize;
+                formattingSize += keywordFormattingSize + 2;
                 _isNewable = true;
+            }
+
+            var typeConstraints = genericArgument.TypeConstraints;
+            _typeConstraintCount = typeConstraints.Count;
+
+            if (_typeConstraintCount != 0)
+            {
+                translationSize += _typeConstraintCount * 2;
+                _typeConstraintTranslations = new ITranslatable[_typeConstraintCount];
+
+                for (var i = 0; i < _typeConstraintCount; ++i)
+                {
+                    var typeNameTranslation = new TypeNameTranslation(typeConstraints[i], settings);
+                    translationSize += typeNameTranslation.TranslationSize;
+                    formattingSize += typeNameTranslation.FormattingSize;
+                    _typeConstraintTranslations[i] = typeNameTranslation;
+                }
+            }
+            else
+            {
+                _typeConstraintTranslations = Enumerable<ITranslatable>.EmptyArray;
             }
 
             TranslationSize = translationSize;
@@ -60,17 +80,10 @@
 
         #region Factory Method
 
-        public static ITranslatable For(Type genericParameterType, TranslationSettings settings)
+        public static ITranslatable For(IGenericArgument genericArgument, TranslationSettings settings)
         {
-            if (!genericParameterType.IsGenericParameter)
-            {
-                return NullTranslatable.Instance;
-            }
-
-            var constraints = genericParameterType.GetConstraints();
-
-            return constraints != None
-                ? new GenericConstraintsTranslation(genericParameterType, constraints, settings)
+            return genericArgument.HasConstraints ?
+                new GenericConstraintsTranslation(genericArgument, settings)
                 : NullTranslatable.Instance;
         }
 
@@ -100,6 +113,25 @@
             else if (_isStruct)
             {
                 writer.WriteKeywordToTranslation(_struct);
+                constraintWritten = true;
+            }
+
+            if (_typeConstraintCount != 0)
+            {
+                for (var i = 0; ;)
+                {
+                    _typeConstraintTranslations[i].WriteTo(writer);
+
+                    ++i;
+
+                    if (i == _typeConstraintCount)
+                    {
+                        break;
+                    }
+
+                    writer.WriteToTranslation(", ");
+                }
+
                 constraintWritten = true;
             }
 

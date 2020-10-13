@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
 #if NET35
     using System.Linq;
@@ -9,6 +10,14 @@
 
     internal static class InternalEnumerableExtensions
     {
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(
+            this IList<T> items)
+        {
+            return items.Count != 0
+                ? new ReadOnlyCollection<T>(items)
+                : Enumerable<T>.EmptyReadOnlyCollection;
+        }
+
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
 

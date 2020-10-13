@@ -3,6 +3,7 @@
     using System;
     using System.Reflection;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -160,7 +161,7 @@
             private static IMethod GetMethod(
                 string methodName,
                 MethodInfo method,
-                Expression[] methodArguments,
+                IList<Expression> methodArguments,
                 Type methodReturnType)
             {
                 if (method == null)
@@ -170,17 +171,17 @@
 
                 return new BclMethodWrapper(
                     method,
-                    GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
+                    GetGenericArguments(method, methodArguments, methodReturnType));
             }
 
-            private static Type[] GetGenericArgumentsOrNull(
+            private static Type[] GetGenericArguments(
                 MethodInfo method,
                 IList<Expression> methodArguments,
                 Type methodReturnType)
             {
                 if (!method.IsGenericMethod)
                 {
-                    return null;
+                    return Enumerable<Type>.EmptyArray;
                 }
 
                 var genericParameterTypes = method.GetGenericArguments();
@@ -202,7 +203,7 @@
 
                     if (methodArgumentCount == 0)
                     {
-                        return null;
+                        return Enumerable<Type>.EmptyArray;
                     }
 
                     for (var j = 0; j < methodParameterCount; ++j)
@@ -220,7 +221,7 @@
                             break;
                         }
 
-                        return null;
+                        return Enumerable<Type>.EmptyArray;
                     }
                 }
 
@@ -260,7 +261,8 @@
 
                 public IMethod GetGenericMethodDefinition() => null;
 
-                public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
+                public ReadOnlyCollection<IGenericArgument> GetGenericArguments()
+                    => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
 
                 public IList<IParameter> GetParameters() => Enumerable<IParameter>.EmptyArray;
 

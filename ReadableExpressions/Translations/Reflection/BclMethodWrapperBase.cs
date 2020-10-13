@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
@@ -13,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public abstract class BclMethodWrapperBase
     {
         private readonly MethodBase _method;
-        private Type[] _genericArguments;
+        private ReadOnlyCollection<IGenericArgument> _genericArguments;
         private IParameter[] _parameters;
 
         /// <summary>
@@ -59,8 +60,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsGenericMethod => _method.IsGenericMethod;
 
         /// <inheritdoc cref="IMethod" />
-        public virtual Type[] GetGenericArguments()
-            => _genericArguments ??= _method.GetGenericArguments();
+        public virtual ReadOnlyCollection<IGenericArgument> GetGenericArguments()
+            => _genericArguments ??= _method.GetGenericArgs();
 
         /// <inheritdoc cref="IMethod" />
         public IList<IParameter> GetParameters()

@@ -1,8 +1,10 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Reflection;
+    using Extensions;
 
     internal class CtorInfoWrapper : BclMethodWrapperBase, IMethod
     {
@@ -20,5 +22,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public IMethod GetGenericMethodDefinition() => null;
 
         public Type ReturnType => _ctorInfo.DeclaringType;
+
+        public override ReadOnlyCollection<IGenericArgument> GetGenericArguments()
+            => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
     }
 }

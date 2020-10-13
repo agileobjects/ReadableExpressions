@@ -55,7 +55,7 @@
                 TranslationSize += 2;
 
                 var genericArguments = method.GetGenericArguments();
-                _genericArgumentCount = genericArguments.Length;
+                _genericArgumentCount = genericArguments.Count;
 
                 _genericArgumentTranslations = new ITranslatable[_genericArgumentCount];
                 _constraintTranslations = new ITranslatable[_genericArgumentCount];
@@ -64,7 +64,7 @@
                 {
                     var argument = genericArguments[i];
 
-                    var argumentTranslation = new TypeNameTranslation(argument, settings);
+                    var argumentTranslation = new TypeNameTranslation(argument.Type, settings);
                     var constraintsTranslation = GenericConstraintsTranslation.For(argument, settings);
 
                     TranslationSize +=

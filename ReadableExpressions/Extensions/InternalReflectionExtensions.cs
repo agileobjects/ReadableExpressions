@@ -79,18 +79,30 @@
                 method));
         }
 
+        public static bool IsOpenGenericArgument(this Type type)
+        {
+#if NETSTANDARD
+            return type.GetTypeInfo().IsGenericParameter;
+#else
+            return type.IsGenericParameter;
+#endif
+        }
+
         public static GenericParameterAttributes GetConstraints(this Type type)
         {
 #if NETSTANDARD
-            var typeInfo = type.GetTypeInfo();
-
-            return typeInfo.IsGenericParameter
-                ? typeInfo.GenericParameterAttributes
-                : GenericParameterAttributes.None;
+            return type.GetTypeInfo().GenericParameterAttributes;
 #else
-            return type.IsGenericParameter
-                ? type.GenericParameterAttributes
-                : GenericParameterAttributes.None;
+            return type.GenericParameterAttributes;
+#endif
+        }
+
+        public static IList<Type> GetImplementedInterfaces(this Type type)
+        {
+#if NETSTANDARD
+            return type.GetTypeInfo().ImplementedInterfaces.ToList();
+#else
+            return type.GetInterfaces();
 #endif
         }
     }

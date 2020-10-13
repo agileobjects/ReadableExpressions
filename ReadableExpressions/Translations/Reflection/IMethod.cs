@@ -2,6 +2,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
 
     /// <summary>
     /// Implementing classes will provide metadata about a method.
@@ -73,12 +74,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// definition, or null if this <see cref="IMethod"/> is non-generic.
         /// </summary>
         IMethod GetGenericMethodDefinition();
-        
+
         /// <summary>
-        /// Gets the Types of this <see cref="IMethod"/>'s generic arguments, or an empty array if
-        /// this <see cref="IMethod"/> is non-generic.
+        /// Gets <see cref="IGenericArgument"/>s describing this <see cref="IMethod"/>'s generic
+        /// arguments, or an empty collection if <see cref="IsGenericMethod"/> is false.
         /// </summary>
-        Type[] GetGenericArguments();
+        ReadOnlyCollection<IGenericArgument> GetGenericArguments();
 
         /// <summary>
         /// Gets this <see cref="IMethod"/>'s parameters, as an <see cref="IParameter"/> collection.

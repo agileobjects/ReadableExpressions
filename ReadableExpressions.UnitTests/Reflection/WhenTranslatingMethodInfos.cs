@@ -280,12 +280,12 @@ public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraint
         public void ShouldTranslateAnOpenTypeConstraintGenericMethodInfo()
         {
             var method = typeof(Helper)
-                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessTypeConstraintGeneric));
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessInterfaceTypeConstraintGeneric));
 
             var translated = method.ToReadableString();
 
             const string EXPECTED = @"
-public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessTypeConstraintGeneric<TItem>()
+public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessInterfaceTypeConstraintGeneric<TItem>()
     where TItem : IList<TItem>";
 
             translated.ShouldBe(EXPECTED.TrimStart());
@@ -537,7 +537,7 @@ public static explicit operator int
                 return new T();
             }
 
-            public TItem InstanceParameterlessTypeConstraintGeneric<TItem>()
+            public TItem InstanceParameterlessInterfaceTypeConstraintGeneric<TItem>()
                 where TItem : IList<TItem>
             {
                 return default(TItem);

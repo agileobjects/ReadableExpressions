@@ -366,10 +366,10 @@
                 ITranslationContext context,
                 out int translationsSize)
             {
-                var requiredGenericParameterTypes = _method
+                var requiredGenericArguments = _method
                     .GetRequiredExplicitGenericArguments(context.Settings);
 
-                if (!requiredGenericParameterTypes.Any())
+                if (!requiredGenericArguments.Any())
                 {
                     translationsSize = 0;
                     return Enumerable<ITranslatable>.EmptyArray;
@@ -377,15 +377,15 @@
 
                 var argumentTranslationsSize = 0;
 
-                var arguments = requiredGenericParameterTypes
-                    .Project(argumentType =>
+                var arguments = requiredGenericArguments
+                    .Project(argument =>
                     {
-                        if (argumentType.FullName == null)
+                        if (argument.Type.FullName == null)
                         {
                             return null;
                         }
 
-                        ITranslatable argumentTypeTranslation = context.GetTranslationFor(argumentType);
+                        ITranslatable argumentTypeTranslation = context.GetTranslationFor(argument.Type);
 
                         argumentTranslationsSize += argumentTypeTranslation.TranslationSize + 2;
 
