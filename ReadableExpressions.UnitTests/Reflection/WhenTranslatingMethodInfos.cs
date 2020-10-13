@@ -277,6 +277,21 @@ public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraint
         }
 
         [Fact]
+        public void ShouldTranslateAnOpenTypeConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessTypeConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessTypeConstraintGeneric<TItem>()
+    where TItem : IList<TItem>";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAThreeParametersTwoOpenGenericsMethodInfo()
         {
             var method = typeof(Helper)
@@ -520,6 +535,12 @@ public static explicit operator int
                 where T : struct
             {
                 return new T();
+            }
+
+            public TItem InstanceParameterlessTypeConstraintGeneric<TItem>()
+                where TItem : IList<TItem>
+            {
+                return default(TItem);
             }
 
             public static string StaticOutParameter(out int value)

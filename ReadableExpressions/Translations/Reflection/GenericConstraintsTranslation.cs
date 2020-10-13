@@ -62,6 +62,11 @@
 
         public static ITranslatable For(Type genericParameterType, TranslationSettings settings)
         {
+            if (!genericParameterType.IsGenericParameter)
+            {
+                return NullTranslatable.Instance;
+            }
+
             var constraints = genericParameterType.GetConstraints();
 
             return constraints != None
