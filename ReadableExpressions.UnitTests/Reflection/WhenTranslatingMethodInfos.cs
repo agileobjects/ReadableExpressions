@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Common;
@@ -277,7 +278,7 @@ public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraint
         }
 
         [Fact]
-        public void ShouldTranslateAnOpenTypeConstraintGenericMethodInfo()
+        public void ShouldTranslateAnOpenInterfaceTypeConstraintGenericMethodInfo()
         {
             var method = typeof(Helper)
                 .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessInterfaceTypeConstraintGeneric));
@@ -287,6 +288,24 @@ public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraint
             const string EXPECTED = @"
 public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessInterfaceTypeConstraintGeneric<TItem>()
     where TItem : IList<TItem>";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenClassConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceClassTypeConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public long WhenTranslatingMethodInfos.Helper.InstanceClassTypeConstraintGeneric<TStream>
+(
+    TStream stream
+)
+    where TStream : Stream";
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -541,6 +560,12 @@ public static explicit operator int
                 where TItem : IList<TItem>
             {
                 return default(TItem);
+            }
+
+            public long InstanceClassTypeConstraintGeneric<TStream>(TStream stream)
+                where TStream : Stream
+            {
+                return stream.Length;
             }
 
             public static string StaticOutParameter(out int value)

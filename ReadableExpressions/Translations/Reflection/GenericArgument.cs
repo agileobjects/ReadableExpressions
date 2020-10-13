@@ -21,10 +21,23 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
             var constraints = genericArgument.GetConstraints();
-            var implementedInterfaces = genericArgument.GetImplementedInterfaces();
-            var hasInterfaces = implementedInterfaces.Any();
+            var constraintTypes = genericArgument.GetImplementedInterfaces();
 
-            if (constraints == None && !hasInterfaces)
+            var argumentBaseType = genericArgument.GetBaseType();
+
+            if (argumentBaseType != typeof(object))
+            {
+                if (constraintTypes.IsReadOnly)
+                {
+                    constraintTypes = new List<Type>(constraintTypes);
+                }
+
+                constraintTypes.Insert(0, argumentBaseType);
+            }
+
+            var hasTypeConstraints = constraintTypes.Any();
+
+            if (constraints == None && !hasTypeConstraints)
             {
                 return new UnconstrainedGenericArgument(genericArgument);
             }
@@ -32,7 +45,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             return new ConstrainedGenericArgument(
                 genericArgument,
                 constraints,
-                implementedInterfaces);
+                constraintTypes);
         }
 
         #endregion
@@ -67,32 +80,37 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 GenericParameterAttributes constraints,
                 IList<Type> typeConstraints)
             {
+                typeConstraints = GetTypeConstraints(typeConstraints);
+
                 Type = type;
-                TypeConstraints = GetTypeConstraints(typeConstraints);
                 HasStructConstraint = (constraints | NotNullableValueTypeConstraint) == constraints;
 
                 if (HasStructConstraint)
                 {
-                    return;
+                    typeConstraints.Remove(typeof(ValueType));
+                }
+                else
+                {
+                    HasClassConstraint = (constraints | ReferenceTypeConstraint) == constraints;
+                    HasNewableConstraint = (constraints | DefaultConstructorConstraint) == constraints;
                 }
 
-                HasClassConstraint = (constraints | ReferenceTypeConstraint) == constraints;
-                HasNewableConstraint = (constraints | DefaultConstructorConstraint) == constraints;
+                TypeConstraints = typeConstraints.ToReadOnlyCollection();
             }
 
             #region Setup
 
-            private static ReadOnlyCollection<Type> GetTypeConstraints(IList<Type> typeConstraints)
+            private static IList<Type> GetTypeConstraints(IList<Type> typeConstraints)
             {
                 var constraintCount = typeConstraints.Count;
 
                 switch (constraintCount)
                 {
                     case 0:
-                        return Enumerable<Type>.EmptyReadOnlyCollection;
+                        return Enumerable<Type>.EmptyArray;
 
                     case 1:
-                        return typeConstraints.ToReadOnlyCollection();
+                        return typeConstraints;
 
                     default:
                         var previousConstraint = typeConstraints[0];
@@ -126,7 +144,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                             }
                         }
 
-                        return constraints.ToReadOnlyCollection();
+                        return constraints;
                 }
             }
 

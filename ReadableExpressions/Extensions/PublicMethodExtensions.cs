@@ -32,8 +32,11 @@ namespace AgileObjects.ReadableExpressions.Extensions
             }
 
             var methodGenericDefinition = method.GetGenericMethodDefinition();
-            var genericArguments = methodGenericDefinition.GetGenericArguments();
-            var requiredGenericParameterTypes = genericArguments.Project(arg => arg.Type).ToList();
+
+            var requiredGenericParameterTypes = methodGenericDefinition
+                .GetGenericArguments()
+                .Project(arg => arg.Type)
+                .ToList();
 
             if (settings.UseImplicitGenericParameters)
             {
@@ -43,7 +46,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
             }
 
             return requiredGenericParameterTypes.Count != 0
-                ? genericArguments.ToReadOnlyCollection()
+                ? method.GetGenericArguments().ToReadOnlyCollection()
                 : Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
         }
 
