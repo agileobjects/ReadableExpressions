@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
 
     /// <summary>
@@ -84,7 +83,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <summary>
         /// Gets this <see cref="IMethod"/>'s parameters, as an <see cref="IParameter"/> collection.
         /// </summary>
-        IList<IParameter> GetParameters();
+        ReadOnlyCollection<IParameter> GetParameters();
 
         /// <summary>
         /// Gets the return Type of this <see cref="IMethod"/>.

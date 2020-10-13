@@ -326,6 +326,23 @@ public Type WhenTranslatingMethodInfos.Helper.InstanceStructAndInterfaceTypesCon
         }
 
         [Fact]
+        public void ShouldTranslateMultipleConstrainedTypesOpenGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceMultipleConstraintsGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public void WhenTranslatingMethodInfos.Helper.InstanceMultipleConstraintsGeneric<T1, T2, T3>()
+    where T1 : struct, IDisposable
+    where T2 : Stream, new()
+    where T3 : Enum";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAThreeParametersTwoOpenGenericsMethodInfo()
         {
             var method = typeof(Helper)
@@ -587,6 +604,13 @@ public static explicit operator int
                 where T : struct, IMarker, IDisposable
             {
                 return typeof(T);
+            }
+
+            public void InstanceMultipleConstraintsGeneric<T1, T2, T3>()
+                where T1 : struct, IDisposable
+                where T2 : Stream, new()
+                where T3 : Enum
+            {
             }
 
             public static string StaticOutParameter(out int value)

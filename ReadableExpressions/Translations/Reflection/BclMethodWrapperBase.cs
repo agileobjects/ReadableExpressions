@@ -1,7 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
-    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Reflection;
     using Extensions;
@@ -15,7 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     {
         private readonly MethodBase _method;
         private ReadOnlyCollection<IGenericArgument> _genericArguments;
-        private IParameter[] _parameters;
+        private ReadOnlyCollection<IParameter> _parameters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BclMethodWrapperBase"/> class.
@@ -64,11 +63,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             => _genericArguments ??= _method.GetGenericArgs();
 
         /// <inheritdoc cref="IMethod" />
-        public IList<IParameter> GetParameters()
+        public ReadOnlyCollection<IParameter> GetParameters()
         {
             return _parameters ??= _method
                 .GetParameters()
-                .ProjectToArray(p => (IParameter)new BclParameterWrapper(p));
+                .ProjectToArray(p => (IParameter)new BclParameterWrapper(p))
+                .ToReadOnlyCollection();
         }
 
         private class BclParameterWrapper : IParameter

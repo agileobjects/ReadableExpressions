@@ -264,7 +264,8 @@
                 public ReadOnlyCollection<IGenericArgument> GetGenericArguments()
                     => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
 
-                public IList<IParameter> GetParameters() => Enumerable<IParameter>.EmptyArray;
+                public ReadOnlyCollection<IParameter> GetParameters() 
+                    => Enumerable<IParameter>.EmptyReadOnlyCollection;
 
                 public Type ReturnType => typeof(void);
             }
