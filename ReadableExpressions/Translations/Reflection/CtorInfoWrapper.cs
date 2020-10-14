@@ -11,8 +11,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private readonly ConstructorInfo _ctorInfo;
 
         [DebuggerStepThrough]
-        public CtorInfoWrapper(ConstructorInfo ctorInfo)
-            : base(ctorInfo)
+        public CtorInfoWrapper(ConstructorInfo ctorInfo, TranslationSettings settings)
+            : base(ctorInfo, settings)
         {
             _ctorInfo = ctorInfo;
         }

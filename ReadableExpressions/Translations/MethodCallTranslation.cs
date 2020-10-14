@@ -36,7 +36,7 @@
         {
             var invocationMethod = invocation.Expression.Type.GetPublicInstanceMethod("Invoke");
 
-            var method = new BclMethodWrapper(invocationMethod);
+            var method = new BclMethodWrapper(invocationMethod, context);
             var parameters = ParameterSetTranslation.For(method, invocation.Arguments, context).WithParentheses();
             var subject = context.GetTranslationFor(invocation.Expression);
 
@@ -75,7 +75,7 @@
                 return new StringConcatenationTranslation(Call, methodCall.Arguments, context);
             }
 
-            var method = new BclMethodWrapper(methodCall.Method);
+            var method = new BclMethodWrapper(methodCall.Method, context);
             var parameters = ParameterSetTranslation.For(method, methodCall.Arguments, context);
 
             if (methodCall.Method.IsImplicitOperator())

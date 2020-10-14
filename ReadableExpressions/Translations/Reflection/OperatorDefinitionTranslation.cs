@@ -15,7 +15,7 @@
             string typeKeyword,
             TranslationSettings settings)
         {
-            _modifiers = GetAccessibility(@operator) + "static " + typeKeyword + " operator ";
+            _modifiers = GetAccessibility(@operator, settings) + "static " + typeKeyword + " operator ";
 
             _returnTypeTranslation =
                 new TypeNameTranslation(@operator.ReturnType, settings);

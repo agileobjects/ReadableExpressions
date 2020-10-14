@@ -16,7 +16,7 @@
         public ParameterSetDefinitionTranslation(
             MethodInfo method,
             TranslationSettings settings)
-            : this(new BclMethodWrapper(method), settings)
+            : this(new BclMethodWrapper(method, settings), settings)
         {
         }
 

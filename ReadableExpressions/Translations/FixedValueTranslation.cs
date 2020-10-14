@@ -46,7 +46,7 @@
         /// written to the translation output.
         /// </param>
         /// <param name="context">
-        /// The <see cref="ITranslationContext"/> describing the Expression translation taking place.
+        /// The <see cref="ITranslationContext"/> describing the current Expression translation.
         /// </param>
         public FixedValueTranslation(
             ExpressionType expressionType,
@@ -54,12 +54,33 @@
             Type type,
             TokenType tokenType,
             ITranslationContext context)
+            : this(expressionType, value, type, tokenType, context.Settings)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FixedValueTranslation"/> class.
+        /// </summary>
+        /// <param name="expressionType">The ExpressionType of the <see cref="FixedValueTranslation"/>.</param>
+        /// <param name="value">The fixed, translated value.</param>
+        /// <param name="type">The type of the <see cref="FixedValueTranslation"/>.</param>
+        /// <param name="tokenType">
+        /// The <see cref="TokenType"/> with which the <see cref="FixedValueTranslation"/> should be
+        /// written to the translation output.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        public FixedValueTranslation(
+            ExpressionType expressionType,
+            string value,
+            Type type,
+            TokenType tokenType,
+            TranslationSettings settings)
         {
             NodeType = expressionType;
             Type = type;
             _value = value;
             _tokenType = tokenType;
-            _formattingSize = context.GetFormattingSize(tokenType);
+            _formattingSize = settings.GetFormattingSize(tokenType);
         }
 
         /// <summary>

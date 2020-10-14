@@ -32,7 +32,7 @@
                 return translation;
             }
 
-            if (DynamicMethodCallTranslation.TryGetTranslation(args, out translation))
+            if (DynamicMethodCallTranslation.TryGetTranslation(args, context, out translation))
             {
                 return translation;
             }
@@ -129,7 +129,10 @@
         {
             private static readonly Regex _matcher = new Regex(@"^Call (?<MethodName>[^\(]+)\(");
 
-            public static bool TryGetTranslation(DynamicTranslationArgs args, out ITranslation translation)
+            public static bool TryGetTranslation(
+                DynamicTranslationArgs args,
+                ITranslationContext context,
+                out ITranslation translation)
             {
                 if (!args.IsMatch(_matcher, out var match))
                 {
@@ -147,7 +150,8 @@
                     methodName,
                     methodInfo,
                     methodArguments,
-                    args.ExpressionType);
+                    args.ExpressionType,
+                    context);
 
                 translation = MethodCallTranslation.ForDynamicMethodCall(
                     subjectTranslation,
@@ -162,7 +166,8 @@
                 string methodName,
                 MethodInfo method,
                 IList<Expression> methodArguments,
-                Type methodReturnType)
+                Type methodReturnType,
+                ITranslationContext context)
             {
                 if (method == null)
                 {
@@ -171,7 +176,8 @@
 
                 return new BclMethodWrapper(
                     method,
-                    GetGenericArguments(method, methodArguments, methodReturnType));
+                    GetGenericArguments(method, methodArguments, methodReturnType),
+                    context.Settings);
             }
 
             private static Type[] GetGenericArguments(
@@ -264,7 +270,7 @@
                 public ReadOnlyCollection<IGenericArgument> GetGenericArguments()
                     => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
 
-                public ReadOnlyCollection<IParameter> GetParameters() 
+                public ReadOnlyCollection<IParameter> GetParameters()
                     => Enumerable<IParameter>.EmptyReadOnlyCollection;
 
                 public Type ReturnType => typeof(void);

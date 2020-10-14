@@ -79,7 +79,7 @@
                 method));
         }
 
-        public static bool IsOpenGenericArgument(this Type type)
+        public static bool IsGenericParameter(this Type type)
         {
 #if NETSTANDARD
             return type.GetTypeInfo().IsGenericParameter;

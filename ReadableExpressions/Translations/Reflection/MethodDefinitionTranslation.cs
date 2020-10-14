@@ -144,7 +144,7 @@
                 return new OperatorDefinitionTranslation(method, "explicit", settings);
             }
 
-            return new MethodDefinitionTranslation(new BclMethodWrapper(method), settings);
+            return new MethodDefinitionTranslation(new BclMethodWrapper(method, settings), settings);
         }
 
         /// <inheritdoc />

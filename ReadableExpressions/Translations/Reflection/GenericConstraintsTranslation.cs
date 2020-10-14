@@ -1,6 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
     using Extensions;
+    using Formatting;
 
     internal class GenericConstraintsTranslation : ITranslatable
     {
@@ -20,7 +26,14 @@
             IGenericArgument genericArgument,
             TranslationSettings settings)
         {
-            _parameterNameTranslation = new TypeNameTranslation(genericArgument.Type, settings);
+            _parameterNameTranslation = genericArgument.Type != null
+                ? (ITranslatable)new TypeNameTranslation(genericArgument.Type, settings)
+                : new FixedValueTranslation(
+                    ExpressionType.Constant,
+                    genericArgument.TypeName,
+                    typeof(object),
+                    TokenType.TypeName,
+                    settings);
 
             var keywordFormattingSize = settings.GetKeywordFormattingSize();
 

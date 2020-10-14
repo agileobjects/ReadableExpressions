@@ -19,16 +19,23 @@
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
         public static string GetFriendlyName(
-            this Type type, 
+            this Type type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             var settings = configuration.GetTranslationSettings();
 
-            return GetFriendlyName(type, settings, settings.Formatter);
+            return GetFriendlyName(type, settings);
         }
 
         internal static string GetFriendlyName(
-            this Type type, 
+            this Type type,
+            TranslationSettings translationSettings)
+        {
+            return type.GetFriendlyName(translationSettings, translationSettings.Formatter);
+        }
+
+        internal static string GetFriendlyName(
+            this Type type,
             TranslationSettings translationSettings,
             ITranslationFormatter formatter)
         {

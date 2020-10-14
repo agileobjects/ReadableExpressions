@@ -3,21 +3,33 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+#if !NET35
     using System.Linq;
+#endif
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
     using static System.Reflection.GenericParameterAttributes;
 
-    internal static class GenericArgument
+    /// <summary>
+    /// Factory class for creating <see cref="IGenericArgument"/> instances.
+    /// </summary>
+    public static class GenericArgumentFactory
     {
-        #region Factory Method
-
-        public static IGenericArgument For(Type genericArgument)
+        /// <summary>
+        /// Creates an <see cref="IGenericArgument"/> for the given <paramref name="genericArgument"/>,
+        /// using the given <paramref name="settings"/>.
+        /// </summary>
+        /// <param name="genericArgument">The Type representing the generic argument.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <returns>An <see cref="IGenericArgument"/> for the given <paramref name="genericArgument"/> Type.</returns>
+        public static IGenericArgument For(
+            Type genericArgument,
+            TranslationSettings settings)
         {
-            if (!genericArgument.IsOpenGenericArgument())
+            if (!genericArgument.IsGenericParameter())
             {
-                return new UnconstrainedGenericArgument(genericArgument);
+                return new UnconstrainedGenericArgument(genericArgument, settings);
             }
 
             var constraints = genericArgument.GetConstraints();
@@ -39,27 +51,43 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             if (constraints == None && !hasTypeConstraints)
             {
-                return new UnconstrainedGenericArgument(genericArgument);
+                return new UnconstrainedGenericArgument(genericArgument, settings);
             }
 
             return new ConstrainedGenericArgument(
                 genericArgument,
                 constraints,
-                constraintTypes);
+                constraintTypes,
+                settings);
         }
-
-        #endregion
 
         #region Implementation Classes
 
-        private class UnconstrainedGenericArgument : IGenericArgument
+        private abstract class GenericArgumentBase
         {
-            public UnconstrainedGenericArgument(Type type)
+            private readonly TranslationSettings _settings;
+            private string _typeName;
+
+            protected GenericArgumentBase(Type type, TranslationSettings settings)
             {
+                _settings = settings;
                 Type = type;
             }
 
             public Type Type { get; }
+
+            public string TypeName
+                => _typeName ??= Type.GetFriendlyName(_settings);
+
+            public bool IsClosed => Type?.FullName != null;
+        }
+
+        private class UnconstrainedGenericArgument : GenericArgumentBase, IGenericArgument
+        {
+            public UnconstrainedGenericArgument(Type type, TranslationSettings settings)
+                : base(type, settings)
+            {
+            }
 
             public bool HasConstraints => false;
 
@@ -73,16 +101,17 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 => Enumerable<Type>.EmptyReadOnlyCollection;
         }
 
-        private class ConstrainedGenericArgument : IGenericArgument
+        private class ConstrainedGenericArgument : GenericArgumentBase, IGenericArgument
         {
             public ConstrainedGenericArgument(
                 Type type,
                 GenericParameterAttributes constraints,
-                IList<Type> typeConstraints)
+                IList<Type> typeConstraints,
+                TranslationSettings settings)
+                : base(type, settings)
             {
                 typeConstraints = GetTypeConstraints(typeConstraints);
 
-                Type = type;
                 HasStructConstraint = (constraints | NotNullableValueTypeConstraint) == constraints;
 
                 if (HasStructConstraint)
@@ -149,8 +178,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
             #endregion
-
-            public Type Type { get; }
 
             public bool HasConstraints => true;
 

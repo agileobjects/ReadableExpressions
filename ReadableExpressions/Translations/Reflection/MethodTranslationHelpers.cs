@@ -39,8 +39,8 @@
             return string.Empty;
         }
 
-        public static string GetAccessibility(MethodInfo method)
-            => GetAccessibility(new BclMethodWrapper(method));
+        public static string GetAccessibility(MethodInfo method, TranslationSettings settings)
+            => GetAccessibility(new BclMethodWrapper(method, settings));
 
         public static string GetAccessibility(IMethod method)
         {
@@ -72,8 +72,8 @@
             return string.Empty;
         }
 
-        public static string GetModifiers(MethodInfo method) 
-            => GetModifiers(new BclMethodWrapper(method));
+        public static string GetModifiers(MethodInfo method, TranslationSettings settings)
+            => GetModifiers(new BclMethodWrapper(method, settings));
 
         public static string GetModifiers(IMethod method)
         {

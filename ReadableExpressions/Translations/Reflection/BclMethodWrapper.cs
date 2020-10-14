@@ -14,6 +14,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public class BclMethodWrapper : BclMethodWrapperBase, IMethod
     {
         private readonly MethodInfo _method;
+        private readonly TranslationSettings _settings;
         private IMethod _genericMethodDefinition;
         private ReadOnlyCollection<IGenericArgument> _genericArguments;
 
@@ -25,12 +26,16 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <param name="genericArguments">
         /// The Types of the <paramref name="method"/>'s generic arguments, if any.
         /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         [DebuggerStepThrough]
-        public BclMethodWrapper(MethodInfo method, IList<Type> genericArguments)
-            : this(method)
+        public BclMethodWrapper(
+            MethodInfo method,
+            IList<Type> genericArguments,
+            TranslationSettings settings)
+            : this(method, settings)
         {
             _genericArguments = genericArguments
-                .ProjectToArray(GenericArgument.For)
+                .ProjectToArray(settings, (stg, arg) => GenericArgumentFactory.For(arg, stg))
                 .ToReadOnlyCollection();
         }
 
@@ -39,11 +44,25 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <paramref name="method"/>.
         /// </summary>
         /// <param name="method">The MethodInfo to which the <see cref="BclMethodWrapper"/> relates.</param>
+        /// <param name="context">The <see cref="ITranslationContext"/> describing the current translation.</param>
         [DebuggerStepThrough]
-        public BclMethodWrapper(MethodInfo method)
-            : base(method)
+        public BclMethodWrapper(MethodInfo method, ITranslationContext context)
+            : this(method, context.Settings)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BclMethodWrapper"/> class for the given
+        /// <paramref name="method"/>.
+        /// </summary>
+        /// <param name="method">The MethodInfo to which the <see cref="BclMethodWrapper"/> relates.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        [DebuggerStepThrough]
+        public BclMethodWrapper(MethodInfo method, TranslationSettings settings)
+            : base(method, settings)
         {
             _method = method;
+            _settings = settings;
             IsExtensionMethod = method.IsExtensionMethod();
         }
 
@@ -52,7 +71,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public IMethod GetGenericMethodDefinition()
-            => _genericMethodDefinition ??= new BclMethodWrapper(_method.GetGenericMethodDefinition());
+        {
+            return _genericMethodDefinition ??=
+                   new BclMethodWrapper(_method.GetGenericMethodDefinition(), _settings);
+        }
 
         /// <inheritdoc cref="IMethod.GetGenericArguments" />
         public override ReadOnlyCollection<IGenericArgument> GetGenericArguments()

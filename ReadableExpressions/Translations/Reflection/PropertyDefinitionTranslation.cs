@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+    using System.Collections.Generic;
     using System.Reflection;
     using Extensions;
 #if NETSTANDARD
@@ -33,11 +34,11 @@
 
         public PropertyDefinitionTranslation(
             PropertyInfo property,
-            MethodInfo[] accessors,
+            IList<MethodInfo> accessors,
             TranslationSettings settings)
         {
             _accessibility = GetAccessibility(property);
-            _modifiers = GetModifiers(accessors[0]);
+            _modifiers = GetModifiers(accessors[0], settings);
 
             _propertyTypeTranslation =
                 new TypeNameTranslation(property.PropertyType, settings);
@@ -65,9 +66,9 @@
                 formattingSize += _declaringTypeNameTranslation.FormattingSize;
             }
 
-            _accessorTranslations = new ITranslatable[accessors.Length];
+            _accessorTranslations = new ITranslatable[accessors.Count];
 
-            for (var i = 0; i < accessors.Length; ++i)
+            for (var i = 0; i < accessors.Count; ++i)
             {
                 var accessorTranslation =
                     new PropertyAccessorDefinitionTranslation(this, accessors[i], settings);
@@ -123,7 +124,7 @@
                 MethodInfo accessor,
                 TranslationSettings settings)
             {
-                var accessibility = GetAccessibility(accessor);
+                var accessibility = GetAccessibility(accessor, settings);
                 _accessor = accessor.ReturnType != typeof(void) ? "get" : "set";
 
                 TranslationSize = _accessor.Length + "; ".Length;

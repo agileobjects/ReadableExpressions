@@ -15,12 +15,14 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// not generic.
         /// </summary>
         /// <param name="method">The MethodInfo for which to retrieve the <see cref="IGenericArgument"/>s.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         /// <returns>
         /// A collection of <see cref="IGenericArgument"/>s describing this <paramref name="method"/>'s
         /// generic arguments, or an empty collection if this method is not generic.
         /// </returns>
         public static ReadOnlyCollection<IGenericArgument> GetGenericArgs(
-            this MethodBase method)
+            this MethodBase method,
+            TranslationSettings settings)
         {
             if (!method.IsGenericMethod)
             {
@@ -29,7 +31,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
             return method
                 .GetGenericArguments()
-                .ProjectToArray(GenericArgument.For)
+                .ProjectToArray(settings, (stg, arg) => GenericArgumentFactory.For(arg, stg))
                 .ToReadOnlyCollection();
         }
     }
