@@ -4,13 +4,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     using System.Collections.ObjectModel;
 
     /// <summary>
-    /// Implementing classes will provide metadata about a method generic argument.
+    /// Implementing classes will provide metadata about a class or method generic argument.
     /// </summary>
     public interface IGenericArgument
     {
         /// <summary>
         /// Gets the Type of this <see cref="IGenericArgument"/>. If <see cref="IsClosed"/> returns
-        /// false, this property should return null.
+        /// false, this property should return typeof(Type).
         /// </summary>
         Type Type { get; }
 

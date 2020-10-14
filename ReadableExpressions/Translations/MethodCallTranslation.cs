@@ -380,12 +380,13 @@
                 var arguments = requiredGenericArguments
                     .Project(argument =>
                     {
-                        if (argument.Type.FullName == null)
+                        if (!argument.IsClosed)
                         {
                             return null;
                         }
 
-                        ITranslatable argumentTypeTranslation = context.GetTranslationFor(argument.Type);
+                        ITranslatable argumentTypeTranslation = GenericArgumentTranslation
+                            .For(argument, context.Settings);
 
                         argumentTranslationsSize += argumentTypeTranslation.TranslationSize + 2;
 
