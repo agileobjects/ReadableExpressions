@@ -239,7 +239,8 @@
         {
             if (constant.Type.IsAssignableTo(typeof(Type)))
             {
-                translation = new TypeofOperatorTranslation((Type)constant.Value, context.Settings);
+                var typeNameTranslation = context.GetTranslationFor((Type)constant.Value);
+                translation = new TypeOfOperatorTranslation(typeNameTranslation, context.Settings);
                 return true;
             }
 
