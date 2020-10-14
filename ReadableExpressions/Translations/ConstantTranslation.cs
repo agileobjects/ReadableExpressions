@@ -239,7 +239,7 @@
         {
             if (constant.Type.IsAssignableTo(typeof(Type)))
             {
-                translation = new TypeofOperatorTranslation((Type)constant.Value, context);
+                translation = new TypeofOperatorTranslation((Type)constant.Value, context.Settings);
                 return true;
             }
 
