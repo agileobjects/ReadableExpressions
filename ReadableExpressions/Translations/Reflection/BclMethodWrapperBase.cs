@@ -13,7 +13,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public abstract class BclMethodWrapperBase
     {
         private readonly MethodBase _method;
-        private readonly TranslationSettings _settings;
         private ReadOnlyCollection<IGenericArgument> _genericArguments;
         private ReadOnlyCollection<IParameter> _parameters;
 
@@ -21,11 +20,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Initializes a new instance of the <see cref="BclMethodWrapperBase"/> class.
         /// </summary>
         /// <param name="method">The MethodBase to which the <see cref="BclMethodWrapperBase"/> relates.</param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        protected BclMethodWrapperBase(MethodBase method, TranslationSettings settings)
+        protected BclMethodWrapperBase(MethodBase method)
         {
             _method = method;
-            _settings = settings;
         }
 
         /// <inheritdoc cref="IMethod" />
@@ -63,7 +60,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc cref="IMethod" />
         public virtual ReadOnlyCollection<IGenericArgument> GetGenericArguments()
-            => _genericArguments ??= _method.GetGenericArgs(_settings);
+            => _genericArguments ??= _method.GetGenericArgs();
 
         /// <inheritdoc cref="IMethod" />
         public ReadOnlyCollection<IParameter> GetParameters()

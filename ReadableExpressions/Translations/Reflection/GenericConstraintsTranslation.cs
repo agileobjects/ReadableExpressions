@@ -20,8 +20,7 @@
             IGenericArgument genericArgument,
             TranslationSettings settings)
         {
-            _parameterNameTranslation = GenericArgumentTranslation
-                .For(genericArgument, settings);
+            _parameterNameTranslation = new TypeNameTranslation(genericArgument.Type, settings);
 
             var keywordFormattingSize = settings.GetKeywordFormattingSize();
 

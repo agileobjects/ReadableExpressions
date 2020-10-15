@@ -25,14 +25,6 @@
             this IList<TItem> items,
             Func<TItem, TResult> projector)
         {
-            return ProjectToArray(items, projector, (p, item) => p.Invoke(item));
-        }
-
-        public static TResult[] ProjectToArray<TItem, TContext, TResult>(
-            this IList<TItem> items,
-            TContext context,
-            Func<TContext, TItem, TResult> projector)
-        {
             var itemCount = items.Count;
 
             switch (itemCount)
@@ -41,14 +33,14 @@
                     return Enumerable<TResult>.EmptyArray;
 
                 case 1:
-                    return new[] { projector.Invoke(context, items[0]) };
+                    return new[] { projector.Invoke(items[0]) };
 
                 default:
                     var result = new TResult[itemCount];
 
                     for (var i = 0; i < itemCount; ++i)
                     {
-                        result[i] = projector.Invoke(context, items[i]);
+                        result[i] = projector.Invoke(items[i]);
                     }
 
                     return result;

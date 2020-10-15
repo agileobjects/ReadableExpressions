@@ -14,7 +14,7 @@
             ConstructorInfo ctor,
             TranslationSettings settings)
         {
-            var ctorMethod = new CtorInfoWrapper(ctor, settings);
+            var ctorMethod = new CtorInfoWrapper(ctor);
 
             _accessibility = GetAccessibility(ctorMethod);
             _typeNameTranslation = new TypeNameTranslation(ctor.DeclaringType, settings);

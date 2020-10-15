@@ -22,13 +22,11 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory
-                .For(argument, new TestTranslationSettings());
+            var argObject = GenericArgumentFactory.For(argument);
 
             argObject.ShouldNotBeNull();
             argObject.Type.Name.ShouldBe("TUnconstrained");
             argObject.Type.FullName.ShouldBeNull();
-            argObject.TypeName.ShouldBe("TUnconstrained");
             argObject.IsClosed.ShouldBeFalse();
             argObject.HasConstraints.ShouldBeFalse();
             argObject.HasClassConstraint.ShouldBeFalse();
@@ -46,12 +44,10 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory
-                .For(argument, new TestTranslationSettings());
+            var argObject = GenericArgumentFactory.For(argument);
 
             argObject.ShouldNotBeNull();
             argObject.Type.ShouldBe(typeof(string));
-            argObject.TypeName.ShouldBe("string");
             argObject.IsClosed.ShouldBeTrue();
             argObject.HasConstraints.ShouldBeFalse();
             argObject.HasClassConstraint.ShouldBeFalse();
@@ -68,13 +64,11 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory
-                .For(argument, new TestTranslationSettings());
+            var argObject = GenericArgumentFactory.For(argument);
 
             argObject.ShouldNotBeNull();
             argObject.Type.Name.ShouldBe("TConstrained");
             argObject.Type.FullName.ShouldBeNull();
-            argObject.TypeName.ShouldBe("TConstrained");
             argObject.IsClosed.ShouldBeFalse();
             argObject.HasConstraints.ShouldBeTrue();
             argObject.HasClassConstraint.ShouldBeTrue();
@@ -91,13 +85,11 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory
-                .For(argument, new TestTranslationSettings());
+            var argObject = GenericArgumentFactory.For(argument);
 
             argObject.ShouldNotBeNull();
             argObject.Type.Name.ShouldBe("TConstrained");
             argObject.Type.FullName.ShouldBeNull();
-            argObject.TypeName.ShouldBe("TConstrained");
             argObject.IsClosed.ShouldBeFalse();
             argObject.HasConstraints.ShouldBeTrue();
             argObject.HasClassConstraint.ShouldBeFalse();
@@ -124,10 +116,6 @@
             {
                 Console.WriteLine(typeof(TConstrained).Name);
             }
-        }
-
-        private class TestTranslationSettings : TranslationSettings
-        {
         }
 
         #endregion

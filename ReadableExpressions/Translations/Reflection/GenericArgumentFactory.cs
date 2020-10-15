@@ -17,19 +17,15 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public static class GenericArgumentFactory
     {
         /// <summary>
-        /// Creates an <see cref="IGenericArgument"/> for the given <paramref name="genericArgument"/>,
-        /// using the given <paramref name="settings"/>.
+        /// Creates an <see cref="IGenericArgument"/> for the given <paramref name="genericArgument"/>.
         /// </summary>
         /// <param name="genericArgument">The Type representing the generic argument.</param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         /// <returns>An <see cref="IGenericArgument"/> for the given <paramref name="genericArgument"/> Type.</returns>
-        public static IGenericArgument For(
-            Type genericArgument,
-            TranslationSettings settings)
+        public static IGenericArgument For(Type genericArgument)
         {
             if (!genericArgument.IsGenericParameter())
             {
-                return new UnconstrainedGenericArgument(genericArgument, settings);
+                return new UnconstrainedGenericArgument(genericArgument);
             }
 
             var constraints = genericArgument.GetConstraints();
@@ -51,41 +47,33 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             if (constraints == None && !hasTypeConstraints)
             {
-                return new UnconstrainedGenericArgument(genericArgument, settings);
+                return new UnconstrainedGenericArgument(genericArgument);
             }
 
             return new ConstrainedGenericArgument(
                 genericArgument,
                 constraints,
-                constraintTypes,
-                settings);
+                constraintTypes);
         }
 
         #region Implementation Classes
 
         private abstract class GenericArgumentBase
         {
-            private readonly TranslationSettings _settings;
-            private string _typeName;
-
-            protected GenericArgumentBase(Type type, TranslationSettings settings)
+            protected GenericArgumentBase(Type type)
             {
-                _settings = settings;
                 Type = type;
             }
 
             public Type Type { get; }
 
-            public string TypeName
-                => _typeName ??= Type.GetFriendlyName(_settings);
-
-            public bool IsClosed => Type?.FullName != null;
+            public bool IsClosed => Type.FullName != null;
         }
 
         private class UnconstrainedGenericArgument : GenericArgumentBase, IGenericArgument
         {
-            public UnconstrainedGenericArgument(Type type, TranslationSettings settings)
-                : base(type, settings)
+            public UnconstrainedGenericArgument(Type type)
+                : base(type)
             {
             }
 
@@ -106,9 +94,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             public ConstrainedGenericArgument(
                 Type type,
                 GenericParameterAttributes constraints,
-                IList<Type> typeConstraints,
-                TranslationSettings settings)
-                : base(type, settings)
+                IList<Type> typeConstraints)
+                : base(type)
             {
                 typeConstraints = GetTypeConstraints(typeConstraints);
 

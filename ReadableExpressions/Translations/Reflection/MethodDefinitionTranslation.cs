@@ -64,7 +64,7 @@
                 {
                     var argument = genericArguments[i];
 
-                    var argumentTranslation = GenericArgumentTranslation.For(argument, settings);
+                    var argumentTranslation = new TypeNameTranslation(argument.Type, settings);
                     var constraintsTranslation = GenericConstraintsTranslation.For(argument, settings);
 
                     TranslationSize +=

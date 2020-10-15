@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             : this(method, settings)
         {
             _genericArguments = genericArguments
-                .ProjectToArray(settings, (stg, arg) => GenericArgumentFactory.For(arg, stg))
+                .ProjectToArray(GenericArgumentFactory.For)
                 .ToReadOnlyCollection();
         }
 
@@ -59,7 +59,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         [DebuggerStepThrough]
         public BclMethodWrapper(MethodInfo method, TranslationSettings settings)
-            : base(method, settings)
+            : base(method)
         {
             _method = method;
             _settings = settings;

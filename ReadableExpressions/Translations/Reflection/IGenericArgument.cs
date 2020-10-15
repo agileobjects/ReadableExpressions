@@ -9,17 +9,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public interface IGenericArgument
     {
         /// <summary>
-        /// Gets the Type of this <see cref="IGenericArgument"/>. If <see cref="IsClosed"/> returns
-        /// false, this property should return typeof(Type).
+        /// Gets the Type of this <see cref="IGenericArgument"/>.
         /// </summary>
         Type Type { get; }
-
-        /// <summary>
-        /// Gets the name of the <see cref="Type"/> of this <see cref="IGenericArgument"/>. If
-        /// <see cref="IsClosed"/> returns false, this property should return its generic parameter
-        /// name.
-        /// </summary>
-        string TypeName { get; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="IGenericArgument"/> has been closed, or
