@@ -10,10 +10,9 @@
 
     internal class DefaultValueTranslation : ITranslation, IPotentialEmptyTranslatable
     {
-        private const string _default = "default";
         private const string _null = "null";
         private readonly bool _typeCanBeNull;
-        private readonly ITranslation _typeNameTranslation;
+        private readonly ITranslatable _operatorTranslation;
 
         public DefaultValueTranslation(
             Expression defaultExpression,
@@ -39,9 +38,10 @@
                 }
             }
 
-            _typeNameTranslation = context.GetTranslationFor(Type);
-            TranslationSize = _default.Length + _typeNameTranslation.TranslationSize + "()".Length;
-            FormattingSize = context.GetKeywordFormattingSize() + _typeNameTranslation.FormattingSize;
+            var typeNameTranslation = context.GetTranslationFor(Type);
+            _operatorTranslation = new DefaultOperatorTranslation(typeNameTranslation, context.Settings);
+            TranslationSize = _operatorTranslation.TranslationSize;
+            FormattingSize = _operatorTranslation.FormattingSize;
         }
 
         public ExpressionType NodeType => ExpressionType.Default;
@@ -55,10 +55,10 @@
         public bool IsEmpty { get; }
 
         public int GetIndentSize()
-            => _typeCanBeNull ? 0 : _typeNameTranslation?.GetIndentSize() ?? 0;
+            => _typeCanBeNull ? 0 : _operatorTranslation?.GetIndentSize() ?? 0;
 
         public int GetLineCount()
-            => _typeCanBeNull ? 1 : _typeNameTranslation?.GetLineCount() ?? 1;
+            => _typeCanBeNull ? 1 : _operatorTranslation?.GetLineCount() ?? 1;
 
         public void WriteTo(TranslationWriter writer)
         {
@@ -67,14 +67,7 @@
                 writer.WriteKeywordToTranslation(_null);
             }
 
-            if (_typeNameTranslation == null)
-            {
-                // Translation of default(void):
-                return;
-            }
-
-            writer.WriteKeywordToTranslation(_default);
-            _typeNameTranslation.WriteInParentheses(writer);
+            _operatorTranslation?.WriteTo(writer);
         }
     }
 }

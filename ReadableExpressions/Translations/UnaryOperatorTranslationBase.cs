@@ -62,12 +62,10 @@
             => _operandTranslation.GetLineCount();
 
         /// <inheritdoc />
-        public void WriteTo(TranslationWriter writer)
+        public virtual void WriteTo(TranslationWriter writer)
         {
             writer.WriteKeywordToTranslation(_operator);
-            writer.WriteToTranslation('(');
-            _operandTranslation.WriteTo(writer);
-            writer.WriteToTranslation(')');
+            _operandTranslation.WriteInParentheses(writer);
         }
     }
 }

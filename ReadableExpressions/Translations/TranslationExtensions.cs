@@ -81,7 +81,7 @@
         public static ITranslation WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
             => new ModifiedTranslation(translatable, nodeType, type);
 
-        public static void WriteInParentheses(this ITranslation translation, TranslationWriter writer)
+        public static void WriteInParentheses(this ITranslatable translation, TranslationWriter writer)
         {
             writer.WriteToTranslation('(');
             translation.WriteTo(writer);
