@@ -29,7 +29,9 @@
 
             if (allowNullKeyword)
             {
-                allowNullKeyword = Type.FullName != null;
+                allowNullKeyword =
+                    (Type.FullName != null) &&
+                    !string.IsNullOrEmpty(Type.GetAssemblyLocation());
             }
 
             if (allowNullKeyword)

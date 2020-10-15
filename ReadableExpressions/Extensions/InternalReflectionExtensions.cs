@@ -105,5 +105,18 @@
             return type.GetGenericParameterConstraints();
 #endif
         }
+
+        public static string GetAssemblyLocation(this Type type)
+        {
+            var assembly = type.GetAssembly();
+
+#if NETSTANDARD
+            return assembly.GetType()
+                .GetPublicInstanceProperty("Location")?
+                .GetValue(assembly) as string;
+#else
+            return assembly.Location;
+#endif
+        }
     }
 }
