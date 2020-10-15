@@ -27,6 +27,11 @@
                 return;
             }
 
+            if (defaultExpression is ICustomDefaultableExpression defaultable)
+            {
+                allowNullKeyword = defaultable.AllowNullKeyword;
+            }
+
             if (allowNullKeyword)
             {
                 _typeCanBeNull = Type.CanBeNull();
