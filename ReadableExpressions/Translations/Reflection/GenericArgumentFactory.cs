@@ -29,20 +29,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
             var constraints = genericArgument.GetConstraints();
-            var constraintTypes = genericArgument.GetImplementedInterfaces();
-
-            var argumentBaseType = genericArgument.GetBaseType();
-
-            if (argumentBaseType != typeof(object))
-            {
-                if (constraintTypes.IsReadOnly)
-                {
-                    constraintTypes = new List<Type>(constraintTypes);
-                }
-
-                constraintTypes.Insert(0, argumentBaseType);
-            }
-
+            var constraintTypes = genericArgument.GetConstraintTypes();
             var hasTypeConstraints = constraintTypes.Any();
 
             if (constraints == None && !hasTypeConstraints)
@@ -103,6 +90,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
                 if (HasStructConstraint)
                 {
+                    if (typeConstraints.IsReadOnly)
+                    {
+                        typeConstraints = new List<Type>(typeConstraints);
+                    }
+
                     typeConstraints.Remove(typeof(ValueType));
                 }
                 else

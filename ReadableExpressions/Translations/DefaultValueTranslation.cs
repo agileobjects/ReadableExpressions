@@ -27,9 +27,9 @@
                 return;
             }
 
-            if (defaultExpression is ICustomDefaultableExpression defaultable)
+            if (allowNullKeyword)
             {
-                allowNullKeyword = defaultable.AllowNullKeyword;
+                allowNullKeyword = Type.FullName != null;
             }
 
             if (allowNullKeyword)

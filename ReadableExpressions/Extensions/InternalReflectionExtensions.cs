@@ -97,12 +97,12 @@
 #endif
         }
 
-        public static IList<Type> GetImplementedInterfaces(this Type type)
+        public static IList<Type> GetConstraintTypes(this Type type)
         {
 #if NETSTANDARD
-            return type.GetTypeInfo().ImplementedInterfaces.ToList();
+            return type.GetTypeInfo().GetGenericParameterConstraints();
 #else
-            return type.GetInterfaces();
+            return type.GetGenericParameterConstraints();
 #endif
         }
     }

@@ -63,34 +63,6 @@
             analysis.JoinedAssignmentVariables.ShouldBe(intVariable1, intVariable2);
         }
 
-        [Fact]
-        public void ShouldTranslateACustomDefaultableExpression()
-        {
-            var nullableClassExpression = new TestCustomDefaultableExpression(
-                typeof(object),
-                allowNullKeyword: true);
-
-            nullableClassExpression.ToReadableString().ShouldBe("null");
-
-            var nonNullableClassExpression = new TestCustomDefaultableExpression(
-                typeof(object),
-                allowNullKeyword: false);
-
-            nonNullableClassExpression.ToReadableString().ShouldBe("default(object)");
-
-            var nullableValueTypeExpression = new TestCustomDefaultableExpression(
-                typeof(DateTime),
-                allowNullKeyword: true);
-
-            nullableValueTypeExpression.ToReadableString().ShouldBe("default(DateTime)");
-
-            var nonNullableValueTypeExpression = new TestCustomDefaultableExpression(
-                typeof(ValueType),
-                allowNullKeyword: false);
-
-            nonNullableValueTypeExpression.ToReadableString().ShouldBe("default(ValueType)");
-        }
-
         #region Helper Members
 
         internal class ExtensionExpression : Expression
@@ -176,29 +148,6 @@
             }
 
             public IEnumerable<Expression> Expressions { get; }
-        }
-
-        internal class TestCustomDefaultableExpression : Expression, ICustomDefaultableExpression
-        {
-            public TestCustomDefaultableExpression(
-                Type type,
-                bool allowNullKeyword)
-            {
-                Type = type;
-                AllowNullKeyword = allowNullKeyword;
-            }
-
-            public override ExpressionType NodeType => ExpressionType.Default;
-
-            public override Type Type { get; }
-
-            protected override Expression VisitChildren(ExpressionVisitor visitor)
-            {
-                // See ExtensionExpression for why this is necessary:
-                return this;
-            }
-
-            public bool AllowNullKeyword { get; }
         }
 
         private class TestTranslationSettings : TranslationSettings
