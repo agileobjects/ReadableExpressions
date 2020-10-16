@@ -19,6 +19,11 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// <param name="method">The <see cref="IMethod"/> for which to make the determination.</param>
         public static bool IsOverride(this IMethod method)
         {
+            if (method.DeclaringType == null)
+            {
+                return false;
+            }
+
             var parameterTypes = default(IList<Type>);
 
             foreach (var candidateMethod in GetOverridableMethods(method.DeclaringType.GetBaseType()))
