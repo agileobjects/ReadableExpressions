@@ -361,6 +361,48 @@ public void WhenTranslatingMethodInfos.Helper.InstanceMultipleConstraintsGeneric
         }
 
         [Fact]
+        public void ShouldTranslateAnOverriddenVirtualParentMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.ToString));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.Helper.ToString()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOverriddenVirtualGrandParentMethodInfo()
+        {
+            var method = typeof(DerivedHelper)
+                .GetPublicInstanceMethod(nameof(DerivedHelper.ToString));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.DerivedHelper.ToString()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOverriddenAbstractParentMethodInfo()
+        {
+            var method = typeof(DerivedHelper)
+                .GetPublicInstanceMethod(nameof(DerivedHelper.InstanceAbstractParameterless));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.DerivedHelper.InstanceAbstractParameterless()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
         public void ShouldTranslateAnOutParameter()
         {
             var method = typeof(Helper)
@@ -625,6 +667,8 @@ public static explicit operator int
                 Console.WriteLine(value);
                 value = default(T);
             }
+
+            public override string ToString() => "Hello!";
         }
         // ReSharper restore MemberCanBePrivate.Local
         // ReSharper restore AutoPropertyCanBeMadeGetOnly.Local
@@ -637,6 +681,15 @@ public static explicit operator int
             public string InstanceParameterless() => null;
 
             public abstract string InstanceAbstractParameterless();
+        }
+
+        private class DerivedHelper : AbstractHelper
+        {
+            public override int PublicInstanceProperty => 123;
+
+            public override string InstanceAbstractParameterless() => ToString();
+
+            public override string ToString() => "Hello!";
         }
 
         internal class CustomAdder

@@ -4,6 +4,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Reflection;
     using NetStandardPolyfills;
     using Translations.Reflection;
 
@@ -12,6 +13,58 @@ namespace AgileObjects.ReadableExpressions.Extensions
     /// </summary>
     public static class PublicMethodExtensions
     {
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IMethod"/> is an override.
+        /// </summary>
+        /// <param name="method">The <see cref="IMethod"/> for which to make the determination.</param>
+        public static bool IsOverride(this IMethod method)
+        {
+            var parameterTypes = default(IList<Type>);
+
+            foreach (var candidateMethod in GetOverridableMethods(method.DeclaringType.GetBaseType()))
+            {
+                if (candidateMethod.Name != method.Name)
+                {
+                    continue;
+                }
+
+                var parameters = candidateMethod.GetParameters();
+
+                if (parameters.Length == 0)
+                {
+                    return true;
+                }
+
+                parameterTypes ??= method.GetParameters().Select(p => p.Type).ToList();
+
+                if (parameterTypes.SequenceEqual(parameters.Project(p => p.ParameterType)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<MethodInfo> GetOverridableMethods(Type type)
+        {
+            if (type == null)
+            {
+                yield break;
+            }
+
+            var candidateMethods = type
+                .GetPublicInstanceMethods()
+                .Concat(type.GetNonPublicInstanceMethods())
+                .Concat(GetOverridableMethods(type.GetBaseType()))
+                .Filter(m => m.IsAbstract || m.IsVirtual);
+
+            foreach (var candidateMethod in candidateMethods)
+            {
+                yield return candidateMethod;
+            }
+        }
+
         /// <summary>
         /// Gets the Types of this <paramref name="method"/>'s <see cref="IGenericArgument"/>s, if
         /// they are not all implicitly specified by its arguments.
