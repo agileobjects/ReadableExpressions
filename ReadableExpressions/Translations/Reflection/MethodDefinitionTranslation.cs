@@ -6,8 +6,8 @@
     using static MethodTranslationHelpers;
 
     /// <summary>
-    /// An <see cref="ITranslatable"/> for a method definition, including accessibility, scope, generic
-    /// arguments and method arguments.
+    /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope, generic
+    /// arguments and constraints, and method arguments.
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
@@ -30,9 +30,14 @@
         /// <param name="method">
         /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
         /// </param>
+        /// <param name="includeDeclaringType">
+        /// Whether to include the name of the <paramref name="method"/>'s declaring type in the
+        /// <see cref="MethodDefinitionTranslation"/>.
+        /// </param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public MethodDefinitionTranslation(
             IMethod method,
+            bool includeDeclaringType,
             TranslationSettings settings)
         {
             _settings = settings;
@@ -42,7 +47,7 @@
             _returnTypeTranslation =
                 new TypeNameTranslation(method.ReturnType, settings);
 
-            if (method.DeclaringType != null)
+            if (includeDeclaringType && method.DeclaringType != null)
             {
                 _declaringTypeNameTranslation =
                     new TypeNameTranslation(method.DeclaringType, settings);
@@ -50,9 +55,21 @@
 
             _methodName = method.Name;
 
+            var translationSize =
+                _accessibility.Length +
+                _modifiers.Length +
+                _returnTypeTranslation.TranslationSize +
+                _methodName.Length;
+
+            var keywordFormattingSize = settings.GetKeywordFormattingSize();
+
+            var formattingSize =
+                 keywordFormattingSize + // <- For modifiers
+                _returnTypeTranslation.FormattingSize;
+
             if (method.IsGenericMethod)
             {
-                TranslationSize += 2;
+                translationSize += 2;
 
                 var genericArguments = method.GetGenericArguments();
                 _genericArgumentCount = genericArguments.Count;
@@ -67,11 +84,11 @@
                     var argumentTranslation = new TypeNameTranslation(argument.Type, settings);
                     var constraintsTranslation = GenericConstraintsTranslation.For(argument, settings);
 
-                    TranslationSize +=
+                    translationSize +=
                         argumentTranslation.TranslationSize +
                         constraintsTranslation.TranslationSize;
 
-                    FormattingSize +=
+                    formattingSize +=
                         argumentTranslation.FormattingSize +
                         constraintsTranslation.FormattingSize;
 
@@ -90,7 +107,7 @@
                         break;
                     }
 
-                    TranslationSize += ", ".Length;
+                    translationSize += ", ".Length;
                 }
             }
             else
@@ -101,28 +118,20 @@
 
             _parametersTranslation = new ParameterSetDefinitionTranslation(method, settings);
 
-            TranslationSize =
-                _accessibility.Length +
-                _modifiers.Length +
-                _returnTypeTranslation.TranslationSize +
-                _methodName.Length;
-
-            var keywordFormattingSize = settings.GetKeywordFormattingSize();
-
-            FormattingSize =
-                keywordFormattingSize + // <- For modifiers
-                _returnTypeTranslation.FormattingSize;
-
             if (_declaringTypeNameTranslation != null)
             {
-                TranslationSize += _declaringTypeNameTranslation.TranslationSize + 1;
-                FormattingSize += _declaringTypeNameTranslation.FormattingSize;
+                translationSize += _declaringTypeNameTranslation.TranslationSize + 1;
+                formattingSize += _declaringTypeNameTranslation.FormattingSize;
             }
+
+            TranslationSize = translationSize;
+            FormattingSize = formattingSize;
         }
 
         /// <summary>
         /// Creates an <see cref="ITranslatable"/> for the given <paramref name="method"/>, handling
-        /// properties and operators as well as regular methods.
+        /// properties and operators as well as regular methods. Includes the declaring type name in
+        /// the translation.
         /// </summary>
         /// <param name="method">The MethodInfo for which to create the <see cref="ITranslatable"/>.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
@@ -144,7 +153,10 @@
                 return new OperatorDefinitionTranslation(method, "explicit", settings);
             }
 
-            return new MethodDefinitionTranslation(new BclMethodWrapper(method, settings), settings);
+            return new MethodDefinitionTranslation(
+                new BclMethodWrapper(method, settings),
+                includeDeclaringType: true,
+                settings);
         }
 
         /// <inheritdoc />
