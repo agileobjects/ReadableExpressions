@@ -259,6 +259,8 @@
 
                 public bool IsVirtual => false;
 
+                public bool IsOverride => this.IsOverride();
+
                 public string Name { get; }
 
                 public bool IsGenericMethod => false;

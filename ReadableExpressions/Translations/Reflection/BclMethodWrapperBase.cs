@@ -10,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// Helper base class for <see cref="IMethod"/> implementations which wrap MethodBase-derived
     /// objects.
     /// </summary>
-    public abstract class BclMethodWrapperBase
+    public abstract class BclMethodWrapperBase : IMethod
     {
         private readonly MethodBase _method;
         private ReadOnlyCollection<IGenericArgument> _genericArguments;
@@ -25,44 +25,53 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             _method = method;
         }
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public Type DeclaringType => _method.DeclaringType;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsPublic => _method.IsPublic;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsProtectedInternal => _method.IsFamilyOrAssembly;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsInternal => _method.IsAssembly;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsProtected => _method.IsFamily;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsPrivate => _method.IsPrivate;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsAbstract => _method.IsAbstract;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsStatic => _method.IsStatic;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsVirtual => _method.IsVirtual;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
+        public bool IsOverride => this.IsOverride();
+
+        /// <inheritdoc />
         public string Name => _method.Name;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public bool IsGenericMethod => _method.IsGenericMethod;
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
+        public abstract bool IsExtensionMethod { get; }
+
+        /// <inheritdoc />
+        public abstract IMethod GetGenericMethodDefinition();
+
+        /// <inheritdoc />
         public virtual ReadOnlyCollection<IGenericArgument> GetGenericArguments()
             => _genericArguments ??= _method.GetGenericArgs();
 
-        /// <inheritdoc cref="IMethod" />
+        /// <inheritdoc />
         public ReadOnlyCollection<IParameter> GetParameters()
         {
             return _parameters ??= _method
@@ -70,6 +79,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 .ProjectToArray<ParameterInfo, IParameter>(p => new BclParameterWrapper(p))
                 .ToReadOnlyCollection();
         }
+
+        /// <inheritdoc />
+        public abstract Type ReturnType { get; }
 
         private class BclParameterWrapper : IParameter
         {

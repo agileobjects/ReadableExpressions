@@ -4,7 +4,6 @@
 #if NETSTANDARD
     using NetStandardPolyfills;
 #endif
-    using Extensions;
 
     internal static class MethodTranslationHelpers
     {
@@ -88,7 +87,7 @@
                 return "static ";
             }
 
-            if (method.IsOverride())
+            if (method.IsOverride)
             {
                 return "override ";
             }

@@ -11,7 +11,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// An <see cref="IMethod"/> describing a System.Reflection.MethodInfo.
     /// </summary>
-    public class BclMethodWrapper : BclMethodWrapperBase, IMethod
+    public class BclMethodWrapper : BclMethodWrapperBase
     {
         private readonly MethodInfo _method;
         private readonly TranslationSettings _settings;
@@ -67,10 +67,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc />
-        public bool IsExtensionMethod { get; }
+        public override bool IsExtensionMethod { get; }
 
         /// <inheritdoc />
-        public IMethod GetGenericMethodDefinition()
+        public override IMethod GetGenericMethodDefinition()
         {
             return _genericMethodDefinition ??=
                    new BclMethodWrapper(_method.GetGenericMethodDefinition(), _settings);
@@ -81,6 +81,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             => _genericArguments ??= base.GetGenericArguments();
 
         /// <inheritdoc />
-        public Type ReturnType => _method.ReturnType;
+        public override Type ReturnType => _method.ReturnType;
     }
 }

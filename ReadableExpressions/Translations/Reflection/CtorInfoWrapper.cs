@@ -6,7 +6,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     using System.Reflection;
     using Extensions;
 
-    internal class CtorInfoWrapper : BclMethodWrapperBase, IMethod
+    internal class CtorInfoWrapper : BclMethodWrapperBase
     {
         private readonly ConstructorInfo _ctorInfo;
 
@@ -17,11 +17,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             _ctorInfo = ctorInfo;
         }
 
-        public bool IsExtensionMethod => false;
+        public override bool IsExtensionMethod => false;
 
-        public IMethod GetGenericMethodDefinition() => null;
+        public override IMethod GetGenericMethodDefinition() => null;
 
-        public Type ReturnType => _ctorInfo.DeclaringType;
+        public override Type ReturnType => _ctorInfo.DeclaringType;
 
         public override ReadOnlyCollection<IGenericArgument> GetGenericArguments()
             => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;

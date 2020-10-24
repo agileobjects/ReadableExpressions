@@ -54,6 +54,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsVirtual { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="IMethod"/> is an override.
+        /// </summary>
+        bool IsOverride { get; }
+
+        /// <summary>
         /// Gets the name of this <see cref="IMethod"/>.
         /// </summary>
         string Name { get; }
