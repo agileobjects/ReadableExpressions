@@ -11,16 +11,13 @@
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
-        private readonly TranslationSettings _settings;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly TypeNameTranslation _returnTypeTranslation;
         private readonly TypeNameTranslation _declaringTypeNameTranslation;
         private readonly string _methodName;
-        private readonly ITranslatable[] _genericArgumentTranslations;
-        private readonly ITranslatable[] _constraintTranslations;
-        private readonly int _genericArgumentCount;
-        private readonly int _constraintsCount;
+        private readonly ITranslatable _genericParametersTranslation;
+        private readonly ITranslatable _genericParameterConstraintsTranslation;
         private readonly ITranslatable _parametersTranslation;
 
         /// <summary>
@@ -40,18 +37,11 @@
             bool includeDeclaringType,
             TranslationSettings settings)
         {
-            _settings = settings;
             _accessibility = GetAccessibility(method);
             _modifiers = GetModifiers(method);
 
             _returnTypeTranslation =
                 new TypeNameTranslation(method.ReturnType, settings);
-
-            if (includeDeclaringType && method.DeclaringType != null)
-            {
-                _declaringTypeNameTranslation =
-                    new TypeNameTranslation(method.DeclaringType, settings);
-            }
 
             _methodName = method.Name;
 
@@ -67,65 +57,38 @@
                  keywordFormattingSize + // <- For modifiers
                 _returnTypeTranslation.FormattingSize;
 
+            if (includeDeclaringType && method.DeclaringType != null)
+            {
+                _declaringTypeNameTranslation =
+                    new TypeNameTranslation(method.DeclaringType, settings);
+
+                translationSize += _declaringTypeNameTranslation.TranslationSize;
+                formattingSize += _declaringTypeNameTranslation.FormattingSize;
+            }
+
             if (method.IsGenericMethod)
             {
-                translationSize += 2;
-
                 var genericArguments = method.GetGenericArguments();
-                _genericArgumentCount = genericArguments.Count;
 
-                _genericArgumentTranslations = new ITranslatable[_genericArgumentCount];
-                _constraintTranslations = new ITranslatable[_genericArgumentCount];
+                _genericParametersTranslation =
+                    new GenericParameterSetDefinitionTranslation(genericArguments, settings);
 
-                for (var i = 0; ;)
-                {
-                    var argument = genericArguments[i];
+                _genericParameterConstraintsTranslation =
+                    new GenericParameterSetConstraintsTranslation(genericArguments, settings);
 
-                    var argumentTranslation = new TypeNameTranslation(argument.Type, settings);
-                    var constraintsTranslation = GenericConstraintsTranslation.For(argument, settings);
+                translationSize +=
+                    _genericParametersTranslation.TranslationSize +
+                    _genericParameterConstraintsTranslation.TranslationSize;
 
-                    translationSize +=
-                        argumentTranslation.TranslationSize +
-                        constraintsTranslation.TranslationSize;
-
-                    formattingSize +=
-                        argumentTranslation.FormattingSize +
-                        constraintsTranslation.FormattingSize;
-
-                    _genericArgumentTranslations[i] = argumentTranslation;
-                    _constraintTranslations[i] = constraintsTranslation;
-
-                    if (constraintsTranslation.TranslationSize > 0)
-                    {
-                        ++_constraintsCount;
-                    }
-
-                    ++i;
-
-                    if (i == _genericArgumentCount)
-                    {
-                        break;
-                    }
-
-                    translationSize += ", ".Length;
-                }
-            }
-            else
-            {
-                _genericArgumentTranslations = Enumerable<ITranslatable>.EmptyArray;
-                _constraintTranslations = Enumerable<ITranslatable>.EmptyArray;
+                formattingSize +=
+                    _genericParametersTranslation.FormattingSize +
+                    _genericParameterConstraintsTranslation.FormattingSize;
             }
 
             _parametersTranslation = new ParameterSetDefinitionTranslation(method, settings);
 
-            if (_declaringTypeNameTranslation != null)
-            {
-                translationSize += _declaringTypeNameTranslation.TranslationSize + 1;
-                formattingSize += _declaringTypeNameTranslation.FormattingSize;
-            }
-
-            TranslationSize = translationSize;
-            FormattingSize = formattingSize;
+            TranslationSize = translationSize + _parametersTranslation.TranslationSize;
+            FormattingSize = formattingSize + _parametersTranslation.FormattingSize;
         }
 
         /// <summary>
@@ -169,14 +132,14 @@
         public int GetIndentSize()
         {
             return _parametersTranslation.GetIndentSize() +
-                   _constraintsCount * _settings.Indent.Length;
+                   _genericParameterConstraintsTranslation?.GetIndentSize() ?? 0;
         }
 
         /// <inheritdoc />
         public int GetLineCount()
         {
             return _parametersTranslation.GetLineCount() +
-                   _constraintsCount + 1;
+                   _genericParameterConstraintsTranslation?.GetLineCount() ?? 0;
         }
 
         /// <inheritdoc />
@@ -195,51 +158,9 @@
 
             writer.WriteToTranslation(_methodName);
 
-            if (_genericArgumentCount != 0)
-            {
-                writer.WriteToTranslation('<');
-
-                for (var i = 0; ;)
-                {
-                    _genericArgumentTranslations[i].WriteTo(writer);
-
-                    ++i;
-
-                    if (i == _genericArgumentCount)
-                    {
-                        break;
-                    }
-
-                    writer.WriteToTranslation(", ");
-                }
-
-                writer.WriteToTranslation('>');
-            }
-
+            _genericParametersTranslation?.WriteTo(writer);
             _parametersTranslation.WriteTo(writer);
-
-            if (_constraintsCount == 0)
-            {
-                return;
-            }
-
-            writer.WriteNewLineToTranslation();
-            writer.Indent();
-
-            for (var i = 0; ;)
-            {
-                _constraintTranslations[i].WriteTo(writer);
-                ++i;
-
-                if (i == _constraintsCount)
-                {
-                    break;
-                }
-
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.Unindent();
+            _genericParameterConstraintsTranslation?.WriteTo(writer);
         }
     }
 }
