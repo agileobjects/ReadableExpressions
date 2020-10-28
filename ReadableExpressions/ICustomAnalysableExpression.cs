@@ -13,7 +13,7 @@
     public interface ICustomAnalysableExpression
     {
         /// <summary>
-        /// Gets the BCL Expressions contained by this <see cref="ICustomAnalysableExpression"/>.
+        /// Gets the Expressions contained by this <see cref="ICustomAnalysableExpression"/>.
         /// </summary>
         IEnumerable<Expression> Expressions { get; }
     }

@@ -20,7 +20,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsClosed { get; }
 
         /// <summary>
-        /// Gets a value indicating whther this <see cref="IGenericArgument"/> is constrained.
+        /// Gets a value indicating whether this <see cref="IGenericArgument"/> is constrained.
         /// </summary>
         bool HasConstraints { get; }
 

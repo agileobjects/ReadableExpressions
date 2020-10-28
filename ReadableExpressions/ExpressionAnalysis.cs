@@ -203,8 +203,7 @@
 
                 if (expression is ICustomAnalysableExpression customExpression)
                 {
-                    VisitAndConvert(customExpression);
-                    return expression;
+                    return (Expression)VisitAndConvert(customExpression);
                 }
 
                 switch (expression.NodeType)
