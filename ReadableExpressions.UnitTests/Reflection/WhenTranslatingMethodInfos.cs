@@ -587,6 +587,8 @@ public static explicit operator int
 
             protected string ProtectedInstanceProperty { get; set; }
 
+            private string PrivateInstanceProperty { get; set; }
+
             public string InstanceParameterless() => null;
 
             public virtual string InstanceVirtualParameterless() => null;
