@@ -3,11 +3,10 @@
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
-    using static MethodTranslationHelpers;
 
     /// <summary>
-    /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope, generic
-    /// arguments and constraints, and method arguments.
+    /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope,
+    /// generic arguments and constraints, and method arguments.
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
@@ -37,8 +36,8 @@
             bool includeDeclaringType,
             TranslationSettings settings)
         {
-            _accessibility = GetAccessibility(method);
-            _modifiers = GetModifiers(method);
+            _accessibility = method.GetAccessibilityForTranslation();
+            _modifiers = method.GetModifiersForTranslation();
 
             _returnTypeTranslation =
                 new TypeNameTranslation(method.ReturnType, settings);

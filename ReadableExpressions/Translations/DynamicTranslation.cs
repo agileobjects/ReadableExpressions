@@ -275,6 +275,8 @@
                 public ReadOnlyCollection<IParameter> GetParameters()
                     => Enumerable<IParameter>.EmptyReadOnlyCollection;
 
+                public Type Type => ReturnType;
+
                 public Type ReturnType => typeof(void);
             }
         }

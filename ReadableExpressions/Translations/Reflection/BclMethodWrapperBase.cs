@@ -80,6 +80,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 .ToReadOnlyCollection();
         }
 
+        Type IMember.Type => ReturnType;
+
         /// <inheritdoc />
         public abstract Type ReturnType { get; }
 

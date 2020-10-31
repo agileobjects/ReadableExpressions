@@ -61,6 +61,8 @@ namespace AgileObjects.ReadableExpressions.Extensions
             var candidateMethods = type
                 .GetPublicInstanceMethods()
                 .Concat(type.GetNonPublicInstanceMethods())
+                .Concat(type.GetPublicInstanceProperties().SelectMany(p => p.GetAccessors()))
+                .Concat(type.GetNonPublicInstanceProperties().SelectMany(p => p.GetAccessors()))
                 .Concat(GetOverridableMethods(type.GetBaseType()))
                 .Filter(m => m.IsAbstract || m.IsVirtual);
 

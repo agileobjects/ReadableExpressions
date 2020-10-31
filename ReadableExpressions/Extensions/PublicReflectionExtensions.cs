@@ -31,5 +31,78 @@ namespace AgileObjects.ReadableExpressions.Extensions
                 .ProjectToArray(GenericArgumentFactory.For)
                 .ToReadOnlyCollection();
         }
+
+        /// <summary>
+        /// Gets a string indicating the accessibility (public, internal, etc.) of this
+        /// <see cref="IMember"/>.
+        /// </summary>
+        /// <param name="member">The <see cref="IMember"/> for which to retrieve the accessibility.</param>
+        /// <returns>
+        /// Whichever is appropriate of 'public', 'internal', 'protected internal', 'protected',
+        /// 'private', or an empty string.
+        /// </returns>
+        public static string GetAccessibility(this IMember member)
+        {
+            if (member.IsPublic)
+            {
+                return "public";
+            }
+
+            if (member.IsInternal)
+            {
+                return "internal";
+            }
+
+            if (member.IsProtected)
+            {
+                return "protected";
+            }
+
+            if (member.IsProtectedInternal)
+            {
+                return "protected internal";
+            }
+
+            if (member.IsPrivate)
+            {
+                return "private";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets a string containing the modifiers (abstract, override, etc.) of this
+        /// <see cref="IComplexMember"/>.
+        /// </summary>
+        /// <param name="member">The <see cref="IComplexMember"/> for which to retrieve the modifiers.</param>
+        /// <returns>
+        /// Whichever is appropriate of 'abstract', 'static', 'override', 'virtual', or an empty
+        /// string.
+        /// </returns>
+        public static string GetModifiers(this IComplexMember member)
+        {
+            if (member.IsAbstract)
+            {
+                return "abstract";
+            }
+
+            if (member.IsStatic)
+            {
+                return "static";
+            }
+
+            if (member.IsOverride)
+            {
+                return "override";
+            }
+
+            if (member.IsVirtual)
+            {
+                return "virtual";
+            }
+
+            return string.Empty;
+        }
     }
 }

@@ -6,25 +6,27 @@
 #if NETSTANDARD
     using NetStandardPolyfills;
 #endif
-    using static MethodTranslationHelpers;
 
-    internal class PropertyDefinitionTranslation : ITranslatable
+    /// <summary>
+    /// An <see cref="ITranslatable"/> for a property signature, including accessibility and scope.
+    /// </summary>
+    public class PropertyDefinitionTranslation : ITranslatable
     {
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly ITranslatable _declaringTypeNameTranslation;
-        private readonly ITranslatable _propertyTypeTranslation;
+        private readonly ITranslatable _propertyTypeNameTranslation;
         private readonly string _propertyName;
         private readonly ITranslatable[] _accessorTranslations;
 
-        public PropertyDefinitionTranslation(
+        internal PropertyDefinitionTranslation(
             PropertyInfo property,
             TranslationSettings settings)
             : this(property, property.GetAccessors(nonPublic: true), settings)
         {
         }
 
-        public PropertyDefinitionTranslation(
+        internal PropertyDefinitionTranslation(
             PropertyInfo property,
             MethodInfo accessor,
             TranslationSettings settings)
@@ -32,32 +34,46 @@
         {
         }
 
-        public PropertyDefinitionTranslation(
+        private PropertyDefinitionTranslation(
             PropertyInfo property,
             IList<MethodInfo> accessors,
             TranslationSettings settings)
+            : this(
+                new BclPropertyWrapper(property, settings),
+                accessors.ProjectToArray<MethodInfo, IComplexMember>(acc =>
+                    new BclMethodWrapper(acc, settings)),
+                includeDeclaringType: true,
+                settings)
         {
-            _accessibility = GetAccessibility(property);
-            _modifiers = GetModifiers(accessors[0], settings);
+        }
 
-            _propertyTypeTranslation =
-                new TypeNameTranslation(property.PropertyType, settings);
+        private PropertyDefinitionTranslation(
+            IProperty property,
+            IList<IComplexMember> accessors,
+            bool includeDeclaringType,
+            TranslationSettings settings)
+        {
+            _accessibility = property.GetAccessibilityForTranslation();
+            _modifiers = accessors[0].GetModifiersForTranslation();
+
+            _propertyTypeNameTranslation =
+                new TypeNameTranslation(property.Type, settings);
 
             _propertyName = property.Name;
 
             var translationSize =
                 _accessibility.Length +
                 _modifiers.Length +
-                _propertyTypeTranslation.TranslationSize +
+                _propertyTypeNameTranslation.TranslationSize +
                 _propertyName.Length;
 
             var keywordFormattingSize = settings.GetKeywordFormattingSize();
 
             var formattingSize =
                 keywordFormattingSize + // <- For modifiers
-                _propertyTypeTranslation.FormattingSize;
+                _propertyTypeNameTranslation.FormattingSize;
 
-            if (property.DeclaringType != null)
+            if (includeDeclaringType && property.DeclaringType != null)
             {
                 _declaringTypeNameTranslation =
                     new TypeNameTranslation(property.DeclaringType, settings);
@@ -83,19 +99,24 @@
             FormattingSize = formattingSize;
         }
 
+        /// <inheritdoc />
         public int TranslationSize { get; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
-        public int GetIndentSize() => _propertyTypeTranslation.GetIndentSize();
+        /// <inheritdoc />
+        public int GetIndentSize() => _propertyTypeNameTranslation.GetIndentSize();
 
-        public int GetLineCount() => _propertyTypeTranslation.GetLineCount();
+        /// <inheritdoc />
+        public int GetLineCount() => _propertyTypeNameTranslation.GetLineCount();
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
             writer.WriteKeywordToTranslation(_accessibility + _modifiers);
 
-            _propertyTypeTranslation.WriteTo(writer);
+            _propertyTypeNameTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();
 
             if (_declaringTypeNameTranslation != null)
@@ -121,14 +142,15 @@
 
             public PropertyAccessorDefinitionTranslation(
                 PropertyDefinitionTranslation parent,
-                MethodInfo accessor,
+                IMember accessor,
                 TranslationSettings settings)
             {
-                var accessibility = GetAccessibility(accessor, settings);
-                _accessor = accessor.ReturnType != typeof(void) ? "get" : "set";
+                _accessor = accessor.Type != typeof(void) ? "get" : "set";
 
                 TranslationSize = _accessor.Length + "; ".Length;
                 FormattingSize = settings.GetKeywordFormattingSize();
+
+                var accessibility = accessor.GetAccessibilityForTranslation();
 
                 if (accessibility == parent._accessibility)
                 {

@@ -2,7 +2,6 @@
 {
     using System.Reflection;
     using Extensions;
-    using static MethodTranslationHelpers;
 
     internal class ConstructorDefinitionTranslation : ITranslatable
     {
@@ -16,7 +15,7 @@
         {
             var ctorMethod = new CtorInfoWrapper(ctor);
 
-            _accessibility = GetAccessibility(ctorMethod);
+            _accessibility = ctorMethod.GetAccessibilityForTranslation();
             _typeNameTranslation = new TypeNameTranslation(ctor.DeclaringType, settings);
             _parametersTranslation = new ParameterSetDefinitionTranslation(ctorMethod, settings);
 

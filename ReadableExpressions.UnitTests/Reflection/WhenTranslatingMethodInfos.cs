@@ -510,19 +510,6 @@ public static explicit operator int
         }
 
         [Fact]
-        public void ShouldTranslateAStaticProperty()
-        {
-            var publicInstanceProperty = typeof(PropertiesHelper)
-                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic));
-
-            publicInstanceProperty.ShouldNotBeNull();
-
-            var translated = publicInstanceProperty.ToReadableString();
-
-            translated.ShouldBe("public static int PropertiesHelper.PublicStatic { get; set; }");
-        }
-
-        [Fact]
         public void ShouldTranslateAnInstanceProperty()
         {
             var nonPublicInstanceProperty = typeof(PropertiesHelper)
@@ -589,7 +576,7 @@ public static explicit operator int
         {
             public Helper()
             {
-                ProtectedInstanceProperty = PrivateInstanceProperty = "hello";
+                ProtectedInstanceProperty = "hello";
             }
 
             public int PublicInstanceProperty { get; set; }
@@ -599,8 +586,6 @@ public static explicit operator int
             protected internal string ProtectedInternalInstanceProperty { get; set; }
 
             protected string ProtectedInstanceProperty { get; set; }
-
-            private string PrivateInstanceProperty { get; set; }
 
             public string InstanceParameterless() => null;
 

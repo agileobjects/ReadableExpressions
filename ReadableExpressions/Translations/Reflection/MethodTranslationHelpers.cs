@@ -1,103 +1,39 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
-#if NETSTANDARD
-    using NetStandardPolyfills;
-#endif
+    using Extensions;
 
     internal static class MethodTranslationHelpers
     {
-        public static string GetAccessibility(PropertyInfo property)
+        public static string GetAccessibilityForTranslation(
+            MethodInfo method,
+            TranslationSettings settings)
         {
-            var accessors = property.GetAccessors(nonPublic: true);
-
-            if (accessors[0].IsPublic || accessors[1].IsPublic)
-            {
-                return "public ";
-            }
-
-            if (accessors[0].IsAssembly || accessors[1].IsAssembly)
-            {
-                return "internal ";
-            }
-
-            if (accessors[0].IsFamily || accessors[1].IsFamily)
-            {
-                return "protected ";
-            }
-
-            if (accessors[0].IsFamilyOrAssembly || accessors[1].IsFamilyOrAssembly)
-            {
-                return "protected internal ";
-            }
-
-            if (accessors[0].IsPrivate || accessors[1].IsPrivate)
-            {
-                return "private ";
-            }
-
-            return string.Empty;
+            return new BclMethodWrapper(method, settings).GetAccessibilityForTranslation();
         }
 
-        public static string GetAccessibility(MethodInfo method, TranslationSettings settings)
-            => GetAccessibility(new BclMethodWrapper(method, settings));
-
-        public static string GetAccessibility(IMethod method)
+        public static string GetAccessibilityForTranslation(this IMember member)
         {
-            if (method.IsPublic)
+            var accessibility = member.GetAccessibility();
+
+            if (accessibility != string.Empty)
             {
-                return "public ";
+                accessibility += ' ';
             }
 
-            if (method.IsInternal)
-            {
-                return "internal ";
-            }
-
-            if (method.IsProtected)
-            {
-                return "protected ";
-            }
-
-            if (method.IsProtectedInternal)
-            {
-                return "protected internal ";
-            }
-
-            if (method.IsPrivate)
-            {
-                return "private ";
-            }
-
-            return string.Empty;
+            return accessibility;
         }
 
-        public static string GetModifiers(MethodInfo method, TranslationSettings settings)
-            => GetModifiers(new BclMethodWrapper(method, settings));
-
-        public static string GetModifiers(IMethod method)
+        public static string GetModifiersForTranslation(this IComplexMember member)
         {
-            if (method.IsAbstract)
+            var modifiers = member.GetModifiers();
+
+            if (modifiers != string.Empty)
             {
-                return "abstract ";
+                modifiers += ' ';
             }
 
-            if (method.IsStatic)
-            {
-                return "static ";
-            }
-
-            if (method.IsOverride)
-            {
-                return "override ";
-            }
-
-            if (method.IsVirtual)
-            {
-                return "virtual ";
-            }
-
-            return string.Empty;
+            return modifiers;
         }
     }
 }
