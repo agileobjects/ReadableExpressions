@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Reflection;
     using Translations.Reflection;
@@ -9,6 +10,29 @@ namespace AgileObjects.ReadableExpressions.Extensions
     /// </summary>
     public static class PublicReflectionExtensions
     {
+        /// <summary>
+        /// Gets one or both <see cref="IComplexMember"/>s describing this <see cref="IProperty"/>'s
+        /// accessors.
+        /// </summary>
+        /// <param name="property">The <see cref="IProperty"/> for which to retrieve the accessors.</param>
+        /// <returns>Whichever is available of this <see cref="IProperty"/>'s getter and setter.</returns>
+        public static IEnumerable<IComplexMember> GetAccessors(this IProperty property)
+        {
+            var accessors = new List<IComplexMember>(2);
+
+            if (property.Getter != null)
+            {
+                accessors.Add(property.Getter);
+            }
+
+            if (property.Setter != null)
+            {
+                accessors.Add(property.Setter);
+            }
+
+            return accessors;
+        }
+
         /// <summary>
         /// Gets a collection of <see cref="IGenericArgument"/>s describing this
         /// <paramref name="method"/>'s generic arguments, or an empty collection if this method is
@@ -48,6 +72,11 @@ namespace AgileObjects.ReadableExpressions.Extensions
                 return "public";
             }
 
+            if (member.IsProtectedInternal)
+            {
+                return "protected internal";
+            }
+
             if (member.IsInternal)
             {
                 return "internal";
@@ -58,9 +87,9 @@ namespace AgileObjects.ReadableExpressions.Extensions
                 return "protected";
             }
 
-            if (member.IsProtectedInternal)
+            if (member.IsPrivateProtected)
             {
-                return "protected internal";
+                return "private protected";
             }
 
             if (member.IsPrivate)

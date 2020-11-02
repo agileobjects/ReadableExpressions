@@ -48,6 +48,20 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsPublic => IsReadable || IsWritable;
 
         /// <inheritdoc />
+        public bool IsInternal
+        {
+            get
+            {
+                if (IsPublic)
+                {
+                    return false;
+                }
+
+                return Getter?.IsInternal == true || Setter?.IsInternal == true;
+            }
+        }
+
+        /// <inheritdoc />
         public bool IsProtectedInternal
         {
             get
@@ -59,20 +73,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
                 return Getter?.IsProtectedInternal == true ||
                        Setter?.IsProtectedInternal == true;
-            }
-        }
-
-        /// <inheritdoc />
-        public bool IsInternal
-        {
-            get
-            {
-                if (IsPublic)
-                {
-                    return false;
-                }
-
-                return Getter?.IsInternal == true || Setter?.IsInternal == true;
             }
         }
 
@@ -91,11 +91,27 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc />
-        public bool IsPrivate
+        public bool IsPrivateProtected
         {
             get
             {
                 if (IsPublic || IsInternal || IsProtectedInternal || IsProtected)
+                {
+                    return false;
+                }
+
+                return Getter?.IsPrivateProtected == true ||
+                       Setter?.IsPrivateProtected == true;
+            }
+        }
+
+        /// <inheritdoc />
+        public bool IsPrivate
+        {
+            get
+            {
+                if (IsPublic || IsInternal || IsProtectedInternal || IsProtected ||
+                    IsPrivateProtected)
                 {
                     return false;
                 }
@@ -114,7 +130,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsAbstract => _getter?.IsAbstract ?? _setter.IsAbstract;
 
         /// <inheritdoc />
-        public bool IsVirtual => _getter?.IsVirtual ?? _setter.IsVirtual;
+        public bool IsVirtual
+            => !IsAbstract && (_getter?.IsVirtual ?? _setter.IsVirtual);
 
         /// <inheritdoc />
         public bool IsOverride => _getter?.IsOverride ?? _setter.IsOverride;
@@ -123,12 +140,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsReadable => Getter?.IsPublic == true;
 
         /// <inheritdoc />
-        public IMember Getter => _getter;
+        public IComplexMember Getter => _getter;
 
         /// <inheritdoc />
         public bool IsWritable => Setter?.IsPublic == true;
 
         /// <inheritdoc />
-        public IMember Setter => _setter;
+        public IComplexMember Setter => _setter;
     }
 }

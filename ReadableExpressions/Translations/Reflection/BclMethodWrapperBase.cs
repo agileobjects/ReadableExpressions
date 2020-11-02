@@ -32,13 +32,16 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsPublic => _method.IsPublic;
 
         /// <inheritdoc />
-        public bool IsProtectedInternal => _method.IsFamilyOrAssembly;
-
-        /// <inheritdoc />
         public bool IsInternal => _method.IsAssembly;
 
         /// <inheritdoc />
+        public bool IsProtectedInternal => _method.IsFamilyOrAssembly;
+
+        /// <inheritdoc />
         public bool IsProtected => _method.IsFamily;
+
+        /// <inheritdoc />
+        public bool IsPrivateProtected => _method.IsFamilyAndAssembly;
 
         /// <inheritdoc />
         public bool IsPrivate => _method.IsPrivate;
@@ -50,7 +53,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsStatic => _method.IsStatic;
 
         /// <inheritdoc />
-        public bool IsVirtual => _method.IsVirtual;
+        public bool IsVirtual => !IsAbstract && _method.IsVirtual;
 
         /// <inheritdoc />
         public bool IsOverride => this.IsOverride();

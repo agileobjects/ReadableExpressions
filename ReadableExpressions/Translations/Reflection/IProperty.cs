@@ -12,9 +12,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsReadable { get; }
 
         /// <summary>
-        /// Gets an <see cref="IMember"/> describing the <see cref="IProperty"/>'s getter.
+        /// Gets an <see cref="IComplexMember"/> describing the <see cref="IProperty"/>'s getter.
         /// </summary>
-        IMember Getter { get; }
+        IComplexMember Getter { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="IProperty"/> has a public
@@ -23,8 +23,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsWritable { get; }
 
         /// <summary>
-        /// Gets an <see cref="IMember"/> describing the <see cref="IProperty"/>'s setter.
+        /// Gets an <see cref="IComplexMember"/> describing the <see cref="IProperty"/>'s setter.
         /// </summary>
-        IMember Setter { get; }
+        IComplexMember Setter { get; }
     }
 }

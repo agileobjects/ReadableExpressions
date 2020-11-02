@@ -23,19 +23,24 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsPublic { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="IMember"/> is protected internal.
-        /// </summary>
-        bool IsProtectedInternal { get; }
-
-        /// <summary>
         /// Gets a value indicating whether the <see cref="IMember"/> is internal.
         /// </summary>
         bool IsInternal { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the <see cref="IMember"/> is protected internal.
+        /// </summary>
+        bool IsProtectedInternal { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the <see cref="IMember"/> is protected.
         /// </summary>
         bool IsProtected { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="IMember"/> is private protected.
+        /// </summary>
+        bool IsPrivateProtected { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMember"/> is private.

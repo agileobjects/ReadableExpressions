@@ -1,6 +1,12 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+    using System;
     using System.Collections.Generic;
+#if NET35
+    using Microsoft.Scripting.Ast;
+#else
+    using System.Linq.Expressions;
+#endif
     using System.Reflection;
     using Extensions;
 #if NETSTANDARD
@@ -10,7 +16,7 @@
     /// <summary>
     /// An <see cref="ITranslatable"/> for a property signature, including accessibility and scope.
     /// </summary>
-    public class PropertyDefinitionTranslation : ITranslatable
+    public class PropertyDefinitionTranslation : ITranslation
     {
         private readonly string _accessibility;
         private readonly string _modifiers;
@@ -47,12 +53,32 @@
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyDefinitionTranslation"/> class.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="includeDeclaringType"></param>
+        /// <param name="settings"></param>
+        public PropertyDefinitionTranslation(
+            IProperty property,
+            bool includeDeclaringType,
+            TranslationSettings settings)
+            : this(
+                property,
+                new List<IComplexMember>(property.GetAccessors()),
+                includeDeclaringType,
+                settings)
+        {
+        }
+
         private PropertyDefinitionTranslation(
             IProperty property,
             IList<IComplexMember> accessors,
             bool includeDeclaringType,
             TranslationSettings settings)
         {
+            Type = property.Type;
+
             _accessibility = property.GetAccessibilityForTranslation();
             _modifiers = accessors[0].GetModifiersForTranslation();
 
@@ -98,6 +124,12 @@
             TranslationSize = translationSize;
             FormattingSize = formattingSize;
         }
+
+        /// <inheritdoc />
+        public ExpressionType NodeType => ExpressionType.MemberAccess;
+
+        /// <inheritdoc />
+        public Type Type { get; }
 
         /// <inheritdoc />
         public int TranslationSize { get; }

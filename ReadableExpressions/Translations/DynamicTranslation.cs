@@ -245,11 +245,13 @@
 
                 public bool IsPublic => false;
 
-                public bool IsProtectedInternal => false;
-
                 public bool IsInternal => false;
 
+                public bool IsProtectedInternal => false;
+
                 public bool IsProtected => false;
+
+                public bool IsPrivateProtected => false;
 
                 public bool IsPrivate => false;
 

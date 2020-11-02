@@ -150,10 +150,6 @@
             public IEnumerable<Expression> Expressions { get; }
         }
 
-        private class TestTranslationSettings : TranslationSettings
-        {
-        }
-
         #endregion
     }
 }
