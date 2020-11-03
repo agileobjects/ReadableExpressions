@@ -94,7 +94,7 @@
             Type = property.Type;
 
             _accessibility = property.GetAccessibilityForTranslation();
-            _modifiers = accessors[0].GetModifiersForTranslation();
+            _modifiers = property.GetModifiersForTranslation();
 
             _propertyTypeNameTranslation =
                 new TypeNameTranslation(property.Type, settings);
