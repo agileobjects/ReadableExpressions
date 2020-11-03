@@ -53,28 +53,42 @@
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyDefinitionTranslation"/> class.
-        /// </summary>
-        /// <param name="property"></param>
-        /// <param name="includeDeclaringType"></param>
-        /// <param name="settings"></param>
-        public PropertyDefinitionTranslation(
-            IProperty property,
-            bool includeDeclaringType,
-            TranslationSettings settings)
-            : this(
-                property,
-                new List<IComplexMember>(property.GetAccessors()),
-                includeDeclaringType,
-                settings)
-        {
-        }
-
         private PropertyDefinitionTranslation(
             IProperty property,
             IList<IComplexMember> accessors,
             bool includeDeclaringType,
+            TranslationSettings settings)
+            : this(
+                property,
+                accessors,
+                includeDeclaringType,
+                (pd, acc, stg) => new PropertyAccessorDefinitionTranslation(pd, acc, stg),
+                settings)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PropertyDefinitionTranslation"/> class.
+        /// </summary>
+        /// <param name="property">The <see cref="IProperty"/> to translate.</param>
+        /// <param name="accessors">
+        /// One or two <see cref="IComplexMember"/>s describing one or both of the
+        /// <paramref name="property"/>'s accessor(s). 
+        /// </param>
+        /// <param name="includeDeclaringType">
+        /// A value indicating whether to include the <paramref name="property"/>'s declaring type
+        /// in the translation.
+        /// </param>
+        /// <param name="accessorTranslationFactory">
+        /// A <see cref="PropertyAccessorTranslationFactory"/> with which to translate the
+        /// <paramref name="property"/>'s accessor(s).
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        protected PropertyDefinitionTranslation(
+            IProperty property,
+            IList<IComplexMember> accessors,
+            bool includeDeclaringType,
+            PropertyAccessorTranslationFactory accessorTranslationFactory,
             TranslationSettings settings)
         {
             Type = property.Type;
@@ -113,7 +127,7 @@
             for (var i = 0; i < accessors.Count; ++i)
             {
                 var accessorTranslation =
-                    new PropertyAccessorDefinitionTranslation(this, accessors[i], settings);
+                    accessorTranslationFactory.Invoke(this, accessors[i], settings);
 
                 translationSize += accessorTranslation.TranslationSize;
                 formattingSize += accessorTranslation.FormattingSize;
@@ -158,54 +172,115 @@
             }
 
             writer.WriteToTranslation(_propertyName);
-            writer.WriteToTranslation(" { ");
+            WriteAccessorsStartTo(writer);
 
             foreach (var accessorTranslation in _accessorTranslations)
             {
                 accessorTranslation.WriteTo(writer);
             }
 
-            writer.WriteToTranslation("}");
+            WriteAccessorsEndTo(writer);
         }
 
-        private class PropertyAccessorDefinitionTranslation : ITranslatable
+        /// <summary>
+        /// Write characters to the given <paramref name="writer"/> to being translation of the
+        /// property accessors.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the characters.</param>
+        protected virtual void WriteAccessorsStartTo(TranslationWriter writer)
+            => writer.WriteToTranslation(" { ");
+
+        /// <summary>
+        /// Write characters to the given <paramref name="writer"/> to end translation of the
+        /// property accessors.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the characters.</param>
+        protected virtual void WriteAccessorsEndTo(TranslationWriter writer)
+            => writer.WriteToTranslation('}');
+
+        /// <summary>
+        /// An <see cref="ITranslatable"/> for a property accessor.
+        /// </summary>
+        protected class PropertyAccessorDefinitionTranslation : ITranslatable
         {
             private readonly string _accessor;
 
+            /// <summary>
+            /// Initializes a new instance of the <see cref="PropertyAccessorDefinitionTranslation"/>
+            /// class.
+            /// </summary>
+            /// <param name="parent">
+            /// The <see cref="PropertyDefinitionTranslation"/> to which the <paramref name="accessor"/>
+            /// belongs.
+            /// </param>
+            /// <param name="accessor">
+            /// An <see cref="IComplexMember"/> representing the accessor for which to create the
+            /// <see cref="ITranslatable"/>.
+            /// </param>
+            /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
             public PropertyAccessorDefinitionTranslation(
                 PropertyDefinitionTranslation parent,
                 IMember accessor,
                 TranslationSettings settings)
             {
-                _accessor = accessor.Type != typeof(void) ? "get" : "set";
+                _accessor = IsGetter(accessor) ? "get" : "set";
 
-                TranslationSize = _accessor.Length + "; ".Length;
+                var translationSize = _accessor.Length + "; ".Length;
                 FormattingSize = settings.GetKeywordFormattingSize();
 
                 var accessibility = accessor.GetAccessibilityForTranslation();
 
                 if (accessibility == parent._accessibility)
                 {
+                    TranslationSize = translationSize;
                     return;
                 }
 
                 _accessor = accessibility + _accessor;
-                TranslationSize += accessibility.Length;
+                TranslationSize = translationSize + accessibility.Length;
             }
 
-            public int TranslationSize { get; }
+            #region Setup
 
-            public int FormattingSize { get; }
+            /// <summary>
+            /// Gets a value indicating whether the given <paramref name="accessor"/> represents the
+            /// property getter. If false, the accessor represents the property setter.
+            /// </summary>
+            /// <param name="accessor">
+            ///  An <see cref="IMember"/> representing the accessor for which to make the determination.
+            /// </param>
+            /// <returns></returns>
+            protected static bool IsGetter(IMember accessor)
+                => accessor.Type != typeof(void);
 
+            #endregion
+
+            /// <inheritdoc />
+            public virtual int TranslationSize { get; }
+
+            /// <inheritdoc />
+            public virtual int FormattingSize { get; }
+
+            /// <inheritdoc />
             public int GetIndentSize() => 0;
 
+            /// <inheritdoc />
             public int GetLineCount() => 1;
 
-            public void WriteTo(TranslationWriter writer)
+            /// <inheritdoc />
+            public virtual void WriteTo(TranslationWriter writer)
             {
-                writer.WriteKeywordToTranslation(_accessor);
+                WriteAccessorTo(writer);
                 writer.WriteToTranslation("; ");
             }
+
+            /// <summary>
+            /// Writes the get or set accessor keyword to the given <paramref name="writer"/>, along
+            /// with the appropriate modifier keywords ('internal', 'private', 'abstract', etc).
+            /// </summary>
+            /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the accessor.</param>
+            protected void WriteAccessorTo(TranslationWriter writer)
+                => writer.WriteKeywordToTranslation(_accessor);
         }
     }
 }
