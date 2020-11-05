@@ -470,6 +470,20 @@
             propertyWrapper.IsWritable.ShouldBeFalse();
             propertyWrapper.Setter.ShouldBeNull();
         }
+
+        [Fact]
+        public void ShouldTranslateAnInterfaceGetSetProperty()
+        {
+            var property = typeof(IInterfacePropertyHelper)
+                .GetPublicInstanceProperty(nameof(IInterfacePropertyHelper.GetSet));
+
+            var translated = property.ToReadableString();
+
+            const string EXPECTED =
+                "string IInterfacePropertyHelper.GetSet { get; set; }";
+
+            translated.ShouldBe(EXPECTED);
+        }
     }
 
     #region Helper Classes
@@ -511,6 +525,11 @@
         public override int AbstractPublicGet => 123;
 
         public override int VirtualPublicGet => 456;
+    }
+
+    public interface IInterfacePropertyHelper
+    {
+        string GetSet { get; set; }
     }
 
     #endregion

@@ -9,15 +9,14 @@
 #endif
     using System.Reflection;
     using Extensions;
-#if NETSTANDARD
     using NetStandardPolyfills;
-#endif
 
     /// <summary>
     /// An <see cref="ITranslatable"/> for a property signature, including accessibility and scope.
     /// </summary>
     public class PropertyDefinitionTranslation : ITranslation
     {
+        private readonly bool _writeModifiers;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly ITranslatable _declaringTypeNameTranslation;
@@ -93,24 +92,30 @@
         {
             Type = property.Type;
 
-            _accessibility = property.GetAccessibilityForTranslation();
-            _modifiers = property.GetModifiersForTranslation();
+            var translationSize = 0;
+            var formattingSize = 0;
+
+            _writeModifiers = !property.DeclaringType.IsInterface();
+
+            if (_writeModifiers)
+            {
+                _accessibility = property.GetAccessibilityForTranslation();
+                _modifiers = property.GetModifiersForTranslation();
+
+                translationSize += _accessibility.Length + _modifiers.Length;
+                formattingSize += settings.GetKeywordFormattingSize();
+            }
 
             _propertyTypeNameTranslation =
                 new TypeNameTranslation(property.Type, settings);
 
             _propertyName = property.Name;
 
-            var translationSize =
-                _accessibility.Length +
-                _modifiers.Length +
+            translationSize +=
                 _propertyTypeNameTranslation.TranslationSize +
                 _propertyName.Length;
 
-            var keywordFormattingSize = settings.GetKeywordFormattingSize();
-
-            var formattingSize =
-                keywordFormattingSize + // <- For modifiers
+            formattingSize +=
                 _propertyTypeNameTranslation.FormattingSize;
 
             if (includeDeclaringType && property.DeclaringType != null)
@@ -160,7 +165,10 @@
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            if (_writeModifiers)
+            {
+                writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            }
 
             _propertyTypeNameTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();

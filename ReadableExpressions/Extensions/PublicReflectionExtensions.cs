@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Reflection;
+    using NetStandardPolyfills;
     using Translations.Reflection;
 
     /// <summary>
@@ -58,7 +59,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
         /// <summary>
         /// Gets a string indicating the accessibility (public, internal, etc.) of this
-        /// <see cref="IMember"/>.
+        /// <see cref="IMember"/>. Returns an empty string if this member belongs to an interface.
         /// </summary>
         /// <param name="member">The <see cref="IMember"/> for which to retrieve the accessibility.</param>
         /// <returns>
@@ -67,6 +68,11 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// </returns>
         public static string GetAccessibility(this IMember member)
         {
+            if (member.DeclaringType.IsInterface())
+            {
+                return string.Empty;
+            }
+
             if (member.IsPublic)
             {
                 return "public";
@@ -102,7 +108,8 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
         /// <summary>
         /// Gets a string containing the modifiers (abstract, override, etc.) of this
-        /// <see cref="IComplexMember"/>.
+        /// <see cref="IComplexMember"/>. Returns an empty string if this member belongs to an
+        /// interface.
         /// </summary>
         /// <param name="member">The <see cref="IComplexMember"/> for which to retrieve the modifiers.</param>
         /// <returns>
@@ -111,6 +118,11 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// </returns>
         public static string GetModifiers(this IComplexMember member)
         {
+            if (member.DeclaringType.IsInterface())
+            {
+                return string.Empty;
+            }
+
             if (member.IsAbstract)
             {
                 return "abstract";
