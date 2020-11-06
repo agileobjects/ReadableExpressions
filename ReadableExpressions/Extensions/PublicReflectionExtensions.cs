@@ -59,11 +59,20 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
         /// <summary>
         /// Gets a value indicating whether this <paramref name="member"/> belongs to an interface.
+        /// This method checks for the <see cref="IPotentialInterfaceMember"/> interface, falling
+        /// back to member.DeclaringType.IsInterface if it is not implemented.
         /// </summary>
         /// <param name="member">The <see cref="IMember"/> for which to make the determination.</param>
         /// <returns>True if this <paramref name="member"/> belongs to an interface, otherwise false.</returns>
         public static bool IsInterfaceMember(this IMember member)
-            => member is IInterfaceMember || member.DeclaringType.IsInterface();
+        {
+            if (member is IPotentialInterfaceMember interfaceMember)
+            {
+                return interfaceMember.IsInterfaceMember;
+            }
+
+            return member.DeclaringType.IsInterface();
+        }
 
         /// <summary>
         /// Gets a string indicating the accessibility (public, internal, etc.) of this
