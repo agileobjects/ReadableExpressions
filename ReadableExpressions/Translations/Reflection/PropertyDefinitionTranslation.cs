@@ -9,7 +9,9 @@
 #endif
     using System.Reflection;
     using Extensions;
+#if NETSTANDARD
     using NetStandardPolyfills;
+#endif
 
     /// <summary>
     /// An <see cref="ITranslatable"/> for a property signature, including accessibility and scope.
@@ -95,7 +97,7 @@
             var translationSize = 0;
             var formattingSize = 0;
 
-            _writeModifiers = !property.DeclaringType.IsInterface();
+            _writeModifiers = !property.IsInterfaceMember();
 
             if (_writeModifiers)
             {

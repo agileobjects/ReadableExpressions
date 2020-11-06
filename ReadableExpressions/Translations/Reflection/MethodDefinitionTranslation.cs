@@ -10,6 +10,7 @@
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
+        private readonly bool _writeModifiers;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly TypeNameTranslation _returnTypeTranslation;
@@ -36,24 +37,30 @@
             bool includeDeclaringType,
             TranslationSettings settings)
         {
-            _accessibility = method.GetAccessibilityForTranslation();
-            _modifiers = method.GetModifiersForTranslation();
+            var translationSize = 0;
+            var formattingSize = 0;
+
+            _writeModifiers = !method.IsInterfaceMember();
+
+            if (_writeModifiers)
+            {
+                _accessibility = method.GetAccessibilityForTranslation();
+                _modifiers = method.GetModifiersForTranslation();
+
+                translationSize += _accessibility.Length + _modifiers.Length;
+                formattingSize += settings.GetKeywordFormattingSize();
+            }
 
             _returnTypeTranslation =
                 new TypeNameTranslation(method.ReturnType, settings);
 
             _methodName = method.Name;
 
-            var translationSize =
-                _accessibility.Length +
-                _modifiers.Length +
+            translationSize +=
                 _returnTypeTranslation.TranslationSize +
                 _methodName.Length;
 
-            var keywordFormattingSize = settings.GetKeywordFormattingSize();
-
-            var formattingSize =
-                 keywordFormattingSize + // <- For modifiers
+            formattingSize +=
                 _returnTypeTranslation.FormattingSize;
 
             if (includeDeclaringType && method.DeclaringType != null)
@@ -144,7 +151,10 @@
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            if (_writeModifiers)
+            {
+                writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            }
 
             _returnTypeTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();

@@ -58,6 +58,14 @@ namespace AgileObjects.ReadableExpressions.Extensions
         }
 
         /// <summary>
+        /// Gets a value indicating whether this <paramref name="member"/> belongs to an interface.
+        /// </summary>
+        /// <param name="member">The <see cref="IMember"/> for which to make the determination.</param>
+        /// <returns>True if this <paramref name="member"/> belongs to an interface, otherwise false.</returns>
+        public static bool IsInterfaceMember(this IMember member)
+            => member is IInterfaceMember || member.DeclaringType.IsInterface();
+
+        /// <summary>
         /// Gets a string indicating the accessibility (public, internal, etc.) of this
         /// <see cref="IMember"/>. Returns an empty string if this member belongs to an interface.
         /// </summary>
@@ -68,7 +76,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// </returns>
         public static string GetAccessibility(this IMember member)
         {
-            if (member.DeclaringType.IsInterface())
+            if (member.IsInterfaceMember())
             {
                 return string.Empty;
             }
@@ -118,7 +126,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// </returns>
         public static string GetModifiers(this IComplexMember member)
         {
-            if (member.DeclaringType.IsInterface())
+            if (member.IsInterfaceMember())
             {
                 return string.Empty;
             }
