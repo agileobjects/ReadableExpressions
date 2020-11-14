@@ -7,7 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using NetStandardPolyfills;
+    using Reflection;
 
     /// <summary>
     /// An <see cref="ITranslation"/> to translate a Type name.
@@ -15,6 +15,8 @@
     public class TypeNameTranslation : ITranslation
     {
         private const string _object = "object";
+        private readonly IType _type;
+        private Type _typeObject;
         private readonly TranslationSettings _settings;
         private readonly bool _isObject;
         private bool _writeObjectTypeName;
@@ -26,10 +28,22 @@
         /// <param name="type">The Type the name of which should be translated.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public TypeNameTranslation(Type type, TranslationSettings settings)
+            : this(BclTypeWrapper.For(type), settings)
         {
-            Type = type;
+            _typeObject = type;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeNameTranslation"/> class for the given
+        /// <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> the name of which should be translated.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        public TypeNameTranslation(IType type, TranslationSettings settings)
+        {
+            _type = type;
             _settings = settings;
-            _isObject = type == typeof(object);
+            _isObject = type.IsObjectType;
 
             var typeNameFormattingSize = settings.GetTypeNameFormattingSize();
 
@@ -48,12 +62,12 @@
             var translationSize = 0;
             var formattingSize = 0;
 
-            if (type.IsGenericType())
+            if (type.IsGeneric)
             {
                 translationSize += 2;
                 formattingSize += 4; // <- for angle brackets
 
-                foreach (var typeArgument in type.GetGenericTypeArguments())
+                foreach (var typeArgument in type.GenericTypeArguments)
                 {
                     AddTypeNameSizes(
                         typeArgument,
@@ -74,7 +88,7 @@
         }
 
         private void AddTypeNameSizes(
-            Type type,
+            IType type,
             int typeNameFormattingSize,
             ref int translationSize,
             ref int formattingSize)
@@ -104,7 +118,7 @@
         public ExpressionType NodeType => ExpressionType.Constant;
 
         /// <inheritdoc />
-        public Type Type { get; }
+        public Type Type => _typeObject ??= _type.AsType();
 
         /// <inheritdoc />
         public int TranslationSize { get; }
@@ -143,7 +157,7 @@
                 return;
             }
 
-            writer.WriteFriendlyName(Type, _settings);
+            writer.WriteFriendlyName(_type, _settings);
         }
     }
 }
