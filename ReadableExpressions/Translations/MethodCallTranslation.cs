@@ -378,15 +378,9 @@
                 var argumentTranslationsSize = 0;
 
                 var arguments = requiredGenericArguments
-                    .Project(argument =>
+                    .Project<IGenericParameter, ITranslatable>(argument =>
                     {
-                        //if (!argument.IsClosed)
-                        //{
-                        //    return null;
-                        //}
-
-                        ITranslatable argumentTypeTranslation = context.GetTranslationFor(argument.Type);
-
+                        var argumentTypeTranslation = context.GetTranslationFor(argument);
                         argumentTranslationsSize += argumentTypeTranslation.TranslationSize + 2;
 
                         return argumentTypeTranslation;
@@ -399,7 +393,7 @@
                 return (translationsSize != 0) ? arguments : Enumerable<ITranslatable>.EmptyArray;
             }
 
-            public Type Type => _method.ReturnType;
+            public Type Type => _method.ReturnType.AsType();
 
             public int TranslationSize { get; }
 

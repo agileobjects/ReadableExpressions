@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using Extensions;
+    using Reflection;
 
     /// <summary>
     /// A <see cref="UnaryOperatorTranslationBase"/> for the typeof operator.
@@ -10,13 +12,24 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="TypeOfOperatorTranslation"/> class.
         /// </summary>
-        /// <param name="operandTranslation">
-        /// The <see cref="ITranslatable"/> which will write the symbol to which the typeof operator
-        /// is being applied.
+        /// <param name="type">The Type to which the typeof operator is being applied.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the Expression translation.
         /// </param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        public TypeOfOperatorTranslation(ITranslatable operandTranslation, TranslationSettings settings)
-            : base("typeof", operandTranslation, settings)
+        public TypeOfOperatorTranslation(Type type, ITranslationContext context)
+            : this(BclTypeWrapper.For(type), context)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeOfOperatorTranslation"/> class.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> to which the typeof operator is being applied.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the Expression translation.
+        /// </param>
+        public TypeOfOperatorTranslation(IType type, ITranslationContext context)
+            : base("typeof", context.GetTranslationFor(type), context.Settings)
         {
         }
 

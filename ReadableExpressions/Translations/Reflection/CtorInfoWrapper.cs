@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.Reflection;
@@ -9,6 +8,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     internal class CtorInfoWrapper : BclMethodWrapperBase
     {
         private readonly ConstructorInfo _ctorInfo;
+        private IType _declaringType;
 
         [DebuggerStepThrough]
         public CtorInfoWrapper(ConstructorInfo ctorInfo)
@@ -21,9 +21,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         public override IMethod GetGenericMethodDefinition() => null;
 
-        public override Type ReturnType => _ctorInfo.DeclaringType;
+        public override IType ReturnType
+            => _declaringType ??= BclTypeWrapper.For(_ctorInfo.DeclaringType);
 
-        public override ReadOnlyCollection<IGenericArgument> GetGenericArguments()
-            => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
+        public override ReadOnlyCollection<IGenericParameter> GetGenericArguments()
+            => Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
     }
 }

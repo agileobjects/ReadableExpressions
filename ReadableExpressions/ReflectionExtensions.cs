@@ -55,22 +55,22 @@
         }
 
         /// <summary>
-        /// Translates this <paramref name="method"/> into a readable string.
+        /// Translates this <paramref name="field"/> into a readable string.
         /// </summary>
-        /// <param name="method">The MethodInfo to translate.</param>
+        /// <param name="field">The FieldInfo to translate.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <returns>A readable string version of this <paramref name="method"/>.</returns>
+        /// <returns>A readable string version of this <paramref name="field"/>.</returns>
         public static string ToReadableString(
-            this MethodInfo method,
+            this FieldInfo field,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            if (method == null)
+            if (field == null)
             {
-                return "[Method not found]";
+                return "[Field not found]";
             }
 
             var settings = configuration.GetTranslationSettings();
-            var translation = MethodDefinitionTranslation.For(method, settings);
+            var translation = new FieldDefinitionTranslation(field, settings);
             var writer = new TranslationWriter(settings, translation);
 
             return writer.GetContent();
@@ -93,6 +93,28 @@
 
             var settings = configuration.GetTranslationSettings();
             var translation = new PropertyDefinitionTranslation(property, settings);
+            var writer = new TranslationWriter(settings, translation);
+
+            return writer.GetContent();
+        }
+
+        /// <summary>
+        /// Translates this <paramref name="method"/> into a readable string.
+        /// </summary>
+        /// <param name="method">The MethodInfo to translate.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="method"/>.</returns>
+        public static string ToReadableString(
+            this MethodInfo method,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            if (method == null)
+            {
+                return "[Method not found]";
+            }
+
+            var settings = configuration.GetTranslationSettings();
+            var translation = MethodDefinitionTranslation.For(method, settings);
             var writer = new TranslationWriter(settings, translation);
 
             return writer.GetContent();

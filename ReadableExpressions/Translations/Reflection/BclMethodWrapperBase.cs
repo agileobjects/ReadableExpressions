@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Collections.ObjectModel;
     using System.Reflection;
     using Extensions;
@@ -13,7 +12,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public abstract class BclMethodWrapperBase : IMethod
     {
         private readonly MethodBase _method;
-        private ReadOnlyCollection<IGenericArgument> _genericArguments;
+        private IType _declaringType;
+        private ReadOnlyCollection<IGenericParameter> _genericArguments;
         private ReadOnlyCollection<IParameter> _parameters;
 
         /// <summary>
@@ -26,7 +26,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc />
-        public Type DeclaringType => _method.DeclaringType;
+        public IType DeclaringType
+            => _declaringType ??= BclTypeWrapper.For(_method.DeclaringType);
 
         /// <inheritdoc />
         public bool IsPublic => _method.IsPublic;
@@ -68,10 +69,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public abstract bool IsExtensionMethod { get; }
 
         /// <inheritdoc />
+        public bool HasBody => !IsAbstract;
+
+        /// <inheritdoc />
         public abstract IMethod GetGenericMethodDefinition();
 
         /// <inheritdoc />
-        public virtual ReadOnlyCollection<IGenericArgument> GetGenericArguments()
+        public virtual ReadOnlyCollection<IGenericParameter> GetGenericArguments()
             => _genericArguments ??= _method.GetGenericArgs();
 
         /// <inheritdoc />
@@ -83,21 +87,23 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 .ToReadOnlyCollection();
         }
 
-        Type IMember.Type => ReturnType;
+        IType IMember.Type => ReturnType;
 
         /// <inheritdoc />
-        public abstract Type ReturnType { get; }
+        public abstract IType ReturnType { get; }
 
         private class BclParameterWrapper : IParameter
         {
             private readonly ParameterInfo _parameter;
+            private IType _type;
 
             public BclParameterWrapper(ParameterInfo parameter)
             {
                 _parameter = parameter;
             }
 
-            public Type Type => _parameter.ParameterType;
+            public IType Type
+                => _type ??= BclTypeWrapper.For(_parameter.ParameterType);
 
             public string Name => _parameter.Name;
 

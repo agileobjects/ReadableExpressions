@@ -1,6 +1,9 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Reflection;
 
     /// <summary>
     /// Implementing classes will provide metadata about a Type.
@@ -13,15 +16,26 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         string Namespace { get; }
 
         /// <summary>
-        /// Gets the name of this <see cref="IType"/>.
+        /// Gets the base <see cref="IType"/> of this Type, if any.
         /// </summary>
-        string Name { get; }
+        IType BaseType { get; }
+
+        /// <summary>
+        /// Gets a set of <see cref="IType"/>s representing all the interfaces implemented by this
+        /// <see cref="IType"/>, if any.
+        /// </summary>
+        ReadOnlyCollection<IType> AllInterfaces { get; }
 
         /// <summary>
         /// Gets the full name of this <see cref="IType"/>. If the Type is created at runtime,
         /// returns null.
         /// </summary>
         string FullName { get; }
+
+        /// <summary>
+        /// Gets the name of this <see cref="IType"/>.
+        /// </summary>
+        string Name { get; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="IType"/> represents an interface.
@@ -34,22 +48,37 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsClass { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> represents an enum.
+        /// </summary>
+        bool IsEnum { get; }
+
+        /// <summary>
         /// Gets a value indicating whether this <see cref="IType"/> represents a primitive.
         /// </summary>
         bool IsPrimitive { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="IType"/> is an anonymous Type.
+        /// Gets a value indicating whether this <see cref="IType"/> represents an anonymous Type.
         /// </summary>
         bool IsAnonymous { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="IType"/> is an IEnumerable Type.
+        /// Gets a value indicating whether this <see cref="IType"/> represents an abstract Type.
+        /// </summary>
+        bool IsAbstract { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> represents a sealed Type.
+        /// </summary>
+        bool IsSealed { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> represents an IEnumerable Type.
         /// </summary>
         bool IsEnumerable { get; }
 
         /// <summary>
-        /// Gets a value indicating whether this <see cref="IType"/> is an IDictionary Type.
+        /// Gets a value indicating whether this <see cref="IType"/> represents an IDictionary Type.
         /// </summary>
         bool IsDictionary { get; }
 
@@ -57,6 +86,17 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Gets a value indicating whether this <see cref="IType"/> has generic parameters.
         /// </summary>
         bool IsGeneric { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> has open generic parameters.
+        /// </summary>
+        bool IsGenericDefinition { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IType"/> describing this <see cref="IType"/>'s generic definition,
+        /// or null if none exists.
+        /// </summary>
+        IType GenericDefinition { get; }
 
         /// <summary>
         /// Gets the number of generic parameters belonging to this <see cref="IType"/>, if this
@@ -68,7 +108,25 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Gets the <see cref="IType"/>s representing this Type's generic type arguments, if this
         /// type is generic. If this Type is not generic, returns an empty array.
         /// </summary>
-        IType[] GenericTypeArguments { get; }
+        ReadOnlyCollection<IType> GenericTypeArguments { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> represents an open generic
+        /// parameter Type.
+        /// </summary>
+        bool IsGenericParameter { get; }
+
+        /// <summary>
+        /// Gets the GenericParameterAttributes describing this <see cref="IType"/>'s constraints,
+        /// if this IType represents an open generic parameter type.
+        /// </summary>
+        GenericParameterAttributes Constraints { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IType"/>s to which this Type is constrained, if this IType represents
+        /// an open generic parameter Type.
+        /// </summary>
+        ReadOnlyCollection<IType> ConstraintTypes { get; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="IType"/> is nested within another Type.
@@ -87,7 +145,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <summary>
         /// Gets the <see cref="IType"/> representing this <see cref="IType"/>'s elements, if this
-        /// <see cref="IType"/> is an array or enumerable.
+        /// <see cref="IType"/> represents an array, enumerable or ByRef Type.
         /// </summary>
         IType ElementType { get; }
 
@@ -106,6 +164,57 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Nullable{T}.
         /// </summary>
         IType NonNullableUnderlyingType { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="IType"/> is passed by reference.
+        /// </summary>
+        bool IsByRef { get; }
+
+        /// <summary>
+        /// Gets all the <see cref="IMember"/>s belonging to this <see cref="IType"/>.
+        /// </summary>
+        IEnumerable<IMember> AllMembers { get; }
+
+        /// <summary>
+        /// Returns this <see cref="IType"/>'s <see cref="IMember"/>s, according to the criteria
+        /// configured by the given <paramref name="selectionConfiguator"/>.
+        /// </summary>
+        /// <param name="selectionConfiguator">
+        /// An Action setting up member selection criteria on a <see cref="MemberSelector"/>.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IMember"/>s belonging to this <see cref="IType"/> which match the given
+        /// <paramref name="selectionConfiguator"/>.
+        /// </returns>
+        IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator);
+
+        /// <summary>
+        /// Returns this <see cref="IType"/>'s <see cref="IMember"/>s, according to the criteria
+        /// configured by the given <paramref name="selectionConfiguator"/>.
+        /// </summary>
+        /// <typeparam name="TMember">
+        /// The <see cref="IMember"/> Type of the members to return.
+        /// </typeparam>
+        /// <param name="selectionConfiguator">
+        /// An Action setting up member selection criteria on a <see cref="MemberSelector"/>.
+        /// </param>
+        /// <returns>
+        /// The <see cref="IMember"/>s belonging to this <see cref="IType"/> which match the given
+        /// <paramref name="selectionConfiguator"/>.
+        /// </returns>
+        IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfiguator)
+            where TMember : IMember;
+
+        /// <summary>
+        /// Returns a value indicating whether this <see cref="IType"/> represents the same Type as
+        /// the given <paramref name="otherType"/>.
+        /// </summary>
+        /// <param name="otherType">The <see cref="IType"/> for which to make the determination.</param>
+        /// <returns>
+        /// True if this <see cref="IType"/> represents the same Type as the given
+        /// <paramref name="otherType"/>, otherwise false.
+        /// </returns>
+        bool Equals(IType otherType);
 
         /// <summary>
         /// Gets the Type represented by this <see cref="IType"/>.

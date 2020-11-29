@@ -1,6 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Collections.ObjectModel;
 
     /// <summary>
@@ -19,16 +18,21 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsExtensionMethod { get; }
 
         /// <summary>
+        /// Gets a value indicating whether this <see cref="IMethod"/> has a body.
+        /// </summary>
+        bool HasBody { get; }
+
+        /// <summary>
         /// Gets an <see cref="IMethod"/> describing the <see cref="IMethod"/>'s generic method
         /// definition, or null if the <see cref="IMethod"/> is non-generic.
         /// </summary>
         IMethod GetGenericMethodDefinition();
 
         /// <summary>
-        /// Gets <see cref="IGenericArgument"/>s describing the <see cref="IMethod"/>'s generic
+        /// Gets <see cref="IGenericParameter"/>s describing the <see cref="IMethod"/>'s generic
         /// arguments, or an empty collection if <see cref="IsGenericMethod"/> is false.
         /// </summary>
-        ReadOnlyCollection<IGenericArgument> GetGenericArguments();
+        ReadOnlyCollection<IGenericParameter> GetGenericArguments();
 
         /// <summary>
         /// Gets the <see cref="IMethod"/>'s parameters, as an <see cref="IParameter"/> collection.
@@ -36,8 +40,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         ReadOnlyCollection<IParameter> GetParameters();
 
         /// <summary>
-        /// Gets the return Type of the <see cref="IMethod"/>.
+        /// Gets the return <see cref="IType"/> of the <see cref="IMethod"/>.
         /// </summary>
-        Type ReturnType { get; }
+        IType ReturnType { get; }
     }
 }

@@ -1,11 +1,8 @@
 namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
-    using System.Reflection;
-    using NetStandardPolyfills;
     using Translations.Reflection;
 
     /// <summary>
@@ -24,25 +21,20 @@ namespace AgileObjects.ReadableExpressions.Extensions
                 return false;
             }
 
-            var parameterTypes = default(IList<Type>);
+            var parameterTypes = default(IList<IType>);
 
-            foreach (var candidateMethod in GetOverridableMethods(method.DeclaringType.GetBaseType()))
+            foreach (var candidateMethod in GetOverridableMethods(method.Name, method.DeclaringType))
             {
-                if (candidateMethod.Name != method.Name)
-                {
-                    continue;
-                }
-
                 var parameters = candidateMethod.GetParameters();
 
-                if (parameters.Length == 0)
+                if (parameters.Count == 0)
                 {
                     return true;
                 }
 
-                parameterTypes ??= method.GetParameters().Select(p => p.Type).ToList();
+                parameterTypes ??= method.GetParameters().ProjectToArray(p => p.Type);
 
-                if (parameterTypes.SequenceEqual(parameters.Project(p => p.ParameterType)))
+                if (parameterTypes.SequenceEqual(parameters.Project(p => p.Type)))
                 {
                     return true;
                 }
@@ -51,19 +43,23 @@ namespace AgileObjects.ReadableExpressions.Extensions
             return false;
         }
 
-        private static IEnumerable<MethodInfo> GetOverridableMethods(Type type)
+        private static IEnumerable<IMethod> GetOverridableMethods(string name, IType type)
         {
-            if (type == null)
+            var baseType = type.BaseType;
+
+            if (baseType == null)
             {
                 yield break;
             }
-
-            var candidateMethods = type
-                .GetPublicInstanceMethods()
-                .Concat(type.GetNonPublicInstanceMethods())
-                .Concat(type.GetPublicInstanceProperties().SelectMany(p => p.GetAccessors()))
-                .Concat(type.GetNonPublicInstanceProperties().SelectMany(p => p.GetAccessors()))
-                .Concat(GetOverridableMethods(type.GetBaseType()))
+           
+            var candidateMethods = baseType
+                .GetMembers(m => m.Instance().Methods().Named(name))
+                .Cast<IMethod>()
+                .Concat(baseType
+                    .GetMembers(m => m.Instance().Properties().Named(name))
+                    .Cast<IProperty>()
+                    .SelectMany(p => p.GetAccessors()))
+                .Concat(GetOverridableMethods(name, baseType))
                 .Filter(m => m.IsAbstract || m.IsVirtual);
 
             foreach (var candidateMethod in candidateMethods)
@@ -73,29 +69,29 @@ namespace AgileObjects.ReadableExpressions.Extensions
         }
 
         /// <summary>
-        /// Gets the Types of this <paramref name="method"/>'s <see cref="IGenericArgument"/>s, if
+        /// Gets the Types of this <paramref name="method"/>'s <see cref="IGenericParameter"/>s, if
         /// they are not all implicitly specified by its arguments.
         /// </summary>
         /// <param name="method">The <see cref="IMethod"/> for which to retrieve the argument Types.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         /// <returns>
-        /// The Types of this <paramref name="method"/>'s <see cref="IGenericArgument"/>s, if they
+        /// The Types of this <paramref name="method"/>'s <see cref="IGenericParameter"/>s, if they
         /// are not all implicitly specified by its arguments, otherwise an empty ReadOnlyCollection.
         /// </returns>
-        public static ReadOnlyCollection<IGenericArgument> GetRequiredExplicitGenericArguments(
+        public static ReadOnlyCollection<IGenericParameter> GetRequiredExplicitGenericArguments(
             this IMethod method,
             TranslationSettings settings)
         {
             if (!method.IsGenericMethod)
             {
-                return Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
+                return Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
             }
 
             var methodGenericDefinition = method.GetGenericMethodDefinition();
 
             var requiredGenericParameterTypes = methodGenericDefinition
                 .GetGenericArguments()
-                .Project(arg => arg.Type)
+                .Project<IGenericParameter, IType>(arg => arg)
                 .ToList();
 
             if (settings.UseImplicitGenericParameters)
@@ -107,23 +103,23 @@ namespace AgileObjects.ReadableExpressions.Extensions
 
             return requiredGenericParameterTypes.Count != 0
                 ? method.GetGenericArguments().ToReadOnlyCollection()
-                : Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
+                : Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
         }
 
         private static void RemoveSuppliedGenericTypeArguments(
-            IEnumerable<Type> parameterTypes,
-            ICollection<Type> genericParameterTypes)
+            IEnumerable<IType> parameterTypes,
+            ICollection<IType> genericParameterTypes)
         {
-            foreach (var type in parameterTypes.Project(t => t.IsByRef ? t.GetElementType() : t))
+            foreach (var type in parameterTypes.Project(t => t.IsByRef ? t.ElementType : t))
             {
                 if (type.IsGenericParameter && genericParameterTypes.Contains(type))
                 {
                     genericParameterTypes.Remove(type);
                 }
 
-                if (type.IsGenericType())
+                if (type.IsGeneric)
                 {
-                    RemoveSuppliedGenericTypeArguments(type.GetGenericTypeArguments(), genericParameterTypes);
+                    RemoveSuppliedGenericTypeArguments(type.GenericTypeArguments, genericParameterTypes);
                 }
             }
         }

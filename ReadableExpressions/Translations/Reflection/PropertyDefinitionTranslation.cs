@@ -18,6 +18,7 @@
     /// </summary>
     public class PropertyDefinitionTranslation : ITranslation
     {
+        private readonly IProperty _property;
         private readonly bool _writeModifiers;
         private readonly string _accessibility;
         private readonly string _modifiers;
@@ -47,7 +48,7 @@
             TranslationSettings settings)
             : this(
                 new BclPropertyWrapper(property, settings),
-                accessors.ProjectToArray<MethodInfo, IComplexMember>(acc =>
+                accessors.ProjectToArray<MethodInfo, IMethod>(acc =>
                     new BclMethodWrapper(acc, settings)),
                 includeDeclaringType: true,
                 settings)
@@ -56,7 +57,7 @@
 
         private PropertyDefinitionTranslation(
             IProperty property,
-            IList<IComplexMember> accessors,
+            IList<IMethod> accessors,
             bool includeDeclaringType,
             TranslationSettings settings)
             : this(
@@ -73,7 +74,7 @@
         /// </summary>
         /// <param name="property">The <see cref="IProperty"/> to translate.</param>
         /// <param name="accessors">
-        /// One or two <see cref="IComplexMember"/>s describing one or both of the
+        /// One or two <see cref="IMethod"/>s describing one or both of the
         /// <paramref name="property"/>'s accessor(s). 
         /// </param>
         /// <param name="includeDeclaringType">
@@ -87,12 +88,12 @@
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         protected PropertyDefinitionTranslation(
             IProperty property,
-            IList<IComplexMember> accessors,
+            IList<IMethod> accessors,
             bool includeDeclaringType,
             PropertyAccessorTranslationFactory accessorTranslationFactory,
             TranslationSettings settings)
         {
-            Type = property.Type;
+            _property = property;
 
             var translationSize = 0;
             var formattingSize = 0;
@@ -150,7 +151,7 @@
         public ExpressionType NodeType => ExpressionType.MemberAccess;
 
         /// <inheritdoc />
-        public Type Type { get; }
+        public Type Type => _property.Type.AsType();
 
         /// <inheritdoc />
         public int TranslationSize { get; }
@@ -261,7 +262,7 @@
             /// </param>
             /// <returns></returns>
             protected static bool IsGetter(IMember accessor)
-                => accessor.Type != typeof(void);
+                => !accessor.Type.Equals(BclTypeWrapper.Void);
 
             #endregion
 

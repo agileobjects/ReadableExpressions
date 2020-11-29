@@ -17,10 +17,10 @@
         private readonly ITranslatable[] _typeConstraintTranslations;
 
         private GenericConstraintsTranslation(
-            IGenericArgument genericArgument,
+            IGenericParameter genericParameter,
             TranslationSettings settings)
         {
-            _parameterNameTranslation = new TypeNameTranslation(genericArgument.Type, settings);
+            _parameterNameTranslation = new TypeNameTranslation(genericParameter, settings);
 
             var keywordFormattingSize = settings.GetKeywordFormattingSize();
 
@@ -32,28 +32,28 @@
                 keywordFormattingSize +
                _parameterNameTranslation.FormattingSize;
 
-            if (genericArgument.HasClassConstraint)
+            if (genericParameter.HasClassConstraint)
             {
                 translationSize += _class.Length;
                 formattingSize += keywordFormattingSize + 2;
                 _isClass = true;
             }
 
-            if (genericArgument.HasStructConstraint)
+            if (genericParameter.HasStructConstraint)
             {
                 translationSize += _struct.Length;
                 formattingSize += keywordFormattingSize + 2;
                 _isStruct = true;
             }
 
-            if (genericArgument.HasNewableConstraint)
+            if (genericParameter.HasNewableConstraint)
             {
                 translationSize += _new.Length;
                 formattingSize += keywordFormattingSize + 2;
                 _isNewable = true;
             }
 
-            var typeConstraints = genericArgument.TypeConstraints;
+            var typeConstraints = genericParameter.ConstraintTypes;
             _typeConstraintCount = typeConstraints.Count;
 
             if (_typeConstraintCount != 0)
@@ -80,10 +80,10 @@
 
         #region Factory Method
 
-        public static ITranslatable For(IGenericArgument genericArgument, TranslationSettings settings)
+        public static ITranslatable For(IGenericParameter genericParameter, TranslationSettings settings)
         {
-            return genericArgument.HasConstraints
-                ? new GenericConstraintsTranslation(genericArgument, settings)
+            return genericParameter.HasConstraints
+                ? new GenericConstraintsTranslation(genericParameter, settings)
                 : NullTranslatable.Instance;
         }
 

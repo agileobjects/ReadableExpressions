@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
     using System.Collections.Generic;
     using Translations.Reflection;
     using static System.StringComparison;
@@ -10,7 +9,7 @@
         public void WriteGenericTypeName(IType genericType)
             => WriteGenericTypeName(genericType, genericType.GenericTypeArguments);
 
-        public void WriteGenericTypeName(IType genericType, IType[] typeGenericTypeArguments)
+        public void WriteGenericTypeName(IType genericType, IList<IType> typeGenericTypeArguments)
         {
             if (!genericType.IsNested)
             {
@@ -44,7 +43,9 @@
             }
         }
 
-        private void WriteClosedGenericTypeName(IType genericType, ref IType[] typeGenericTypeArguments)
+        private void WriteClosedGenericTypeName(
+            IType genericType,
+            ref IList<IType> typeGenericTypeArguments)
         {
             var typeName = genericType.Name;
             var numberOfParameters = genericType.GenericParameterCount;
@@ -55,9 +56,9 @@
                 return;
             }
 
-            IType[] typeArguments;
+            IList<IType> typeArguments;
 
-            if (numberOfParameters == typeGenericTypeArguments.Length)
+            if (numberOfParameters == typeGenericTypeArguments.Count)
             {
                 typeArguments = typeGenericTypeArguments;
                 goto WriteName;
@@ -75,22 +76,16 @@
 
                 default:
                     typeArguments = new IType[numberOfParameters];
-
-                    Array.Copy(
-                        typeGenericTypeArguments,
-                        typeArguments,
-                        numberOfParameters);
-
+                    typeGenericTypeArguments.CopyTo(typeArguments, numberOfParameters);
                     break;
             }
 
-            var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
+            var numberOfRemainingTypeArguments = typeGenericTypeArguments.Count - numberOfParameters;
             var typeGenericTypeArgumentsSubset = new IType[numberOfRemainingTypeArguments];
 
-            Array.Copy(
-                typeGenericTypeArguments,
-                numberOfParameters,
+            typeGenericTypeArguments.CopyTo(
                 typeGenericTypeArgumentsSubset,
+                numberOfParameters,
                 0,
                 numberOfRemainingTypeArguments);
 

@@ -15,10 +15,10 @@
         /// Initializes a new instance of the <see cref="GenericParameterSetConstraintsTranslation"/>
         /// class.
         /// </summary>
-        /// <param name="genericParameters">The <see cref="IGenericArgument"/>s to write to the translation.</param>
+        /// <param name="genericParameters">The <see cref="IGenericParameter"/>s to write to the translation.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public GenericParameterSetConstraintsTranslation(
-            IList<IGenericArgument> genericParameters,
+            IList<IGenericParameter> genericParameters,
             TranslationSettings settings)
         {
             _settings = settings;

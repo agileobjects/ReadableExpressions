@@ -88,33 +88,6 @@
                 method));
         }
 
-        public static bool IsGenericParameter(this Type type)
-        {
-#if NETSTANDARD
-            return type.GetTypeInfo().IsGenericParameter;
-#else
-            return type.IsGenericParameter;
-#endif
-        }
-
-        public static GenericParameterAttributes GetConstraints(this Type type)
-        {
-#if NETSTANDARD
-            return type.GetTypeInfo().GenericParameterAttributes;
-#else
-            return type.GenericParameterAttributes;
-#endif
-        }
-
-        public static IList<Type> GetConstraintTypes(this Type type)
-        {
-#if NETSTANDARD
-            return type.GetTypeInfo().GetGenericParameterConstraints();
-#else
-            return type.GetGenericParameterConstraints();
-#endif
-        }
-
         public static string GetAssemblyLocation(this Type type)
         {
             var assembly = type.GetAssembly();

@@ -46,9 +46,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -88,9 +88,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -133,9 +133,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeFalse();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeTrue();
@@ -181,9 +181,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeFalse();
             propertyWrapper.IsProtectedInternal.ShouldBeTrue();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -227,9 +227,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeFalse();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -272,9 +272,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(PropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeFalse();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -317,9 +317,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(AbstractPropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(AbstractPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -361,9 +361,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(DerivedPropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(DerivedPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -405,9 +405,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(AbstractPropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(AbstractPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();
@@ -449,9 +449,9 @@
 
             var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
 
-            propertyWrapper.DeclaringType.ShouldBe(typeof(DerivedPropertyHelper));
+            propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(DerivedPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
-            propertyWrapper.Type.ShouldBe(property.PropertyType);
+            propertyWrapper.Type.AsType().ShouldBe(property.PropertyType);
             propertyWrapper.IsPublic.ShouldBeTrue();
             propertyWrapper.IsProtectedInternal.ShouldBeFalse();
             propertyWrapper.IsInternal.ShouldBeFalse();

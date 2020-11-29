@@ -1,10 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
     using System.Reflection;
     using NetStandardPolyfills;
     using Translations.Reflection;
+    using static TranslationSettings;
 
     /// <summary>
     /// Provides extension methods to use with BCL reflection objects.
@@ -12,14 +15,50 @@ namespace AgileObjects.ReadableExpressions.Extensions
     public static class PublicReflectionExtensions
     {
         /// <summary>
-        /// Gets one or both <see cref="IComplexMember"/>s describing this <see cref="IProperty"/>'s
+        /// Gets all of this <paramref name="type"/>'s fields, properties and methods as
+        /// <see cref="IMember"/> objects.
+        /// </summary>
+        /// <param name="type">The Type for which to retrieve the members.</param>
+        /// <returns>
+        /// This <paramref name="type"/>'s fields, properties and methods as <see cref="IMember"/>
+        /// objects.
+        /// </returns>
+        public static IEnumerable<IMember> GetAllMembers(this Type type)
+        {
+            return type.GetPublicInstanceMembers()
+                .Concat(type.GetPublicStaticMembers())
+                .Concat(type.GetNonPublicInstanceMembers())
+                .Concat(type.GetNonPublicStaticMembers())
+                .Project(member =>
+                {
+                    switch (member)
+                    {
+                        case FieldInfo field:
+                            return new BclFieldWrapper(field);
+
+                        case PropertyInfo property:
+                            return new BclPropertyWrapper(property, Default);
+
+                        case MethodInfo method:
+                            return new BclMethodWrapper(method, Default);
+
+                        default:
+                            return default(IMember);
+                    }
+                })
+                .Filter(m => m != null)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets one or both <see cref="IMethod"/>s describing this <see cref="IProperty"/>'s
         /// accessors.
         /// </summary>
         /// <param name="property">The <see cref="IProperty"/> for which to retrieve the accessors.</param>
         /// <returns>Whichever is available of this <see cref="IProperty"/>'s getter and setter.</returns>
-        public static IEnumerable<IComplexMember> GetAccessors(this IProperty property)
+        public static IEnumerable<IMethod> GetAccessors(this IProperty property)
         {
-            var accessors = new List<IComplexMember>(2);
+            var accessors = new List<IMethod>(2);
 
             if (property.Getter != null)
             {
@@ -35,44 +74,35 @@ namespace AgileObjects.ReadableExpressions.Extensions
         }
 
         /// <summary>
-        /// Gets a collection of <see cref="IGenericArgument"/>s describing this
+        /// Gets a collection of <see cref="IGenericParameter"/>s describing this
         /// <paramref name="method"/>'s generic arguments, or an empty collection if this method is
         /// not generic.
         /// </summary>
-        /// <param name="method">The MethodInfo for which to retrieve the <see cref="IGenericArgument"/>s.</param>
+        /// <param name="method">The MethodInfo for which to retrieve the <see cref="IGenericParameter"/>s.</param>
         /// <returns>
-        /// A collection of <see cref="IGenericArgument"/>s describing this <paramref name="method"/>'s
+        /// A collection of <see cref="IGenericParameter"/>s describing this <paramref name="method"/>'s
         /// generic arguments, or an empty collection if this method is not generic.
         /// </returns>
-        public static ReadOnlyCollection<IGenericArgument> GetGenericArgs(this MethodBase method)
+        public static ReadOnlyCollection<IGenericParameter> GetGenericArgs(this MethodBase method)
         {
             if (!method.IsGenericMethod)
             {
-                return Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
+                return Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
             }
 
             return method
                 .GetGenericArguments()
-                .ProjectToArray(GenericArgumentFactory.For)
+                .ProjectToArray(GenericParameterFactory.For)
                 .ToReadOnlyCollection();
         }
 
         /// <summary>
         /// Gets a value indicating whether this <paramref name="member"/> belongs to an interface.
-        /// This method checks for the <see cref="IPotentialInterfaceMember"/> interface, falling
-        /// back to member.DeclaringType.IsInterface if it is not implemented.
         /// </summary>
         /// <param name="member">The <see cref="IMember"/> for which to make the determination.</param>
         /// <returns>True if this <paramref name="member"/> belongs to an interface, otherwise false.</returns>
         public static bool IsInterfaceMember(this IMember member)
-        {
-            if (member is IPotentialInterfaceMember interfaceMember)
-            {
-                return interfaceMember.IsInterfaceMember;
-            }
-
-            return member.DeclaringType.IsInterface();
-        }
+            => member.DeclaringType.IsInterface;
 
         /// <summary>
         /// Gets a string indicating the accessibility (public, internal, etc.) of this

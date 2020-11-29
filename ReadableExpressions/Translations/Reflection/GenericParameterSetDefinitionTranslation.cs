@@ -14,10 +14,10 @@
         /// Initializes a new instance of the <see cref="GenericParameterSetDefinitionTranslation"/>
         /// class.
         /// </summary>
-        /// <param name="genericParameters">The <see cref="IGenericArgument"/>s to write to the translation.</param>
+        /// <param name="genericParameters">The <see cref="IGenericParameter"/>s to write to the translation.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public GenericParameterSetDefinitionTranslation(
-            IList<IGenericArgument> genericParameters,
+            IList<IGenericParameter> genericParameters,
             TranslationSettings settings)
         {
             _genericParameterCount = genericParameters.Count;
@@ -36,7 +36,7 @@
             {
                 var argument = genericParameters[i];
 
-                var argumentTranslation = new TypeNameTranslation(argument.Type, settings);
+                var argumentTranslation = new TypeNameTranslation(argument, settings);
 
                 translationSize += argumentTranslation.TranslationSize;
                 formattingSize += argumentTranslation.FormattingSize;
