@@ -1,2 +1,2 @@
 @echo off
-dotnet pack --output NuGet --configuration Release ReadableExpressions
+msbuild ReadableExpressions /t:Pack /p:PackageOutputPath=../NuGet /p:Configuration=Release /v:m
