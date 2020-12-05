@@ -23,24 +23,24 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnInstancePublicReadWriteField()
+        public void ShouldTranslateAPublicInstanceReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicInstanceField(nameof(FieldHelper.InstancePublicReadWrite));
+                .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadWrite));
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
-                "public int WhenTranslatingFieldInfos.FieldHelper.InstancePublicReadWrite;";
+                "public int WhenTranslatingFieldInfos.FieldHelper.PublicInstanceReadWrite;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnInstancePublicReadWriteField()
+        public void ShouldDescribeAPublicInstanceReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicInstanceField(nameof(FieldHelper.InstancePublicReadWrite));
+                .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadWrite));
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -59,24 +59,24 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnInstancePublicReadonlyField()
+        public void ShouldTranslateAPublicInstanceReadonlyField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicInstanceField(nameof(FieldHelper.InstancePublicReadonly));
+                .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadonly));
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
-                "public readonly int WhenTranslatingFieldInfos.FieldHelper.InstancePublicReadonly;";
+                "public readonly int WhenTranslatingFieldInfos.FieldHelper.PublicInstanceReadonly;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnInstancePublicReadonlyField()
+        public void ShouldDescribeAPublicInstanceReadonlyField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicInstanceField(nameof(FieldHelper.InstancePublicReadonly));
+                .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadonly));
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -95,24 +95,24 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnStaticPublicReadWriteField()
+        public void ShouldTranslateAPublicStaticReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicStaticField(nameof(FieldHelper.StaticPublicReadWrite));
+                .GetPublicStaticField(nameof(FieldHelper.PublicStaticReadWrite));
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
-                "public static int WhenTranslatingFieldInfos.FieldHelper.StaticPublicReadWrite;";
+                "public static int WhenTranslatingFieldInfos.FieldHelper.PublicStaticReadWrite;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnStaticPublicReadWriteField()
+        public void ShouldDescribeAPublicStaticReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetPublicStaticField(nameof(FieldHelper.StaticPublicReadWrite));
+                .GetPublicStaticField(nameof(FieldHelper.PublicStaticReadWrite));
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -131,24 +131,61 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnInstanceInternalReadWriteField()
+        public void ShouldTranslateAPublicConstantField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField(nameof(FieldHelper.InstanceInternalReadWrite));
+                .GetPublicStaticField(nameof(FieldHelper.PublicConstant));
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
-                "internal string WhenTranslatingFieldInfos.FieldHelper.InstanceInternalReadWrite;";
+                "public const string WhenTranslatingFieldInfos.FieldHelper.PublicConstant;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnInstanceInternalReadWriteField()
+        public void ShouldDescribeAPublicConstantField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField(nameof(FieldHelper.InstanceInternalReadWrite));
+                .GetPublicStaticField(nameof(FieldHelper.PublicConstant));
+
+            var fieldWrapper = new BclFieldWrapper(field);
+
+            fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
+            fieldWrapper.Name.ShouldBe(field.Name);
+            fieldWrapper.Type.AsType().ShouldBe(field.FieldType);
+            fieldWrapper.IsPublic.ShouldBeTrue();
+            fieldWrapper.IsProtectedInternal.ShouldBeFalse();
+            fieldWrapper.IsInternal.ShouldBeFalse();
+            fieldWrapper.IsProtected.ShouldBeFalse();
+            fieldWrapper.IsPrivateProtected.ShouldBeFalse();
+            fieldWrapper.IsPrivate.ShouldBeFalse();
+
+            fieldWrapper.IsStatic.ShouldBeTrue();
+            fieldWrapper.IsConstant.ShouldBeTrue();
+            fieldWrapper.IsReadonly.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldTranslateAInternalInstanceReadWriteField()
+        {
+            var field = typeof(FieldHelper)
+                .GetNonPublicInstanceField(nameof(FieldHelper.InternalInstanceReadWrite));
+
+            var translated = field.ToReadableString();
+
+            const string EXPECTED =
+                "internal string WhenTranslatingFieldInfos.FieldHelper.InternalInstanceReadWrite;";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldDescribeAInternalInstanceReadWriteField()
+        {
+            var field = typeof(FieldHelper)
+                .GetNonPublicInstanceField(nameof(FieldHelper.InternalInstanceReadWrite));
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -167,25 +204,25 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnInstanceProtectedInternalReadWriteField()
+        public void ShouldTranslateAProtectedInternalInstanceReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField(nameof(FieldHelper.InstanceProtectedInternalReadWrite));
+                .GetNonPublicInstanceField(nameof(FieldHelper.ProtectedInternalInstanceReadWrite));
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
                 "protected internal string " +
-                    "WhenTranslatingFieldInfos.FieldHelper.InstanceProtectedInternalReadWrite;";
+                    "WhenTranslatingFieldInfos.FieldHelper.ProtectedInternalInstanceReadWrite;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnInstanceProtectedInternalReadWriteField()
+        public void ShouldDescribeAProtectedInternalInstanceReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField(nameof(FieldHelper.InstanceProtectedInternalReadWrite));
+                .GetNonPublicInstanceField(nameof(FieldHelper.ProtectedInternalInstanceReadWrite));
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -204,25 +241,25 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnInstanceProtectedReadonlyField()
+        public void ShouldTranslateAProtectedInstanceReadonlyField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField("InstanceProtectedReadonly");
+                .GetNonPublicInstanceField("ProtectedInstanceReadonly");
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
                 "protected readonly string " +
-                    "WhenTranslatingFieldInfos.FieldHelper.InstanceProtectedReadonly;";
+                    "WhenTranslatingFieldInfos.FieldHelper.ProtectedInstanceReadonly;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnInstanceProtectedReadonlyField()
+        public void ShouldDescribeAProtectedInstanceReadonlyField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicInstanceField("InstanceProtectedReadonly");
+                .GetNonPublicInstanceField("ProtectedInstanceReadonly");
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -241,25 +278,25 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnStaticPrivateReadWriteField()
+        public void ShouldTranslateAPrivateStaticReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicStaticField("_staticPrivateReadWrite");
+                .GetNonPublicStaticField("_privateStaticReadWrite");
 
             var translated = field.ToReadableString();
 
             const string EXPECTED =
                 "private static DateTime " +
-                    "WhenTranslatingFieldInfos.FieldHelper._staticPrivateReadWrite;";
+                    "WhenTranslatingFieldInfos.FieldHelper._privateStaticReadWrite;";
 
             translated.ShouldBe(EXPECTED);
         }
 
         [Fact]
-        public void ShouldDescribeAnStaticPrivateReadWriteField()
+        public void ShouldDescribeAPrivateStaticReadWriteField()
         {
             var field = typeof(FieldHelper)
-                .GetNonPublicStaticField("_staticPrivateReadWrite");
+                .GetNonPublicStaticField("_privateStaticReadWrite");
 
             var fieldWrapper = new BclFieldWrapper(field);
 
@@ -284,19 +321,21 @@
         // ReSharper disable UnusedMember.Global
         public class FieldHelper
         {
-            public static int StaticPublicReadWrite;
+            public static int PublicStaticReadWrite;
 
-            public int InstancePublicReadWrite;
+            public const string PublicConstant = "hello!";
 
-            public readonly int InstancePublicReadonly = 123;
+            public int PublicInstanceReadWrite;
 
-            internal string InstanceInternalReadWrite;
+            public readonly int PublicInstanceReadonly = 123;
 
-            protected internal string InstanceProtectedInternalReadWrite;
+            internal string InternalInstanceReadWrite;
 
-            protected readonly string InstanceProtectedReadonly = "Hello!";
+            protected internal string ProtectedInternalInstanceReadWrite;
 
-            private static DateTime _staticPrivateReadWrite = DateTime.Now;
+            protected readonly string ProtectedInstanceReadonly = "Hello!";
+
+            private static DateTime _privateStaticReadWrite = DateTime.Now;
         }
         // ReSharper restore UnusedMember.Global
         // ReSharper restore UnusedMember.Local

@@ -6,6 +6,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public interface IField : IMember
     {
         /// <summary>
+        /// Gets a value indicating whether the <see cref="IField"/> is constant.
+        /// </summary>
+        bool IsConstant { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the <see cref="IField"/> is readonly.
         /// </summary>
         bool IsReadonly { get; }

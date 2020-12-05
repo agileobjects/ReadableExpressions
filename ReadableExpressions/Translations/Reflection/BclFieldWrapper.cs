@@ -53,6 +53,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool IsPrivate => _field.IsPrivate;
 
         /// <inheritdoc />
-        public bool IsReadonly => _field.IsInitOnly;
+        public bool IsConstant => _field.IsLiteral;
+
+        /// <inheritdoc />
+        public bool IsReadonly => IsConstant || _field.IsInitOnly;
     }
 }

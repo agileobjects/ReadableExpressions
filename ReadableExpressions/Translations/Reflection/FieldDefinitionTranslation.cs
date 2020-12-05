@@ -44,25 +44,33 @@
             _field = field;
             _modifiers = field.GetAccessibilityForTranslation();
 
-            if (field.IsStatic)
+            if (field.IsConstant)
             {
-                _modifiers += "static ";
+                _modifiers += "const ";
             }
-
-            if (field.IsReadonly)
+            else
             {
-                _modifiers += "readonly ";
+                if (field.IsStatic)
+                {
+                    _modifiers += "static ";
+                }
+
+                if (field.IsReadonly)
+                {
+                    _modifiers += "readonly ";
+                }
             }
 
             _fieldTypeNameTranslation =
                 new TypeNameTranslation(field.Type, settings);
 
-            _fieldName = field.Name + ";";
+            _fieldName = field.Name;
 
             var translationSize =
                 _modifiers.Length +
                 _fieldTypeNameTranslation.TranslationSize +
-                _fieldName.Length;
+                _fieldName.Length +
+                1; // For terminating ;
 
             var formattingSize =
                  settings.GetKeywordFormattingSize() +
@@ -88,10 +96,10 @@
         public Type Type => _field.Type.AsType();
 
         /// <inheritdoc />
-        public int TranslationSize { get; }
+        public virtual int TranslationSize { get; }
 
         /// <inheritdoc />
-        public int FormattingSize { get; }
+        public virtual int FormattingSize { get; }
 
         /// <inheritdoc />
         public int GetIndentSize() => 0;
@@ -100,7 +108,18 @@
         public int GetLineCount() => 1;
 
         /// <inheritdoc />
-        public void WriteTo(TranslationWriter writer)
+        public virtual void WriteTo(TranslationWriter writer)
+        {
+            WriteDefinitionTo(writer);
+            writer.WriteToTranslation(';');
+        }
+
+        /// <summary>
+        /// Writes the field definition to the given <paramref name="writer"/>, without a terminating
+        /// semi-colon.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the field definition.</param>
+        protected void WriteDefinitionTo(TranslationWriter writer)
         {
             writer.WriteKeywordToTranslation(_modifiers);
 
