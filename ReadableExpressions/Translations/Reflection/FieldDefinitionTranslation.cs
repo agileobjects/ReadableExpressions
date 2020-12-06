@@ -36,7 +36,7 @@
         /// in the translation.
         /// </param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        protected FieldDefinitionTranslation(
+        public FieldDefinitionTranslation(
             IField field,
             bool includeDeclaringType,
             TranslationSettings settings)
@@ -108,7 +108,7 @@
         public int GetLineCount() => 1;
 
         /// <inheritdoc />
-        public virtual void WriteTo(TranslationWriter writer)
+        public void WriteTo(TranslationWriter writer)
         {
             WriteDefinitionTo(writer);
             writer.WriteToTranslation(';');
@@ -119,7 +119,7 @@
         /// semi-colon.
         /// </summary>
         /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the field definition.</param>
-        protected void WriteDefinitionTo(TranslationWriter writer)
+        public void WriteDefinitionTo(TranslationWriter writer)
         {
             writer.WriteKeywordToTranslation(_modifiers);
 

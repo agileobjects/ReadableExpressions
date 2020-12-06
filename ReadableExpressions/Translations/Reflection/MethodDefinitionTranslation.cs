@@ -6,7 +6,7 @@
 
     /// <summary>
     /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope,
-    /// generic arguments and constraints, and method arguments.
+    /// generic arguments and constraints, and method parameters.
     /// </summary>
     public class MethodDefinitionTranslation : ITranslatable
     {
@@ -19,6 +19,13 @@
         private readonly ITranslatable _genericParametersTranslation;
         private readonly ITranslatable _genericParameterConstraintsTranslation;
         private readonly ITranslatable _parametersTranslation;
+
+        internal MethodDefinitionTranslation(
+            IMethod method,
+            TranslationSettings settings)
+            : this(method, includeDeclaringType: true, settings)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MethodDefinitionTranslation"/> class for
@@ -124,7 +131,6 @@
 
             return new MethodDefinitionTranslation(
                 new BclMethodWrapper(method, settings),
-                includeDeclaringType: true,
                 settings);
         }
 

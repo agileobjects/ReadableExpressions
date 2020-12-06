@@ -21,7 +21,7 @@
         }
 
         public ParameterSetDefinitionTranslation(
-            IMethod method,
+            IMethodBase method,
             TranslationSettings settings)
         {
             _settings = settings;

@@ -5,17 +5,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// Implementing classes will provide metadata about a method.
     /// </summary>
-    public interface IMethod : IComplexMember
+    public interface IMethod : IMethodBase
     {
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMethod"/> has generic Type parameters.
         /// </summary>
         bool IsGenericMethod { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the <see cref="IMethod"/> is an extension method.
-        /// </summary>
-        bool IsExtensionMethod { get; }
 
         /// <summary>
         /// Gets a value indicating whether this <see cref="IMethod"/> has a body.
@@ -33,11 +28,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// arguments, or an empty collection if <see cref="IsGenericMethod"/> is false.
         /// </summary>
         ReadOnlyCollection<IGenericParameter> GetGenericArguments();
-
-        /// <summary>
-        /// Gets the <see cref="IMethod"/>'s parameters, as an <see cref="IParameter"/> collection.
-        /// </summary>
-        ReadOnlyCollection<IParameter> GetParameters();
 
         /// <summary>
         /// Gets the return <see cref="IType"/> of the <see cref="IMethod"/>.
