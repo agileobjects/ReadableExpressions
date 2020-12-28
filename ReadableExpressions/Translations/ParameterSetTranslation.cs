@@ -20,7 +20,7 @@
     /// <summary>
     /// An <see cref="ITranslatable"/> which translates a set of Expressions representing parameters.
     /// </summary>
-    internal class ParameterSetTranslation : ITranslatable
+    public class ParameterSetTranslation : ITranslatable
     {
         private const int _splitArgumentsThreshold = 3;
         private const string _openAndCloseParentheses = "()";
@@ -132,7 +132,7 @@
                         WithParentheses();
                     }
 
-                    CreateCodeBlock:
+                CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
@@ -248,6 +248,20 @@
 
         #region Factory Methods
 
+        /// <summary>
+        /// Creates a <see cref="ParameterSetTranslation"/> for the given
+        /// <paramref name="parameters"/>, using the given <paramref name="context"/>.
+        /// </summary>
+        /// <typeparam name="TParameterExpression">
+        /// The type of Expression representing each parameter to translate.
+        /// </typeparam>
+        /// <param name="parameters">
+        /// The parameters for which to create the <see cref="ParameterSetTranslation"/>.
+        /// </param>
+        /// <param name="context">The <see cref="ITranslationContext"/> to use.</param>
+        /// <returns>
+        /// A <see cref="ParameterSetTranslation"/> for the given <paramref name="parameters"/>.
+        /// </returns>
         public static ParameterSetTranslation For<TParameterExpression>(
             ICollection<TParameterExpression> parameters,
             ITranslationContext context)
@@ -256,6 +270,25 @@
             return For(method: null, parameters, context);
         }
 
+        /// <summary>
+        /// Creates a <see cref="ParameterSetTranslation"/> for the given
+        /// <paramref name="method"/> and <paramref name="parameters"/>, using the given
+        /// <paramref name="context"/>.
+        /// </summary>
+        /// <typeparam name="TParameterExpression">
+        /// The type of Expression representing each parameter to translate.
+        /// </typeparam>
+        /// <param name="method">
+        /// The <see cref="IMethod"/> for which to create the <see cref="ParameterSetTranslation"/>.
+        /// </param>
+        /// <param name="parameters">
+        /// The parameters for which to create the <see cref="ParameterSetTranslation"/>.
+        /// </param>
+        /// <param name="context">The <see cref="ITranslationContext"/> to use.</param>
+        /// <returns>
+        /// A <see cref="ParameterSetTranslation"/> for the given <paramref name="method"/> and
+        /// <paramref name="parameters"/>.
+        /// </returns>
         public static ParameterSetTranslation For<TParameterExpression>(
             IMethod method,
             ICollection<TParameterExpression> parameters,
@@ -292,14 +325,31 @@
         /// </summary>
         public bool None => Count == 0;
 
+        /// <summary>
+        /// Gets the <see cref="ITranslation"/> at the given <paramref name="parameterIndex"/> in
+        /// this <see cref="ParameterSetTranslation"/>.
+        /// </summary>
+        /// <param name="parameterIndex">The index for which to retrieve the <see cref="ITranslation"/>.</param>
+        /// <returns>
+        /// The <see cref="ITranslation"/> at the given <paramref name="parameterIndex"/> in this
+        /// <see cref="ParameterSetTranslation"/>.
+        /// </returns>
         public ITranslation this[int parameterIndex] => _parameterTranslations[parameterIndex];
 
+        /// <summary>
+        /// Enforces parentheses in the output of this <see cref="ParameterSetTranslation"/>.
+        /// </summary>
+        /// <returns>This <see cref="ParameterSetTranslation"/>, to support a fluent API.</returns>
         public ParameterSetTranslation WithParentheses()
         {
             _parenthesesMode = ParenthesesMode.Always;
             return this;
         }
 
+        /// <summary>
+        /// Enforces no parentheses in the output of this <see cref="ParameterSetTranslation"/>.
+        /// </summary>
+        /// <returns>This <see cref="ParameterSetTranslation"/>, to support a fluent API.</returns>
         public ParameterSetTranslation WithoutParentheses()
         {
             _parenthesesMode = ParenthesesMode.Never;
@@ -307,7 +357,7 @@
             return this;
         }
 
-        public ParameterSetTranslation WithoutTypeNames(ITranslationContext context)
+        internal ParameterSetTranslation WithoutTypeNames(ITranslationContext context)
         {
             var parameters = _parameterTranslations
                 .Filter(p => p.NodeType == Parameter)
@@ -322,6 +372,7 @@
             return this;
         }
 
+        /// <inheritdoc />
         public int GetIndentSize()
         {
             switch (Count)
@@ -358,6 +409,7 @@
             }
         }
 
+        /// <inheritdoc />
         public int GetLineCount()
         {
             switch (Count)
@@ -395,6 +447,7 @@
             }
         }
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
             switch (Count)
