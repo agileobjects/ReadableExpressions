@@ -19,6 +19,21 @@ The visualizer has both Light and Dark themes:
 
 [![Visualizer options](/docs/Options.gif)]
 
+## ASP.NET Core 5 Known Issue
+
+.NET 5 has [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default. This causes issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) when debugging ASP.NET Core apps as the VS debugger [uses](https://wrightfully.com/writing-a-readonly-debugger-visualizer) `BinaryFormatter` to serialize objects before sending them to the visualizer.
+
+[The solution](https://developercommunity2.visualstudio.com/t/visual-studio-debugger-visualizers-and-binaryforma/1278642?from=email&viewtype=all#T-N1314383) is to enable the `BinaryFormatter` in Debug only by adding the following to your ASP.NET Core csproj:
+
+```xml
+<PropertyGroup>
+  <TargetFramework>net5.0</TargetFramework>
+  <EnableUnsafeBinaryFormatterSerialization Condition=" '$(Configuration)' == 'Debug' ">
+    true
+  </EnableUnsafeBinaryFormatterSerialization>
+</PropertyGroup>
+```
+
 ### NuGet Package
 
 The extension method is available in [a NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
