@@ -50,7 +50,7 @@
         {
             var concatStringAndInt = CreateLambda((string strValue, int intValue) => strValue + intValue);
 
-            var translated = concatStringAndInt.ToReadableString(s => s.ShowLambdaParameterTypes);
+            var translated = concatStringAndInt.ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
 
             translated.ShouldBe("(string strValue, int intValue) => strValue + intValue");
         }
@@ -111,7 +111,7 @@
 
             var quotedLambda = Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString(o => o.ShowQuotedLambdaComments);
+            var translated = quotedLambda.ToReadableString(stgs => stgs.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
 // Quoted to induce a closure:

@@ -1,7 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Collections.Generic;
+#endif
     using Common;
     using NetStandardPolyfills;
 #if !NET35

@@ -34,9 +34,6 @@
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TArg3, TReturn>> linqLambda)
             => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
-
-        public static string ToReadableString(Expression expression, Func<ITranslationSettings, ITranslationSettings> configuration = null)
-            => expression.ToReadableString(configuration);
 #else
         protected static LambdaExpression CreateLambda(Expression<Action> lambda) => lambda;
 

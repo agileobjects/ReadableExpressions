@@ -458,8 +458,8 @@
         {
             var stringConstant = Constant("hello!", typeof(string));
 
-            var translated = stringConstant.ToReadableString(
-                settings => settings.TranslateConstantsUsing((t, v) => "custom!"));
+            var translated = stringConstant.ToReadableString(stgs => stgs
+                .TranslateConstantsUsing((t, v) => "custom!"));
 
             translated.ShouldBe("custom!");
         }
@@ -469,8 +469,8 @@
         {
             var stringConstant = Constant("hello!", typeof(string));
 
-            var translated = stringConstant.ToReadableString(
-                settings => settings.TranslateConstantsUsing((t, v) => null));
+            var translated = stringConstant.ToReadableString(stgs => stgs
+                .TranslateConstantsUsing((t, v) => null));
 
             translated.ShouldBe("null");
         }

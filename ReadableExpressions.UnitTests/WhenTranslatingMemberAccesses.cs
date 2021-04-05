@@ -96,7 +96,7 @@
         {
             var noBlankStrings = CreateLambda((string[] a) => a.All(i => i.Length != 0));
 
-            var translated = noBlankStrings.ToReadableString(s => s.ShowLambdaParameterTypes);
+            var translated = noBlankStrings.ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
 
             translated.ShouldBe("(string[] a) => a.All((string i) => i.Length != 0)");
         }
@@ -467,7 +467,7 @@ string.Join(
         {
             var setFirstItem = CreateLambda((IndexedProperty ip, string str) => ip.SetFirst(str));
 
-            var translated = setFirstItem.Body.ToReadableString(c => c.UseExplicitGenericParameters);
+            var translated = setFirstItem.Body.ToReadableString(stgs => stgs.UseExplicitGenericParameters);
 
             translated.ShouldBe("ip.SetFirst<string>(str)");
         }
@@ -553,7 +553,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s.ShowLambdaParameterTypes);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
 
             const string EXPECTED = @"
 (IndexedProperty ip) =>
@@ -577,7 +577,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -600,7 +600,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
                 .DeclareOutputParametersInline
                 .UseExplicitTypeNames);
 
@@ -629,7 +629,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, List<int>>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
                 .UseFullyQualifiedTypeNames
                 .UseExplicitTypeNames
                 .DeclareOutputParametersInline);
@@ -655,7 +655,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -680,7 +680,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, valueAssignment, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>

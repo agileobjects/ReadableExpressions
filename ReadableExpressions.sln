@@ -5,6 +5,7 @@ VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{884A1D4E-7B9C-4411-A1E5-50B30F243FB1}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		NuGetPack.bat = NuGetPack.bat
 		README.md = README.md

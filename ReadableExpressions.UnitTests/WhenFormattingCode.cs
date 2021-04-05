@@ -212,7 +212,7 @@ value = threeIntsFunc.Invoke(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, longArgument, longArgument, longArgument);
 
-            var translated = creation.ToReadableString(s => s.IndentUsing("  "));
+            var translated = creation.ToReadableString(stgs => stgs.IndentUsing("  "));
 
             const string EXPECTED = @"
 new 

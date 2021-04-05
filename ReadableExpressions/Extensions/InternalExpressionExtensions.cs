@@ -10,9 +10,9 @@
 
     internal static class InternalExpressionExtensions
     {
-        public static bool HasReturnType(this Expression expression)
+        public static bool HasReturnType(this Expression expression) 
             => expression.Type != typeof(void);
-
+        
         public static bool IsReturnable(this Expression expression)
         {
             if (!expression.HasReturnType())

@@ -45,7 +45,7 @@
         {
             var createObject = CreateLambda(() => new NoNamespace());
 
-            var translated = createObject.Body.ToReadableString(s => s.UseFullyQualifiedTypeNames);
+            var translated = createObject.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new NoNamespace()");
         }
@@ -65,7 +65,7 @@
         {
             var createToday = CreateLambda(() => new DateTime(2018, 11, 17));
 
-            var translated = createToday.Body.ToReadableString(s => s.UseFullyQualifiedTypeNames);
+            var translated = createToday.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new System.DateTime(2018, 11, 17)");
         }
@@ -86,7 +86,7 @@
         {
             var createArray = CreateLambda(() => new NestedType<int>.NestedValue<DateTime>());
 
-            var translated = createArray.Body.ToReadableString(s => s.UseFullyQualifiedTypeNames);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new AgileObjects.ReadableExpressions.UnitTests.NestedType<int>.NestedValue<System.DateTime>()");
         }
@@ -286,7 +286,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new List<decimal>[5]);
 
-            var translated = createArray.Body.ToReadableString(s => s.UseFullyQualifiedTypeNames);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new System.Collections.Generic.List<decimal>[5]");
         }
@@ -306,7 +306,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new[] { 1L, 2L });
 
-            var translated = createArray.Body.ToReadableString(s => s.ShowImplicitArrayTypes);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.ShowImplicitArrayTypes);
 
             translated.ShouldBe("new long[] { 1L, 2L }");
         }
@@ -449,7 +449,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Constant(10));
 
-            var translated = creation.ToReadableString(s => s.NameAnonymousTypesUsing(t => "MyMagicObject"));
+            var translated = creation.ToReadableString(stgs => stgs.NameAnonymousTypesUsing(t => "MyMagicObject"));
 
             translated.ShouldBe("new MyMagicObject { ValueInt = 10 }");
         }
@@ -463,7 +463,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Default(typeof(TimeSpan)));
 
-            var translated = creation.ToReadableString(s => s.UseFullyQualifiedTypeNames);
+            var translated = creation.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new { Value = default(System.TimeSpan) }");
         }

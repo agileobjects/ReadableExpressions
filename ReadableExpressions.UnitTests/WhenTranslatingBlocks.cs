@@ -192,7 +192,7 @@ count += 2;";
 
             var countBlock = Block(new[] { countVariable }, assignTenToCount);
 
-            var translated = countBlock.ToReadableString(s => s.UseExplicitTypeNames);
+            var translated = countBlock.ToReadableString(stgs => stgs.UseExplicitTypeNames);
 
             const string EXPECTED = @"ushort count = 10;";
 

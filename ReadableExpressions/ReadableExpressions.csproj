@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
     <TargetFrameworks>net35;net40;netstandard1.0</TargetFrameworks>
+    <TargetFrameworks>net35;net40;netstandard1.0;netstandard2.0;</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -17,6 +18,13 @@
     <FileVersion>3.0.0.0</FileVersion>
     <VersionPrefix>3.0.0</VersionPrefix>
     <Version>3.0.0-preview1</Version>
+    <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    
+    <AssemblyVersion>2.6.0.0</AssemblyVersion>
+    <FileVersion>2.6.0.0</FileVersion>
+    <VersionPrefix>2.6.0</VersionPrefix>
+    <Version>2.6.0</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
@@ -24,15 +32,15 @@
     <Title>AgileObjects.ReadableExpressions</Title>
     <Description>A .NET 3.5+ and .NET Standard 1.0 extension method which translates Linq and DLR Expression Trees into readable C# source code.</Description>
     <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
+    <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NET 3.5+ and .NET Standard 1.0+</Description>
+    <Copyright>Copyright © AgileObjects Ltd 2021</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Fixing empty block translation, re: #78
-- Fixing translation of non-array params argument values
-- Performance improvements
+    <PackageReleaseNotes>- Adding .NET Standard 2.0 target
     </PackageReleaseNotes>
   </PropertyGroup>
 
@@ -41,7 +49,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <DefineConstants>$(DefineConstants);NET_STANDARD</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETSTANDARD1_0</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,6 +75,7 @@
 
   <ItemGroup>
     <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.5.0" />
   </ItemGroup>
 
   <PropertyGroup>
