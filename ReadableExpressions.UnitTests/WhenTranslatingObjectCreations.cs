@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -24,7 +25,7 @@
         {
             var createObject = CreateLambda(() => new object());
 
-            var translated = ToReadableString(createObject.Body);
+            var translated = createObject.Body.ToReadableString();
 
             translated.ShouldBe("new Object()");
         }
@@ -34,7 +35,7 @@
         {
             var createObject = CreateLambda(() => new NoNamespace());
 
-            var translated = ToReadableString(createObject.Body);
+            var translated = createObject.Body.ToReadableString();
 
             translated.ShouldBe("new NoNamespace()");
         }
@@ -44,7 +45,7 @@
         {
             var createObject = CreateLambda(() => new NoNamespace());
 
-            var translated = ToReadableString(createObject.Body, s => s.UseFullyQualifiedTypeNames);
+            var translated = createObject.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new NoNamespace()");
         }
@@ -54,7 +55,7 @@
         {
             var createToday = CreateLambda(() => new DateTime(2014, 08, 23));
 
-            var translated = ToReadableString(createToday.Body);
+            var translated = createToday.Body.ToReadableString();
 
             translated.ShouldBe("new DateTime(2014, 8, 23)");
         }
@@ -64,7 +65,7 @@
         {
             var createToday = CreateLambda(() => new DateTime(2018, 11, 17));
 
-            var translated = ToReadableString(createToday.Body, s => s.UseFullyQualifiedTypeNames);
+            var translated = createToday.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new System.DateTime(2018, 11, 17)");
         }
@@ -75,7 +76,7 @@
             var newMemoryStream = New(typeof(MemoryStream));
             var emptyInit = MemberInit(newMemoryStream, new List<MemberBinding>(0));
 
-            var translated = ToReadableString(emptyInit);
+            var translated = emptyInit.ToReadableString();
 
             translated.ShouldBe("new MemoryStream()");
         }
@@ -85,7 +86,7 @@
         {
             var createArray = CreateLambda(() => new NestedType<int>.NestedValue<DateTime>());
 
-            var translated = ToReadableString(createArray.Body, s => s.UseFullyQualifiedTypeNames);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new AgileObjects.ReadableExpressions.UnitTests.NestedType<int>.NestedValue<System.DateTime>()");
         }
@@ -95,7 +96,7 @@
         {
             var createMemoryStream = CreateLambda(() => new MemoryStream { Position = 0 });
 
-            var translated = ToReadableString(createMemoryStream.Body);
+            var translated = createMemoryStream.Body.ToReadableString();
 
             translated.ShouldBe("new MemoryStream { Position = 0L }");
         }
@@ -112,7 +113,7 @@
             var positionInit = Bind(positionProperty, valueBlock);
             var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
-            var translated = ToReadableString(memoryStreamInit);
+            var translated = memoryStreamInit.ToReadableString();
 
             const string EXPECTED = @"
 new MemoryStream
@@ -139,7 +140,7 @@ new MemoryStream
             var valueBlock = Block(writeBlah.Body, writeBlah.Body, read.Body);
             var newAnonType = New(constructor, valueBlock);
 
-            var translated = ToReadableString(newAnonType);
+            var translated = newAnonType.ToReadableString();
 
             const string EXPECTED = @"
 new 
@@ -161,7 +162,7 @@ new
             var createMemoryStream = CreateLambda(()
                  => new MemoryStream { Capacity = 10000, Position = 100 });
 
-            var translated = ToReadableString(createMemoryStream.Body);
+            var translated = createMemoryStream.Body.ToReadableString();
 
             const string EXPECTED = @"
 new MemoryStream
@@ -183,7 +184,7 @@ new MemoryStream
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, propertyValue, propertyValue);
 
-            var translated = ToReadableString(creation);
+            var translated = creation.ToReadableString();
 
             const string EXPECTED = @"
 new 
@@ -213,7 +214,7 @@ new
                     }
                 });
 
-            var translated = ToReadableString(createContactDetails.Body);
+            var translated = createContactDetails.Body.ToReadableString();
 
             const string EXPECTED = @"
 new ContactDetails
@@ -238,7 +239,7 @@ new ContactDetails
         {
             var createList = CreateLambda(() => new List<decimal> { 1m, 2.005m, 3m });
 
-            var translated = ToReadableString(createList.Body);
+            var translated = createList.Body.ToReadableString();
 
             translated.ShouldBe("new List<decimal> { 1m, 2.005m, 3m }");
         }
@@ -248,7 +249,7 @@ new ContactDetails
         {
             var createList = CreateLambda(() => new Dictionary<int, decimal> { { 1, 1.0m }, { 2, 2.0m } });
 
-            var translated = ToReadableString(createList.Body);
+            var translated = createList.Body.ToReadableString();
 
             const string EXPECTED = @"
 new Dictionary<int, decimal>
@@ -265,7 +266,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new int[5]);
 
-            var translated = ToReadableString(createArray.Body);
+            var translated = createArray.Body.ToReadableString();
 
             translated.ShouldBe("new int[5]");
         }
@@ -275,7 +276,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new List<decimal>[5]);
 
-            var translated = ToReadableString(createArray.Body);
+            var translated = createArray.Body.ToReadableString();
 
             translated.ShouldBe("new List<decimal>[5]");
         }
@@ -285,7 +286,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new List<decimal>[5]);
 
-            var translated = ToReadableString(createArray.Body, s => s.UseFullyQualifiedTypeNames);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new System.Collections.Generic.List<decimal>[5]");
         }
@@ -295,7 +296,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new[] { 1.00f, 2.3f, 3.00f });
 
-            var translated = ToReadableString(createArray.Body);
+            var translated = createArray.Body.ToReadableString();
 
             translated.ShouldBe("new[] { 1f, 2.3f, 3f }");
         }
@@ -305,7 +306,7 @@ new Dictionary<int, decimal>
         {
             var createArray = CreateLambda(() => new[] { 1L, 2L });
 
-            var translated = ToReadableString(createArray.Body, s => s.ShowImplicitArrayTypes);
+            var translated = createArray.Body.ToReadableString(stgs => stgs.ShowImplicitArrayTypes);
 
             translated.ShouldBe("new long[] { 1L, 2L }");
         }
@@ -319,7 +320,7 @@ new Dictionary<int, decimal>
                 new MemoryStream()
             });
 
-            var translated = ToReadableString(createDisposables.Body);
+            var translated = createDisposables.Body.ToReadableString();
 
             const string EXPECTED = @"
 new IDisposable[]
@@ -336,7 +337,7 @@ new IDisposable[]
         {
             var newArray = NewArrayInit(typeof(int), Enumerable.Empty<Expression>());
 
-            var translated = ToReadableString(newArray);
+            var translated = newArray.ToReadableString();
 
             translated.ShouldBe("new int[0]");
         }
@@ -346,7 +347,7 @@ new IDisposable[]
         {
             var createStringBuilder = CreateLambda(() => new StringBuilder("Hello!"));
 
-            var translated = ToReadableString(createStringBuilder.Body);
+            var translated = createStringBuilder.Body.ToReadableString();
 
             translated.ShouldBe("new StringBuilder(\"Hello!\")");
         }
@@ -356,7 +357,7 @@ new IDisposable[]
         {
             var createStringBuilder = CreateLambda(() => new StringBuilder('f'));
 
-            var translated = ToReadableString(createStringBuilder.Body);
+            var translated = createStringBuilder.Body.ToReadableString();
 
             // Constant character expressions have .Type Int32, so they 
             // can't be differentiated from int constants :(
@@ -368,7 +369,7 @@ new IDisposable[]
         {
             var createStringBuilder = CreateLambda(() => new StringBuilder(1000, 10000));
 
-            var translated = ToReadableString(createStringBuilder.Body);
+            var translated = createStringBuilder.Body.ToReadableString();
 
             translated.ShouldBe("new StringBuilder(1000, 10000)");
         }
@@ -378,7 +379,7 @@ new IDisposable[]
         {
             var createStringBuilder = CreateLambda((string str) => new StringBuilder(str));
 
-            var translated = ToReadableString(createStringBuilder.Body);
+            var translated = createStringBuilder.Body.ToReadableString();
 
             translated.ShouldBe("new StringBuilder(str)");
         }
@@ -419,7 +420,7 @@ new StringBuilder(
         }
     })";
 
-            var translated = ToReadableString(createStringBuilder);
+            var translated = createStringBuilder.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -433,7 +434,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Constant(100));
 
-            var translated = ToReadableString(creation);
+            var translated = creation.ToReadableString();
 
             translated.ShouldBe("new { ValueInt = 100 }");
         }
@@ -448,7 +449,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Constant(10));
 
-            var translated = ToReadableString(creation, s => s.NameAnonymousTypesUsing(t => "MyMagicObject"));
+            var translated = creation.ToReadableString(stgs => stgs.NameAnonymousTypesUsing(t => "MyMagicObject"));
 
             translated.ShouldBe("new MyMagicObject { ValueInt = 10 }");
         }
@@ -462,7 +463,7 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Default(typeof(TimeSpan)));
 
-            var translated = ToReadableString(creation, s => s.UseFullyQualifiedTypeNames);
+            var translated = creation.ToReadableString(stgs => stgs.UseFullyQualifiedTypeNames);
 
             translated.ShouldBe("new { Value = default(System.TimeSpan) }");
         }

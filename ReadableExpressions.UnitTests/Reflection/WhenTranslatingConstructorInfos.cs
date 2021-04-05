@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Reflection;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using Xunit;

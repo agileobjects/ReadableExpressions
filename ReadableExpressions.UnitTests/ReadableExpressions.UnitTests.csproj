@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.UnitTests.Common\ReadableExpressions.UnitTests.Common.csproj" />
     <ProjectReference Include="..\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj" />
     <ProjectReference Include="..\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj" />
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />

@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -17,7 +18,7 @@
         {
             var comment = ReadableExpression.Comment("Not worth commenting on");
 
-            var translated = ToReadableString(comment);
+            var translated = comment.ToReadableString();
 
             translated.ShouldBe("// Not worth commenting on");
         }
@@ -29,7 +30,7 @@
 Not worth commenting on
 but I will anyway");
 
-            var translated = ToReadableString(comment);
+            var translated = comment.ToReadableString();
 
             const string EXPECTED = @"
 // Not worth commenting on
@@ -46,7 +47,7 @@ but I will anyway");
 
             var commentedBeep = Block(comment, beep.Body);
 
-            var translated = ToReadableString(commentedBeep);
+            var translated = commentedBeep.ToReadableString();
 
             const string EXPECTED = @"
 // Anyone listening?
@@ -63,7 +64,7 @@ Console.Beep();";
             var oneEqualsOne = Equal(one, one);
             var ifOneEqualsOneComment = IfThen(oneEqualsOne, comment);
 
-            var translated = ToReadableString(ifOneEqualsOneComment);
+            var translated = ifOneEqualsOneComment.ToReadableString();
 
             const string EXPECTED = @"
 if (1 == 1)

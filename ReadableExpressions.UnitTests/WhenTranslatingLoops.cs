@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -18,7 +19,7 @@
             var writeLine = CreateLambda(() => Console.WriteLine());
             var loop = Loop(writeLine.Body);
 
-            var translated = ToReadableString(loop);
+            var translated = loop.ToReadableString();
 
             const string EXPECTED = @"
 while (true)
@@ -40,7 +41,7 @@ while (true)
             var loopBody = Block(ifGreaterThanTwoBreak, writeLine.Body, incrementVariable);
             var loop = Loop(loopBody, breakLoop.Target);
 
-            var translated = ToReadableString(loop);
+            var translated = loop.ToReadableString();
 
             const string EXPECTED = @"
 while (true)
@@ -70,7 +71,7 @@ while (true)
             var loopBody = Block(ifLessThanThreeContinue, writeFinished.Body, returnFromLoop);
             var loop = Loop(loopBody, returnFromLoop.Target, continueLoop.Target);
 
-            var translated = ToReadableString(loop);
+            var translated = loop.ToReadableString();
 
             const string EXPECTED = @"
 while (true)

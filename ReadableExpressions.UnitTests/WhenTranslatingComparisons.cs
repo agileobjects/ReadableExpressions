@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -16,7 +17,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var intsAreEqual = CreateLambda((int i1, int i2) => i1 == i2);
 
-            var translated = ToReadableString(intsAreEqual);
+            var translated = intsAreEqual.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 == i2");
         }
@@ -26,7 +27,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var firstLessThanSecond = CreateLambda((int i1, int i2) => i1 < i2);
 
-            var translated = ToReadableString(firstLessThanSecond);
+            var translated = firstLessThanSecond.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 < i2");
         }
@@ -36,7 +37,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var firstLessThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 <= i2);
 
-            var translated = ToReadableString(firstLessThanOrEqualToSecond);
+            var translated = firstLessThanOrEqualToSecond.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 <= i2");
         }
@@ -46,7 +47,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var firstGreaterThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 >= i2);
 
-            var translated = ToReadableString(firstGreaterThanOrEqualToSecond);
+            var translated = firstGreaterThanOrEqualToSecond.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 >= i2");
         }
@@ -56,7 +57,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var firstGreaterThanSecond = CreateLambda((int i1, int i2) => i1 > i2);
 
-            var translated = ToReadableString(firstGreaterThanSecond);
+            var translated = firstGreaterThanSecond.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 > i2");
         }
@@ -66,7 +67,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         {
             var intsAreNotEqual = CreateLambda((int i1, int i2) => i1 != i2);
 
-            var translated = ToReadableString(intsAreNotEqual);
+            var translated = intsAreNotEqual.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 != i2");
         }
@@ -77,7 +78,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "couldBe");
             var boolIsTrue = Equal(boolVariable, Constant(true));
 
-            var translated = ToReadableString(boolIsTrue);
+            var translated = boolIsTrue.ToReadableString();
 
             translated.ShouldBe("couldBe");
         }
@@ -88,7 +89,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "couldBe");
             var boolIsFalse = Equal(Constant(false), boolVariable);
 
-            var translated = ToReadableString(boolIsFalse);
+            var translated = boolIsFalse.ToReadableString();
 
             translated.ShouldBe("!couldBe");
         }
@@ -99,7 +100,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "couldBe");
             var boolIsNotTrue = NotEqual(Constant(true), boolVariable);
 
-            var translated = ToReadableString(boolIsNotTrue);
+            var translated = boolIsNotTrue.ToReadableString();
 
             translated.ShouldBe("!couldBe");
         }
@@ -110,7 +111,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "couldBe");
             var boolIsNotFalse = NotEqual(boolVariable, Constant(false));
 
-            var translated = ToReadableString(boolIsNotFalse);
+            var translated = boolIsNotFalse.ToReadableString();
 
             translated.ShouldBe("couldBe");
         }
@@ -121,7 +122,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var boolVariable = Variable(typeof(bool), "couldBe");
             var boolIsFalse = Equal(Default(typeof(bool)), boolVariable);
 
-            var translated = ToReadableString(boolIsFalse);
+            var translated = boolIsFalse.ToReadableString();
 
             translated.ShouldBe("!couldBe");
         }

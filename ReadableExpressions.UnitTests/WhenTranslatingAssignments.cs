@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -24,7 +25,7 @@
             var intVariable = Variable(typeof(int), "i");
             var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
 
-            var translated = ToReadableString(assignDefaultToInt);
+            var translated = assignDefaultToInt.ToReadableString();
 
             translated.ShouldBe("i = default(int)");
         }
@@ -49,7 +50,7 @@
                 arg1,
                 arg2);
 
-            var translated = ToReadableString(assignmentLambda);
+            var translated = assignmentLambda.ToReadableString();
 
             const string EXPECTED = @"
 (myClass, myclass) =>
@@ -69,7 +70,7 @@
             var intVariable = Variable(typeof(int), "i");
             var addOneAndAssign = AddAssign(intVariable, Constant(1));
 
-            var translated = ToReadableString(addOneAndAssign);
+            var translated = addOneAndAssign.ToReadableString();
 
             translated.ShouldBe("i += 1");
         }
@@ -80,7 +81,7 @@
             var intVariable = Variable(typeof(int), "i");
             var addTenAndAssign = AddAssignChecked(intVariable, Constant(10));
 
-            var translated = ToReadableString(addTenAndAssign);
+            var translated = addTenAndAssign.ToReadableString();
 
             translated.ShouldBe("checked { i += 10; }");
         }
@@ -91,7 +92,7 @@
             var intVariable = Variable(typeof(int), "i");
             var substractTenAndAssign = SubtractAssign(intVariable, Constant(10));
 
-            var translated = ToReadableString(substractTenAndAssign);
+            var translated = substractTenAndAssign.ToReadableString();
 
             translated.ShouldBe("i -= 10");
         }
@@ -119,7 +120,7 @@
 
             var substractOneAndAssign = SubtractAssignChecked(intVariable, valueBlock);
 
-            var translated = ToReadableString(substractOneAndAssign);
+            var translated = substractOneAndAssign.ToReadableString();
 
             const string EXPECTED = @"
 checked
@@ -141,7 +142,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var tripleAndAssign = MultiplyAssign(intVariable, Constant(3));
 
-            var translated = ToReadableString(tripleAndAssign);
+            var translated = tripleAndAssign.ToReadableString();
 
             translated.ShouldBe("i *= 3");
         }
@@ -152,7 +153,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var doubleAndAssign = MultiplyAssignChecked(intVariable, Constant(2));
 
-            var translated = ToReadableString(doubleAndAssign);
+            var translated = doubleAndAssign.ToReadableString();
 
             translated.ShouldBe("checked { i *= 2; }");
         }
@@ -163,7 +164,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var halveAndAssign = DivideAssign(intVariable, Constant(2));
 
-            var translated = ToReadableString(halveAndAssign);
+            var translated = halveAndAssign.ToReadableString();
 
             translated.ShouldBe("i /= 2");
         }
@@ -174,7 +175,7 @@ checked
             var intVariable = Variable(typeof(int), "i");
             var moduloTwoAndAssign = ModuloAssign(intVariable, Constant(2));
 
-            var translated = ToReadableString(moduloTwoAndAssign);
+            var translated = moduloTwoAndAssign.ToReadableString();
 
             translated.ShouldBe(@"i %= 2");
         }
@@ -186,7 +187,7 @@ checked
             var doubleTwo = Constant(2.0, typeof(double));
             var powerTwoAssign = PowerAssign(doubleVariable, doubleTwo);
 
-            var translated = ToReadableString(powerTwoAssign);
+            var translated = powerTwoAssign.ToReadableString();
 
             translated.ShouldBe("d **= 2d");
         }
@@ -198,7 +199,7 @@ checked
             var intVariableTwo = Variable(typeof(int), "i2");
             var bitwiseAndAssign = AndAssign(intVariableOne, intVariableTwo);
 
-            var translated = ToReadableString(bitwiseAndAssign);
+            var translated = bitwiseAndAssign.ToReadableString();
 
             translated.ShouldBe("i1 &= i2");
         }
@@ -210,7 +211,7 @@ checked
             var intVariableTwo = Variable(typeof(int), "i2");
             var bitwiseOrAssign = OrAssign(intVariableOne, intVariableTwo);
 
-            var translated = ToReadableString(bitwiseOrAssign);
+            var translated = bitwiseOrAssign.ToReadableString();
 
             translated.ShouldBe("i1 |= i2");
         }
@@ -222,7 +223,7 @@ checked
             var intVariableTwo = Variable(typeof(int), "i2");
             var bitwiseExclusiveOrAssign = ExclusiveOrAssign(intVariableOne, intVariableTwo);
 
-            var translated = ToReadableString(bitwiseExclusiveOrAssign);
+            var translated = bitwiseExclusiveOrAssign.ToReadableString();
 
             translated.ShouldBe("i1 ^= i2");
         }
@@ -234,7 +235,7 @@ checked
             var intVariableTwo = Variable(typeof(int), "i2");
             var leftShiftAndAssign = LeftShiftAssign(intVariableOne, intVariableTwo);
 
-            var translated = ToReadableString(leftShiftAndAssign);
+            var translated = leftShiftAndAssign.ToReadableString();
 
             translated.ShouldBe("i1 <<= i2");
         }
@@ -246,7 +247,7 @@ checked
             var intVariableTwo = Variable(typeof(int), "i2");
             var rightShiftAndAssign = RightShiftAssign(intVariableOne, intVariableTwo);
 
-            var translated = ToReadableString(rightShiftAndAssign);
+            var translated = rightShiftAndAssign.ToReadableString();
 
             translated.ShouldBe("i1 >>= i2");
         }
@@ -258,7 +259,7 @@ checked
             var oneMultipliedByTwo = Multiply(Constant(1), Constant(2));
             var assignment = Assign(intVariable, oneMultipliedByTwo);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("i = 1 * 2");
         }
@@ -271,7 +272,7 @@ checked
             var assignBool = Assign(boolVariable1, IsFalse(boolVariable2));
             var negated = Not(assignBool);
 
-            var translated = ToReadableString(negated);
+            var translated = negated.ToReadableString();
 
             translated.ShouldBe("!(isItNot = !isIt)");
         }
@@ -291,7 +292,7 @@ checked
 
             var assignment = Assign(intVariable1, threeOrDefault);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("i = (j > 1) ? 3 : default(int)");
         }
@@ -304,7 +305,7 @@ checked
             var assignVariable2 = Assign(intVariable2, Constant(1));
             var setVariableOneToAssignmentResult = Assign(intVariable1, assignVariable2);
 
-            var translated = ToReadableString(setVariableOneToAssignmentResult);
+            var translated = setVariableOneToAssignmentResult.ToReadableString();
 
             translated.ShouldBe("i = j = 1");
         }
@@ -323,7 +324,7 @@ checked
                 new[] { longVariable, intVariable },
                 setLongVariableToAssignmentResult);
 
-            var translated = ToReadableString(assignmentBlock);
+            var translated = assignmentBlock.ToReadableString();
 
             const string EXPECTED = @"
 int j;
@@ -348,7 +349,7 @@ var i = (long)(j = 10);";
 
             var assignmentBlock = Block(new[] { intVariable }, assignIntToZero, assignReadOrDefault);
 
-            var translated = ToReadableString(assignmentBlock);
+            var translated = assignmentBlock.ToReadableString();
 
             const string EXPECTED = @"
 var i = 0;
@@ -374,7 +375,7 @@ i =
             var isAssignmentFive = Equal(assignVariable, Constant(5));
             var ifFiveDoNothing = IfThen(isAssignmentFive, Empty());
 
-            var translated = ToReadableString(ifFiveDoNothing);
+            var translated = ifFiveDoNothing.ToReadableString();
 
             const string EXPECTED = @"
 if ((i = 10) == 5)
@@ -399,7 +400,7 @@ if ((i = 10) == 5)
 
             var intToString = Call(intVariable, intToStringMethod, setStringVariableToNull);
 
-            var translated = ToReadableString(intToString);
+            var translated = intToString.ToReadableString();
 
             translated.ShouldBe("i.ToString(value = null)");
         }
@@ -412,7 +413,7 @@ if ((i = 10) == 5)
             var stringVariable = Variable(typeof(string), "value");
             var stringAssignment = Assign(stringVariable, timesThreeToString.Body);
 
-            var translated = ToReadableString(stringAssignment);
+            var translated = stringAssignment.ToReadableString();
 
             translated.ShouldBe("value = (i * 3).ToString()");
         }
@@ -466,7 +467,7 @@ if ((i = 10) == 5)
             var resultVariable = Variable(typeof(int), "result");
             var resultAssignment = Assign(resultVariable, conditional);
 
-            var translated = ToReadableString(resultAssignment);
+            var translated = resultAssignment.ToReadableString();
 
             const string EXPECTED = @"
 result = ((DateTime.Now.Hour % 2) == 0)
@@ -516,7 +517,7 @@ result = ((DateTime.Now.Hour % 2) == 0)
             var assignment = Assign(resultVariable, toArrayCall);
             var assignmentBlock = Block(assignment);
 
-            var translation = ToReadableString(assignmentBlock);
+            var translation = assignmentBlock.ToReadableString();
 
             const string EXPECTED = @"
 IList<int> result = new[] { ""1"", ""2"", ""blah"" }
@@ -555,7 +556,7 @@ IList<int> result = new[] { ""1"", ""2"", ""blah"" }
             var resultVariable = Variable(typeof(int), "result");
             var resultOneAssignment = Assign(resultVariable, wrappingBlock);
 
-            var translated = ToReadableString(resultOneAssignment);
+            var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
 result =
@@ -584,7 +585,7 @@ result =
             var resultVariable = Variable(multiStatementValueBlock.Type, "result");
             var resultOneAssignment = Assign(resultVariable, multiStatementValueBlock);
 
-            var translated = ToReadableString(resultOneAssignment);
+            var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
 result =
@@ -628,7 +629,7 @@ result =
             var resultVariable = Variable(singleStatementValueBlock.Type, "result");
             var resultOneAssignment = Assign(resultVariable, singleStatementValueBlock);
 
-            var translated = ToReadableString(resultOneAssignment);
+            var translated = resultOneAssignment.ToReadableString();
 
             const string EXPECTED = @"
 result =
@@ -687,7 +688,7 @@ result =
 
             var intAssignment = Assign(intVariable, intParseOuterBlock);
 
-            var translated = ToReadableString(intAssignment);
+            var translated = intAssignment.ToReadableString();
 
             const string EXPECTED = @"
 num =
@@ -731,7 +732,7 @@ num =
 
             var longAssignment = Assign(longVariable, longParseOuterBlock);
 
-            var translated = ToReadableString(longAssignment);
+            var translated = longAssignment.ToReadableString();
 
             const string EXPECTED = @"
 number =
@@ -753,7 +754,7 @@ number =
             var extensionVariable = Variable(value.Type, "ext");
             var assignment = Assign(extensionVariable, value);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("ext = " + value);
         }

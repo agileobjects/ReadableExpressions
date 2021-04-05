@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Common;
 #if !NET35
     using Xunit;
 #else

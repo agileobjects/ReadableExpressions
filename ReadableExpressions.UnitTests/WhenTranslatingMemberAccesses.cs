@@ -6,6 +6,7 @@
     using System.Collections.ObjectModel;
     using System.Globalization;
     using System.Linq;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -25,7 +26,7 @@
         {
             var getArrayLength = CreateLambda((string[] a) => a.Length);
 
-            var translated = ToReadableString(getArrayLength);
+            var translated = getArrayLength.ToReadableString();
 
             translated.ShouldBe("a => a.Length");
         }
@@ -35,7 +36,7 @@
         {
             var objectToString = CreateLambda((object o) => o.ToString());
 
-            var translated = ToReadableString(objectToString);
+            var translated = objectToString.ToReadableString();
 
             translated.ShouldBe("o => o.ToString()");
         }
@@ -45,7 +46,7 @@
         {
             var intToFormattedString = CreateLambda((int i) => i.ToString(CultureInfo.CurrentCulture));
 
-            var translated = ToReadableString(intToFormattedString);
+            var translated = intToFormattedString.ToReadableString();
 
             translated.ShouldBe("i => i.ToString(CultureInfo.CurrentCulture)");
         }
@@ -55,7 +56,7 @@
         {
             var intToFormattedString = CreateLambda((int i, CultureInfo ci) => i.ToString(ci));
 
-            var translated = ToReadableString(intToFormattedString);
+            var translated = intToFormattedString.ToReadableString();
 
             translated.ShouldBe("(i, ci) => i.ToString(ci)");
         }
@@ -65,7 +66,7 @@
         {
             var arrayIsEmpty = CreateLambda((string[] a) => a.Any());
 
-            var translated = ToReadableString(arrayIsEmpty);
+            var translated = arrayIsEmpty.ToReadableString();
 
             translated.ShouldBe("a => a.Any()");
         }
@@ -75,7 +76,7 @@
         {
             var notTheFirstTwo = CreateLambda((string[] a) => a.Skip(2));
 
-            var translated = ToReadableString(notTheFirstTwo);
+            var translated = notTheFirstTwo.ToReadableString();
 
             translated.ShouldBe("a => a.Skip(2)");
         }
@@ -85,7 +86,7 @@
         {
             var noBlankStrings = CreateLambda((string[] a) => a.All(i => i.Length != 0));
 
-            var translated = ToReadableString(noBlankStrings);
+            var translated = noBlankStrings.ToReadableString();
 
             translated.ShouldBe("a => a.All(i => i.Length != 0)");
         }
@@ -95,7 +96,7 @@
         {
             var noBlankStrings = CreateLambda((string[] a) => a.All(i => i.Length != 0));
 
-            var translated = ToReadableString(noBlankStrings, s => s.ShowLambdaParameterTypes);
+            var translated = noBlankStrings.ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
 
             translated.ShouldBe("(string[] a) => a.All((string i) => i.Length != 0)");
         }
@@ -106,7 +107,7 @@
             // ReSharper disable once ReferenceEqualsWithValueType
             var oneEqualsTwo = CreateLambda(() => ReferenceEquals(1, 2));
 
-            var translated = ToReadableString(oneEqualsTwo);
+            var translated = oneEqualsTwo.ToReadableString();
 
             translated.ShouldBe("() => object.ReferenceEquals(1, 2)");
         }
@@ -116,7 +117,7 @@
         {
             var doSomething = CreateLambda(() => GenericHelper<Dictionary<DateTime, string>>.DoSomething());
 
-            var translated = ToReadableString(doSomething.Body);
+            var translated = doSomething.Body.ToReadableString();
 
             translated.ShouldBe("GenericHelper<Dictionary<DateTime, string>>.DoSomething()");
         }
@@ -126,7 +127,7 @@
         {
             var getDateDay = CreateLambda((DateTime d) => d.Day);
 
-            var translated = ToReadableString(getDateDay);
+            var translated = getDateDay.ToReadableString();
 
             translated.ShouldBe("d => d.Day");
         }
@@ -136,7 +137,7 @@
         {
             var getToday = CreateLambda(() => DateTime.Today);
 
-            var translated = ToReadableString(getToday);
+            var translated = getToday.ToReadableString();
 
             translated.ShouldBe("() => DateTime.Today");
         }
@@ -146,7 +147,7 @@
         {
             var getDefaultIndexedProperty = CreateLambda(() => IndexedProperty.Default);
 
-            var translated = ToReadableString(getDefaultIndexedProperty.Body);
+            var translated = getDefaultIndexedProperty.Body.ToReadableString();
 
             translated.ShouldBe("IndexedProperty.Default");
         }
@@ -164,7 +165,7 @@
             var variable = Variable(typeof(PropertiesHelper), "helper");
             var getterAccess = Call(variable, publicInstanceGetter);
 
-            var translated = ToReadableString(getterAccess);
+            var translated = getterAccess.ToReadableString();
 
             translated.ShouldBe("helper.PublicInstance");
         }
@@ -181,7 +182,7 @@
             var variable = Variable(typeof(PropertiesHelper), "helper");
             var setterCall = Call(variable, publicInstanceSetter, Constant(123));
 
-            var translated = ToReadableString(setterCall);
+            var translated = setterCall.ToReadableString();
 
             translated.ShouldBe("helper.PublicInstance = 123");
         }
@@ -197,7 +198,7 @@
 
             var getterAccess = Call(publicStaticGetter);
 
-            var translated = ToReadableString(getterAccess);
+            var translated = getterAccess.ToReadableString();
 
             translated.ShouldBe("PropertiesHelper.PublicStatic");
         }
@@ -213,7 +214,7 @@
 
             var setterCall = Call(publicStaticSetter, Constant(456));
 
-            var translated = ToReadableString(setterCall);
+            var translated = setterCall.ToReadableString();
 
             translated.ShouldBe("PropertiesHelper.PublicStatic = 456");
         }
@@ -230,7 +231,7 @@
             var variable = Variable(typeof(PropertiesHelper), "helper");
             var getterAccess = Call(variable, publicInstanceGetter);
 
-            var translated = ToReadableString(getterAccess);
+            var translated = getterAccess.ToReadableString();
 
             translated.ShouldBe("helper.NonPublicInstance");
         }
@@ -247,7 +248,7 @@
             var variable = Variable(typeof(PropertiesHelper), "helper");
             var setterCall = Call(variable, nonPublicInstanceSetter, Constant(123));
 
-            var translated = ToReadableString(setterCall);
+            var translated = setterCall.ToReadableString();
 
             translated.ShouldBe("helper.NonPublicInstance = 123");
         }
@@ -263,7 +264,7 @@
 
             var getterAccess = Call(nonPublicStaticGetter);
 
-            var translated = ToReadableString(getterAccess);
+            var translated = getterAccess.ToReadableString();
 
             translated.ShouldBe("PropertiesHelper.NonPublicStatic");
         }
@@ -279,7 +280,7 @@
 
             var setterCall = Call(nonPublicStaticSetter, Constant(456));
 
-            var translated = ToReadableString(setterCall);
+            var translated = setterCall.ToReadableString();
 
             translated.ShouldBe("PropertiesHelper.NonPublicStatic = 456");
         }
@@ -289,7 +290,7 @@
         {
             var splitString = CreateLambda((string str) => str.Split('x', 'y', 'z'));
 
-            var translated = ToReadableString(splitString);
+            var translated = splitString.ToReadableString();
 
             translated.ShouldBe("str => str.Split('x', 'y', 'z')");
         }
@@ -299,7 +300,7 @@
         {
             var combineStrings = CreateLambda((string str) => ParamsHelper.OptionalParams(str));
 
-            var translated = ToReadableString(combineStrings);
+            var translated = combineStrings.ToReadableString();
 
             translated.ShouldBe("str => ParamsHelper.OptionalParams(str)");
         }
@@ -342,7 +343,7 @@ string.Join(
         {
             var getPropertyIndex = CreateLambda((IndexedProperty p, int index) => p[index]);
 
-            var translated = ToReadableString(getPropertyIndex.Body);
+            var translated = getPropertyIndex.Body.ToReadableString();
 
             translated.ShouldBe("p[index]");
         }
@@ -356,7 +357,7 @@ string.Join(
 
             var indexerAccess = MakeIndex(indexedProperty, property, new[] { firstElement });
 
-            var translated = ToReadableString(indexerAccess);
+            var translated = indexerAccess.ToReadableString();
 
             translated.ShouldBe("p[1]");
         }
@@ -366,7 +367,7 @@ string.Join(
         {
             var getFirstCharacter = CreateLambda((string str) => str[0]);
 
-            var translated = ToReadableString(getFirstCharacter.Body);
+            var translated = getFirstCharacter.Body.ToReadableString();
 
             translated.ShouldBe("str[0]");
         }
@@ -376,7 +377,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((int[] items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0]");
         }
@@ -386,7 +387,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((IDictionary<int, string> items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0]");
         }
@@ -396,7 +397,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((Dictionary<long, string> items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0L]");
         }
@@ -406,7 +407,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((Collection<string> items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0]");
         }
@@ -416,7 +417,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((IList<string> items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0]");
         }
@@ -426,7 +427,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((List<string> items) => items[0]);
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("items[0]");
         }
@@ -436,7 +437,7 @@ string.Join(
         {
             var getFirstItem = CreateLambda((IndexedProperty ip) => ip.GetFirst<string>());
 
-            var translated = ToReadableString(getFirstItem.Body);
+            var translated = getFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("ip.GetFirst<string>()");
         }
@@ -446,7 +447,7 @@ string.Join(
         {
             var convertIntToString = CreateLambda((int i) => new ValueConverter().Convert<int, string>(i));
 
-            var translated = ToReadableString(convertIntToString.Body);
+            var translated = convertIntToString.Body.ToReadableString();
 
             translated.ShouldBe("new ValueConverter().Convert<int, string>(i)");
         }
@@ -456,7 +457,7 @@ string.Join(
         {
             var setFirstItem = CreateLambda((IndexedProperty ip, string str) => ip.SetFirst(str));
 
-            var translated = ToReadableString(setFirstItem.Body);
+            var translated = setFirstItem.Body.ToReadableString();
 
             translated.ShouldBe("ip.SetFirst(str)");
         }
@@ -466,7 +467,7 @@ string.Join(
         {
             var setFirstItem = CreateLambda((IndexedProperty ip, string str) => ip.SetFirst(str));
 
-            var translated = ToReadableString(setFirstItem.Body, c => c.UseExplicitGenericParameters);
+            var translated = setFirstItem.Body.ToReadableString(stgs => stgs.UseExplicitGenericParameters);
 
             translated.ShouldBe("ip.SetFirst<string>(str)");
         }
@@ -478,7 +479,7 @@ string.Join(
 
             var convertIntToString = CreateLambda((int i) => new ValueConverter().TryConvert(i, out result));
 
-            var translated = ToReadableString(convertIntToString.Body);
+            var translated = convertIntToString.Body.ToReadableString();
 
             translated.ShouldBe("new ValueConverter().TryConvert(i, out result)");
         }
@@ -489,7 +490,7 @@ string.Join(
             var listDoesNotContainZero = CreateLambda((List<int> l)
                 => !l.Contains(0, EqualityComparer<int>.Default));
 
-            var translated = ToReadableString(listDoesNotContainZero.Body);
+            var translated = listDoesNotContainZero.Body.ToReadableString();
 
             translated.ShouldBe("!l.Contains(0, EqualityComparer<int>.Default)");
         }
@@ -512,7 +513,7 @@ string.Join(
             var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
             var tryGetCall = Call(helperVariable, tryGetMethod, one, valueVariable);
 
-            var translated = ToReadableString(tryGetCall);
+            var translated = tryGetCall.ToReadableString();
 
             translated.ShouldBe("ip.TryGet(1, out value)");
         }
@@ -528,7 +529,7 @@ string.Join(
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(tryGetLambda);
+            var translated = tryGetLambda.ToReadableString();
 
             const string EXPECTED = @"
 ip =>
@@ -552,7 +553,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(tryGetLambda, s => s.ShowLambdaParameterTypes);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
 
             const string EXPECTED = @"
 (IndexedProperty ip) =>
@@ -576,7 +577,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -599,10 +600,9 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(
-                tryGetLambda, s => s
-                    .DeclareOutputParametersInline
-                    .UseExplicitTypeNames);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .DeclareOutputParametersInline
+                .UseExplicitTypeNames);
 
             const string EXPECTED = @"
 ip =>
@@ -629,11 +629,10 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, List<int>>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(
-                tryGetLambda, s => s
-                    .UseFullyQualifiedTypeNames
-                    .UseExplicitTypeNames
-                    .DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .UseFullyQualifiedTypeNames
+                .UseExplicitTypeNames
+                .DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -656,7 +655,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -681,7 +680,7 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, valueAssignment, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = ToReadableString(tryGetLambda, s => s.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -703,7 +702,7 @@ ip =>
             var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("RefGet");
             var tryGetCall = Call(helperVariable, tryGetMethod, three, valueVariable);
 
-            var translated = ToReadableString(tryGetCall);
+            var translated = tryGetCall.ToReadableString();
 
             translated.ShouldBe("ip.RefGet(3, ref value)");
         }
@@ -714,7 +713,7 @@ ip =>
             var customAdder = CreateLambda((int intOne, int intTwo, int intThree)
                 => new CustomAdder { { intOne, intTwo, intThree } });
 
-            var translated = ToReadableString(customAdder.Body);
+            var translated = customAdder.Body.ToReadableString();
 
             const string EXPECTED = @"
 new CustomAdder
@@ -733,7 +732,7 @@ new CustomAdder
             var stringVariable = Variable(typeof(string), "str");
             var assignment = Assign(stringVariable, adderToString.Body);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("str = new CustomAdder()");
         }
@@ -747,7 +746,7 @@ new CustomAdder
             var operatorCall = Call(stringOperator, adderInstance);
             var assignment = Assign(stringVariable, operatorCall);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("str = new CustomAdder()");
         }
@@ -760,7 +759,7 @@ new CustomAdder
             var intVariable = Variable(typeof(int), "i");
             var assignment = Assign(intVariable, adderToString.Body);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("i = (int)new CustomAdder()");
         }
@@ -774,7 +773,7 @@ new CustomAdder
             var operatorCall = Call(intOperator, adderInstance);
             var assignment = Assign(intVariable, operatorCall);
 
-            var translated = ToReadableString(assignment);
+            var translated = assignment.ToReadableString();
 
             translated.ShouldBe("i = (int)new CustomAdder()");
         }
@@ -861,7 +860,7 @@ new CustomAdder
         {
             var comparison = TestClassBase.CreateLambda(() => _i == comparator);
 
-            return TestClassBase.ToReadableString(comparison.Body);
+            return comparison.Body.ToReadableString();
         }
     }
 

@@ -3,6 +3,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
     using System.Globalization;
+    using Common;
     using Microsoft.CSharp.RuntimeBinder;
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -29,7 +30,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicLengthLambda.Compile();
 
-            var translated = ToReadableString(dynamicLengthLambda);
+            var translated = dynamicLengthLambda.ToReadableString();
 
             translated.ShouldBe("obj => obj.Length");
         }
@@ -59,7 +60,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicPositionLambda.Compile();
 
-            var translated = ToReadableString(dynamicPositionLambda);
+            var translated = dynamicPositionLambda.ToReadableString();
 
             translated.ShouldBe("(obj, position) => obj.Position = position");
         }
@@ -85,7 +86,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicToStringLambda.Compile();
 
-            var translated = ToReadableString(dynamicToStringLambda);
+            var translated = dynamicToStringLambda.ToReadableString();
 
             translated.ShouldBe("obj => obj.ToString()");
         }
@@ -115,7 +116,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicYellHurrahLambda.Compile();
 
-            var translated = ToReadableString(dynamicYellHurrahLambda);
+            var translated = dynamicYellHurrahLambda.ToReadableString();
 
             translated.ShouldBe("obj => obj.YellHurrah()");
         }
@@ -150,7 +151,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicToStringLambda.Compile();
 
-            var translated = ToReadableString(dynamicToStringLambda);
+            var translated = dynamicToStringLambda.ToReadableString();
 
             translated.ShouldBe("(obj, ci) => obj.ToString(ci)");
         }
@@ -185,7 +186,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicConvertLambda.Compile();
 
-            var translated = ToReadableString(dynamicConvertLambda);
+            var translated = dynamicConvertLambda.ToReadableString();
 
             translated.ShouldBe("(valueConverter, value) => valueConverter.Convert<string, int>(value)");
         }
@@ -217,7 +218,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicConvertLambda.Compile();
 
-            var translated = ToReadableString(dynamicConvertLambda);
+            var translated = dynamicConvertLambda.ToReadableString();
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
             translated.ShouldBe("valueConverter => valueConverter.Convert()");
@@ -250,7 +251,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
             dynamicPrintLambda.Compile();
 
-            var translated = ToReadableString(dynamicPrintLambda);
+            var translated = dynamicPrintLambda.ToReadableString();
 
             // The method type parameter can't be figured out from the arguments and return type, so are missing:
             translated.ShouldBe("typePrinter => typePrinter.Print()");
