@@ -352,7 +352,7 @@ string.Join(
         public void ShouldTranslateAManualIndexedPropertyAccessExpression()
         {
             var indexedProperty = Variable(typeof(IndexedProperty), "p");
-            var property = indexedProperty.Type.GetProperties().First();
+            var property = indexedProperty.Type.GetPublicInstanceProperties().First();
             var firstElement = Constant(1, typeof(int));
 
             var indexerAccess = MakeIndex(indexedProperty, property, new[] { firstElement });

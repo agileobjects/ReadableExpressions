@@ -40,6 +40,29 @@
         }
 
         [Fact]
+        public void ShouldTranslateAStringWithAnEscapedTabCharacter()
+        {
+            var stringConstant = Constant("hello\tthere!", typeof(string));
+
+            var translated = stringConstant.ToReadableString();
+
+            translated.ShouldBe("\"hello\tthere!\"");
+        }
+
+        [Fact]
+        public void ShouldTranslateAVerbatimStringWithAnEscapedTabCharacter()
+        {
+            var stringConstant = Constant(@"hello\tthere!", typeof(string));
+
+            var translated = stringConstant.ToReadableString();
+
+            // In a verbatim string, \t isn't really a tab, it's '\\t';
+            // to replicate that in a translated string constant we use
+            // a verbatim '\\t':
+            translated.ShouldBe(@"""hello\\tthere!""");
+        }
+
+        [Fact]
         public void ShouldTranslateABoolean()
         {
             var boolConstant = Constant(true, typeof(bool));

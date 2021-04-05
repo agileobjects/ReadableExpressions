@@ -316,7 +316,7 @@ new Dictionary<int, decimal>
         {
             var createDisposables = CreateLambda(() => new IDisposable[]
             {
-                new StreamReader(string.Empty),
+                new StreamReader(File.OpenRead(@"C:\temp\my-file.txt")),
                 new MemoryStream()
             });
 
@@ -325,7 +325,7 @@ new Dictionary<int, decimal>
             const string EXPECTED = @"
 new IDisposable[]
 {
-    new StreamReader(string.Empty),
+    new StreamReader(File.OpenRead(""C:\\temp\\my-file.txt"")),
     new MemoryStream()
 }";
 

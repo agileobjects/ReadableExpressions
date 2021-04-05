@@ -159,8 +159,9 @@
 
                 case NetStandardTypeCode.String:
                     var stringValue = ((string)constant.Value)
+                        .Replace(@"\", @"\\")
                         .Replace("\0", @"\0")
-                        .Replace("\"", "\\\"");
+                        .Replace(@"""", @"\""");
 
                     stringValue = "\"" + stringValue + "\"";
                     translation = FixedValueTranslation(stringValue, typeof(string), Text, context);

@@ -312,9 +312,8 @@ Console.WriteLine();";
             var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = New(typeof(MemoryStream));
-            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var positionProperty = newMemoryStream.Type.GetPublicInstanceProperty("Position");
             var valueBlock = Block(writeWat.Body, read.Body);
-            // ReSharper disable once AssignNullToNotNullAttribute
             var positionInit = Bind(positionProperty, valueBlock);
             var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
@@ -467,7 +466,7 @@ return myString ?? string.Empty;";
         public void ShouldIncludeAReturnKeywordForANewObjectStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var newList = New(typeof(List<string>).GetConstructors().First());
+            var newList = New(typeof(List<string>).GetPublicInstanceConstructor());
             var rethrow = Rethrow(newList.Type);
             var globalCatchAndRethrow = Catch(exception, rethrow);
             var tryCatch = TryCatch(newList, globalCatchAndRethrow);
@@ -492,8 +491,8 @@ catch
         public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var newAddress = New(typeof(Address).GetConstructors().First());
-            var line1Property = newAddress.Type.GetMember("Line1").First();
+            var newAddress = New(typeof(Address).GetPublicInstanceConstructor());
+            var line1Property = newAddress.Type.GetPublicInstanceMember("Line1");
             var line1Value = Constant("Over here");
             var line1Init = Bind(line1Property, line1Value);
             var addressInit = MemberInit(newAddress, line1Init);
@@ -524,7 +523,7 @@ catch
         public void ShouldIncludeAReturnKeywordForANewListInitStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var listConstructor = typeof(List<int>).GetConstructor(new[] { typeof(int) });
+            var listConstructor = typeof(List<int>).GetPublicInstanceConstructor(typeof(int));
             var one = Constant(1);
             // ReSharper disable once AssignNullToNotNullAttribute
             var newList = New(listConstructor, one);

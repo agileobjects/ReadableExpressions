@@ -393,10 +393,8 @@ if ((i = 10) == 5)
             var intVariable = Variable(typeof(int), "i");
 
             var intToStringMethod = typeof(int)
-                .GetMethods()
-                .First(m =>
-                    (m.Name == "ToString") &&
-                    (m.GetParameters().FirstOrDefault()?.ParameterType == typeof(string)));
+                .GetPublicInstanceMethods("ToString")
+                .First(m => m.GetParameters().FirstOrDefault()?.ParameterType == typeof(string));
 
             var intToString = Call(intVariable, intToStringMethod, setStringVariableToNull);
 

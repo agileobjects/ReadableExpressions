@@ -9,7 +9,7 @@
 #endif
     using System.Reflection;
     using Extensions;
-#if NETSTANDARD
+#if NETSTANDARD1_0
     using NetStandardPolyfills;
 #endif
 
