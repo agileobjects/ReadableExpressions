@@ -2,7 +2,7 @@
 {
     using System.Reflection;
     using Interfaces;
-#if NETSTANDARD
+#if NETSTANDARD1_0
     using NetStandardPolyfills;
 #endif
     using static MethodTranslationHelpers;

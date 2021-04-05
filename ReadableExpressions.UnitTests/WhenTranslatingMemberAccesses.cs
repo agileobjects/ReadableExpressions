@@ -352,7 +352,7 @@ string.Join(
         public void ShouldTranslateAManualIndexedPropertyAccessExpression()
         {
             var indexedProperty = Variable(typeof(IndexedProperty), "p");
-            var property = indexedProperty.Type.GetProperties().First();
+            var property = indexedProperty.Type.GetPublicInstanceProperties().First();
             var firstElement = Constant(1, typeof(int));
 
             var indexerAccess = MakeIndex(indexedProperty, property, new[] { firstElement });
@@ -620,11 +620,11 @@ ip =>
             var helperParameter = Parameter(typeof(IndexedProperty), "ip");
             var one = Constant(1);
             var valueVariable = Variable(typeof(List<int>), "value");
-            
+
             var tryGetMethod = typeof(IndexedProperty)
                 .GetPublicInstanceMethod("TryGetGeneric")
                 .MakeGenericMethod(valueVariable.Type);
-            
+
             var tryGetCall = Call(helperParameter, tryGetMethod, one, valueVariable);
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, List<int>>>(tryGetBlock, helperParameter);

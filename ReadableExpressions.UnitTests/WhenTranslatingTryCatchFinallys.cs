@@ -3,6 +3,7 @@
     using System;
     using System.Linq;
     using Common;
+    using NetStandardPolyfills;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -158,8 +159,7 @@ catch (Exception ex)
             var writeBoom = CreateLambda(() => Console.Write("BOOM?"));
 
             var wrappedException = New(
-                // ReSharper disable once AssignNullToNotNullAttribute
-                typeof(InvalidOperationException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
+                typeof(InvalidOperationException).GetPublicInstanceConstructor(typeof(string), typeof(Exception)),
                 Constant("Wrapped!"),
                 exception);
 

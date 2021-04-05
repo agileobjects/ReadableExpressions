@@ -23,7 +23,7 @@
         public void ShouldSplitLongConstructorArgumentListsOntoMultipleLines()
         {
             var helperVariable = Variable(typeof(HelperClass), "helper");
-            var helperConstructor = helperVariable.Type.GetConstructors().First();
+            var helperConstructor = helperVariable.Type.GetPublicInstanceConstructors().First();
             var longVariable = Variable(typeof(int), "thisVariableReallyHasAVeryLongNameIndeed");
             var newHelper = New(helperConstructor, longVariable, longVariable, longVariable);
             var helperAssignment = Assign(helperVariable, newHelper);
@@ -921,9 +921,8 @@ if (i == 1)
             var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = New(typeof(MemoryStream));
-            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var positionProperty = newMemoryStream.Type.GetPublicInstanceProperty("Position");
             var valueBlock = Block(writeWat.Body, read.Body);
-            // ReSharper disable once AssignNullToNotNullAttribute
             var positionInit = Bind(positionProperty, valueBlock);
             var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using Common;
+    using NetStandardPolyfills;
     using ReadableExpressions.Extensions;
 #if !NET35
     using System.Linq.Expressions;
@@ -23,30 +24,27 @@
 
             var namePropertyParent = personViewModelName.Body.GetParentOrNull() as ParameterExpression;
 
-            namePropertyParent.ShouldNotBeNull();
-            namePropertyParent.Name.ShouldBe("t");
+            namePropertyParent.ShouldNotBeNull().Name.ShouldBe("t");
         }
 
         [Fact]
         public void ShouldReturnANestedMemberAccessParent()
         {
-            var typeAssemblyImageVersion = CreateLambda((Type t) => t.Assembly.ImageRuntimeVersion);
+            var typeNameLength = CreateLambda((Type t) => t.Name.Length);
 
-            var typeAssemblyImageVersionParent = typeAssemblyImageVersion.Body.GetParentOrNull() as MemberExpression;
+            var typeNameLengthParent = typeNameLength.Body.GetParentOrNull() as MemberExpression;
 
-            typeAssemblyImageVersionParent.ShouldNotBeNull();
-            typeAssemblyImageVersionParent.Member.Name.ShouldBe("Assembly");
+            typeNameLengthParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
         }
 
         [Fact]
         public void ShouldReturnAMemberMethodCallParent()
         {
-            var typeAssemblyToString = CreateLambda((Type t) => t.Assembly.ToString());
+            var typeNameSubstring = CreateLambda((Type t) => t.Name.Substring(0, 3));
 
-            var assemblyToStringPropertyParent = typeAssemblyToString.Body.GetParentOrNull() as MemberExpression;
+            var typeNameSubstringParent = typeNameSubstring.Body.GetParentOrNull() as MemberExpression;
 
-            assemblyToStringPropertyParent.ShouldNotBeNull();
-            assemblyToStringPropertyParent.Member.Name.ShouldBe("Assembly");
+            typeNameSubstringParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
         }
 
         [Fact]

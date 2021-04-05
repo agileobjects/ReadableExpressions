@@ -1,7 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
-#if NETSTANDARD
+#if NETSTANDARD1_0
     using System.Reflection;
 #endif
     using NetStandardPolyfills;
@@ -40,7 +40,7 @@
             {
                 return "internal ";
             }
-#if NETSTANDARD
+#if NETSTANDARD1_0
             var typeInfo = type.GetTypeInfo();
 
             if (typeInfo.IsNestedPublic)
@@ -50,7 +50,7 @@
             {
                 return "public ";
             }
-#if NETSTANDARD
+#if NETSTANDARD1_0
             if (typeInfo.IsNestedAssembly)
 #else
             if (type.IsNestedAssembly)
@@ -58,7 +58,7 @@
             {
                 return "internal ";
             }
-#if NETSTANDARD
+#if NETSTANDARD1_0
             if (typeInfo.IsNestedFamORAssem)
 #else
             if (type.IsNestedFamORAssem)
@@ -66,7 +66,7 @@
             {
                 return "protected internal ";
             }
-#if NETSTANDARD
+#if NETSTANDARD1_0
             if (typeInfo.IsNestedFamily)
 #else
             if (type.IsNestedFamily)
@@ -74,7 +74,7 @@
             {
                 return "protected ";
             }
-#if NETSTANDARD
+#if NETSTANDARD1_0
             if (typeInfo.IsNestedPrivate)
 #else
             if (type.IsNestedPrivate)
