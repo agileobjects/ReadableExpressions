@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
-    <TargetFrameworks>net35;net40;netstandard1.0;</TargetFrameworks>
+    <TargetFrameworks>net35;net40;netstandard1.0;netstandard2.0;</TargetFrameworks>
     <LangVersion>8.0</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
@@ -15,10 +15,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     
-    <AssemblyVersion>2.5.1.0</AssemblyVersion>
-    <FileVersion>2.5.1.0</FileVersion>
-    <VersionPrefix>2.5.1</VersionPrefix>
-    <Version>2.5.1</Version>
+    <AssemblyVersion>2.6.0.0</AssemblyVersion>
+    <FileVersion>2.6.0.0</FileVersion>
+    <VersionPrefix>2.6.0</VersionPrefix>
+    <Version>2.6.0</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
@@ -32,9 +32,7 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Fixing empty block translation, re: #78
-- Fixing translation of non-array params argument values
-- Performance improvements
+    <PackageReleaseNotes>- Adding .NET Standard 2.0 target
     </PackageReleaseNotes>
   </PropertyGroup>
 
@@ -43,7 +41,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
-    <DefineConstants>$(DefineConstants);NET_STANDARD</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETSTANDARD1_0</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,7 +66,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.4.1" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.5.0" />
   </ItemGroup>
 
   <PropertyGroup>
