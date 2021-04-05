@@ -11,7 +11,6 @@
 #if NET35
     using Extensions;
 #endif
-    using Interfaces;
     using static Formatting.TokenType;
 
     internal class MethodGroupTranslation : ITranslation

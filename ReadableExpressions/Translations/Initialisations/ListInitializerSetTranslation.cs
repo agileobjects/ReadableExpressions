@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Interfaces;
 
     internal class ListInitializerSetTranslation : InitializerSetTranslationBase<ElementInit>
     {

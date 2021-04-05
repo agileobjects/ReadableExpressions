@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using Interfaces;
     using NetStandardPolyfills;
 
     internal class TypeNameTranslation : ITranslation

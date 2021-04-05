@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
 {
     using System.Collections.Generic;
-    using Interfaces;
 
     internal abstract class InitializerSetTranslationBase<TInitializer> : IInitializerSetTranslation
     {

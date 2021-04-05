@@ -5,7 +5,6 @@
     using System.Reflection;
 #endif
     using NetStandardPolyfills;
-    using Interfaces;
 
     internal class TypeDefinitionTranslation : ITranslatable
     {

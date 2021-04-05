@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp1.0</TargetFramework>
     <RuntimeFrameworkVersion>1.1.13</RuntimeFrameworkVersion>
     <LangVersion>8.0</LangVersion>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>

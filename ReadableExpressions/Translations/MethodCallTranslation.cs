@@ -11,7 +11,6 @@
     using System.Reflection;
     using Extensions;
     using Formatting;
-    using Interfaces;
     using NetStandardPolyfills;
     using Reflection;
 #if NET35

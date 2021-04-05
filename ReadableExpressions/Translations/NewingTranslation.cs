@@ -7,7 +7,6 @@
     using System.Linq.Expressions;
 #endif
     using NetStandardPolyfills;
-    using Interfaces;
 
     internal class NewingTranslation : NewingTranslationBase, ITranslation
     {

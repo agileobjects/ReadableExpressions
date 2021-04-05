@@ -9,7 +9,6 @@
     using System.Text.RegularExpressions;
     using Extensions;
     using Formatting;
-    using Interfaces;
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
 #if NET35

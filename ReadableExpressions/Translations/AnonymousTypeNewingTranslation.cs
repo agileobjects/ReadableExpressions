@@ -9,7 +9,6 @@
 #endif
     using System.Reflection;
     using Initialisations;
-    using Interfaces;
 
     internal class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
     {

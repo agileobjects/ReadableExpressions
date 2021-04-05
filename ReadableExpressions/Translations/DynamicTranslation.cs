@@ -12,7 +12,6 @@
     using System.Text.RegularExpressions;
     using Extensions;
     using Formatting;
-    using Interfaces;
     using NetStandardPolyfills;
     using Reflection;
 

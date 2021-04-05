@@ -6,7 +6,6 @@
 #endif
     using System.Text;
     using Formatting;
-    using Interfaces;
     using static Formatting.TokenType;
 
     internal class TranslationWriter : ITranslationQuery
