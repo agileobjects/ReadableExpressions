@@ -25,7 +25,7 @@
     <Company>AgileObjects Ltd</Company>
     <Title>AgileObjects.ReadableExpressions</Title>
     <Description>An extension method for Linq and DLR Expressions, producing readable, source-code versions of Expression Trees. Targets .NET 3.5+ and .NET Standard 1.0+</Description>
-    <Copyright>Copyright © AgileObjects Ltd 2020</Copyright>
+    <Copyright>Copyright © AgileObjects Ltd 2021</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
