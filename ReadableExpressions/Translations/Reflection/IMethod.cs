@@ -1,12 +1,11 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Collections.ObjectModel;
 
     /// <summary>
     /// Implementing classes will provide metadata about a method.
     /// </summary>
-    public interface IMethod : IComplexMember
+    public interface IMethod : IMethodBase
     {
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMethod"/> has generic Type parameters.
@@ -14,9 +13,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsGenericMethod { get; }
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="IMethod"/> is an extension method.
+        /// Gets a value indicating whether this <see cref="IMethod"/> has a body.
         /// </summary>
-        bool IsExtensionMethod { get; }
+        bool HasBody { get; }
 
         /// <summary>
         /// Gets an <see cref="IMethod"/> describing the <see cref="IMethod"/>'s generic method
@@ -25,19 +24,14 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         IMethod GetGenericMethodDefinition();
 
         /// <summary>
-        /// Gets <see cref="IGenericArgument"/>s describing the <see cref="IMethod"/>'s generic
+        /// Gets <see cref="IGenericParameter"/>s describing the <see cref="IMethod"/>'s generic
         /// arguments, or an empty collection if <see cref="IsGenericMethod"/> is false.
         /// </summary>
-        ReadOnlyCollection<IGenericArgument> GetGenericArguments();
+        ReadOnlyCollection<IGenericParameter> GetGenericArguments();
 
         /// <summary>
-        /// Gets the <see cref="IMethod"/>'s parameters, as an <see cref="IParameter"/> collection.
+        /// Gets the return <see cref="IType"/> of the <see cref="IMethod"/>.
         /// </summary>
-        ReadOnlyCollection<IParameter> GetParameters();
-
-        /// <summary>
-        /// Gets the return Type of the <see cref="IMethod"/>.
-        /// </summary>
-        Type ReturnType { get; }
+        IType ReturnType { get; }
     }
 }

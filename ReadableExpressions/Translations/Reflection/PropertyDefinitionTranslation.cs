@@ -18,6 +18,8 @@
     /// </summary>
     public class PropertyDefinitionTranslation : ITranslation
     {
+        private readonly IProperty _property;
+        private readonly bool _writeModifiers;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly ITranslatable _declaringTypeNameTranslation;
@@ -46,7 +48,7 @@
             TranslationSettings settings)
             : this(
                 new BclPropertyWrapper(property, settings),
-                accessors.ProjectToArray<MethodInfo, IComplexMember>(acc =>
+                accessors.ProjectToArray<MethodInfo, IMethod>(acc =>
                     new BclMethodWrapper(acc, settings)),
                 includeDeclaringType: true,
                 settings)
@@ -55,7 +57,7 @@
 
         private PropertyDefinitionTranslation(
             IProperty property,
-            IList<IComplexMember> accessors,
+            IList<IMethod> accessors,
             bool includeDeclaringType,
             TranslationSettings settings)
             : this(
@@ -72,7 +74,7 @@
         /// </summary>
         /// <param name="property">The <see cref="IProperty"/> to translate.</param>
         /// <param name="accessors">
-        /// One or two <see cref="IComplexMember"/>s describing one or both of the
+        /// One or two <see cref="IMethod"/>s describing one or both of the
         /// <paramref name="property"/>'s accessor(s). 
         /// </param>
         /// <param name="includeDeclaringType">
@@ -86,31 +88,37 @@
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         protected PropertyDefinitionTranslation(
             IProperty property,
-            IList<IComplexMember> accessors,
+            IList<IMethod> accessors,
             bool includeDeclaringType,
             PropertyAccessorTranslationFactory accessorTranslationFactory,
             TranslationSettings settings)
         {
-            Type = property.Type;
+            _property = property;
 
-            _accessibility = property.GetAccessibilityForTranslation();
-            _modifiers = property.GetModifiersForTranslation();
+            var translationSize = 0;
+            var formattingSize = 0;
+
+            _writeModifiers = !property.IsInterfaceMember();
+
+            if (_writeModifiers)
+            {
+                _accessibility = property.GetAccessibilityForTranslation();
+                _modifiers = property.GetModifiersForTranslation();
+
+                translationSize += _accessibility.Length + _modifiers.Length;
+                formattingSize += settings.GetKeywordFormattingSize();
+            }
 
             _propertyTypeNameTranslation =
                 new TypeNameTranslation(property.Type, settings);
 
             _propertyName = property.Name;
 
-            var translationSize =
-                _accessibility.Length +
-                _modifiers.Length +
+            translationSize +=
                 _propertyTypeNameTranslation.TranslationSize +
                 _propertyName.Length;
 
-            var keywordFormattingSize = settings.GetKeywordFormattingSize();
-
-            var formattingSize =
-                keywordFormattingSize + // <- For modifiers
+            formattingSize +=
                 _propertyTypeNameTranslation.FormattingSize;
 
             if (includeDeclaringType && property.DeclaringType != null)
@@ -143,7 +151,7 @@
         public ExpressionType NodeType => ExpressionType.MemberAccess;
 
         /// <inheritdoc />
-        public Type Type { get; }
+        public Type Type => _property.Type.AsType();
 
         /// <inheritdoc />
         public int TranslationSize { get; }
@@ -160,7 +168,10 @@
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            if (_writeModifiers)
+            {
+                writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            }
 
             _propertyTypeNameTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();
@@ -251,7 +262,7 @@
             /// </param>
             /// <returns></returns>
             protected static bool IsGetter(IMember accessor)
-                => accessor.Type != typeof(void);
+                => !accessor.Type.Equals(BclTypeWrapper.Void);
 
             #endregion
 

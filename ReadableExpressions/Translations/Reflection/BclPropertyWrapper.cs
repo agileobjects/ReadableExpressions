@@ -1,18 +1,15 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Reflection;
     using NetStandardPolyfills;
 
     /// <summary>
-    /// Helper base class for <see cref="IMember"/> implementations which wrap MemberInfo-derived
-    /// objects.
+    /// An <see cref="IProperty"/> describing a System.Reflection.PropertyInfo.
     /// </summary>
     public class BclPropertyWrapper : IProperty
     {
         private readonly MemberInfo _property;
-        private readonly IMethod _getter;
-        private readonly IMethod _setter;
+        private IType _declaringType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BclPropertyWrapper"/> class.
@@ -28,17 +25,18 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             if (getter != null)
             {
-                _getter = new BclMethodWrapper(getter, settings);
+                Getter = new BclMethodWrapper(getter, settings);
             }
 
             if (setter != null)
             {
-                _setter = new BclMethodWrapper(setter, settings);
+                Setter = new BclMethodWrapper(setter, settings);
             }
         }
 
         /// <inheritdoc />
-        public Type DeclaringType => _property.DeclaringType;
+        public IType DeclaringType
+            => _declaringType ??= BclTypeWrapper.For(_property.DeclaringType);
 
         /// <inheritdoc />
         public bool IsStatic
@@ -124,28 +122,28 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public string Name => _property.Name;
 
         /// <inheritdoc />
-        public Type Type => Getter?.Type ?? Setter.Type;
+        public IType Type => Getter?.Type ?? Setter.Type;
 
         /// <inheritdoc />
-        public bool IsAbstract => _getter?.IsAbstract ?? _setter.IsAbstract;
+        public bool IsAbstract => Getter?.IsAbstract ?? Setter.IsAbstract;
 
         /// <inheritdoc />
         public bool IsVirtual
-            => !IsAbstract && (_getter?.IsVirtual ?? _setter.IsVirtual);
+            => !IsAbstract && (Getter?.IsVirtual ?? Setter.IsVirtual);
 
         /// <inheritdoc />
-        public bool IsOverride => _getter?.IsOverride ?? _setter.IsOverride;
+        public bool IsOverride => Getter?.IsOverride ?? Setter.IsOverride;
 
         /// <inheritdoc />
         public bool IsReadable => Getter?.IsPublic == true;
 
         /// <inheritdoc />
-        public IComplexMember Getter => _getter;
+        public IMethod Getter { get; }
 
         /// <inheritdoc />
         public bool IsWritable => Setter?.IsPublic == true;
 
         /// <inheritdoc />
-        public IComplexMember Setter => _setter;
+        public IMethod Setter { get; }
     }
 }

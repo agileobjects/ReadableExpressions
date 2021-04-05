@@ -8,6 +8,7 @@
 #endif
     using Translations;
     using Translations.Formatting;
+    using Translations.Reflection;
 
     /// <summary>
     /// Provides extension methods to use with a <see cref="ITranslationContext"/>.
@@ -40,6 +41,21 @@
         public static TypeNameTranslation GetTranslationFor(
             this ITranslationContext context,
             Type type)
+        {
+            return new TypeNameTranslation(type, context.Settings);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ITranslation"/> for the given <paramref name="type"/>.
+        /// </summary>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> with which to create the <see cref="ITranslation"/>.
+        /// </param>
+        /// <param name="type">The <see cref="IType"/> for which to get an <see cref="ITranslation"/>.</param>
+        /// <returns>The <see cref="ITranslation"/> for the given <paramref name="type"/>.</returns>
+        public static TypeNameTranslation GetTranslationFor(
+            this ITranslationContext context,
+            IType type)
         {
             return new TypeNameTranslation(type, context.Settings);
         }

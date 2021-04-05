@@ -10,6 +10,27 @@
 
     internal static class InternalEnumerableExtensions
     {
+        public static void CopyTo<T>(
+            this IList<T> source,
+            IList<T> destination,
+            int count)
+        {
+            source.CopyTo(destination, 0, 0, count);
+        }
+
+        public static void CopyTo<T>(
+            this IList<T> source,
+            IList<T> destination,
+            int sourceIndex,
+            int destinationIndex,
+            int count)
+        {
+            for (var i = 0; i < count; ++i)
+            {
+                destination[destinationIndex + i] = source[sourceIndex + i];
+            }
+        }
+
         public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(
             this IList<T> items)
         {

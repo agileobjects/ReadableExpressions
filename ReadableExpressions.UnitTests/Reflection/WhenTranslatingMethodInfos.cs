@@ -403,6 +403,20 @@ public void WhenTranslatingMethodInfos.Helper.InstanceMultipleConstraintsGeneric
         }
 
         [Fact]
+        public void ShouldTranslateAnInterfaceMethodInfo()
+        {
+            var method = typeof(IInterfaceHelper)
+                .GetPublicInstanceMethod(nameof(IInterfaceHelper.GetName));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"string WhenTranslatingMethodInfos.IInterfaceHelper.GetName()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
         public void ShouldTranslateAnOutParameter()
         {
             var method = typeof(Helper)
@@ -507,20 +521,6 @@ public static explicit operator int
 )";
 
             translated.ShouldBe(EXPECTED.TrimStart());
-        }
-
-        [Fact]
-        public void ShouldTranslateAnInstanceProperty()
-        {
-            var nonPublicInstanceProperty = typeof(PropertiesHelper)
-                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter));
-
-            nonPublicInstanceProperty.ShouldNotBeNull();
-
-            var translated = nonPublicInstanceProperty.ToReadableString();
-
-            translated.ShouldBe(
-                "public virtual int PropertiesHelper.NonPublicInstanceSetter { get; internal set; }");
         }
 
         [Fact]
@@ -677,6 +677,11 @@ public static explicit operator int
             public override string InstanceAbstractParameterless() => ToString();
 
             public override string ToString() => "Hello!";
+        }
+
+        private interface IInterfaceHelper
+        {
+            string GetName();
         }
 
         internal class CustomAdder

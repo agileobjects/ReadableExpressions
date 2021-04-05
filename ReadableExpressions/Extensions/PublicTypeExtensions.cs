@@ -72,21 +72,34 @@
         /// </returns>
         public static Type GetEnumerableElementType(this Type enumerableType)
         {
-            if (enumerableType.HasElementType)
+            if (enumerableType.TryGetElementType(out var elementType))
             {
-                return enumerableType.GetElementType();
+                return elementType;
             }
 
-            if (enumerableType.IsGenericType())
+            return typeof(object);
+        }
+
+        internal static bool TryGetElementType(this Type type, out Type elementType)
+        {
+            if (type.HasElementType)
             {
-                return enumerableType.GetGenericTypeArguments().Last();
+                elementType = type.GetElementType();
+                return true;
             }
 
-            var enumerableInterfaceType = enumerableType
+            if (type.IsGenericType())
+            {
+                elementType = type.GetGenericTypeArguments().Last();
+                return true;
+            }
+
+            var enumerableInterfaceType = type
                 .GetAllInterfaces()
                 .FirstOrDefault(interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
 
-            return enumerableInterfaceType?.GetGenericTypeArguments().First() ?? typeof(object);
+            elementType = enumerableInterfaceType?.GetGenericTypeArguments().First();
+            return elementType != null;
         }
     }
 }

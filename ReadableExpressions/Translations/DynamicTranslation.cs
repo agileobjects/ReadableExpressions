@@ -241,7 +241,7 @@
                     Name = name;
                 }
 
-                public Type DeclaringType => null;
+                public IType DeclaringType => null;
 
                 public bool IsPublic => false;
 
@@ -269,17 +269,19 @@
 
                 public bool IsExtensionMethod => false;
 
+                public bool HasBody => false;
+
                 public IMethod GetGenericMethodDefinition() => null;
 
-                public ReadOnlyCollection<IGenericArgument> GetGenericArguments()
-                    => Enumerable<IGenericArgument>.EmptyReadOnlyCollection;
+                public ReadOnlyCollection<IGenericParameter> GetGenericArguments()
+                    => Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
 
                 public ReadOnlyCollection<IParameter> GetParameters()
                     => Enumerable<IParameter>.EmptyReadOnlyCollection;
 
-                public Type Type => ReturnType;
+                public IType Type => ReturnType;
 
-                public Type ReturnType => typeof(void);
+                public IType ReturnType => BclTypeWrapper.Void;
             }
         }
     }

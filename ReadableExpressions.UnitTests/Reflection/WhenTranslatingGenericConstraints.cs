@@ -22,17 +22,17 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory.For(argument);
+            var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
-            argObject.Type.Name.ShouldBe("TUnconstrained");
-            argObject.Type.FullName.ShouldBeNull();
-            argObject.IsClosed.ShouldBeFalse();
+            argObject.Name.ShouldBe("TUnconstrained");
+            argObject.FullName.ShouldBeNull();
+            argObject.IsGenericParameter.ShouldBeTrue();
             argObject.HasConstraints.ShouldBeFalse();
             argObject.HasClassConstraint.ShouldBeFalse();
             argObject.HasStructConstraint.ShouldBeFalse();
             argObject.HasNewableConstraint.ShouldBeFalse();
-            argObject.TypeConstraints.ShouldNotBeNull().ShouldBeEmpty();
+            argObject.ConstraintTypes.ShouldNotBeNull().ShouldBeEmpty();
         }
 
         [Fact]
@@ -44,16 +44,16 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory.For(argument);
+            var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
-            argObject.Type.ShouldBe(typeof(string));
-            argObject.IsClosed.ShouldBeTrue();
+            argObject.AsType().ShouldBe(typeof(string));
+            argObject.IsGenericParameter.ShouldBeFalse();
             argObject.HasConstraints.ShouldBeFalse();
             argObject.HasClassConstraint.ShouldBeFalse();
             argObject.HasStructConstraint.ShouldBeFalse();
             argObject.HasNewableConstraint.ShouldBeFalse();
-            argObject.TypeConstraints.ShouldNotBeNull().ShouldBeEmpty();
+            argObject.ConstraintTypes.ShouldNotBeNull().ShouldBeEmpty();
         }
 
         [Fact]
@@ -64,17 +64,17 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory.For(argument);
+            var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
-            argObject.Type.Name.ShouldBe("TConstrained");
-            argObject.Type.FullName.ShouldBeNull();
-            argObject.IsClosed.ShouldBeFalse();
+            argObject.Name.ShouldBe("TConstrained");
+            argObject.FullName.ShouldBeNull();
+            argObject.IsGenericParameter.ShouldBeTrue();
             argObject.HasConstraints.ShouldBeTrue();
             argObject.HasClassConstraint.ShouldBeTrue();
             argObject.HasStructConstraint.ShouldBeFalse();
             argObject.HasNewableConstraint.ShouldBeTrue();
-            argObject.TypeConstraints.ShouldNotBeNull().ShouldBeEmpty();
+            argObject.ConstraintTypes.ShouldNotBeNull().ShouldBeEmpty();
         }
 
         [Fact]
@@ -85,17 +85,17 @@
                 .GetGenericArguments()
                 .First();
 
-            var argObject = GenericArgumentFactory.For(argument);
+            var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
-            argObject.Type.Name.ShouldBe("TConstrained");
-            argObject.Type.FullName.ShouldBeNull();
-            argObject.IsClosed.ShouldBeFalse();
+            argObject.Name.ShouldBe("TConstrained");
+            argObject.FullName.ShouldBeNull();
+            argObject.IsGenericParameter.ShouldBeTrue();
             argObject.HasConstraints.ShouldBeTrue();
             argObject.HasClassConstraint.ShouldBeFalse();
             argObject.HasStructConstraint.ShouldBeTrue();
             argObject.HasNewableConstraint.ShouldBeFalse();
-            argObject.TypeConstraints.ShouldHaveSingleItem().ShouldBe(typeof(IDisposable));
+            argObject.ConstraintTypes.ShouldHaveSingleItem().AsType().ShouldBe(typeof(IDisposable));
         }
 
         #region Helper Members

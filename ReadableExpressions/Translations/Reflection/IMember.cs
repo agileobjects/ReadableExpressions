@@ -1,16 +1,14 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
-
     /// <summary>
     /// Implementing classes will provide metadata about a type member.
     /// </summary>
     public interface IMember
     {
         /// <summary>
-        /// Gets the Type which declares the <see cref="IMember"/>.
+        /// Gets the <see cref="IType"/> which declares the <see cref="IMember"/>.
         /// </summary>
-        Type DeclaringType { get; }
+        IType DeclaringType { get; }
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMember"/> is static.
@@ -53,8 +51,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         string Name { get; }
 
         /// <summary>
-        /// Gets the type of the <see cref="IMember"/>.
+        /// Gets the <see cref="IType"/> of the <see cref="IMember"/>.
         /// </summary>
-        Type Type { get; }
+        IType Type { get; }
     }
 }

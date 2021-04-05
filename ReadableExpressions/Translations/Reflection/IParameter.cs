@@ -10,7 +10,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <summary>
         /// Gets the method parameter's type.
         /// </summary>
-        Type Type { get; }
+        IType Type { get; }
         
         /// <summary>
         /// Gets the method parameter's name.

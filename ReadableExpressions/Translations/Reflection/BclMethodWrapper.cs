@@ -16,7 +16,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private readonly MethodInfo _method;
         private readonly TranslationSettings _settings;
         private IMethod _genericMethodDefinition;
-        private ReadOnlyCollection<IGenericArgument> _genericArguments;
+        private ReadOnlyCollection<IGenericParameter> _genericArguments;
+        private IType _returnType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BclMethodWrapper"/> class for the given
@@ -35,7 +36,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             : this(method, settings)
         {
             _genericArguments = genericArguments
-                .ProjectToArray(GenericArgumentFactory.For)
+                .ProjectToArray(GenericParameterFactory.For)
                 .ToReadOnlyCollection();
         }
 
@@ -77,10 +78,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc cref="IMethod.GetGenericArguments" />
-        public override ReadOnlyCollection<IGenericArgument> GetGenericArguments()
+        public override ReadOnlyCollection<IGenericParameter> GetGenericArguments()
             => _genericArguments ??= base.GetGenericArguments();
 
         /// <inheritdoc />
-        public override Type ReturnType => _method.ReturnType;
+        public override IType ReturnType
+            => _returnType ??= BclTypeWrapper.For(_method.ReturnType);
     }
 }

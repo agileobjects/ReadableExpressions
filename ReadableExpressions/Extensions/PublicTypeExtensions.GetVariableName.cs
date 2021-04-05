@@ -1,8 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
-    using NetStandardPolyfills;
     using Translations.Formatting;
+    using Translations.Reflection;
     using static ExpressionExtensions;
 
     public static partial class PublicTypeExtensions
@@ -14,13 +14,29 @@
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A camel-case variable name for a variable of this <paramref name="type"/>.</returns>
         public static string GetVariableNameInCamelCase(
-            this Type type, 
+            this Type type,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            return BclTypeWrapper.For(type).GetVariableNameInCamelCase(configuration);
+        }
+
+        /// <summary>
+        /// Retrieves a camel-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> for which to retrieve the variable name.</param>
+        /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
+        /// <returns>A camel-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInCamelCase(
+            this IType type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return GetVariableNameInCamelCase(type, configuration.GetTranslationSettings());
         }
 
         internal static string GetVariableNameInCamelCase(this Type type, TranslationSettings settings)
+            => BclTypeWrapper.For(type).GetVariableNameInCamelCase(settings);
+
+        internal static string GetVariableNameInCamelCase(this IType type, TranslationSettings settings)
             => GetVariableName(type, settings).ToCamelCase();
 
         /// <summary>
@@ -30,7 +46,20 @@
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
         public static string GetVariableNameInPascalCase(
-            this Type type, 
+            this Type type,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            return BclTypeWrapper.For(type).GetVariableNameInPascalCase(configuration);
+        }
+
+        /// <summary>
+        /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> for which to retrieve the variable name.</param>
+        /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
+        /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInPascalCase(
+            this IType type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return GetVariableNameInPascalCase(type, configuration.GetTranslationSettings());
@@ -43,26 +72,35 @@
         /// <param name="settings">The <see cref="TranslationSettings"/> to use for the variable naming.</param>
         /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
         public static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
+            => BclTypeWrapper.For(type).GetVariableNameInPascalCase(settings);
+
+        /// <summary>
+        /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> for which to retrieve the variable name.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use for the variable naming.</param>
+        /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
+        public static string GetVariableNameInPascalCase(this IType type, TranslationSettings settings)
             => GetVariableName(type, settings).ToPascalCase();
 
-        private static string GetVariableName(Type type, TranslationSettings settings)
+        private static string GetVariableName(IType type, TranslationSettings settings)
         {
             if (type.IsArray)
             {
-                return GetVariableName(type.GetElementType(), settings) + "Array";
+                return GetVariableName(type.ElementType, settings) + "Array";
             }
 
-            var typeIsEnumerable = type.IsEnumerable();
-            var typeIsDictionary = typeIsEnumerable && type.IsDictionary();
-            var namingType = (typeIsEnumerable && !typeIsDictionary) ? type.GetEnumerableElementType() : type;
+            var typeIsEnumerable = type.IsEnumerable;
+            var typeIsDictionary = typeIsEnumerable && type.IsDictionary;
+            var namingType = (typeIsEnumerable && !typeIsDictionary) ? type.ElementType : type;
             var variableName = GetBaseVariableName(namingType, settings);
 
-            if (namingType.IsInterface() && variableName.StartsWith('I'))
+            if (namingType.IsInterface && variableName.StartsWith('I'))
             {
                 variableName = variableName.Substring(1);
             }
 
-            if (namingType.IsGenericType())
+            if (namingType.IsGeneric)
             {
                 variableName = GetGenericTypeVariableName(namingType, settings);
             }
@@ -72,19 +110,18 @@
             return (typeIsDictionary || !typeIsEnumerable) ? variableName : variableName.Pluralise();
         }
 
-        private static string GetBaseVariableName(Type namingType, TranslationSettings translationSettings)
+        private static string GetBaseVariableName(IType namingType, TranslationSettings translationSettings)
         {
-            return namingType.IsPrimitive()
+            return namingType.IsPrimitive
                 ? namingType.GetFriendlyName(translationSettings, NullTranslationFormatter.Instance)
                 : namingType.Name;
         }
 
-        private static string GetGenericTypeVariableName(Type namingType, TranslationSettings settings)
+        private static string GetGenericTypeVariableName(IType namingType, TranslationSettings settings)
         {
-            var nonNullableType = namingType.GetNonNullableType();
-            var genericTypeArguments = namingType.GetGenericTypeArguments();
+            var genericTypeArguments = namingType.GenericTypeArguments;
 
-            if (nonNullableType != namingType)
+            if (namingType.IsNullable)
             {
                 return "nullable" + genericTypeArguments[0].GetVariableNameInPascalCase(settings);
             }
@@ -127,7 +164,7 @@
             protected override void WriteTypeArgumentNamePrefix()
                 => TypeName += "_";
 
-            protected override void WriteTypeName(Type type)
+            protected override void WriteTypeName(IType type)
                 => TypeName += type.GetVariableNameInPascalCase(_settings);
 
             protected override void WriteTypeArgumentNameSeparator()

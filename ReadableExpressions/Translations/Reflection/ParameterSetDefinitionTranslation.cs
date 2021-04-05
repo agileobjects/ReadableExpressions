@@ -21,7 +21,7 @@
         }
 
         public ParameterSetDefinitionTranslation(
-            IMethod method,
+            IMethodBase method,
             TranslationSettings settings)
         {
             _settings = settings;
@@ -48,12 +48,12 @@
 
                 if (parameter.IsOut)
                 {
-                    parameterType = parameterType.GetElementType();
+                    parameterType = parameterType.ElementType;
                     formattingSize += keywordFormattingSize;
                 }
                 else if (parameterType.IsByRef)
                 {
-                    parameterType = parameterType.GetElementType();
+                    parameterType = parameterType.ElementType;
                     formattingSize += keywordFormattingSize;
                 }
                 else if (i == finalParameterIndex && parameter.IsParamsArray)
