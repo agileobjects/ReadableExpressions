@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Interfaces;
     using NetStandardPolyfills;
     using Reflection;
 #if NET35

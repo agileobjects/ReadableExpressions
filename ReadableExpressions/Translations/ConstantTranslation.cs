@@ -9,7 +9,6 @@
     using System.Text.RegularExpressions;
     using Extensions;
     using Formatting;
-    using Interfaces;
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
 #if NET35
@@ -158,15 +157,15 @@
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = ((string)constant.Value).Replace("\0", @"\0");
+                    var stringValue = (string)constant.Value;
 
                     if (stringValue.IsComment())
                     {
-                        translation = new CommentTranslation(stringValue, context);
+                        translation = new CommentTranslation(stringValue.Replace("\0", @"\0"), context);
                         return true;
                     }
 
-                    stringValue = "\"" + stringValue.Replace("\"", "\\\"") + "\"";
+                    stringValue = "\"" + stringValue.Replace(@"\", @"\\").Replace("\0", @"\0").Replace(@"""", @"\""") + "\"";
                     translation = FixedValueTranslation(stringValue, typeof(string), Text, context);
                     return true;
             }

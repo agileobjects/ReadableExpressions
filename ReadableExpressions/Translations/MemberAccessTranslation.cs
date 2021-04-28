@@ -8,7 +8,6 @@
 #endif
     using System.Reflection;
     using Formatting;
-    using Interfaces;
 
     internal class MemberAccessTranslation : ITranslation
     {

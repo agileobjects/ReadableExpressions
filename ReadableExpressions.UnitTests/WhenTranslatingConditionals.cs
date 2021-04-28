@@ -1,7 +1,10 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+#if !NET35
     using System.Collections.Generic;
+#endif
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using Xunit;
@@ -25,7 +28,7 @@
             var writeLessThan = CreateLambda(() => Console.Write("Less than"));
             var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeLessThan.Body);
 
-            var translated = ToReadableString(ifLessThanOneThenWrite);
+            var translated = ifLessThanOneThenWrite.ToReadableString();
 
             const string EXPECTED = @"
 if (i < 1)
@@ -46,7 +49,7 @@ if (i < 1)
 
             var block = Block(ifTrueOne, nullDouble);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 if (true)
@@ -72,7 +75,7 @@ return null;";
             var writeGuidFun = CreateLambda(() => Console.Write("GUID FUN!"));
             var ifNotEmptyThenWrite = IfThen(guidNotEmptyOrFalse, writeGuidFun.Body);
 
-            var translated = ToReadableString(ifNotEmptyThenWrite);
+            var translated = ifNotEmptyThenWrite.ToReadableString();
 
             const string EXPECTED = @"
 if ((guid != default(Guid)) ? guid != Guid.Empty : false)
@@ -93,7 +96,7 @@ if ((guid != default(Guid)) ? guid != Guid.Empty : false)
             var writeBlock = Block(writeHello.Body, writeThere.Body);
             var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeBlock);
 
-            var translated = ToReadableString(ifLessThanOneThenWrite);
+            var translated = ifLessThanOneThenWrite.ToReadableString();
 
             const string EXPECTED = @"
 if (i < 1)
@@ -115,7 +118,7 @@ if (i < 1)
             var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
             var ifLessThanOneThenWrite = IfThen(intVariableInRange, writeHello.Body);
 
-            var translated = ToReadableString(ifLessThanOneThenWrite);
+            var translated = ifLessThanOneThenWrite.ToReadableString();
 
             const string EXPECTED = @"
 if ((i < 1) && (i > 1))
@@ -144,7 +147,7 @@ if ((i < 1) && (i > 1))
             var assignWrite = Assign(writeVariable, writeHello);
             var ifTestPassesThenWrite = IfThen(testBlock, assignWrite);
 
-            var translated = ToReadableString(ifTestPassesThenWrite);
+            var translated = ifTestPassesThenWrite.ToReadableString();
 
             const string EXPECTED = @"
 if ({
@@ -171,7 +174,7 @@ if ({
             var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
             var writeHelloOrGoodbye = IfThenElse(intVariableLessThanOne, writeHello.Body, writeGoodbye.Body);
 
-            var translated = ToReadableString(writeHelloOrGoodbye);
+            var translated = writeHelloOrGoodbye.ToReadableString();
 
             const string EXPECTED = @"
 if (i < 1)
@@ -196,7 +199,7 @@ else
             var ifTwoWriteTwo = IfThen(intEqualsTwo, writeTwo.Body);
             var writeOneOrTwo = IfThenElse(intEqualsOne, writeOne.Body, ifTwoWriteTwo);
 
-            var translated = ToReadableString(writeOneOrTwo);
+            var translated = writeOneOrTwo.ToReadableString();
 
             const string EXPECTED = @"
 if (i == 1)
@@ -222,7 +225,7 @@ else if (i == 2)
             var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body);
             var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
 
-            var translated = ToReadableString(writeHelloAndGoodbye);
+            var translated = writeHelloAndGoodbye.ToReadableString();
 
             const string EXPECTED = @"
 if (i == 0)
@@ -250,7 +253,7 @@ else
             var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body, intVariable);
             var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
 
-            var translated = ToReadableString(writeHelloAndGoodbye);
+            var translated = writeHelloAndGoodbye.ToReadableString();
 
             const string EXPECTED = @"
 if (i == 0)
@@ -277,7 +280,7 @@ return i;
                 Constant(1),
                 Constant(2));
 
-            var translated = ToReadableString(ternary);
+            var translated = ternary.ToReadableString();
 
             translated.ShouldBe("false ? 1 : 2");
         }
@@ -298,7 +301,7 @@ return i;
                 Constant(1),
                 Constant(2));
 
-            var translated = ToReadableString(ternary);
+            var translated = ternary.ToReadableString();
 
             translated.ShouldBe("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2");
         }
@@ -317,7 +320,7 @@ return i;
                 SwitchCase(writeTwo.Body, Constant(2)),
                 SwitchCase(writeThree.Body, Constant(3)));
 
-            var translated = ToReadableString(switchStatement);
+            var translated = switchStatement.ToReadableString();
 
             const string EXPECTED = @"
 switch (i)
@@ -350,7 +353,7 @@ switch (i)
 
             var switchStatement = Switch(intVariable, writeOneOrTwoCase, writeThreeCase);
 
-            var translated = ToReadableString(switchStatement);
+            var translated = switchStatement.ToReadableString();
 
             const string EXPECTED = @"
 switch (i)
@@ -384,7 +387,7 @@ switch (i)
                 SwitchCase(writeTwo.Body, Constant(2)),
                 SwitchCase(writeThree.Body, Constant(3)));
 
-            var translated = ToReadableString(switchStatement);
+            var translated = switchStatement.ToReadableString();
 
             const string EXPECTED = @"
 switch (i)
@@ -426,7 +429,7 @@ switch (i)
                 SwitchCase(writeOneTwo, Constant(12)),
                 SwitchCase(writeTwoThree, Constant(23)));
 
-            var translated = ToReadableString(switchStatement);
+            var translated = switchStatement.ToReadableString();
 
             const string EXPECTED = @"
 switch (i)
@@ -455,7 +458,7 @@ switch (i)
 
             var nullOrOne = IfThenElse(Constant(true), nullLong, elseBlock);
 
-            var translated = ToReadableString(nullOrOne);
+            var translated = nullOrOne.ToReadableString();
 
             const string EXPECTED = @"
 if (true)
@@ -484,7 +487,7 @@ return (long?)1;";
             var ifInRangeWriteYo = IfThen(intIsInRange, writeYo.Body);
 
 
-            var translated = ToReadableString(ifInRangeWriteYo);
+            var translated = ifInRangeWriteYo.ToReadableString();
 
             const string EXPECTED = @"
 if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
@@ -507,7 +510,7 @@ if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
             var doNothing = Default(typeof(void));
             var ifNotdefaultDoNothing = IfThen(assignmentResultNotDefault, doNothing);
 
-            var translated = ToReadableString(ifNotdefaultDoNothing);
+            var translated = ifNotdefaultDoNothing.ToReadableString();
 
             const string EXPECTED = @"
 if ((i = 123) != default(int))
@@ -528,7 +531,7 @@ if ((i = 123) != default(int))
             var oneOrTwoEqualsTwo = Equal(oneOrTwo, two);
             var testLambda = Lambda<Func<bool, bool>>(oneOrTwoEqualsTwo, flagParameter);
 
-            var translated = ToReadableString(testLambda);
+            var translated = testLambda.ToReadableString();
 
             translated.ShouldBe("flag => (flag ? Test.One : Test.Two) == Test.Two");
         }
@@ -623,7 +626,7 @@ if ((i = 123) != default(int))
             }));
 }).Invoke(dctx, rd)";
 
-            var translated = ToReadableString(lambda);
+            var translated = lambda.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }

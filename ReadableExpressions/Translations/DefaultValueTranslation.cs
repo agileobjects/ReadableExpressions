@@ -6,8 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
-    using Interfaces;
+    using NetStandardPolyfills;
 
     internal class DefaultValueTranslation : ITranslation, IPotentialEmptyTranslatable
     {

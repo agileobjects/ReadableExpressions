@@ -8,7 +8,6 @@
 #endif
     using Extensions;
     using Formatting;
-    using Interfaces;
 
     internal class CommentTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {

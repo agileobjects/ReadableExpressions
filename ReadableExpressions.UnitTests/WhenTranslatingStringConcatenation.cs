@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using Common;
 #if !NET35
     using Xunit;
 #else
@@ -14,7 +15,7 @@
         {
             var concat = CreateLambda((string str1, string str2) => str1 + str2);
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + str2");
         }
@@ -24,7 +25,7 @@
         {
             var concat = CreateLambda((string str1, string str2, string str3) => str1 + str2 + str3);
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + str2 + str3");
         }
@@ -34,7 +35,7 @@
         {
             var concat = CreateLambda((string str1, int i) => i + str1);
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("i + str1");
         }
@@ -44,7 +45,7 @@
         {
             var concat = CreateLambda((string str1, int i) => i.ToString() + str1);
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("i + str1");
         }
@@ -54,7 +55,7 @@
         {
             var concat = CreateLambda((string str1, string str2) => string.Concat(str1, str2));
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + str2");
         }
@@ -65,7 +66,7 @@
             var concat = CreateLambda((string str1, string str2, string str3)
                 => string.Concat(str1, str2, str3));
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + str2 + str3");
         }
@@ -75,7 +76,7 @@
         {
             var concat = CreateLambda((string str1, int i, long l) => string.Concat(str1, i, l));
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + i + l");
         }
@@ -87,7 +88,7 @@
             var ternaryResultAdder = CreateLambda((bool condition, string ifTrue, string ifFalse)
                 => (condition ? ifTrue : ifFalse) + "Hello!");
 
-            var translated = ToReadableString(ternaryResultAdder.Body);
+            var translated = ternaryResultAdder.Body.ToReadableString();
 
             translated.ShouldBe("(condition ? ifTrue : ifFalse) + \"Hello!\"");
         }
@@ -97,7 +98,7 @@
         {
             var mathResultAdder = CreateLambda((int i, int j, int k) => ((i - j) / k) + " Maths!");
 
-            var translated = ToReadableString(mathResultAdder.Body);
+            var translated = mathResultAdder.Body.ToReadableString();
 
             translated.ShouldBe("((i - j) / k) + \" Maths!\"");
         }
@@ -108,7 +109,7 @@
         {
             var concat = CreateLambda((string str1, string str2) => str1 + '\0' + str2);
 
-            var translated = ToReadableString(concat.Body);
+            var translated = concat.Body.ToReadableString();
 
             translated.ShouldBe("str1 + '\\0' + str2");
         }

@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
-    using Interfaces;
     using static MethodTranslationHelpers;
 
     internal class OperatorDefinitionTranslation : ITranslatable

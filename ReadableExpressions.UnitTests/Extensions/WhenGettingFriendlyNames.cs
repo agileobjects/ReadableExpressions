@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using Common;
     using ReadableExpressions.Extensions;
 #if !NET35
     using System.Linq.Expressions;
@@ -21,7 +22,7 @@
             var assignNull = Expression.Assign(intArrayVariable, Expression.Default(intArrayVariable.Type));
             var assignNullBlock = Expression.Block(new[] { intArrayVariable }, assignNull);
 
-            var translated = ToReadableString(assignNullBlock);
+            var translated = assignNullBlock.ToReadableString();
 
             translated.ShouldBe("var ints = default(int[]);");
         }
@@ -31,7 +32,7 @@
         {
             var characterToNumeric = CreateLambda((char c) => char.GetNumericValue(c));
 
-            var translated = ToReadableString(characterToNumeric);
+            var translated = characterToNumeric.ToReadableString();
 
             translated.ShouldBe("c => char.GetNumericValue(c)");
         }
@@ -63,7 +64,7 @@
         {
             var nestedType = Expression.Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
 
-            var translated = ToReadableString(nestedType);
+            var translated = nestedType.ToReadableString();
 
             translated.ShouldBe("typeof(OuterClass.InnerClass.Nested)");
         }
@@ -73,7 +74,7 @@
         {
             var newNestedTypeList = Expression.New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
 
-            var translated = ToReadableString(newNestedTypeList);
+            var translated = newNestedTypeList.ToReadableString();
 
             translated.ShouldBe("new List<OuterClass.InnerClass>()");
         }
@@ -83,7 +84,7 @@
         {
             var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
 
-            var translated = ToReadableString(genericListEnumeratorType);
+            var translated = genericListEnumeratorType.ToReadableString();
 
             translated.ShouldBe("typeof(List<string>.Enumerator)");
         }
@@ -93,7 +94,7 @@
         {
             var genericListEnumeratorType = Expression.Constant(typeof(GenericTestHelper<int>), typeof(Type));
 
-            var translated = ToReadableString(genericListEnumeratorType);
+            var translated = genericListEnumeratorType.ToReadableString();
 
             translated.ShouldBe("typeof(WhenGettingFriendlyNames.GenericTestHelper<int>)");
         }
@@ -105,7 +106,7 @@
                 typeof(OuterGeneric<int>.InnerGeneric<long>.Nested),
                 typeof(Type));
 
-            var translated = ToReadableString(nestedGenericType);
+            var translated = nestedGenericType.ToReadableString();
 
             translated.ShouldBe("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)");
         }

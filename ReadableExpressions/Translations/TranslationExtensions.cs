@@ -8,7 +8,6 @@
     using System.Linq.Expressions;
 #endif
     using Formatting;
-    using Interfaces;
 
     internal static class TranslationExtensions
     {

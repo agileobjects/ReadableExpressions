@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
+    using Common;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -18,7 +19,7 @@
             var intVariable = Variable(typeof(int));
             var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
 
-            var translated = ToReadableString(assignDefaultToInt);
+            var translated = assignDefaultToInt.ToReadableString();
 
             translated.ShouldBe("@int = default(int)");
         }
@@ -30,7 +31,7 @@
             var stringVariable = Variable(typeof(string), "  ");
             var assignVariableToParameter = Assign(stringVariable, stringParameter);
 
-            var translated = ToReadableString(assignVariableToParameter);
+            var translated = assignVariableToParameter.ToReadableString();
 
             translated.ShouldBe("string1 = string2");
         }

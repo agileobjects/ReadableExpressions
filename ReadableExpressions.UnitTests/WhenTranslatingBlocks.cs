@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using Common;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -27,7 +28,7 @@
 
             var consoleBlock = Block(writeLine.Body, read.Body, beep.Body);
 
-            var translated = ToReadableString(consoleBlock);
+            var translated = consoleBlock.ToReadableString();
 
             const string EXPECTED = @"
 Console.WriteLine();
@@ -47,7 +48,7 @@ Console.Beep();";
             var consoleBlock = Block(writeLine.Body, returnReadResult);
             var consoleLambda = Lambda<Func<int>>(consoleBlock);
 
-            var translated = ToReadableString(consoleLambda);
+            var translated = consoleLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
@@ -72,7 +73,7 @@ Console.Beep();";
                 incrementCount,
                 returnVoid);
 
-            var translated = ToReadableString(countBlock);
+            var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
 var count = 0;
@@ -95,7 +96,7 @@ var count = 0;
 
             var countLambda = Lambda<Action>(countBlock);
 
-            var translated = ToReadableString(countLambda);
+            var translated = countLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
@@ -122,7 +123,7 @@ var count = 0;
 
             var countLambda = Lambda<Func<ushort>>(countBlock);
 
-            var translated = ToReadableString(countLambda);
+            var translated = countLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
@@ -150,7 +151,7 @@ var count = 0;
             var listBlock = Block(new[] { listVariable }, listAssignment, listToArray);
             var listLambda = Lambda<Func<int[]>>(listBlock);
 
-            var translated = ToReadableString(listLambda);
+            var translated = listLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
@@ -174,7 +175,7 @@ var count = 0;
                 assignTenToCount,
                 addTwoToCount);
 
-            var translated = ToReadableString(countBlock);
+            var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
 var count = 10;
@@ -191,7 +192,7 @@ count += 2;";
 
             var countBlock = Block(new[] { countVariable }, assignTenToCount);
 
-            var translated = ToReadableString(countBlock, s => s.UseExplicitTypeNames);
+            var translated = countBlock.ToReadableString(stgs => stgs.UseExplicitTypeNames);
 
             const string EXPECTED = @"ushort count = 10;";
 
@@ -216,7 +217,7 @@ count += 2;";
                 assignTwoToCountTwo,
                 assignSumToCountThree);
 
-            var translated = ToReadableString(countBlock);
+            var translated = countBlock.ToReadableString();
 
             const string EXPECTED = @"
 var countOne = 1;
@@ -237,7 +238,7 @@ var countThree = (byte)(countOne + countTwo);";
             var countBlock = Block(new[] { countVariable }, ifResultIsLessThanTenDoNothing);
             var countLambda = Lambda<Action>(countBlock);
 
-            var translated = ToReadableString(countLambda);
+            var translated = countLambda.ToReadableString();
 
             const string EXPECTED = @"() =>
 {
@@ -260,7 +261,7 @@ var countThree = (byte)(countOne + countTwo);";
             var innerBlock = Block(writeLine.Body, beep.Body);
             var outerBlock = Block(innerBlock, writeLine.Body);
 
-            var translated = ToReadableString(outerBlock);
+            var translated = outerBlock.ToReadableString();
 
             const string EXPECTED = @"
 Console.WriteLine();
@@ -280,7 +281,7 @@ Console.WriteLine();";
 
             var countLambda = Lambda<Action>(countBlock);
 
-            var translated = ToReadableString(countLambda);
+            var translated = countLambda.ToReadableString();
 
             const string EXPECTED = "() => false";
 
@@ -299,7 +300,7 @@ Console.WriteLine();";
             var openTextFileMethod = ((MethodCallExpression)openTextFile.Body).Method;
             var openTextFileCall = Call(openTextFileMethod, intToStringBlock);
 
-            var translated = ToReadableString(openTextFileCall);
+            var translated = openTextFileCall.ToReadableString();
 
             translated.ShouldBe("File.OpenText(((int)o).ToString())");
         }
@@ -311,9 +312,8 @@ Console.WriteLine();";
             var read = CreateLambda<long>(() => Console.Read());
 
             var newMemoryStream = New(typeof(MemoryStream));
-            var positionProperty = newMemoryStream.Type.GetProperty("Position");
+            var positionProperty = newMemoryStream.Type.GetPublicInstanceProperty("Position");
             var valueBlock = Block(writeWat.Body, read.Body);
-            // ReSharper disable once AssignNullToNotNullAttribute
             var positionInit = Bind(positionProperty, valueBlock);
             var memoryStreamInit = MemberInit(newMemoryStream, positionInit);
 
@@ -325,7 +325,7 @@ Console.WriteLine();";
 
             var ifNullAssign = IfThen(streamIsNull, assignStream);
 
-            var translated = ToReadableString(ifNullAssign);
+            var translated = ifNullAssign.ToReadableString();
 
             const string EXPECTED = @"
 if (stream == null)
@@ -361,7 +361,7 @@ if (stream == null)
 
             var switchBlock = Block(new[] { countVariable }, switchStatement);
 
-            var translated = ToReadableString(switchBlock);
+            var translated = switchBlock.ToReadableString();
 
             const string EXPECTED = @"
 int count;
@@ -407,7 +407,7 @@ switch (i)
 
             var block = Block(assignCeo, newEmployee);
 
-            var translated = ToReadableString(block);
+            var translated = block.ToReadableString();
 
             const string EXPECTED = @"
 var ceo = c.Ceo;
@@ -435,7 +435,7 @@ return new WhenTranslatingBlocks.Employee
                 intAssignment,
                 Label(labelTarget));
 
-            var translated = ToReadableString(intAssignmentBlock);
+            var translated = intAssignmentBlock.ToReadableString();
 
             translated.ShouldBe("var i = 0;");
         }
@@ -452,7 +452,7 @@ return new WhenTranslatingBlocks.Employee
 
             var coalesceBlock = Block(assignStrings, variableOrNull);
 
-            var translated = ToReadableString(coalesceBlock);
+            var translated = coalesceBlock.ToReadableString();
 
             const string EXPECTED = @"
 var myString = yourString;
@@ -466,14 +466,14 @@ return myString ?? string.Empty;";
         public void ShouldIncludeAReturnKeywordForANewObjectStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var newList = New(typeof(List<string>).GetConstructors().First());
+            var newList = New(typeof(List<string>).GetPublicInstanceConstructor());
             var rethrow = Rethrow(newList.Type);
             var globalCatchAndRethrow = Catch(exception, rethrow);
             var tryCatch = TryCatch(newList, globalCatchAndRethrow);
 
             var tryCatchBlock = Block(tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -491,8 +491,8 @@ catch
         public void ShouldIncludeAReturnKeywordForAnObjectInitStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var newAddress = New(typeof(Address).GetConstructors().First());
-            var line1Property = newAddress.Type.GetMember("Line1").First();
+            var newAddress = New(typeof(Address).GetPublicInstanceConstructor());
+            var line1Property = newAddress.Type.GetPublicInstanceMember("Line1");
             var line1Value = Constant("Over here");
             var line1Init = Bind(line1Property, line1Value);
             var addressInit = MemberInit(newAddress, line1Init);
@@ -502,7 +502,7 @@ catch
 
             var tryCatchBlock = Block(tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -523,7 +523,7 @@ catch
         public void ShouldIncludeAReturnKeywordForANewListInitStatement()
         {
             var exception = Variable(typeof(Exception), "ex");
-            var listConstructor = typeof(List<int>).GetConstructor(new[] { typeof(int) });
+            var listConstructor = typeof(List<int>).GetPublicInstanceConstructor(typeof(int));
             var one = Constant(1);
             // ReSharper disable once AssignNullToNotNullAttribute
             var newList = New(listConstructor, one);
@@ -534,7 +534,7 @@ catch
 
             var tryCatchBlock = Block(tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -560,7 +560,7 @@ catch
 
             var tryCatchBlock = Block(tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -586,7 +586,7 @@ catch
 
             var tryCatchBlock = Block(tryCatch);
 
-            var translated = ToReadableString(tryCatchBlock);
+            var translated = tryCatchBlock.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -606,7 +606,7 @@ catch
         {
             var emptyBlock = Block(Default(typeof(void)));
 
-            var translated = ToReadableString(emptyBlock);
+            var translated = emptyBlock.ToReadableString();
 
             translated.ShouldBeNull();
         }

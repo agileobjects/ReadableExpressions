@@ -2,6 +2,8 @@
 {
     using System;
     using System.Linq;
+    using Common;
+    using NetStandardPolyfills;
 #if !NET35
     using Xunit;
     using static System.Linq.Expressions.Expression;
@@ -21,7 +23,7 @@
             var globalCatch = Catch(exception, Empty());
             var tryCatch = TryCatch(writeHello.Body, globalCatch);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -42,7 +44,7 @@ catch
             var timeoutCatch = Catch(exception, Empty());
             var tryCatch = TryCatch(writeHello.Body, timeoutCatch);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -64,7 +66,7 @@ catch (TimeoutException)
             var timeoutCatch = Catch(exception, Empty(), filter.Body);
             var tryCatch = TryCatch(writeHello.Body, timeoutCatch);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -86,7 +88,7 @@ catch (TimeoutException timeoutEx) when timeoutEx.Data != null
             var globalCatchAndRethrow = Catch(exception, rethrow);
             var tryCatch = TryCatch(writeHello.Body, globalCatchAndRethrow);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -110,7 +112,7 @@ catch
             var globalCatchAndRethrow = Catch(exception, rethrow);
             var tryCatch = TryCatch(writeHello.Body, globalCatchAndRethrow);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -135,7 +137,7 @@ catch
             var globalCatch = Catch(exception, writeExceptionAndRethrow);
             var tryCatch = TryCatch(writeHello.Body, globalCatch);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -157,8 +159,7 @@ catch (Exception ex)
             var writeBoom = CreateLambda(() => Console.Write("BOOM?"));
 
             var wrappedException = New(
-                // ReSharper disable once AssignNullToNotNullAttribute
-                typeof(InvalidOperationException).GetConstructor(new[] { typeof(string), typeof(Exception) }),
+                typeof(InvalidOperationException).GetPublicInstanceConstructor(typeof(string), typeof(Exception)),
                 Constant("Wrapped!"),
                 exception);
 
@@ -166,7 +167,7 @@ catch (Exception ex)
             var globalCatch = Catch(exception, throwWrapped);
             var tryCatch = TryCatch(writeBoom.Body, globalCatch);
 
-            var translated = ToReadableString(tryCatch);
+            var translated = tryCatch.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -187,7 +188,7 @@ catch (Exception ex)
             var writeGoodbye = CreateLambda(() => Console.Write("Goodbye"));
             var tryFinally = TryCatchFinally(writeHello.Body, writeGoodbye.Body);
 
-            var translated = ToReadableString(tryFinally);
+            var translated = tryFinally.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -208,7 +209,7 @@ finally
             var writeBoom = CreateLambda(() => Console.Write("Boom"));
             var tryFault = TryFault(writeHello.Body, writeBoom.Body);
 
-            var translated = ToReadableString(tryFault);
+            var translated = tryFault.ToReadableString();
 
             const string EXPECTED = @"
 try
@@ -237,7 +238,7 @@ fault
 
             var tryCatchFinally = TryCatchFinally(writeHello.Body, finallyBlock, notSupportedCatchBlock, topLevelCatchBlock);
 
-            var translated = ToReadableString(tryCatchFinally);
+            var translated = tryCatchFinally.ToReadableString();
 
             const string EXPECTED = @"
 try
