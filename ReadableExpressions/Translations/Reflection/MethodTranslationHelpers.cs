@@ -2,6 +2,9 @@
 {
     using System.Reflection;
     using Extensions;
+#if NETSTANDARD1_0
+    using NetStandardPolyfills;
+#endif
 
     internal static class MethodTranslationHelpers
     {

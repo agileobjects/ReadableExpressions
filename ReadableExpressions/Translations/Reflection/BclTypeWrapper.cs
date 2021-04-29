@@ -192,7 +192,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public bool IsGenericDefinition
-#if NETSTANDARD
+#if NETSTANDARD1_0
             => _type.GetTypeInfo().IsGenericTypeDefinition;
 #else
             => _type.IsGenericTypeDefinition;
@@ -231,7 +231,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         {
             get
             {
-#if NETSTANDARD
+#if NETSTANDARD1_0
                 return _type.GetTypeInfo().IsGenericParameter;
 #else
                 return _type.IsGenericParameter;
@@ -244,7 +244,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         {
             get
             {
-#if NETSTANDARD
+#if NETSTANDARD1_0
                 return _type.GetTypeInfo().GenericParameterAttributes;
 #else
                 return _type.GenericParameterAttributes;
@@ -313,7 +313,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         private IList<Type> GetConstraintTypes()
         {
-#if NETSTANDARD
+#if NETSTANDARD1_0
             return _type.GetTypeInfo().GetGenericParameterConstraints();
 #else
             return _type.GetGenericParameterConstraints();

@@ -1,7 +1,5 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
-
     /// <summary>
     /// Implementing classes will describe a method parameter.
     /// </summary>

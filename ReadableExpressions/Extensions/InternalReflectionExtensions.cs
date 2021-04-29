@@ -92,7 +92,7 @@
         {
             var assembly = type.GetAssembly();
 
-#if NETSTANDARD
+#if NETSTANDARD1_0
             return assembly.GetType()
                 .GetPublicInstanceProperty("Location")?
                 .GetValue(assembly) as string;
