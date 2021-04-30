@@ -54,6 +54,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public ReadOnlyCollection<IType> AllInterfaces => _type.AllInterfaces;
 
+            public Assembly Assembly => _type.Assembly;
+
             public string Namespace => _type.Namespace;
 
             public string Name => _type.Name;

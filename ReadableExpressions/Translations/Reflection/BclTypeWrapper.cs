@@ -152,6 +152,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             => _type.GetAllInterfaces().ProjectToArray(For);
 
         /// <inheritdoc />
+        public Assembly Assembly => _type.GetAssembly();
+
+        /// <inheritdoc />
         public string Namespace => _type.Namespace;
 
         /// <inheritdoc />
@@ -451,6 +454,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             public ReadOnlyCollection<IType> AllInterfaces
                 => Enumerable<IType>.EmptyReadOnlyCollection;
 
+            public Assembly Assembly => typeof(T).GetAssembly();
+            
             public string Namespace => typeof(T).Namespace;
 
             public string Name => typeof(T).Name;

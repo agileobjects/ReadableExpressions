@@ -11,6 +11,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     public interface IType
     {
         /// <summary>
+        /// Gets the Assembly to which this <see cref="IType"/> belongs.
+        /// </summary>
+        Assembly Assembly { get; }
+
+        /// <summary>
         /// Gets the namespace of this <see cref="IType"/>.
         /// </summary>
         string Namespace { get; }

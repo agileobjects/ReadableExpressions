@@ -25,6 +25,7 @@
             var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
+            argObject.Assembly.ShouldBeSameAs(typeof(Helper).GetAssembly());
             argObject.Name.ShouldBe("TUnconstrained");
             argObject.FullName.ShouldBeNull();
             argObject.IsGenericParameter.ShouldBeTrue();
@@ -67,6 +68,7 @@
             var argObject = GenericParameterFactory.For(argument);
 
             argObject.ShouldNotBeNull();
+            argObject.Assembly.ShouldBeSameAs(typeof(Helper).GetAssembly());
             argObject.Name.ShouldBe("TConstrained");
             argObject.FullName.ShouldBeNull();
             argObject.IsGenericParameter.ShouldBeTrue();
