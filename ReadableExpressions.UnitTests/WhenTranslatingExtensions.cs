@@ -3,8 +3,8 @@
     using System;
     using System.Collections.Generic;
     using Common;
-    using Translations;
-    using Translations.Formatting;
+    using ReadableExpressions.Translations;
+    using ReadableExpressions.Translations.Formatting;
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;

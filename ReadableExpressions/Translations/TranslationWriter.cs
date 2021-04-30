@@ -22,7 +22,14 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        internal TranslationWriter(TranslationSettings settings, ITranslatable translatable)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TranslationWriter"/> class. The given
+        /// <paramref name="translatable"/> is immediately written to this object using the given
+        /// <paramref name="settings"/>.
+        /// </summary>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <param name="translatable">The <see cref="ITranslatable"/> to translate.</param>
+        protected internal TranslationWriter(TranslationSettings settings, ITranslatable translatable)
             : this(
                 settings.Formatter,
                 settings.Indent,

@@ -22,6 +22,7 @@
     public class WhenTranslatingMemberAccesses : TestClassBase
     {
         [Fact]
+
         public void ShouldTranslateAnArrayLengthExpression()
         {
             var getArrayLength = CreateLambda((string[] a) => a.Length);

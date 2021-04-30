@@ -4,7 +4,7 @@
     using System.Linq;
     using Common;
     using NetStandardPolyfills;
-    using Translations.Reflection;
+    using ReadableExpressions.Translations.Reflection;
 #if !NET35
     using Xunit;
 #else

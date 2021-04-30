@@ -160,12 +160,14 @@
             ITranslationContext context)
             where TParameterExpression : Expression
         {
-            var thisTranslation = new FixedValueTranslation(
-                MemberAccess,
-                "this",
-                typeof(object),
-                TokenType.Keyword,
-                context);
+            var subject = method.IsStatic && !method.IsExtensionMethod
+                ? context.GetTranslationFor(method.DeclaringType)
+                : (ITranslation)new FixedValueTranslation(
+                    MemberAccess,
+                    "this",
+                    typeof(object),
+                    TokenType.Keyword,
+                    context);
 
             var parameters = ParameterSetTranslation
                 .For(method, methodParameters, context)
@@ -173,7 +175,7 @@
 
             return new StandardMethodCallTranslation(
                 Call,
-                thisTranslation,
+                subject,
                 method,
                 parameters,
                 context);
