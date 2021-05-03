@@ -204,7 +204,7 @@
                     return DebugInfoTranslation.For((DebugInfoExpression)expression, this);
 
                 case Default:
-                    return new DefaultValueTranslation(expression, this);
+                    return DefaultValueTranslation.For(expression, this);
 
                 case Dynamic:
                     return DynamicTranslation.For((DynamicExpression)expression, this);

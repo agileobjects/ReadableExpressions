@@ -95,7 +95,7 @@
         private ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
         {
             return (assignedValue.NodeType == Default)
-                ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: assignedValue.Type == typeof(string))
+                ? DefaultValueTranslation.For(assignedValue, context, allowNullKeyword: assignedValue.Type == typeof(string))
                 : GetNonDefaultValueTranslation(assignedValue, context);
         }
 

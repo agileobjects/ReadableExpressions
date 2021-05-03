@@ -183,7 +183,7 @@
                 return false;
             }
 
-            translation = new DefaultValueTranslation(constant, context);
+            translation = DefaultValueTranslation.For(constant, context);
             return true;
         }
 

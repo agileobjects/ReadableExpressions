@@ -7,75 +7,72 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+    using Formatting;
     using NetStandardPolyfills;
 
-    internal class DefaultValueTranslation : ITranslation, IPotentialEmptyTranslatable
+    internal static class DefaultValueTranslation
     {
-        private const string _null = "null";
-        private readonly bool _typeCanBeNull;
-        private readonly ITranslatable _operatorTranslation;
-
-        public DefaultValueTranslation(
+        public static ITranslation For(
             Expression defaultExpression,
             ITranslationContext context,
             bool allowNullKeyword = true)
         {
-            Type = defaultExpression.Type;
+            var type = defaultExpression.Type;
 
-            if (Type == typeof(void))
+            if (type == typeof(void))
             {
-                IsEmpty = true;
-                return;
+                return DefaultVoidTranslation.Instance;
             }
 
             if (allowNullKeyword)
             {
                 allowNullKeyword =
-                    (Type.FullName != null) &&
-                    !string.IsNullOrEmpty(Type.GetAssembly().GetLocation());
-            }
+                    (type.FullName != null) &&
+                    !string.IsNullOrEmpty(type.GetAssembly().GetLocation());
 
-            if (allowNullKeyword)
-            {
-                _typeCanBeNull = Type.CanBeNull();
-
-                if (_typeCanBeNull)
+                if (allowNullKeyword && type.CanBeNull())
                 {
-                    TranslationSize = _null.Length;
-                    return;
+                    return new NullKeywordTranslation(type, context);
                 }
             }
 
-            var typeNameTranslation = context.GetTranslationFor(Type);
-            _operatorTranslation = new DefaultOperatorTranslation(typeNameTranslation, context.Settings);
-            TranslationSize = _operatorTranslation.TranslationSize;
-            FormattingSize = _operatorTranslation.FormattingSize;
+            return new DefaultOperatorTranslation(context.GetTranslationFor(type), context.Settings);
         }
 
-        public ExpressionType NodeType => ExpressionType.Default;
-
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public bool IsEmpty { get; }
-
-        public int GetIndentSize()
-            => _typeCanBeNull ? 0 : _operatorTranslation?.GetIndentSize() ?? 0;
-
-        public int GetLineCount()
-            => _typeCanBeNull ? 1 : _operatorTranslation?.GetLineCount() ?? 1;
-
-        public void WriteTo(TranslationWriter writer)
+        private class DefaultVoidTranslation : ITranslation, IPotentialEmptyTranslatable
         {
-            if (_typeCanBeNull)
-            {
-                writer.WriteKeywordToTranslation(_null);
-            }
+            public static readonly ITranslation Instance = new DefaultVoidTranslation();
 
-            _operatorTranslation?.WriteTo(writer);
+            public ExpressionType NodeType => ExpressionType.Default;
+
+            public Type Type => typeof(void);
+
+            public bool IsEmpty => true;
+
+            public int TranslationSize => 0;
+
+            public int FormattingSize => 0;
+
+            public int GetIndentSize() => 0;
+
+            public int GetLineCount() => 1;
+
+            public void WriteTo(TranslationWriter writer)
+            {
+            }
+        }
+
+        private class NullKeywordTranslation : FixedValueTranslation
+        {
+            public NullKeywordTranslation(Type nullType, ITranslationContext context)
+                : base(
+                    ExpressionType.Default,
+                    "null",
+                    nullType,
+                    TokenType.Keyword,
+                    context)
+            {
+            }
         }
     }
 }
