@@ -72,7 +72,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.5.0" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.6.0" />
   </ItemGroup>
 
   <PropertyGroup>

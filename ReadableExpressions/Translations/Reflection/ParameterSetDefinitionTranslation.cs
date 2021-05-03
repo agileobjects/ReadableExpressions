@@ -13,27 +13,14 @@
         private readonly ITranslatable[] _parameterTranslations;
         private readonly bool _isExtensionMethod;
 
-        public ParameterSetDefinitionTranslation(
-            MethodInfo method,
-            TranslationSettings settings)
-            : this(new BclMethodWrapper(method, settings), settings)
-        {
-        }
-
-        public ParameterSetDefinitionTranslation(
+        private ParameterSetDefinitionTranslation(
             IMethodBase method,
+            IList<IParameter> parameters,
             TranslationSettings settings)
         {
             _settings = settings;
-            _parameters = method.GetParameters();
+            _parameters = parameters;
             _parameterCount = _parameters.Count;
-
-            if (_parameterCount == 0)
-            {
-                _parameterTranslations = Enumerable<ITranslatable>.EmptyArray;
-                TranslationSize = 2;
-                return;
-            }
 
             _parameterTranslations = new ITranslatable[_parameterCount];
             var translationSize = 6;
@@ -89,6 +76,22 @@
             }
         }
 
+        #region Factory Methods
+
+        public static ITranslatable For(MethodInfo method, TranslationSettings settings)
+            => For(new BclMethodWrapper(method, settings), settings);
+
+        public static ITranslatable For(IMethodBase method, TranslationSettings settings)
+        {
+            var parameters = method.GetParameters();
+
+            return parameters.Any()
+                ? new ParameterSetDefinitionTranslation(method, parameters, settings)
+                : EmptyParameterSetDefinitionTranslation.Instance;
+        }
+
+        #endregion
+
         public int TranslationSize { get; }
 
         public int FormattingSize { get; }
@@ -99,12 +102,6 @@
 
         public void WriteTo(TranslationWriter writer)
         {
-            if (_parameterCount == 0)
-            {
-                writer.WriteToTranslation("()");
-                return;
-            }
-
             var finalParameterIndex = _parameterCount - 1;
 
             writer.WriteNewLineToTranslation();
@@ -152,6 +149,23 @@
             writer.Unindent();
             writer.WriteNewLineToTranslation();
             writer.WriteToTranslation(')');
+        }
+
+        private class EmptyParameterSetDefinitionTranslation : ITranslatable
+        {
+            public static readonly ITranslatable Instance =
+                new EmptyParameterSetDefinitionTranslation();
+
+            public int TranslationSize => 2;
+
+            public int FormattingSize => 0;
+
+            public int GetIndentSize() => 0;
+
+            public int GetLineCount() => 1;
+
+            public void WriteTo(TranslationWriter writer)
+                => writer.WriteToTranslation("()");
         }
     }
 }

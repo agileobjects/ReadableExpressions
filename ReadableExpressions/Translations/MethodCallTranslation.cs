@@ -58,7 +58,7 @@
         /// <returns>An <see cref="ITranslation"/> for the given <paramref name="methodCall"/>.</returns>
         public static ITranslation For(MethodCallExpression methodCall, ITranslationContext context)
         {
-            if (methodCall.Method.IsPropertyGetterOrSetterCall(out var property))
+            if (methodCall.Method.IsAccessor(out var property) && !property.IsIndexer())
             {
                 var getterTranslation = new PropertyGetterTranslation(methodCall, property, context);
 

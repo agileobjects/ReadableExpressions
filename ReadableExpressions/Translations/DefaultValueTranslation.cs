@@ -32,7 +32,7 @@
             {
                 allowNullKeyword =
                     (Type.FullName != null) &&
-                    !string.IsNullOrEmpty(Type.GetAssemblyLocation());
+                    !string.IsNullOrEmpty(Type.GetAssembly().GetLocation());
             }
 
             if (allowNullKeyword)

@@ -34,7 +34,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnAbstractParameterlessCtorInfo()
+        public void ShouldTranslateAnAbstractClassParameterlessCtorInfo()
         {
             var ctor = typeof(AbstractHelper)
                 .GetNonPublicInstanceConstructor();
@@ -45,7 +45,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateASealedParameterlessCtorInfo()
+        public void ShouldTranslateASealedClassParameterlessCtorInfo()
         {
             var ctor = typeof(SealedInternalHelper)
                 .GetNonPublicInstanceConstructor();
@@ -86,6 +86,16 @@
     int days
 )";
             translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAStaticCtorInfo()
+        {
+            var ctor = typeof(Helper).GetStaticConstructor();
+
+            var translated = ctor.ToReadableString();
+
+            translated.ShouldBe("static WhenTranslatingConstructorInfos.Helper()");
         }
 
         [Fact]
@@ -200,6 +210,11 @@
             {
                 Console.WriteLine(date);
                 Console.WriteLine(days);
+            }
+
+            static Helper()
+            {
+                Console.WriteLine("Static Constructed!");
             }
         }
 

@@ -20,7 +20,7 @@
             _returnTypeTranslation =
                 new TypeNameTranslation(@operator.ReturnType, settings);
 
-            _parametersTranslation = new ParameterSetDefinitionTranslation(@operator, settings);
+            _parametersTranslation = ParameterSetDefinitionTranslation.For(@operator, settings);
 
             TranslationSize =
                 _modifiers.Length +

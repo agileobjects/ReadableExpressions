@@ -1,11 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using NetStandardPolyfills;
     using Translations.Reflection;
 
     internal static class InternalReflectionExtensions
@@ -44,61 +39,6 @@
 
             return _typeNameSubstitutions.TryGetValue(type.FullName, out var substitutedName)
                 ? substitutedName : null;
-        }
-
-        public static bool IsPropertyGetterOrSetterCall(this MethodInfo method, out PropertyInfo property)
-        {
-            if (method.IsAbstract || method.HasAttribute<CompilerGeneratedAttribute>())
-            {
-                // Find declaring property
-                property = GetPropertyOrNull(method);
-
-                if (property != null)
-                {
-                    return true;
-                }
-            }
-
-            property = null;
-            return false;
-        }
-
-        private static PropertyInfo GetPropertyOrNull(MethodInfo method)
-        {
-            var hasSingleArgument = method.GetParameters().Length == 1;
-            var hasReturnType = method.ReturnType != typeof(void);
-
-            if (hasSingleArgument == hasReturnType)
-            {
-                return null;
-            }
-
-            var type = method.DeclaringType;
-
-            var allProperties =
-                type.GetPublicInstanceProperties()
-                    .Concat(type.GetNonPublicInstanceProperties())
-                    .Concat(type.GetPublicStaticProperties())
-                    .Concat(type.GetNonPublicStaticProperties());
-
-            return allProperties.FirstOrDefault(property => Equals(
-                hasReturnType
-                    ? property.GetGetter(nonPublic: true)
-                    : property.GetSetter(nonPublic: true),
-                method));
-        }
-
-        public static string GetAssemblyLocation(this Type type)
-        {
-            var assembly = type.GetAssembly();
-
-#if NETSTANDARD1_0
-            return assembly.GetType()
-                .GetPublicInstanceProperty("Location")?
-                .GetValue(assembly) as string;
-#else
-            return assembly.Location;
-#endif
         }
     }
 }

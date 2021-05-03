@@ -98,7 +98,7 @@
                     _genericParameterConstraintsTranslation.FormattingSize;
             }
 
-            _parametersTranslation = new ParameterSetDefinitionTranslation(method, settings);
+            _parametersTranslation = ParameterSetDefinitionTranslation.For(method, settings);
 
             TranslationSize = translationSize + _parametersTranslation.TranslationSize;
             FormattingSize = formattingSize + _parametersTranslation.FormattingSize;
@@ -114,7 +114,7 @@
         /// <returns>An <see cref="ITranslatable"/> for the given <paramref name="method"/>.</returns>
         public static ITranslatable For(MethodInfo method, TranslationSettings settings)
         {
-            if (method.IsPropertyGetterOrSetterCall(out var property))
+            if (method.IsAccessor(out var property))
             {
                 return new PropertyDefinitionTranslation(property, method, settings);
             }

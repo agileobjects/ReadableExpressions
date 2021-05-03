@@ -15,7 +15,7 @@
     /// </summary>
     public class ConstructorDefinitionTranslation : ITranslation
     {
-        private readonly string _accessibility;
+        private readonly string _modifiers;
         private readonly ITranslation _typeNameTranslation;
         private readonly ITranslatable _parametersTranslation;
 
@@ -48,9 +48,12 @@
             IConstructor ctor,
             TranslationSettings settings)
         {
-            _accessibility = ctor.GetAccessibilityForTranslation();
+            _modifiers = ctor.IsStatic
+                ? "static "
+                : ctor.GetAccessibilityForTranslation();
+            
             _typeNameTranslation = new TypeNameTranslation(ctor.DeclaringType, settings);
-            _parametersTranslation = new ParameterSetDefinitionTranslation(ctor, settings);
+            _parametersTranslation = ParameterSetDefinitionTranslation.For(ctor, settings);
 
             TranslationSize =
                 _typeNameTranslation.TranslationSize +
@@ -83,7 +86,7 @@
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility);
+            writer.WriteKeywordToTranslation(_modifiers);
 
             _typeNameTranslation.WriteTo(writer);
             _parametersTranslation.WriteTo(writer);
