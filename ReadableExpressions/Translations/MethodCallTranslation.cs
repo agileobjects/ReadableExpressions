@@ -350,12 +350,20 @@
             private readonly ITranslatable[] _explicitGenericArguments;
             private readonly int _explicitGenericArgumentCount;
 
-            public MethodInvocationTranslation(IMethod method, ParameterSetTranslation parameters, ITranslationContext context)
+            public MethodInvocationTranslation(
+                IMethod method,
+                ParameterSetTranslation parameters,
+                ITranslationContext context)
             {
                 _method = method;
                 _parameters = parameters;
                 _explicitGenericArguments = GetRequiredExplicitGenericArguments(context, out var translationsSize);
                 _explicitGenericArgumentCount = _explicitGenericArguments.Length;
+
+                if (method.IsGenericMethod && _explicitGenericArgumentCount == 0)
+                {
+                    parameters.WithoutNullArguments(context);
+                }
 
                 TranslationSize = method.Name.Length + translationsSize + parameters.TranslationSize;
 

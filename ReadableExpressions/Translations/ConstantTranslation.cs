@@ -31,13 +31,13 @@
                     .ConstantExpressionValueFactory(constant.Type, constant.Value);
 
                 return (userTranslation == null)
-                    ? NullTranslation(constant.Type, context)
+                    ? DefaultValueTranslation.For(constant, context)
                     : FixedValueTranslation(userTranslation, constant.Type, context);
             }
 
             if (constant.Value == null)
             {
-                return NullTranslation(constant.Type, context);
+                return DefaultValueTranslation.For(constant, context);
             }
 
             if (constant.Type.IsEnum())
@@ -76,9 +76,6 @@
         {
             return FixedValueTranslation(value.ToString(), type, tokenType, context);
         }
-
-        private static ITranslation NullTranslation(Type type, ITranslationContext context)
-            => FixedValueTranslation("null", type, Keyword, context);
 
         private static ITranslation FixedValueTranslation(
             string value,

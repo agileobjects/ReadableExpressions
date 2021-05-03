@@ -6,7 +6,6 @@
 #else
     using System.Linq.Expressions;
 #endif
-    using Extensions;
     using Formatting;
     using NetStandardPolyfills;
 
@@ -36,7 +35,7 @@
                 }
             }
 
-            return new DefaultOperatorTranslation(context.GetTranslationFor(type), context.Settings);
+            return new DefaultOperatorTranslation(type, context);
         }
 
         private class DefaultVoidTranslation : ITranslation, IPotentialEmptyTranslatable
@@ -62,7 +61,7 @@
             }
         }
 
-        private class NullKeywordTranslation : FixedValueTranslation
+        private class NullKeywordTranslation : FixedValueTranslation, INullKeywordTranslation
         {
             public NullKeywordTranslation(Type nullType, ITranslationContext context)
                 : base(

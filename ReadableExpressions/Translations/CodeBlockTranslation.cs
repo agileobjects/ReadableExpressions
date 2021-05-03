@@ -217,6 +217,9 @@
         internal IParameterTranslation AsParameterTranslation()
             => _translation as IParameterTranslation;
 
+        internal INullKeywordTranslation AsNullKeywordTranslation()
+            => _translation as INullKeywordTranslation;
+
         /// <inheritdoc />
         public int GetIndentSize()
         {

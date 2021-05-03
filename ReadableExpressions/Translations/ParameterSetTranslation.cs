@@ -372,6 +372,28 @@
             return this;
         }
 
+        internal void WithoutNullArguments(ITranslationContext context)
+        {
+            for (var i = 0; i < Count; ++i)
+            {
+                var parameter = _parameterTranslations[i];
+
+                if (parameter.NodeType != Default)
+                {
+                    continue;
+                }
+
+                var defaultTranslation = parameter.AsNullKeywordTranslation();
+
+                if (defaultTranslation != null)
+                {
+                    _parameterTranslations[i] = new CodeBlockTranslation(
+                        new DefaultOperatorTranslation(parameter.Type, context),
+                        context);
+                }
+            }
+        }
+
         /// <inheritdoc />
         public int GetIndentSize()
         {

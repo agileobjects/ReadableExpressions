@@ -39,7 +39,7 @@
         /// <summary>
         /// Gets the ExpressionType of the translated operator use - ExpressionType.Extension.
         /// </summary>
-        public ExpressionType NodeType => ExpressionType.Extension;
+        public virtual ExpressionType NodeType => ExpressionType.Extension;
 
         /// <summary>
         /// When overridden in a derived class, gets the type of the operand use represented by this
