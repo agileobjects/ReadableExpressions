@@ -25,9 +25,9 @@
             {
                 case ExpressionType.Convert:
                 case ConvertChecked:
-                    if (cast.Type == typeof(object))
+                    if (cast.Type == typeof(object) && cast.Operand.Type.IsValueType())
                     {
-                        // Don't bother to show a boxing cast:
+                        // Don't bother to show boxing:
                         return castValueTranslation;
                     }
 
