@@ -1,6 +1,9 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System;
+#if FEATURE_CONCURRENT_DICTIONARY
+    using System.Collections.Concurrent;
+#endif
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
@@ -38,9 +41,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// </summary>
         public static readonly IType Void = new BclTypeWrapper(typeof(void));
 
+#if FEATURE_CONCURRENT_DICTIONARY
+        private static readonly ConcurrentDictionary<Type, Lazy<IType>> _types = new();
+#else
         private static readonly object _typeCacheLock = new object();
         private static readonly Dictionary<Type, IType> _types = new Dictionary<Type, IType>();
-
+#endif
         private readonly Type _type;
         private IType _baseType;
         private int? _genericParameterCount;
@@ -99,23 +105,19 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 return ValueType;
             }
 
-            // ReSharper disable once InconsistentlySynchronizedField
-            if (_types.TryGetValue(type, out var typeWrapper))
-            {
-                return typeWrapper;
-            }
-
+#if FEATURE_CONCURRENT_DICTIONARY
+            return _types.GetOrAdd(type, new Lazy<IType>(() => new BclTypeWrapper(type))).Value;
+#else
             lock (_typeCacheLock)
             {
-                if (_types.TryGetValue(type, out typeWrapper))
+                if (!_types.TryGetValue(type, out var typeWrapper))
                 {
-                    return typeWrapper;
+                    _types.Add(type, typeWrapper = new BclTypeWrapper(type));
                 }
 
-                _types.Add(type, typeWrapper = new BclTypeWrapper(type));
+                return typeWrapper;
             }
-
-            return typeWrapper;
+#endif
         }
 
         #endregion
@@ -455,7 +457,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 => Enumerable<IType>.EmptyReadOnlyCollection;
 
             public Assembly Assembly => typeof(T).GetAssembly();
-            
+
             public string Namespace => typeof(T).Namespace;
 
             public string Name => typeof(T).Name;

@@ -3,7 +3,6 @@
     <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
     <TargetFrameworks>net35;net40;netstandard1.0;netstandard2.0;</TargetFrameworks>
     <LangVersion>latest</LangVersion>
-    <LangVersion>8.0</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -42,12 +41,16 @@
     <None Include="../Icon.png" Pack="true" PackagePath="./" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <DefineConstants>$(DefineConstants);FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD1_0</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0;FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
