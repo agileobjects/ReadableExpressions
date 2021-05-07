@@ -23,16 +23,9 @@
                 return DefaultVoidTranslation.Instance;
             }
 
-            if (allowNullKeyword)
+            if (allowNullKeyword && (type.FullName != null) && type.CanBeNull())
             {
-                allowNullKeyword =
-                    (type.FullName != null) &&
-                    !string.IsNullOrEmpty(type.GetAssembly().GetLocation());
-
-                if (allowNullKeyword && type.CanBeNull())
-                {
-                    return new NullKeywordTranslation(type, context);
-                }
+                return new NullKeywordTranslation(type, context);
             }
 
             return new DefaultOperatorTranslation(type, context);
