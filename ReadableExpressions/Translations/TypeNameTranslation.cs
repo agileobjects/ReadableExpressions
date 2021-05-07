@@ -28,7 +28,7 @@
         /// <param name="type">The Type the name of which should be translated.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public TypeNameTranslation(Type type, TranslationSettings settings)
-            : this(BclTypeWrapper.For(type), settings)
+            : this(ClrTypeWrapper.For(type), settings)
         {
             _typeObject = type;
         }

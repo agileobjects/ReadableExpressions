@@ -11,7 +11,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// An <see cref="IMethod"/> describing a System.Reflection.MethodInfo.
     /// </summary>
-    public class BclMethodWrapper : BclMethodWrapperBase
+    public class ClrMethodWrapper : ClrMethodWrapperBase
     {
         private readonly MethodInfo _method;
         private readonly TranslationSettings _settings;
@@ -20,16 +20,16 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private IType _returnType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclMethodWrapper"/> class for the given
+        /// Initializes a new instance of the <see cref="ClrMethodWrapper"/> class for the given
         /// <paramref name="method"/>.
         /// </summary>
-        /// <param name="method">The MethodInfo to which the <see cref="BclMethodWrapper"/> relates.</param>
+        /// <param name="method">The MethodInfo to which the <see cref="ClrMethodWrapper"/> relates.</param>
         /// <param name="genericArguments">
         /// The Types of the <paramref name="method"/>'s generic arguments, if any.
         /// </param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         [DebuggerStepThrough]
-        public BclMethodWrapper(
+        public ClrMethodWrapper(
             MethodInfo method,
             IList<Type> genericArguments,
             TranslationSettings settings)
@@ -41,25 +41,25 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclMethodWrapper"/> class for the given
+        /// Initializes a new instance of the <see cref="ClrMethodWrapper"/> class for the given
         /// <paramref name="method"/>.
         /// </summary>
-        /// <param name="method">The MethodInfo to which the <see cref="BclMethodWrapper"/> relates.</param>
+        /// <param name="method">The MethodInfo to which the <see cref="ClrMethodWrapper"/> relates.</param>
         /// <param name="context">The <see cref="ITranslationContext"/> describing the current translation.</param>
         [DebuggerStepThrough]
-        public BclMethodWrapper(MethodInfo method, ITranslationContext context)
+        public ClrMethodWrapper(MethodInfo method, ITranslationContext context)
             : this(method, context.Settings)
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclMethodWrapper"/> class for the given
+        /// Initializes a new instance of the <see cref="ClrMethodWrapper"/> class for the given
         /// <paramref name="method"/>.
         /// </summary>
-        /// <param name="method">The MethodInfo to which the <see cref="BclMethodWrapper"/> relates.</param>
+        /// <param name="method">The MethodInfo to which the <see cref="ClrMethodWrapper"/> relates.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         [DebuggerStepThrough]
-        public BclMethodWrapper(MethodInfo method, TranslationSettings settings)
+        public ClrMethodWrapper(MethodInfo method, TranslationSettings settings)
             : base(method)
         {
             _method = method;
@@ -74,7 +74,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public override IMethod GetGenericMethodDefinition()
         {
             return _genericMethodDefinition ??=
-                   new BclMethodWrapper(_method.GetGenericMethodDefinition(), _settings);
+                   new ClrMethodWrapper(_method.GetGenericMethodDefinition(), _settings);
         }
 
         /// <inheritdoc cref="IMethod.GetGenericArguments" />
@@ -83,6 +83,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public override IType ReturnType
-            => _returnType ??= BclTypeWrapper.For(_method.ReturnType);
+            => _returnType ??= ClrTypeWrapper.For(_method.ReturnType);
     }
 }

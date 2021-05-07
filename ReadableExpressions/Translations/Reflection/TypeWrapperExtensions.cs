@@ -1,7 +1,7 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Linq;
-    using static BclTypeWrapper;
+    using static ClrTypeWrapper;
 
     /// <summary>
     /// Provides extension methods for <see cref="IType"/> instances.

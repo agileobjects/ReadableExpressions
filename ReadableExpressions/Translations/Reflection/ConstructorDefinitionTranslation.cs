@@ -31,7 +31,7 @@
         public ConstructorDefinitionTranslation(
             ConstructorInfo ctorInfo,
             TranslationSettings settings)
-            : this(new BclCtorInfoWrapper(ctorInfo), settings)
+            : this(new ClrCtorInfoWrapper(ctorInfo), settings)
         {
         }
 

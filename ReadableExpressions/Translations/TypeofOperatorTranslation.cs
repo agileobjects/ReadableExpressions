@@ -17,7 +17,7 @@
         /// The <see cref="ITranslationContext"/> describing the Expression translation.
         /// </param>
         public TypeOfOperatorTranslation(Type type, ITranslationContext context)
-            : this(BclTypeWrapper.For(type), context)
+            : this(ClrTypeWrapper.For(type), context)
         {
         }
 

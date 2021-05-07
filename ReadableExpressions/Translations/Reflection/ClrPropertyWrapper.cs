@@ -6,17 +6,17 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// An <see cref="IProperty"/> describing a System.Reflection.PropertyInfo.
     /// </summary>
-    public class BclPropertyWrapper : IProperty
+    public class ClrPropertyWrapper : IProperty
     {
         private readonly MemberInfo _property;
         private IType _declaringType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclPropertyWrapper"/> class.
+        /// Initializes a new instance of the <see cref="ClrPropertyWrapper"/> class.
         /// </summary>
-        /// <param name="property">The PropertyInfo to which the <see cref="BclPropertyWrapper"/> relates.</param>
+        /// <param name="property">The PropertyInfo to which the <see cref="ClrPropertyWrapper"/> relates.</param>
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        public BclPropertyWrapper(PropertyInfo property, TranslationSettings settings)
+        public ClrPropertyWrapper(PropertyInfo property, TranslationSettings settings)
         {
             _property = property;
 
@@ -25,18 +25,18 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             if (getter != null)
             {
-                Getter = new BclMethodWrapper(getter, settings);
+                Getter = new ClrMethodWrapper(getter, settings);
             }
 
             if (setter != null)
             {
-                Setter = new BclMethodWrapper(setter, settings);
+                Setter = new ClrMethodWrapper(setter, settings);
             }
         }
 
         /// <inheritdoc />
         public IType DeclaringType
-            => _declaringType ??= BclTypeWrapper.For(_property.DeclaringType);
+            => _declaringType ??= ClrTypeWrapper.For(_property.DeclaringType);
 
         /// <inheritdoc />
         public bool IsStatic

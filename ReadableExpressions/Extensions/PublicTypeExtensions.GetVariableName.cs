@@ -17,7 +17,7 @@
             this Type type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            return BclTypeWrapper.For(type).GetVariableNameInCamelCase(configuration);
+            return ClrTypeWrapper.For(type).GetVariableNameInCamelCase(configuration);
         }
 
         /// <summary>
@@ -34,7 +34,7 @@
         }
 
         internal static string GetVariableNameInCamelCase(this Type type, TranslationSettings settings)
-            => BclTypeWrapper.For(type).GetVariableNameInCamelCase(settings);
+            => ClrTypeWrapper.For(type).GetVariableNameInCamelCase(settings);
 
         internal static string GetVariableNameInCamelCase(this IType type, TranslationSettings settings)
             => GetVariableName(type, settings).ToCamelCase();
@@ -49,7 +49,7 @@
             this Type type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            return BclTypeWrapper.For(type).GetVariableNameInPascalCase(configuration);
+            return ClrTypeWrapper.For(type).GetVariableNameInPascalCase(configuration);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@
         /// <param name="settings">The <see cref="TranslationSettings"/> to use for the variable naming.</param>
         /// <returns>A pascal-case variable name for a variable of this <paramref name="type"/>.</returns>
         public static string GetVariableNameInPascalCase(this Type type, TranslationSettings settings)
-            => BclTypeWrapper.For(type).GetVariableNameInPascalCase(settings);
+            => ClrTypeWrapper.For(type).GetVariableNameInPascalCase(settings);
 
         /// <summary>
         /// Retrieves a pascal-case variable name for a variable of this <paramref name="type"/>.

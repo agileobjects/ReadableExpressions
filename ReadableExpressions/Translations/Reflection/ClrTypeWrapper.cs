@@ -12,34 +12,34 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     using NetStandardPolyfills;
 
     /// <summary>
-    /// An <see cref="IType"/> describing a System.Type.
+    /// An <see cref="IType"/> describing a design-time CLR Type.
     /// </summary>
-    public class BclTypeWrapper : IType
+    public class ClrTypeWrapper : IType
     {
         /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.Object.
         /// </summary>
-        public static readonly IType Object = new BclBaseTypeWrapper<object>(baseType: null);
+        public static readonly IType Object = new ClrBaseTypeWrapper<object>(baseType: null);
 
         /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.ValueType.
         /// </summary>
-        public static readonly IType ValueType = new BclBaseTypeWrapper<ValueType>(baseType: Object);
+        public static readonly IType ValueType = new ClrBaseTypeWrapper<ValueType>(baseType: Object);
 
         /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.String.
         /// </summary>
-        public static readonly IType String = new BclTypeWrapper(typeof(string));
+        public static readonly IType String = new ClrTypeWrapper(typeof(string));
 
         /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.Enum.
         /// </summary>
-        public static readonly IType Enum = new BclBaseTypeWrapper<Enum>(baseType: ValueType);
+        public static readonly IType Enum = new ClrBaseTypeWrapper<Enum>(baseType: ValueType);
 
         /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.Void.
         /// </summary>
-        public static readonly IType Void = new BclTypeWrapper(typeof(void));
+        public static readonly IType Void = new ClrTypeWrapper(typeof(void));
 
 #if FEATURE_CONCURRENT_DICTIONARY
         private static readonly ConcurrentDictionary<Type, Lazy<IType>> _types = new();
@@ -59,7 +59,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private ReadOnlyCollection<IType> _allInterfaces;
         private IEnumerable<IMember> _allMembers;
 
-        private BclTypeWrapper(Type type)
+        private ClrTypeWrapper(Type type)
         {
             _type = type;
         }
@@ -106,13 +106,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
 #if FEATURE_CONCURRENT_DICTIONARY
-            return _types.GetOrAdd(type, new Lazy<IType>(() => new BclTypeWrapper(type))).Value;
+            return _types.GetOrAdd(type, new Lazy<IType>(() => new ClrTypeWrapper(type))).Value;
 #else
             lock (_typeCacheLock)
             {
                 if (!_types.TryGetValue(type, out var typeWrapper))
                 {
-                    _types.Add(type, typeWrapper = new BclTypeWrapper(type));
+                    _types.Add(type, typeWrapper = new ClrTypeWrapper(type));
                 }
 
                 return typeWrapper;
@@ -383,7 +383,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             var nonNullableUnderlyingType = Nullable.GetUnderlyingType(_type);
 
             return nonNullableUnderlyingType != null
-                ? new BclTypeWrapper(nonNullableUnderlyingType) : null;
+                ? new ClrTypeWrapper(nonNullableUnderlyingType) : null;
         }
 
         /// <inheritdoc />
@@ -413,8 +413,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 case IType type:
                     return Equals(type);
 
-                case Type bclType:
-                    return Equals(For(bclType));
+                case Type clrType:
+                    return Equals(For(clrType));
 
                 default:
                     return false;
@@ -442,11 +442,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <returns>A string representation of this <see cref="IType"/>.</returns>
         public override string ToString() => _type.ToString();
 
-        private class BclBaseTypeWrapper<T> : IType
+        private class ClrBaseTypeWrapper<T> : IType
         {
             private IEnumerable<IMember> _allMembers;
 
-            public BclBaseTypeWrapper(IType baseType)
+            public ClrBaseTypeWrapper(IType baseType)
             {
                 BaseType = baseType;
             }
@@ -539,8 +539,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                     case IType type:
                         return Equals(type);
 
-                    case Type bclType:
-                        return Equals(For(bclType));
+                    case Type clrType:
+                        return Equals(For(clrType));
 
                     default:
                         return false;

@@ -9,7 +9,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// Helper base class for <see cref="IMethod"/> implementations which wrap MethodBase-derived
     /// objects.
     /// </summary>
-    public abstract class BclMethodWrapperBase : IMethod
+    public abstract class ClrMethodWrapperBase : IMethod
     {
         private readonly MethodBase _method;
         private IType _declaringType;
@@ -17,17 +17,17 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private ReadOnlyCollection<IParameter> _parameters;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclMethodWrapperBase"/> class.
+        /// Initializes a new instance of the <see cref="ClrMethodWrapperBase"/> class.
         /// </summary>
-        /// <param name="method">The MethodBase to which the <see cref="BclMethodWrapperBase"/> relates.</param>
-        protected BclMethodWrapperBase(MethodBase method)
+        /// <param name="method">The MethodBase to which the <see cref="ClrMethodWrapperBase"/> relates.</param>
+        protected ClrMethodWrapperBase(MethodBase method)
         {
             _method = method;
         }
 
         /// <inheritdoc />
         public IType DeclaringType
-            => _declaringType ??= BclTypeWrapper.For(_method.DeclaringType);
+            => _declaringType ??= ClrTypeWrapper.For(_method.DeclaringType);
 
         /// <inheritdoc />
         public bool IsPublic => _method.IsPublic;
@@ -83,7 +83,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         {
             return _parameters ??= _method
                 .GetParameters()
-                .ProjectToArray<ParameterInfo, IParameter>(p => new BclParameterWrapper(p))
+                .ProjectToArray<ParameterInfo, IParameter>(p => new ClrParameterWrapper(p))
                 .ToReadOnlyCollection();
         }
 
@@ -92,18 +92,18 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <inheritdoc />
         public abstract IType ReturnType { get; }
 
-        private class BclParameterWrapper : IParameter
+        private class ClrParameterWrapper : IParameter
         {
             private readonly ParameterInfo _parameter;
             private IType _type;
 
-            public BclParameterWrapper(ParameterInfo parameter)
+            public ClrParameterWrapper(ParameterInfo parameter)
             {
                 _parameter = parameter;
             }
 
             public IType Type
-                => _type ??= BclTypeWrapper.For(_parameter.ParameterType);
+                => _type ??= ClrTypeWrapper.For(_parameter.ParameterType);
 
             public string Name => _parameter.Name;
 

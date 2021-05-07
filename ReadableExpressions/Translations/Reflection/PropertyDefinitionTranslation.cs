@@ -47,9 +47,9 @@
             IList<MethodInfo> accessors,
             TranslationSettings settings)
             : this(
-                new BclPropertyWrapper(property, settings),
+                new ClrPropertyWrapper(property, settings),
                 accessors.ProjectToArray<MethodInfo, IMethod>(acc =>
-                    new BclMethodWrapper(acc, settings)),
+                    new ClrMethodWrapper(acc, settings)),
                 includeDeclaringType: true,
                 settings)
         {
@@ -262,7 +262,7 @@
             /// </param>
             /// <returns></returns>
             protected static bool IsGetter(IMember accessor)
-                => !accessor.Type.Equals(BclTypeWrapper.Void);
+                => !accessor.Type.Equals(ClrTypeWrapper.Void);
 
             #endregion
 

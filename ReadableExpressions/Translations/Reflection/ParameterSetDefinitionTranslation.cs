@@ -79,7 +79,7 @@
         #region Factory Methods
 
         public static ITranslatable For(MethodInfo method, TranslationSettings settings)
-            => For(new BclMethodWrapper(method, settings), settings);
+            => For(new ClrMethodWrapper(method, settings), settings);
 
         public static ITranslatable For(IMethodBase method, TranslationSettings settings)
         {

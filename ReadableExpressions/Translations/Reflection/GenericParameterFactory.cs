@@ -19,7 +19,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// <param name="genericParameter">The Type representing the generic argument.</param>
         /// <returns>An <see cref="IGenericParameter"/> for the given <paramref name="genericParameter"/> Type.</returns>
         public static IGenericParameter For(Type genericParameter)
-            => For(BclTypeWrapper.For(genericParameter));
+            => For(ClrTypeWrapper.For(genericParameter));
 
         /// <summary>
         /// Creates an <see cref="IGenericParameter"/> for the given <paramref name="genericParameter"/>.
@@ -142,7 +142,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                         return Equals(type);
 
                     case Type bclType:
-                        return Equals(BclTypeWrapper.For(bclType));
+                        return Equals(ClrTypeWrapper.For(bclType));
 
                     default:
                         return false;
@@ -192,7 +192,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
                 if (HasStructConstraint)
                 {
-                    constraintTypes.Remove(BclTypeWrapper.ValueType);
+                    constraintTypes.Remove(ClrTypeWrapper.ValueType);
                 }
                 else
                 {

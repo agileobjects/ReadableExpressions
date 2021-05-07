@@ -130,7 +130,7 @@
             }
 
             return new MethodDefinitionTranslation(
-                new BclMethodWrapper(method, settings),
+                new ClrMethodWrapper(method, settings),
                 settings);
         }
 

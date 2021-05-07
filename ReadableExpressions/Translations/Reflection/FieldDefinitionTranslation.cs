@@ -23,7 +23,7 @@
         internal FieldDefinitionTranslation(
             FieldInfo field,
             TranslationSettings settings)
-            : this(new BclFieldWrapper(field), includeDeclaringType: true, settings)
+            : this(new ClrFieldWrapper(field), includeDeclaringType: true, settings)
         {
         }
 

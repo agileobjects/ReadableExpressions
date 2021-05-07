@@ -29,7 +29,7 @@
             var objectToString = CreateLambda((object o) => o.ToString());
             var toStringCall = (MethodCallExpression)objectToString.Body;
             var context = new TestTranslationContext(toStringCall);
-            var toStringMethod = new BclMethodWrapper(toStringCall.Method, context);
+            var toStringMethod = new ClrMethodWrapper(toStringCall.Method, context);
 
             var translation = MethodCallTranslation
                 .For(toStringMethod, toStringCall.Arguments, context);
@@ -46,7 +46,7 @@
             var oneEqualsTwo = CreateLambda(() => ReferenceEquals(1, 2));
             var referenceEqualsCall = (MethodCallExpression)oneEqualsTwo.Body;
             var context = new TestTranslationContext(referenceEqualsCall);
-            var referenceEqualsMethod = new BclMethodWrapper(referenceEqualsCall.Method, context);
+            var referenceEqualsMethod = new ClrMethodWrapper(referenceEqualsCall.Method, context);
 
             var translation = MethodCallTranslation
                 .For(referenceEqualsMethod, referenceEqualsCall.Arguments, context);
@@ -62,7 +62,7 @@
             var arrayIsEmpty = CreateLambda((string[] a) => a.Any());
             var linqAnyCall = (MethodCallExpression)arrayIsEmpty.Body;
             var context = new TestTranslationContext(linqAnyCall);
-            var linqAnyMethod = new BclMethodWrapper(linqAnyCall.Method, context);
+            var linqAnyMethod = new ClrMethodWrapper(linqAnyCall.Method, context);
 
             var translation = MethodCallTranslation
                 .For(linqAnyMethod, linqAnyCall.Arguments, context);

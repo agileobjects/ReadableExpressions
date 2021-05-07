@@ -174,7 +174,7 @@
                     return new MissingMethod(methodName);
                 }
 
-                return new BclMethodWrapper(
+                return new ClrMethodWrapper(
                     method,
                     GetGenericArguments(method, methodArguments, methodReturnType),
                     context.Settings);
@@ -281,7 +281,7 @@
 
                 public IType Type => ReturnType;
 
-                public IType ReturnType => BclTypeWrapper.Void;
+                public IType ReturnType => ClrTypeWrapper.Void;
             }
         }
     }

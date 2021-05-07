@@ -34,13 +34,13 @@ namespace AgileObjects.ReadableExpressions.Extensions
                     switch (member)
                     {
                         case FieldInfo field:
-                            return new BclFieldWrapper(field);
+                            return new ClrFieldWrapper(field);
 
                         case PropertyInfo property:
-                            return new BclPropertyWrapper(property, Default);
+                            return new ClrPropertyWrapper(property, Default);
 
                         case MethodInfo method:
-                            return new BclMethodWrapper(method, Default);
+                            return new ClrMethodWrapper(method, Default);
 
                         default:
                             return default(IMember);

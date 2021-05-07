@@ -42,7 +42,7 @@
             var field = typeof(FieldHelper)
                 .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadWrite));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -78,7 +78,7 @@
             var field = typeof(FieldHelper)
                 .GetPublicInstanceField(nameof(FieldHelper.PublicInstanceReadonly));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -114,7 +114,7 @@
             var field = typeof(FieldHelper)
                 .GetPublicStaticField(nameof(FieldHelper.PublicStaticReadWrite));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -150,7 +150,7 @@
             var field = typeof(FieldHelper)
                 .GetPublicStaticField(nameof(FieldHelper.PublicConstant));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -187,7 +187,7 @@
             var field = typeof(FieldHelper)
                 .GetNonPublicInstanceField(nameof(FieldHelper.InternalInstanceReadWrite));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -224,7 +224,7 @@
             var field = typeof(FieldHelper)
                 .GetNonPublicInstanceField(nameof(FieldHelper.ProtectedInternalInstanceReadWrite));
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -261,7 +261,7 @@
             var field = typeof(FieldHelper)
                 .GetNonPublicInstanceField("ProtectedInstanceReadonly");
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);
@@ -298,7 +298,7 @@
             var field = typeof(FieldHelper)
                 .GetNonPublicStaticField("_privateStaticReadWrite");
 
-            var fieldWrapper = new BclFieldWrapper(field);
+            var fieldWrapper = new ClrFieldWrapper(field);
 
             fieldWrapper.DeclaringType.AsType().ShouldBe(typeof(FieldHelper));
             fieldWrapper.Name.ShouldBe(field.Name);

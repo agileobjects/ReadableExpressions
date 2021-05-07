@@ -22,7 +22,7 @@
             this Type type,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            return BclTypeWrapper.For(type).GetFriendlyName(configuration);
+            return ClrTypeWrapper.For(type).GetFriendlyName(configuration);
         }
 
         /// <summary>

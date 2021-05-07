@@ -12,7 +12,7 @@
             MethodInfo method,
             TranslationSettings settings)
         {
-            return new BclMethodWrapper(method, settings).GetAccessibilityForTranslation();
+            return new ClrMethodWrapper(method, settings).GetAccessibilityForTranslation();
         }
 
         public static string GetAccessibilityForTranslation(this IMember member)

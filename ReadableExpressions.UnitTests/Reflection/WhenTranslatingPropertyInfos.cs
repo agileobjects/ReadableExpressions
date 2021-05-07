@@ -44,7 +44,7 @@
             var property = typeof(PropertyHelper)
                 .GetPublicInstanceProperty(nameof(PropertyHelper.InstancePublicGetSet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -86,7 +86,7 @@
             var property = typeof(PropertyHelper)
                 .GetPublicStaticProperty(nameof(PropertyHelper.StaticPublicGetSet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -131,7 +131,7 @@
             var property = typeof(PropertyHelper)
                 .GetNonPublicInstanceProperty(nameof(PropertyHelper.InstanceInternalGetPrivateSet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -179,7 +179,7 @@
                 .GetNonPublicInstanceProperty(
                     nameof(PropertyHelper.InstanceProtectedInternalGetProtectedSet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -225,7 +225,7 @@
             var property = typeof(PropertyHelper)
                 .GetNonPublicInstanceProperty("InstanceProtectedGetPrivateProtectedSet");
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -270,7 +270,7 @@
             var property = typeof(PropertyHelper)
                 .GetNonPublicInstanceProperty("InstancePrivateGetSet");
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(PropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -315,7 +315,7 @@
             var property = typeof(AbstractPropertyHelper)
                 .GetPublicInstanceProperty(nameof(AbstractPropertyHelper.AbstractPublicGet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(AbstractPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -359,7 +359,7 @@
             var property = typeof(DerivedPropertyHelper)
                 .GetPublicInstanceProperty(nameof(DerivedPropertyHelper.AbstractPublicGet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(DerivedPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -403,7 +403,7 @@
             var property = typeof(AbstractPropertyHelper)
                 .GetPublicInstanceProperty(nameof(AbstractPropertyHelper.VirtualPublicGet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(AbstractPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);
@@ -447,7 +447,7 @@
             var property = typeof(DerivedPropertyHelper)
                 .GetPublicInstanceProperty(nameof(DerivedPropertyHelper.VirtualPublicGet));
 
-            var propertyWrapper = new BclPropertyWrapper(property, TestSettings);
+            var propertyWrapper = new ClrPropertyWrapper(property, TestSettings);
 
             propertyWrapper.DeclaringType.AsType().ShouldBe(typeof(DerivedPropertyHelper));
             propertyWrapper.Name.ShouldBe(property.Name);

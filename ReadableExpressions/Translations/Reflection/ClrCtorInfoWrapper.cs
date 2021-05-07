@@ -8,20 +8,20 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// An <see cref="IConstructor"/> describing a System.Reflection.ConstructorInfo.
     /// </summary>
-    public class BclCtorInfoWrapper : BclMethodWrapperBase, IConstructor
+    public class ClrCtorInfoWrapper : ClrMethodWrapperBase, IConstructor
     {
         private readonly ConstructorInfo _ctorInfo;
         private IType _declaringType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BclCtorInfoWrapper"/> class for the given
+        /// Initializes a new instance of the <see cref="ClrCtorInfoWrapper"/> class for the given
         /// <paramref name="ctorInfo"/>.
         /// </summary>
         /// <param name="ctorInfo">
-        /// The ConstructorInfo to which the <see cref="BclCtorInfoWrapper"/> relates.
+        /// The ConstructorInfo to which the <see cref="ClrCtorInfoWrapper"/> relates.
         /// </param>
         [DebuggerStepThrough]
-        public BclCtorInfoWrapper(ConstructorInfo ctorInfo)
+        public ClrCtorInfoWrapper(ConstructorInfo ctorInfo)
             : base(ctorInfo)
         {
             _ctorInfo = ctorInfo;
@@ -35,7 +35,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public override IType ReturnType
-            => _declaringType ??= BclTypeWrapper.For(_ctorInfo.DeclaringType);
+            => _declaringType ??= ClrTypeWrapper.For(_ctorInfo.DeclaringType);
 
         /// <inheritdoc />
         public override ReadOnlyCollection<IGenericParameter> GetGenericArguments()
