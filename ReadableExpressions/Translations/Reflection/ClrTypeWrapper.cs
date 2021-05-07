@@ -232,30 +232,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc />
-        public bool IsGenericParameter
-        {
-            get
-            {
-#if NETSTANDARD1_0
-                return _type.GetTypeInfo().IsGenericParameter;
-#else
-                return _type.IsGenericParameter;
-#endif
-            }
-        }
+        public bool IsGenericParameter => _type.IsGenericParameter();
 
         /// <inheritdoc />
-        public GenericParameterAttributes Constraints
-        {
-            get
-            {
-#if NETSTANDARD1_0
-                return _type.GetTypeInfo().GenericParameterAttributes;
-#else
-                return _type.GenericParameterAttributes;
-#endif
-            }
-        }
+        public GenericParameterAttributes Constraints => _type.GetConstraints();
 
         /// <inheritdoc />
         public ReadOnlyCollection<IType> ConstraintTypes
@@ -269,7 +249,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         private IList<IType> GetUniqueConstraintTypes()
         {
-            var typeConstraints = GetConstraintTypes().ProjectToArray(For);
+            var typeConstraints = _type.GetConstraintTypes().ProjectToArray(For);
             var constraintCount = typeConstraints.Length;
 
             switch (constraintCount)
@@ -314,15 +294,6 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
                     return constraints;
             }
-        }
-
-        private IList<Type> GetConstraintTypes()
-        {
-#if NETSTANDARD1_0
-            return _type.GetTypeInfo().GetGenericParameterConstraints();
-#else
-            return _type.GetGenericParameterConstraints();
-#endif
         }
 
         /// <inheritdoc />
