@@ -90,7 +90,7 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnUpcastToObjectExpression()
+        public void ShouldTranslateAnUpcastClassToObjectExpression()
         {
             var streamVariable = Variable(typeof(Stream), "stream");
             var upcastStreamToObject = Convert(streamVariable, typeof(object));
@@ -98,6 +98,17 @@
             var translated = upcastStreamToObject.ToReadableString();
 
             translated.ShouldBe("(object)stream");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnUpcastStringToObjectExpression()
+        {
+            var stringVariable = Variable(typeof(string), "str");
+            var upcastStringToObject = Convert(stringVariable, typeof(object));
+
+            var translated = upcastStringToObject.ToReadableString();
+
+            translated.ShouldBe("str");
         }
 
         [Fact]

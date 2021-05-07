@@ -25,7 +25,7 @@
             {
                 case ExpressionType.Convert:
                 case ConvertChecked:
-                    if (cast.Type == typeof(object) && cast.Operand.Type.IsValueType())
+                    if (IsBoxing(cast))
                     {
                         // Don't bother to show boxing:
                         return castValueTranslation;
@@ -66,6 +66,12 @@
             }
 
             return new StandardCastTranslation(cast, castValueTranslation, context);
+        }
+
+        private static bool IsBoxing(UnaryExpression cast)
+        {
+            return cast.Type == typeof(object) &&
+                  (cast.Operand.Type == typeof(string) || cast.Operand.Type.IsValueType());
         }
 
         private static bool IsDelegateCast(UnaryExpression cast, out MethodCallExpression createDelegateCall)
