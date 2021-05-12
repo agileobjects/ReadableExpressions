@@ -1160,7 +1160,7 @@
                 return expression;
             }
 
-            return expressionFactory.Invoke(expression, subject, expressions);
+            return expressionFactory.Invoke(expression, subject, updatedArguments);
         }
 
         private TConstruct VisitConstruct<TConstruct>(
