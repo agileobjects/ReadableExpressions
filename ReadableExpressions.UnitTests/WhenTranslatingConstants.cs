@@ -372,7 +372,7 @@
 
             var translated = regexConstant.ToReadableString();
 
-            translated.ShouldBe("Regex /* ^[0-9]+$ */");
+            translated.ShouldBe("new Regex(\"^[0-9]+$\")");
         }
 
         [Fact]

@@ -282,8 +282,11 @@
                 return CannotTranslate(out translation);
             }
 
-            translation = FixedValueTranslation(constant, context);
-            translation = new WrappedTranslation("Regex /* ", translation, " */");
+            var newRegex = Expression.New(
+                typeof(Regex).GetPublicInstanceConstructor(typeof(string)),
+                Expression.Constant(constant.Value.ToString()));
+
+            translation = NewingTranslation.For(newRegex, context);
             return true;
         }
 
