@@ -475,6 +475,38 @@
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldTranslateAStringArrayConstant()
+        {
+            var arrayConstant = Constant(new[] { "One", "Two", "Three" }, typeof(string[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new[] { \"One\", \"Two\", \"Three\" }");
+        }
+
+        [Fact]
+        public void ShouldTranslateATimeSpanArrayConstant()
+        {
+            var arrayConstant = Constant(
+                new[] { TimeSpan.FromHours(1), TimeSpan.FromHours(2) },
+                typeof(TimeSpan[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new[] { TimeSpan.FromHours(1), TimeSpan.FromHours(2) }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnEmptyIntArrayConstant()
+        {
+            var arrayConstant = Constant(new int[0], typeof(int[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new int[0]");
+        }
+
         // See https://github.com/agileobjects/ReadableExpressions/issues/35
         [Fact]
         public void ShouldUseAUserDefinedConstantTranslator()

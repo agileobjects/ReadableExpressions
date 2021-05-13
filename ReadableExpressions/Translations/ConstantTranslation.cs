@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,15 +10,14 @@
     using System.Text.RegularExpressions;
     using Extensions;
     using Formatting;
+    using Initialisations;
     using NetStandardPolyfills;
     using static System.Globalization.CultureInfo;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
+    using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #else
     using static System.Linq.Expressions.ExpressionType;
-#endif
-#if NET35
-    using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #endif
     using static Formatting.TokenType;
 
@@ -141,6 +141,7 @@
                 case NetStandardTypeCode.Object:
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
+                        TryGetSimpleArrayTranslation(constant, context, out translation) ||
                         TryGetRegexTranslation(constant, context, out translation) ||
                         TryTranslateDefault<Guid>(constant, context, out translation) ||
                         TimeSpanConstantTranslation.TryCreate(constant, context, out translation))
@@ -165,8 +166,7 @@
                     return true;
             }
 
-            translation = null;
-            return false;
+            return CannotTranslate(out translation);
         }
 
         private static bool TryTranslateDefault<T>(
@@ -176,8 +176,7 @@
         {
             if ((constant.Type != typeof(T)) || !constant.Value.Equals(default(T)))
             {
-                translation = null;
-                return false;
+                return CannotTranslate(out translation);
             }
 
             translation = DefaultValueTranslation.For(constant, context);
@@ -241,8 +240,36 @@
                 return true;
             }
 
-            translation = null;
-            return false;
+            return CannotTranslate(out translation);
+        }
+
+        private static bool TryGetSimpleArrayTranslation(
+            ConstantExpression constant,
+            ITranslationContext context,
+            out ITranslation translation)
+        {
+            if (!constant.Type.IsArray)
+            {
+                return CannotTranslate(out translation);
+            }
+
+            var elementType = constant.Type.GetElementType();
+
+            if (elementType != typeof(string) &&
+               !elementType.IsPrimitive() &&
+               !elementType.IsValueType())
+            {
+                return CannotTranslate(out translation);
+            }
+
+            var array = (Array)constant.Value;
+
+            var arrayInit = Expression.NewArrayInit(elementType, array
+                .Cast<object>()
+                .Project<object, Expression>(item => Expression.Constant(item, elementType)));
+
+            translation = ArrayInitialisationTranslation.For(arrayInit, context);
+            return true;
         }
 
         private static bool TryGetRegexTranslation(
@@ -252,8 +279,7 @@
         {
             if (constant.Type != typeof(Regex))
             {
-                translation = null;
-                return false;
+                return CannotTranslate(out translation);
             }
 
             translation = FixedValueTranslation(constant, context);
@@ -401,14 +427,13 @@
                     return true;
                 }
 #endif
-                if (constant.Value is LambdaExpression lambda)
+                if (constant.Value is not LambdaExpression lambda)
                 {
-                    lambdaTranslation = new LambdaConstantTranslation(lambda, context);
-                    return true;
+                    return CannotTranslate(out lambdaTranslation);
                 }
 
-                lambdaTranslation = null;
-                return false;
+                lambdaTranslation = new LambdaConstantTranslation(lambda, context);
+                return true;
             }
 
             public ExpressionType NodeType => Constant;
@@ -452,8 +477,7 @@
             {
                 if (constant.Type != typeof(TimeSpan))
                 {
-                    timeSpanTranslation = null;
-                    return false;
+                    return CannotTranslate(out timeSpanTranslation);
                 }
 
                 if (TryTranslateDefault<TimeSpan>(constant, context, out timeSpanTranslation))
@@ -574,6 +598,12 @@
                 writer.WriteToTranslation(')');
                 return true;
             }
+        }
+
+        private static bool CannotTranslate(out ITranslation translation)
+        {
+            translation = null;
+            return false;
         }
     }
 }

@@ -34,9 +34,9 @@
                     .Expressions
                     .Project(exp => exp.Type)
                     .Distinct()
-                    .ToArray();
+                    .ToList();
 
-                useImplicitlyTypedArray = expressionTypes.Length == 1;
+                useImplicitlyTypedArray = expressionTypes.Count == 1;
             }
             else
             {
