@@ -27,6 +27,7 @@
         private IList<ParameterExpression> _joinedAssignmentVariables;
         private ICollection<BinaryExpression> _joinedAssignments;
         private ICollection<Expression> _assignedAssignments;
+        private ICollection<Expression> _nestedCasts;
         private Stack<BlockExpression> _blocks;
         private Stack<object> _constructs;
         private ICollection<ParameterExpression> _catchBlockVariables;
@@ -34,6 +35,7 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
+        private ICollection<ParameterExpression> _declaredOutputParameters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
@@ -108,6 +110,30 @@
         public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
 
         /// <summary>
+        /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
+        /// parameter that should be declared inline.
+        /// </summary>
+        /// <param name="parameter">The parameter for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="parameter"/> is an output parameter that should be
+        /// declared inline, otherwise false.
+        /// </returns>
+        public bool ShouldBeDeclaredInline(Expression parameter)
+        {
+            var declareInline =
+                _inlineOutputVariables.Contains(parameter) &&
+                _declaredOutputParameters?.Contains(parameter) != true;
+
+            if (declareInline)
+            {
+                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add((ParameterExpression)parameter);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an
         /// assignment where the assigned variable is declared as part of the assignment statement.
         /// </summary>
@@ -150,6 +176,19 @@
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
         /// <summary>
+        /// Returns a value indicating whether the given <paramref name="cast"/> is nested inside
+        /// another cast UnaryExpression, as part of a set of nested type casts.
+        /// </summary>
+        /// <param name="cast">
+        /// The UnaryExpression describing the cast for which to make the determination.
+        /// </param>
+        /// <returns>
+        /// True if the given <paramref name="cast"/> is nested inside another cast UnaryExpression,
+        /// otherwise false.
+        /// </returns>
+        public bool IsNestedCast(UnaryExpression cast) => _nestedCasts?.Contains(cast) == true;
+
+        /// <summary>
         /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
         /// final statement in a block, and so should be rendered as a return statement.
         /// </summary>
@@ -174,9 +213,27 @@
             => _chainedMethodCalls?.Contains(methodCall) == true;
 
         /// <summary>
-        /// Gets a Dictionary of ParameterExpression variables, keyed by their Type.
+        /// Returns the 1-based index of the given <paramref name="variable"/> in the set of
+        /// unnamed, accessed variables of its Type.
         /// </summary>
-        public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
+        /// <param name="variable">The variable for which to get the 1-based index.</param>
+        /// <returns>
+        /// The 1-based index of the given <paramref name="variable"/>, or null if only variable of
+        /// this Type is declared.
+        /// </returns>
+        public int? GetUnnamedVariableNumberOrNull(ParameterExpression variable)
+        {
+            var variablesOfType = UnnamedVariablesByType[variable.Type];
+
+            if (variablesOfType.Length == 1)
+            {
+                return null;
+            }
+
+            return Array.IndexOf(variablesOfType, variable, 0) + 1;
+        }
+
+        private Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
             => _unnamedVariablesByType ??= _accessedVariables?
                 .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
                 .GroupBy(variable => variable.Type)
@@ -214,9 +271,11 @@
                     case Constant:
                         return VisitAndConvert((ConstantExpression)expression);
 
-                    case ArrayLength:
                     case ExpressionType.Convert:
                     case ConvertChecked:
+                        return VisitAndConvertCast(expression);
+
+                    case ArrayLength:
                     case Decrement:
                     case Increment:
                     case IsFalse:
@@ -480,6 +539,30 @@
             return customExpression;
         }
 
+        private Expression VisitAndConvertCast(Expression castExpression)
+        {
+            return VisitConstruct(castExpression, cast =>
+            {
+                if (ParentConstructIsCast())
+                {
+                    (_nestedCasts ??= new List<Expression>()).Add(cast);
+                }
+
+                return VisitAndConvert((UnaryExpression)cast);
+            });
+        }
+
+        private bool ParentConstructIsCast()
+        {
+            if (_constructs.Count < 2)
+            {
+                return false;
+            }
+
+            var parent = _constructs.ElementAt(_constructs.Count - 2);
+            return parent is UnaryExpression { NodeType: ExpressionType.Convert or ConvertChecked };
+        }
+
         /// <summary>
         /// Visits the given <paramref name="conditional"/>, returning a replacement Expression if
         /// appropriate.
@@ -602,7 +685,7 @@
                 invocation,
                 invocation.Expression,
                 invocation.Arguments,
-                (inv, exp, args) => Expression.Invoke(exp, args));
+                (_, exp, args) => Expression.Invoke(exp, args));
         }
 
         /// <summary>
@@ -1196,47 +1279,6 @@
                         break;
                 }
                 break;
-            }
-        }
-
-        /// <summary>
-        /// Merges the results of the given <paramref name="otherAnalysis"/> with this
-        /// <see cref="ExpressionAnalysis"/>.
-        /// </summary>
-        /// <param name="otherAnalysis">The <see cref="ExpressionAnalysis"/> to merge into this one.</param>
-        protected void Merge(ExpressionAnalysis otherAnalysis)
-        {
-            if (otherAnalysis._inlineOutputVariables != null)
-            {
-                Merge(
-                    otherAnalysis._inlineOutputVariables,
-                   _inlineOutputVariables ??= new List<ParameterExpression>());
-            }
-
-            if (otherAnalysis._joinedAssignmentVariables != null)
-            {
-                Merge(
-                    otherAnalysis._joinedAssignmentVariables,
-                   _joinedAssignmentVariables ??= new List<ParameterExpression>());
-            }
-
-            if (otherAnalysis._joinedAssignments != null)
-            {
-                Merge(
-                    otherAnalysis._joinedAssignments,
-                   _joinedAssignments ??= new List<BinaryExpression>());
-            }
-        }
-
-        private void Merge<TExpression>(
-            IEnumerable<TExpression> sourceExpressions,
-            ICollection<TExpression> targetExpressions)
-        {
-            _inlineOutputVariables ??= new List<ParameterExpression>();
-
-            foreach (var expression in sourceExpressions)
-            {
-                targetExpressions.Add(expression);
             }
         }
 

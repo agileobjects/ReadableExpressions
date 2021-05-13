@@ -28,7 +28,7 @@
 
                     return new ReturnValueTranslation(@goto, context);
 
-                case GotoExpressionKind.Goto when context.GoesToReturnLabel(@goto):
+                case GotoExpressionKind.Goto when context.Analysis.GoesToReturnLabel(@goto):
                     goto case GotoExpressionKind.Return;
 
                 default:

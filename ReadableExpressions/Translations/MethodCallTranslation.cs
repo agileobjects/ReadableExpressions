@@ -101,7 +101,7 @@
 
             var methodCallTranslation = new StandardMethodCallTranslation(Call, subject, method, parameters, context);
 
-            if (context.IsPartOfMethodCallChain(methodCall))
+            if (context.Analysis.IsPartOfMethodCallChain(methodCall))
             {
                 methodCallTranslation.AsPartOfMethodCallChain();
             }

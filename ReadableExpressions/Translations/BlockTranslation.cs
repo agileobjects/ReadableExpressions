@@ -90,8 +90,8 @@
 
             var variablesByType = block
                 .Variables
-                .Except(context.InlineOutputVariables)
-                .Except(context.JoinedAssignmentVariables)
+                .Except(context.Analysis.InlineOutputVariables)
+                .Except(context.Analysis.JoinedAssignmentVariables)
                 .GroupBy(v => v.Type)
                 .ToArray();
 
@@ -133,7 +133,7 @@
 
                 if (Include(expression, block, context))
                 {
-                    var statementTranslation = context.IsJoinedAssignment(expression)
+                    var statementTranslation = context.Analysis.IsJoinedAssignment(expression)
                         ? new BlockAssignmentStatementTranslation((BinaryExpression)expression, context)
                         : new BlockStatementTranslation(expression, context);
 
@@ -204,7 +204,7 @@
             {
                 case Label:
                     return expression.HasReturnType() ||
-                           context.IsReferencedByGoto(((LabelExpression)expression).Target);
+                           context.Analysis.IsReferencedByGoto(((LabelExpression)expression).Target);
 
                 case Default when !expression.HasReturnType():
                     return false;

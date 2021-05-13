@@ -51,7 +51,7 @@
 
         private static string GetLabelNamePart(LabelExpression label, ITranslationContext context)
         {
-            if (context.IsReferencedByGoto(label.Target))
+            if (context.Analysis.IsReferencedByGoto(label.Target))
             {
                 return label.Target.Name.IsNullOrWhiteSpace() ? null : label.Target.Name;
             }

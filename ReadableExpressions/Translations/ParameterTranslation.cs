@@ -112,7 +112,7 @@
                 ITranslationContext context)
             {
                 var parameterName = parameter.Type.GetVariableNameInCamelCase(context.Settings);
-                var variableNumber = context.GetUnnamedVariableNumberOrNull(parameter);
+                var variableNumber = context.Analysis.GetUnnamedVariableNumberOrNull(parameter);
 
                 if (variableNumber.HasValue)
                 {

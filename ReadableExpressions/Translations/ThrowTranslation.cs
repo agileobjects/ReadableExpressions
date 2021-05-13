@@ -21,7 +21,7 @@
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             // unary.Operand is null when using Expression.Rethrow():
-            if ((throwExpression.Operand == null) || context.IsCatchBlockVariable(throwExpression.Operand))
+            if ((throwExpression.Operand == null) || context.Analysis.IsCatchBlockVariable(throwExpression.Operand))
             {
                 return;
             }

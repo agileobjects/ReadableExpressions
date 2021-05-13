@@ -1,13 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using System;
-    using System.Collections.Generic;
-    using Extensions;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Initialisations;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -23,8 +21,6 @@
     {
         private readonly Expression _expression;
         private readonly TranslationSettings _settings;
-        private readonly ExpressionAnalysis _expressionAnalysis;
-        private ICollection<ParameterExpression> _declaredOutputParameters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
@@ -49,60 +45,15 @@
         {
             _expression = expressionAnalysis.ResultExpression;
             _settings = settings;
-            _expressionAnalysis = expressionAnalysis;
+            Analysis = expressionAnalysis;
         }
+
+        /// <inheritdoc />
+        public ExpressionAnalysis Analysis { get; }
 
         #region ITranslationContext Members
 
         TranslationSettings ITranslationContext.Settings => _settings;
-
-        ICollection<ParameterExpression> ITranslationContext.InlineOutputVariables
-            => _expressionAnalysis.InlineOutputVariables;
-
-        bool ITranslationContext.ShouldBeDeclaredInline(ParameterExpression parameter)
-        {
-            var declareInline =
-                _expressionAnalysis.InlineOutputVariables.Contains(parameter) &&
-                _declaredOutputParameters?.Contains(parameter) != true;
-
-            if (declareInline)
-            {
-                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
-                return true;
-            }
-
-            return false;
-        }
-
-        ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
-            => _expressionAnalysis.JoinedAssignmentVariables;
-
-        bool ITranslationContext.IsJoinedAssignment(Expression expression)
-            => _expressionAnalysis.IsJoinedAssignment(expression);
-
-        bool ITranslationContext.IsCatchBlockVariable(Expression variable)
-            => _expressionAnalysis.IsCatchBlockVariable(variable);
-
-        bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
-            => _expressionAnalysis.IsReferencedByGoto(labelTarget);
-
-        bool ITranslationContext.GoesToReturnLabel(GotoExpression @goto)
-            => _expressionAnalysis.GoesToReturnLabel(@goto);
-
-        bool ITranslationContext.IsPartOfMethodCallChain(MethodCallExpression methodCall)
-            => _expressionAnalysis.IsPartOfMethodCallChain(methodCall);
-
-        int? ITranslationContext.GetUnnamedVariableNumberOrNull(ParameterExpression variable)
-        {
-            var variablesOfType = _expressionAnalysis.UnnamedVariablesByType[variable.Type];
-
-            if (variablesOfType.Length == 1)
-            {
-                return null;
-            }
-
-            return Array.IndexOf(variablesOfType, variable, 0) + 1;
-        }
 
         /// <inheritdoc />
         public virtual ITranslation GetTranslationFor(Expression expression)

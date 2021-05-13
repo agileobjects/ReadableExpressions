@@ -27,6 +27,11 @@
                 case ConvertChecked:
                     if (IsBoxing(cast))
                     {
+                        if (context.Analysis.IsNestedCast(cast))
+                        {
+                            break;
+                        }
+
                         // Don't bother to show boxing:
                         return castValueTranslation;
                     }
