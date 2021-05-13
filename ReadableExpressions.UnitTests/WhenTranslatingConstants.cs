@@ -486,6 +486,16 @@
         }
 
         [Fact]
+        public void ShouldTranslateAStringArrayICollectionConstant()
+        {
+            var arrayConstant = Constant(new[] { "Five", "Five", "Five" }, typeof(ICollection<string>));
+
+            var translated = arrayConstant.ToReadableString();
+            
+            translated.ShouldBe("(ICollection<string>)new[] { \"Five\", \"Five\", \"Five\" }");
+        }
+
+        [Fact]
         public void ShouldTranslateATimeSpanArrayConstant()
         {
             var arrayConstant = Constant(
@@ -505,6 +515,16 @@
             var translated = arrayConstant.ToReadableString();
 
             translated.ShouldBe("new int[0]");
+        }
+
+        [Fact]
+        public void ShouldTranslateADictionaryConstant()
+        {
+            var dictionaryConstant = Constant(new Dictionary<int, int>(0));
+
+            var translated = dictionaryConstant.ToReadableString();
+
+            translated.ShouldBe("Dictionary<int, int>");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/35

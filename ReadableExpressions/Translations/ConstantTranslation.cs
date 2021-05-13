@@ -248,12 +248,12 @@
             ITranslationContext context,
             out ITranslation translation)
         {
-            if (!constant.Type.IsArray)
+            if (constant.Value is not Array array)
             {
                 return CannotTranslate(out translation);
             }
 
-            var elementType = constant.Type.GetElementType();
+            var elementType = array.GetType().GetElementType();
 
             if (elementType != typeof(string) &&
                !elementType.IsPrimitive() &&
@@ -262,13 +262,14 @@
                 return CannotTranslate(out translation);
             }
 
-            var array = (Array)constant.Value;
-
             var arrayInit = Expression.NewArrayInit(elementType, array
                 .Cast<object>()
                 .Project<object, Expression>(item => Expression.Constant(item, elementType)));
 
-            translation = ArrayInitialisationTranslation.For(arrayInit, context);
+            translation = constant.Type.IsArray
+                ? ArrayInitialisationTranslation.For(arrayInit, context)
+                : CastTranslation.For(Expression.Convert(arrayInit, constant.Type), context);
+
             return true;
         }
 
