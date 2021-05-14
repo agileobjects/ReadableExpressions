@@ -106,7 +106,7 @@
             }
         }
 
-        private class ReturnValueTranslation : ITranslation
+        private class ReturnValueTranslation : ITranslation, IPotentialGotoTranslatable
         {
             private readonly ITranslation _returnValueTranslation;
 
@@ -124,6 +124,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public bool HasGoto => true;
 
             public int GetIndentSize() => _returnValueTranslation.GetIndentSize();
 

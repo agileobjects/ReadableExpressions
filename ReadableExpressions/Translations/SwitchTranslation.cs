@@ -172,7 +172,7 @@
                 {
                     lineCount += 1;
                 }
-                
+
                 ++i;
 
                 if (i == _casesCount)
@@ -270,6 +270,8 @@
         }
 
         private static bool WriteBreak(ITranslation caseTranslation)
-            => !((caseTranslation is IPotentialGotoTranslatable gotoTranslatable) && gotoTranslatable.HasGoto);
+        {
+            return caseTranslation is not IPotentialGotoTranslatable { HasGoto: true };
+        }
     }
 }

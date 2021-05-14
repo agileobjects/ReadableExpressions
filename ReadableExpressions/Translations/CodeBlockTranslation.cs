@@ -15,7 +15,8 @@
     public class CodeBlockTranslation :
         ITranslation,
         IPotentialMultiStatementTranslatable,
-        IPotentialSelfTerminatingTranslatable
+        IPotentialSelfTerminatingTranslatable,
+        IPotentialGotoTranslatable
     {
         private readonly ITranslation _translation;
         private readonly bool _isEmptyTranslation;
@@ -87,6 +88,9 @@
         /// character.
         /// </summary>
         public bool IsTerminated => _ensureTerminated || _translation.IsTerminated();
+
+        bool IPotentialGotoTranslatable.HasGoto
+            => _translation is IPotentialGotoTranslatable { HasGoto: true };
 
         /// <summary>
         /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> will produce output
