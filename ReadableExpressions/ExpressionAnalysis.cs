@@ -559,7 +559,7 @@
                 return false;
             }
 
-            var parent = _constructs.ElementAt(_constructs.Count - 2);
+            var parent = _constructs.ElementAt(1);
             return parent is UnaryExpression { NodeType: ExpressionType.Convert or ConvertChecked };
         }
 
