@@ -211,19 +211,22 @@
         {
             if (argument.NodeType != Lambda)
             {
-                lambdaBodyMethodCall = null;
-                return false;
+                return CannotBeConverted(out lambdaBodyMethodCall);
             }
 
             var argumentLambda = (LambdaExpression)argument;
 
             if (argumentLambda.Body.NodeType != Call)
             {
-                lambdaBodyMethodCall = null;
-                return false;
+                return CannotBeConverted(out lambdaBodyMethodCall);
             }
 
-            lambdaBodyMethodCall = (MethodCallExpression)argumentLambda.Body;
+            lambdaBodyMethodCall = argumentLambda.Body as MethodCallExpression;
+
+            if (lambdaBodyMethodCall == null)
+            {
+                return CannotBeConverted(out lambdaBodyMethodCall);
+            }
 
             IList<Expression> lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments;
 
@@ -244,6 +247,12 @@
                 .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
 
             return allArgumentTypesMatch;
+        }
+
+        private static bool CannotBeConverted(out MethodCallExpression lambdaBodyMethodCall)
+        {
+            lambdaBodyMethodCall = null;
+            return false;
         }
 
         #region Factory Methods
