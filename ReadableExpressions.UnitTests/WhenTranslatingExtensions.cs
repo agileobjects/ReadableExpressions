@@ -60,7 +60,8 @@
 
             var analysis = ExpressionAnalysis.For(container, new TestTranslationSettings());
 
-            analysis.JoinedAssignmentVariables.ShouldBe(intVariable1, intVariable2);
+            analysis.ShouldBeDeclaredInVariableList(intVariable1).ShouldBeFalse();
+            analysis.ShouldBeDeclaredInVariableList(intVariable2).ShouldBeFalse();
         }
 
         #region Helper Members

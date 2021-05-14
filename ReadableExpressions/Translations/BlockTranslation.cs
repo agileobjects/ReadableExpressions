@@ -90,8 +90,7 @@
 
             var variablesByType = block
                 .Variables
-                .Except(context.Analysis.InlineOutputVariables)
-                .Except(context.Analysis.JoinedAssignmentVariables)
+                .Filter(context.Analysis.ShouldBeDeclaredInVariableList)
                 .GroupBy(v => v.Type)
                 .ToArray();
 
@@ -250,18 +249,9 @@
 
             var penultimateTranslation = statementTranslations[translationCount - 2];
 
-            switch (penultimateTranslation.NodeType)
-            {
-                case Label:
-                    return false;
-            }
-
-            if (penultimateTranslation.WriteBlankLineAfter())
-            {
-                return false;
-            }
-
-            return !penultimateTranslation.Expression.IsComment();
+            return (penultimateTranslation.NodeType != Label) &&
+                   !penultimateTranslation.WriteBlankLineAfter() &&
+                   !penultimateTranslation.Expression.IsComment();
         }
 
         public ExpressionType NodeType => Block;

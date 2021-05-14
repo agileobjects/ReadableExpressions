@@ -70,8 +70,7 @@
 
         /// <summary>
         /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
-        /// to the Expression returned from <see cref="VisitAndConvert(Expression)"/>, then calls
-        /// <see cref="Finalise"/>.
+        /// to the Expression returned from <see cref="VisitAndConvert(Expression)"/>.
         /// </summary>
         /// <param name="expression">The Expression to analyse.</param>
         protected virtual void Analyse(Expression expression)
@@ -89,8 +88,6 @@
                     ResultExpression = VisitAndConvert(expression);
                     break;
             }
-
-            Finalise();
         }
 
         /// <summary>
@@ -99,15 +96,20 @@
         public Expression ResultExpression { get; private set; }
 
         /// <summary>
-        /// Gets the variables in the translated Expression which are first used as an output
-        /// parameter argument.
+        /// Determines if the given <paramref name="variable"/> should be declared in a list of
+        /// variables at the start of the scope in which it is used.
         /// </summary>
-        public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
-
-        /// <summary>
-        /// Gets the variables which can be declared as part of their initial assignment statement.
-        /// </summary>
-        public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
+        /// <param name="variable">The ParameterExpression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="variable"/> should be declared in a list of variables
+        /// at the start of the scope in which it is used, or false if the variable will be declared
+        /// inline when it is assigned.
+        /// </returns>
+        public virtual bool ShouldBeDeclaredInVariableList(ParameterExpression variable)
+        {
+            return _inlineOutputVariables?.Contains(variable) != true &&
+                   _joinedAssignmentVariables?.Contains(variable) != true;
+        }
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
@@ -121,7 +123,7 @@
         public bool ShouldBeDeclaredInline(Expression parameter)
         {
             var declareInline =
-                _inlineOutputVariables.Contains(parameter) &&
+                _inlineOutputVariables?.Contains(parameter) == true &&
                 _declaredOutputParameters?.Contains(parameter) != true;
 
             if (declareInline)
@@ -1289,18 +1291,6 @@
                 }
                 break;
             }
-        }
-
-        /// <summary>
-        /// Finalises this <see cref="ExpressionAnalysis"/>, ensuring any required members are
-        /// initialised.
-        /// </summary>
-        /// <returns>This finalised <see cref="ExpressionAnalysis"/>.</returns>
-        protected virtual ExpressionAnalysis Finalise()
-        {
-            _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            return this;
         }
     }
 }
