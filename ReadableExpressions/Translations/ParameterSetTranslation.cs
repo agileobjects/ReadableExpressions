@@ -216,7 +216,8 @@
 
             var argumentLambda = (LambdaExpression)argument;
 
-            if (argumentLambda.Body.NodeType != Call)
+            if ((argumentLambda.Body.NodeType != Call) ||
+                (argumentLambda.ReturnType != argumentLambda.Body.Type))
             {
                 return CannotBeConverted(out lambdaBodyMethodCall);
             }

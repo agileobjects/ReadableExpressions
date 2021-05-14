@@ -749,6 +749,17 @@ HelperClass.GiveMeALambda((string1, string2) =>
         }
 
         [Fact]
+        public void ShouldNotConvertAnIgnoredReturnTypeToAMethodGroup()
+        {
+            var removeItems = CreateLambda((List<int> items, List<int> itemsToRemove)
+                => itemsToRemove.ForEach(item => items.Remove(item)));
+
+            var translated = removeItems.Body.ToReadableString();
+
+            translated.ShouldBe("itemsToRemove.ForEach(item => items.Remove(item))");
+        }
+
+        [Fact]
         public void ShouldSplitLongChainedMethodsOntoMultipleLines()
         {
             var longMethodChain = CreateLambda(() =>
