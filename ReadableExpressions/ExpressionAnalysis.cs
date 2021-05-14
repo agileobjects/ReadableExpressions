@@ -700,7 +700,16 @@
         protected virtual Expression VisitAndConvert(LabelExpression label)
             => label.Update(label.Target, VisitAndConvert(label.DefaultValue));
 
-        private LambdaExpression VisitAndConvert(LambdaExpression lambda)
+        /// <summary>
+        /// Visits the given <paramref name="lambda"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="lambda">The LambdaExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="lambda"/>, or the given
+        /// LambdaExpression if no replacement is required.
+        /// </returns>
+        protected virtual LambdaExpression VisitAndConvert(LambdaExpression lambda)
         {
             if (lambda == null)
             {
