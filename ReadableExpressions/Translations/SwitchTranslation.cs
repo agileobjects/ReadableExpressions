@@ -269,9 +269,7 @@
             WriteCaseBody(_defaultCaseTranslation, writer);
         }
 
-        private static bool WriteBreak(ITranslation caseTranslation)
-        {
-            return caseTranslation is not IPotentialGotoTranslatable { HasGoto: true };
-        }
+        private static bool WriteBreak(ITranslatable caseTranslation) 
+            => !caseTranslation.HasGoto();
     }
 }

@@ -600,6 +600,43 @@ catch
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldNotIncludeAnUnreachableReturnStatement()
+        {
+            var stringParam = Parameter(typeof(string), "str");
+
+            var returnTarget = Label(typeof(int), "Return");
+
+            var @switch = Switch(
+                stringParam,
+                SwitchCase(Return(returnTarget, Constant(1)), Constant("One")),
+                SwitchCase(Return(returnTarget, Constant(2)), Constant("Two")),
+                SwitchCase(Return(returnTarget, Constant(3)), Constant("Three")));
+
+            var @throw = Throw(New(typeof(NotSupportedException)
+                .GetPublicInstanceConstructor(Type.EmptyTypes)));
+
+            var block = Block(@switch, @throw, Label(returnTarget, Constant(0)));
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+switch (str)
+{
+    case ""One"":
+        return 1;
+
+    case ""Two"":
+        return 2;
+
+    case ""Three"":
+        return 3;
+}
+
+throw new NotSupportedException();";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         // See https://github.com/agileobjects/ReadableExpressions/issues/78
         [Fact]
         public void ShouldHandleAnEmptyBlock()

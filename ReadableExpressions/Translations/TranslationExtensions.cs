@@ -47,8 +47,7 @@
                     return false;
             }
 
-            return (translation is IPotentialMultiStatementTranslatable multiStatementTranslatable) &&
-                    multiStatementTranslatable.IsMultiStatement;
+            return translation is IPotentialMultiStatementTranslatable { IsMultiStatement: true };
         }
 
         public static bool IsTerminated(this ITranslatable translation)
@@ -58,10 +57,7 @@
         }
 
         public static bool HasGoto(this ITranslatable translation)
-        {
-            return (translation is IPotentialGotoTranslatable gotoTranslatable) &&
-                   gotoTranslatable.HasGoto;
-        }
+            => translation is IPotentialGotoTranslatable { HasGoto: true };
 
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
             => translatable.TranslationSize > 100;

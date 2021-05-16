@@ -140,14 +140,24 @@
         /// assignment where the assigned variable is declared as part of the assignment statement.
         /// </summary>
         /// <param name="expression">The Expression to evaluate.</param>
+        /// <param name="assignment">
+        /// Populated with the BinaryExpression representing the assignment statement, if the given
+        /// <paramref name="expression"/> represents an assignment.
+        /// </param>
         /// <returns>
         /// True if the given <paramref name="expression"/> represents an assignment where the assigned
         /// variable is declared as part of the assignment statement, otherwise false.
         /// </returns>
-        public bool IsJoinedAssignment(Expression expression)
+        public bool IsJoinedAssignment(Expression expression, out BinaryExpression assignment)
         {
-            return (expression.NodeType == Assign) &&
-                   _joinedAssignments?.Contains((BinaryExpression)expression) == true;
+            if (expression.NodeType != Assign || _joinedAssignments == null)
+            {
+                assignment = null;
+                return false;
+            }
+
+            assignment = (BinaryExpression)expression;
+            return _joinedAssignments.Contains(assignment);
         }
 
         /// <summary>

@@ -89,8 +89,7 @@
         /// </summary>
         public bool IsTerminated => _ensureTerminated || _translation.IsTerminated();
 
-        bool IPotentialGotoTranslatable.HasGoto
-            => _translation is IPotentialGotoTranslatable { HasGoto: true };
+        bool IPotentialGotoTranslatable.HasGoto => _translation.HasGoto();
 
         /// <summary>
         /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> will produce output
