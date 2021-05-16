@@ -92,7 +92,7 @@
 
             var variablesByType = block
                 .Variables
-                .Filter(context.Analysis.ShouldBeDeclaredInVariableList)
+                .Filter(v => context.Analysis.ShouldBeDeclaredInVariableList(v, block))
                 .GroupBy(v => v.Type)
                 .ToArray();
 

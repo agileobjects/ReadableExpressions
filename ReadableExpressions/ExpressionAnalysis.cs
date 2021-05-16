@@ -97,15 +97,18 @@
 
         /// <summary>
         /// Determines if the given <paramref name="variable"/> should be declared in a list of
-        /// variables at the start of the scope in which it is used.
+        /// variables at the start of the given <paramref name="block"/> to which it belongs.
         /// </summary>
         /// <param name="variable">The ParameterExpression for which to make the determination.</param>
+        /// <param name="block">The BlockExpression to which the <paramref name="variable"/> belongs.</param>
         /// <returns>
         /// True if the given <paramref name="variable"/> should be declared in a list of variables
-        /// at the start of the scope in which it is used, or false if the variable will be declared
-        /// inline when it is assigned.
+        /// at the given <paramref name="block"/> to which it belongs, or false if the variable will
+        /// be declared inline when it is assigned or passed as an out parameter.
         /// </returns>
-        public virtual bool ShouldBeDeclaredInVariableList(ParameterExpression variable)
+        public virtual bool ShouldBeDeclaredInVariableList(
+            ParameterExpression variable,
+            BlockExpression block)
         {
             return _inlineOutputVariables?.Contains(variable) != true &&
                    _joinedAssignmentVariables?.Contains(variable) != true;
