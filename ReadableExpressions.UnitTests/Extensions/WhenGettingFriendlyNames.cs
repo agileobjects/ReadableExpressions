@@ -80,6 +80,16 @@
         }
 
         [Fact]
+        public void ShouldUseFriendlyNamesForGenericTypes()
+        {
+            var genericListEnumeratorType = Expression.Constant(typeof(HashSet<decimal[]>), typeof(Type));
+
+            var translated = genericListEnumeratorType.ToReadableString();
+
+            translated.ShouldBe("typeof(HashSet<decimal[]>)");
+        }
+
+        [Fact]
         public void ShouldUseFriendlyNamesForGenericNestedTypes()
         {
             var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
