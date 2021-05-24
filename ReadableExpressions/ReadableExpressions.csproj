@@ -35,6 +35,8 @@
     <PackageReleaseNotes>- Adding .NET Standard 2.0 target
 - Fixing escape character translation verbatim strings
     </PackageReleaseNotes>
+    <PackageOutputPath>../NuGet</PackageOutputPath>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
