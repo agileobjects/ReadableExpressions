@@ -27,6 +27,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public static readonly IType ValueType = new ClrBaseTypeWrapper<ValueType>(baseType: Object);
 
         /// <summary>
+        /// Gets the singleton <see cref="IType"/> representing System.Attribute.
+        /// </summary>
+        public static readonly IType Attribute = new ClrBaseTypeWrapper<Attribute>(baseType: Object);
+
+        /// <summary>
         /// Gets the singleton <see cref="IType"/> representing System.String.
         /// </summary>
         public static readonly IType String = new ClrTypeWrapper(typeof(string));
@@ -44,8 +49,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 #if FEATURE_CONCURRENT_DICTIONARY
         private static readonly ConcurrentDictionary<Type, Lazy<IType>> _types = new();
 #else
-        private static readonly object _typeCacheLock = new object();
-        private static readonly Dictionary<Type, IType> _types = new Dictionary<Type, IType>();
+        private static readonly object _typeCacheLock = new();
+        private static readonly Dictionary<Type, IType> _types = new();
 #endif
         private readonly Type _type;
         private IType _baseType;
@@ -100,9 +105,19 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 return Object;
             }
 
+            if (type == typeof(Enum))
+            {
+                return Enum;
+            }
+
             if (type == typeof(ValueType))
             {
                 return ValueType;
+            }
+
+            if (type == typeof(Attribute))
+            {
+                return Attribute;
             }
 
 #if FEATURE_CONCURRENT_DICTIONARY
