@@ -430,6 +430,8 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         private class ClrBaseTypeWrapper<T> : IType
         {
+            private static readonly Type _clrType = typeof(T);
+
             private IEnumerable<IMember> _allMembers;
 
             public ClrBaseTypeWrapper(IType baseType)
@@ -442,27 +444,27 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             public ReadOnlyCollection<IType> AllInterfaces
                 => Enumerable<IType>.EmptyReadOnlyCollection;
 
-            public Assembly Assembly => typeof(T).GetAssembly();
+            public Assembly Assembly => _clrType.GetAssembly();
 
-            public string Namespace => typeof(T).Namespace;
+            public string Namespace => _clrType.Namespace;
 
-            public string Name => typeof(T).Name;
+            public string Name => _clrType.Name;
 
-            public string FullName => typeof(T).FullName;
+            public string FullName => _clrType.FullName;
 
             public bool IsInterface => false;
 
-            public bool IsClass => typeof(T).IsClass();
+            public bool IsClass => _clrType.IsClass();
 
-            public bool IsEnum => typeof(T).IsEnum();
+            public bool IsEnum => _clrType == typeof(Enum) || _clrType.IsEnum();
 
             public bool IsPrimitive => false;
 
             public bool IsAnonymous => false;
 
-            public bool IsAbstract => typeof(T).IsAbstract();
+            public bool IsAbstract => _clrType.IsAbstract();
 
-            public bool IsSealed => typeof(T).IsSealed();
+            public bool IsSealed => _clrType.IsSealed();
 
             public bool IsEnumerable => false;
 
@@ -494,7 +496,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public IType ElementType => IsByRef ? this : null;
 
-            public bool IsObjectType => true;
+            public bool IsObjectType => _clrType == typeof(object);
 
             public bool IsNullable => false;
 
@@ -502,7 +504,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public bool IsByRef => false;
 
-            public IEnumerable<IMember> AllMembers => _allMembers ??= typeof(T).GetAllMembers();
+            public IEnumerable<IMember> AllMembers => _allMembers ??= _clrType.GetAllMembers();
 
             public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator)
                 => AllMembers.Select(selectionConfiguator);
@@ -535,13 +537,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public bool Equals(IType otherType) => AreEqual(this, otherType);
 
-            public Type AsType() => typeof(T);
+            public Type AsType() => _clrType;
 
             public override int GetHashCode()
             {
                 unchecked
                 {
-                    return typeof(T).GetHashCode() * 397;
+                    return _clrType.GetHashCode() * 397;
                 }
             }
         }

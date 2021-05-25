@@ -315,7 +315,7 @@
                 var formattingSize = 0;
                 var enumTotalValue = 0L;
 
-                foreach (var enumOption in Enum.GetValues(enumType))
+                foreach (var enumOption in Enum.GetValues(enumType).Cast<object>().Reverse())
                 {
                     var enumOptionLongValue = GetLongValue(enumOption);
 
@@ -336,7 +336,7 @@
                     formattingSize += _typeNameTranslation.FormattingSize;
                     enumTotalValue += enumOptionLongValue;
 
-                    _enumMemberNames.Add(enumOptionName);
+                    _enumMemberNames.Insert(0, enumOptionName);
 
                     if (enumTotalValue == enumLongValue)
                     {

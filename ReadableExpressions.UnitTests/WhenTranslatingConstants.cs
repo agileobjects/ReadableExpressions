@@ -217,6 +217,16 @@
         }
 
         [Fact]
+        public void ShouldTranslateAConjunctionFlagsEnumValue()
+        {
+            var flagsEnumConstant = Constant(AttributeTargets.All, typeof(AttributeTargets));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("AttributeTargets.All");
+        }
+
+        [Fact]
         public void ShouldTranslateADefaultDate()
         {
             var dateConstant = Constant(default(DateTime));
