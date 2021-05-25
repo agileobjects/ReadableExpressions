@@ -5,6 +5,7 @@
     using System.Data.Common;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using Common;
 #if !NET35
@@ -183,6 +184,36 @@
             var translated = enumConstant.ToReadableString();
 
             translated.ShouldBe("OddNumber.One");
+        }
+
+        [Fact]
+        public void ShouldTranslateADefaultFlagsEnumMember()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Default, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Default");
+        }
+
+        [Fact]
+        public void ShouldTranslateASingleFlagsEnumMember()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Instance, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Instance");
+        }
+
+        [Fact]
+        public void ShouldTranslateACompositeFlagsEnumValue()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Public | BindingFlags.Static, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Static | BindingFlags.Public");
         }
 
         [Fact]

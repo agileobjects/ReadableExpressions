@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -12,6 +13,7 @@
     using Formatting;
     using Initialisations;
     using NetStandardPolyfills;
+    using static System.Convert;
     using static System.Globalization.CultureInfo;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -42,7 +44,9 @@
 
             if (constant.Type.IsEnum())
             {
-                return new EnumConstantTranslation(constant, context);
+                return constant.Type.HasAttribute<FlagsAttribute>()
+                    ? new FlagsEnumConstantTranslation(constant, context)
+                    : new EnumConstantTranslation(constant, context);
             }
 
             if (TryTranslateFromTypeCode(constant, context, out var translation))
@@ -291,16 +295,107 @@
             return true;
         }
 
+        private class FlagsEnumConstantTranslation : ITranslation
+        {
+            private readonly ITranslation _typeNameTranslation;
+            private readonly IList<string> _enumMemberNames;
+            private readonly int _enumMembersCount;
+
+            public FlagsEnumConstantTranslation(ConstantExpression constant, ITranslationContext context)
+            {
+                var enumType = constant.Type;
+                _typeNameTranslation = context.GetTranslationFor(enumType);
+
+                var enumValue = constant.Value;
+                var enumLongValue = GetLongValue(enumValue);
+
+                _enumMemberNames = new List<string>();
+
+                var translationSize = 0;
+                var formattingSize = 0;
+                var enumTotalValue = 0L;
+
+                foreach (var enumOption in Enum.GetValues(enumType))
+                {
+                    var enumOptionLongValue = GetLongValue(enumOption);
+
+                    if (enumOptionLongValue == 0)
+                    {
+                        if (enumLongValue != 0)
+                        {
+                            continue;
+                        }
+                    }
+                    else if ((enumLongValue | enumOptionLongValue) != enumLongValue)
+                    {
+                        continue;
+                    }
+
+                    var enumOptionName = enumOption.ToString();
+                    translationSize += _typeNameTranslation.TranslationSize + 1 + enumOptionName.Length;
+                    formattingSize += _typeNameTranslation.FormattingSize;
+                    enumTotalValue += enumOptionLongValue;
+
+                    _enumMemberNames.Add(enumOptionName);
+
+                    if (enumTotalValue == enumLongValue)
+                    {
+                        break;
+                    }
+                }
+
+                _enumMembersCount = _enumMemberNames.Count;
+                TranslationSize = translationSize;
+                FormattingSize = formattingSize;
+            }
+
+            #region Setup
+
+            private static long GetLongValue(object enumValue)
+                => (long)ChangeType(enumValue, typeof(long));
+
+            #endregion
+
+            public ExpressionType NodeType => Constant;
+
+            public Type Type => _typeNameTranslation.Type;
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public int GetIndentSize()
+                => _typeNameTranslation.GetIndentSize() * _enumMembersCount;
+
+            public int GetLineCount() => _typeNameTranslation.GetLineCount();
+
+            public void WriteTo(TranslationWriter writer)
+            {
+                for (var i = 0; ;)
+                {
+                    writer.WriteEnumValue(_typeNameTranslation, _enumMemberNames[i]);
+                    ++i;
+
+                    if (i == _enumMembersCount)
+                    {
+                        return;
+                    }
+
+                    writer.WriteToTranslation(" | ");
+                }
+            }
+        }
+
         private class EnumConstantTranslation : ITranslation
         {
             private readonly ITranslation _typeNameTranslation;
-            private readonly string _enumValue;
+            private readonly string _enumMemberName;
 
             public EnumConstantTranslation(ConstantExpression constant, ITranslationContext context)
             {
                 _typeNameTranslation = context.GetTranslationFor(constant.Type);
-                _enumValue = constant.Value.ToString();
-                TranslationSize = _typeNameTranslation.TranslationSize + 1 + _enumValue.Length;
+                _enumMemberName = constant.Value.ToString();
+                TranslationSize = _typeNameTranslation.TranslationSize + 1 + _enumMemberName.Length;
             }
 
             public ExpressionType NodeType => Constant;
@@ -316,11 +411,17 @@
             public int GetLineCount() => _typeNameTranslation.GetLineCount();
 
             public void WriteTo(TranslationWriter writer)
-            {
-                _typeNameTranslation.WriteTo(writer);
-                writer.WriteDotToTranslation();
-                writer.WriteToTranslation(_enumValue);
-            }
+                => writer.WriteEnumValue(_typeNameTranslation, _enumMemberName);
+        }
+
+        private static void WriteEnumValue(
+            this TranslationWriter writer,
+            ITranslatable enumTypeNameTranslation,
+            string enumMemberName)
+        {
+            enumTypeNameTranslation.WriteTo(writer);
+            writer.WriteDotToTranslation();
+            writer.WriteToTranslation(enumMemberName);
         }
 
         private class DateTimeConstantTranslation : ITranslation
