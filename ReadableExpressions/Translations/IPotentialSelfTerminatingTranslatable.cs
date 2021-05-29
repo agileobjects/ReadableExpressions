@@ -1,6 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    internal interface IPotentialSelfTerminatingTranslatable
+    internal interface IPotentialSelfTerminatingTranslatable : ITranslatable
     {
         bool IsTerminated { get; }
     }

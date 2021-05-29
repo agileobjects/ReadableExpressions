@@ -145,7 +145,7 @@
                 case Constant:
                     return ConstantTranslation.For((ConstantExpression)expression, this);
 
-                case ExpressionType.Convert:
+                case Convert:
                 case ConvertChecked:
                 case TypeAs:
                 case Unbox:
@@ -173,7 +173,7 @@
                     return MethodCallTranslation.For((InvocationExpression)expression, this);
 
                 case Label:
-                    return new LabelTranslation((LabelExpression)expression, this);
+                    return LabelTranslation.For((LabelExpression)expression, this);
 
                 case Lambda:
                     return new LambdaTranslation((LambdaExpression)expression, this);

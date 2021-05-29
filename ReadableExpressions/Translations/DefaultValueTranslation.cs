@@ -31,27 +31,13 @@
             return new DefaultOperatorTranslation(type, context);
         }
 
-        private class DefaultVoidTranslation : ITranslation, IPotentialEmptyTranslatable
+        private class DefaultVoidTranslation : EmptyTranslatable, ITranslation
         {
-            public static readonly ITranslation Instance = new DefaultVoidTranslation();
+            public new static readonly ITranslation Instance = new DefaultVoidTranslation();
 
             public ExpressionType NodeType => ExpressionType.Default;
 
             public Type Type => typeof(void);
-
-            public bool IsEmpty => true;
-
-            public int TranslationSize => 0;
-
-            public int FormattingSize => 0;
-
-            public int GetIndentSize() => 0;
-
-            public int GetLineCount() => 1;
-
-            public void WriteTo(TranslationWriter writer)
-            {
-            }
         }
 
         private class NullKeywordTranslation : FixedValueTranslation, INullKeywordTranslation

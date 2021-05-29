@@ -1,6 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    internal interface IPotentialEmptyTranslatable
+    internal interface IPotentialEmptyTranslatable : ITranslatable
     {
         bool IsEmpty { get; }
     }
