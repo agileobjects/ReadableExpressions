@@ -72,5 +72,19 @@
         /// <param name="name">The <see cref="TokenType.TypeName"/> to write.</param>
         public static void WriteTypeNameToTranslation(this TranslationWriter writer, string name)
             => writer.WriteToTranslation(name, TokenType.TypeName);
+
+        /// <summary>
+        /// Writes a single space character to this <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the space character.</param>
+        public static void WriteSpaceToTranslation(this TranslationWriter writer)
+            => writer.WriteToTranslation(' ');
+
+        /// <summary>
+        /// Writes a single '.' character to this <paramref name="writer"/>.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the '.' character.</param>
+        public static void WriteDotToTranslation(this TranslationWriter writer)
+            => writer.WriteToTranslation('.');
     }
 }

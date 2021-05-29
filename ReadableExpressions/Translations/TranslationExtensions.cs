@@ -107,13 +107,7 @@
 
         public static void WriteNewToTranslation(this TranslationWriter writer)
             => writer.WriteKeywordToTranslation("new ");
-
-        public static void WriteSpaceToTranslation(this TranslationWriter writer)
-            => writer.WriteToTranslation(' ');
-
-        public static void WriteDotToTranslation(this TranslationWriter writer)
-            => writer.WriteToTranslation('.');
-
+        
         public static void WriteReturnToTranslation(this TranslationWriter writer)
             => writer.WriteControlStatementToTranslation("return ");
 
