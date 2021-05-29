@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets the singleton <see cref="EmptyTranslatable"/> instance.
         /// </summary>
-        public static readonly ITranslatable Instance = new EmptyTranslatable();
+        public static readonly IPotentialEmptyTranslatable Instance = new EmptyTranslatable();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EmptyTranslatable"/> class.
