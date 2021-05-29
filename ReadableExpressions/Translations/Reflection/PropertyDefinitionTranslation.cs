@@ -168,6 +168,8 @@
         /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
+            WritePropertyStartTo(writer);
+
             if (_writeModifiers)
             {
                 writer.WriteKeywordToTranslation(_accessibility + _modifiers);
@@ -194,7 +196,16 @@
         }
 
         /// <summary>
-        /// Write characters to the given <paramref name="writer"/> to being translation of the
+        /// Write characters to the given <paramref name="writer"/> to begin translation of the
+        /// property.
+        /// </summary>
+        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the characters.</param>
+        protected virtual void WritePropertyStartTo(TranslationWriter writer)
+        {
+        }
+
+        /// <summary>
+        /// Write characters to the given <paramref name="writer"/> to begin translation of the
         /// property accessors.
         /// </summary>
         /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the characters.</param>
@@ -287,7 +298,7 @@
 
             /// <summary>
             /// Writes the get or set accessor keyword to the given <paramref name="writer"/>, along
-            /// with the appropriate modifier keywords ('internal', 'private', 'abstract', etc).
+            /// with the appropriate modifier keywords ('internal', 'private', etc).
             /// </summary>
             /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the accessor.</param>
             protected void WriteAccessorTo(TranslationWriter writer)
