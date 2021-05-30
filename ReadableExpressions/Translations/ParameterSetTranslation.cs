@@ -114,7 +114,7 @@
                         if (Count != count)
                         {
                             // If a parameter is a params array then index will increase
-                            // past parameterCount, so adjust here:
+                            // past parameterCount, so adjust:
                             parameterIndex -= Count - count;
                         }
 
@@ -126,13 +126,13 @@
                     translation = context.GetTranslationFor(p);
 
                     if (showParameterTypeNames &&
-                        (translation is IParameterTranslation parameterTranslation))
+                       (translation is IParameterTranslation parameterTranslation))
                     {
                         parameterTranslation.WithTypeNames(context);
                         WithParentheses();
                     }
 
-                CreateCodeBlock:
+                    CreateCodeBlock:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
@@ -305,7 +305,7 @@
             ITranslationContext context)
             where TParameterExpression : Expression
         {
-            return new ParameterSetTranslation(
+            return new(
                 method,
 #if NET35
                 parameters.Cast<Expression>().ToArray(),
