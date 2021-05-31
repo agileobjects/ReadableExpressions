@@ -1012,7 +1012,7 @@
                 .FirstOrDefault();
 
             if ((joinedAssignmentData == null) ||
-                (_constructs?.Contains(joinedAssignmentData.Construct) == true))
+                (_constructs.Contains(joinedAssignmentData.Construct) == true))
             {
                 return variable;
             }
