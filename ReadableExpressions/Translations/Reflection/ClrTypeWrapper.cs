@@ -376,14 +376,14 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public IEnumerable<IMember> AllMembers => _allMembers ??= _type.GetAllMembers();
 
         /// <inheritdoc />
-        public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator)
-            => AllMembers.Select(selectionConfiguator);
+        public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfigurator)
+            => AllMembers.Select(selectionConfigurator);
 
         /// <inheritdoc />
-        public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfiguator)
+        public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfigurator)
             where TMember : IMember
         {
-            return GetMembers(selectionConfiguator).OfType<TMember>();
+            return GetMembers(selectionConfigurator).OfType<TMember>();
         }
 
         /// <inheritdoc />
@@ -506,13 +506,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public IEnumerable<IMember> AllMembers => _allMembers ??= _clrType.GetAllMembers();
 
-            public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator)
-                => AllMembers.Select(selectionConfiguator);
+            public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfigurator)
+                => AllMembers.Select(selectionConfigurator);
 
-            public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfiguator)
+            public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfigurator)
                 where TMember : IMember
             {
-                return GetMembers(selectionConfiguator).OfType<TMember>();
+                return GetMembers(selectionConfigurator).OfType<TMember>();
             }
 
             public override bool Equals(object obj)

@@ -181,33 +181,33 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         IEnumerable<IMember> AllMembers { get; }
 
         /// <summary>
-        /// Returns this <see cref="IType"/>'s <see cref="IMember"/>s, according to the criteria
-        /// configured by the given <paramref name="selectionConfiguator"/>.
+        /// Returns this <see cref="IType"/>'s <see cref="IMember"/>s which match the criteria
+        /// configured by the given <paramref name="selectionConfigurator"/>.
         /// </summary>
-        /// <param name="selectionConfiguator">
+        /// <param name="selectionConfigurator">
         /// An Action setting up member selection criteria on a <see cref="MemberSelector"/>.
         /// </param>
         /// <returns>
         /// The <see cref="IMember"/>s belonging to this <see cref="IType"/> which match the given
-        /// <paramref name="selectionConfiguator"/>.
+        /// <paramref name="selectionConfigurator"/>.
         /// </returns>
-        IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator);
+        IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfigurator);
 
         /// <summary>
-        /// Returns this <see cref="IType"/>'s <see cref="IMember"/>s, according to the criteria
-        /// configured by the given <paramref name="selectionConfiguator"/>.
+        /// Returns this <see cref="IType"/>'s <typeparamref name="TMember"/>s which match the
+        /// criteria configured by the given <paramref name="selectionConfigurator"/>.
         /// </summary>
         /// <typeparam name="TMember">
         /// The <see cref="IMember"/> Type of the members to return.
         /// </typeparam>
-        /// <param name="selectionConfiguator">
+        /// <param name="selectionConfigurator">
         /// An Action setting up member selection criteria on a <see cref="MemberSelector"/>.
         /// </param>
         /// <returns>
         /// The <see cref="IMember"/>s belonging to this <see cref="IType"/> which match the given
-        /// <paramref name="selectionConfiguator"/>.
+        /// <paramref name="selectionConfigurator"/>.
         /// </returns>
-        IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfiguator)
+        IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfigurator)
             where TMember : IMember;
 
         /// <summary>
