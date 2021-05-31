@@ -26,7 +26,7 @@
         private const string _openAndCloseParentheses = "()";
 
         private readonly TranslationSettings _settings;
-        private readonly IList<CodeBlockTranslation> _parameterTranslations;
+        private readonly IList<ITranslation> _parameterTranslations;
         private readonly bool _hasSingleMultiStatementLambdaParameter;
         private ParenthesesMode _parenthesesMode;
 
@@ -40,8 +40,14 @@
         /// </param>
         public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
         {
+            var parameterTranslation = GetParameterTranslation(
+                parameter,
+                context,
+                hasSingleParameter: true,
+                ref _hasSingleMultiStatementLambdaParameter);
+
             _settings = context.Settings;
-            _parameterTranslations = new[] { new CodeBlockTranslation(parameter, context) };
+            _parameterTranslations = new[] { parameterTranslation };
             TranslationSize = parameter.TranslationSize + _openAndCloseParentheses.Length;
             FormattingSize = parameter.FormattingSize;
             Count = 1;
@@ -58,7 +64,7 @@
 
             if (count == 0)
             {
-                _parameterTranslations = Enumerable<CodeBlockTranslation>.EmptyArray;
+                _parameterTranslations = Enumerable<ITranslation>.EmptyArray;
                 TranslationSize = _openAndCloseParentheses.Length;
                 return;
             }
@@ -104,7 +110,7 @@
                             lambdaBodyMethodCall.Method,
                             context);
 
-                        goto CreateCodeBlock;
+                        goto FinaliseParameterTranslation;
                     }
 
                     if (methodProvided)
@@ -120,7 +126,7 @@
 
                         // ReSharper disable once PossibleNullReferenceException
                         translation = GetParameterTranslation(p, methodParameters[parameterIndex], context);
-                        goto CreateCodeBlock;
+                        goto FinaliseParameterTranslation;
                     }
 
                     translation = context.GetTranslationFor(p);
@@ -132,20 +138,15 @@
                         WithParentheses();
                     }
 
-                    CreateCodeBlock:
+                    FinaliseParameterTranslation:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
-                    // TODO: Only use code blocks where useful:
-                    var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
-
-                    if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda)
-                    {
-                        singleParameterIsMultiLineLambda = true;
-                        parameterCodeBlock.WithSingleLamdaParameterFormatting();
-                    }
-
-                    return parameterCodeBlock;
+                    return GetParameterTranslation(
+                        translation,
+                        context,
+                        hasSingleParameter,
+                        ref singleParameterIsMultiLineLambda);
                 })
                 .ToArray();
 
@@ -153,19 +154,21 @@
             TranslationSize = translationSize + (Count * ", ".Length) + 4;
             FormattingSize = formattingSize;
         }
+        #region Setup
 
         private IEnumerable<Expression> GetAllParameters(
             IEnumerable<Expression> parameters,
             IList<IParameter> methodParameters)
         {
             var i = 0;
+            var finalParameterIndex = methodParameters.Count - 1;
 
             foreach (var parameter in parameters)
             {
                 // params arrays are always the last parameter - if it's
                 // not a NewArrayExpression it's a single Expression which
                 // returns an Array, and doesn't need to be deconstructed:
-                if ((i == (methodParameters.Count - 1)) &&
+                if ((i == finalParameterIndex) &&
                      methodParameters[i].IsParamsArray &&
                      parameter is NewArrayExpression paramsArray)
                 {
@@ -255,6 +258,32 @@
             lambdaBodyMethodCall = null;
             return false;
         }
+
+        private static ITranslation GetParameterTranslation(
+            ITranslation translation,
+            ITranslationContext context,
+            bool hasSingleParameter,
+            ref bool singleParameterIsMultiLineLambda)
+        {
+            switch (translation.NodeType)
+            {
+                case Default:
+                case Parameter:
+                    return translation;
+            }
+
+            var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
+
+            if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda)
+            {
+                singleParameterIsMultiLineLambda = true;
+                parameterCodeBlock.WithSingleLamdaParameterFormatting();
+            }
+
+            return parameterCodeBlock;
+        }
+
+        #endregion
 
         #region Factory Methods
 
@@ -371,8 +400,7 @@
         {
             var parameters = _parameterTranslations
                 .Filter(p => p.NodeType == Parameter)
-                .Project(p => p.AsParameterTranslation())
-                .Filter(p => p != null);
+                .OfType<IParameterTranslation>();
 
             foreach (var parameter in parameters)
             {
@@ -393,9 +421,7 @@
                     continue;
                 }
 
-                var defaultTranslation = parameter.AsNullKeywordTranslation();
-
-                if (defaultTranslation != null)
+                if (parameter is INullKeywordTranslation)
                 {
                     _parameterTranslations[i] = new CodeBlockTranslation(
                         new DefaultOperatorTranslation(parameter.Type, context),
@@ -513,10 +539,11 @@
             for (var i = 0; ;)
             {
                 var parameterTranslation = _parameterTranslations[i];
+                var parameterCodeBlock = parameterTranslation as CodeBlockTranslation;
 
-                if (writeParametersOnNewLines && (i == 0) && parameterTranslation.IsMultiStatement)
+                if (writeParametersOnNewLines && (i == 0) && parameterCodeBlock?.IsMultiStatement == true)
                 {
-                    parameterTranslation.WithoutStartingNewLine();
+                    parameterCodeBlock.WithoutStartingNewLine();
                 }
 
                 parameterTranslation.WriteTo(writer);
@@ -531,7 +558,9 @@
                 {
                     writer.WriteToTranslation(',');
 
-                    if (!_parameterTranslations[i].IsMultiStatement)
+                    parameterCodeBlock = _parameterTranslations[i] as CodeBlockTranslation;
+
+                    if (parameterCodeBlock?.IsMultiStatement != true)
                     {
                         writer.WriteNewLineToTranslation();
                     }

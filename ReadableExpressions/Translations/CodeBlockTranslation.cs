@@ -38,7 +38,7 @@
         {
             NodeType = translation.NodeType;
             _translation = translation;
-            _isEmptyTranslation = translation is IPotentialEmptyTranslatable empty && empty.IsEmpty;
+            _isEmptyTranslation = translation is IPotentialEmptyTranslatable { IsEmpty: true };
             _context = context;
             _startOnNewLine = true;
             _writeBraces = IsMultiStatement = translation.IsMultiStatement();
@@ -216,12 +216,6 @@
             _startOnNewLine = false;
             return this;
         }
-
-        internal IParameterTranslation AsParameterTranslation()
-            => _translation as IParameterTranslation;
-
-        internal INullKeywordTranslation AsNullKeywordTranslation()
-            => _translation as INullKeywordTranslation;
 
         /// <inheritdoc />
         public int GetIndentSize()

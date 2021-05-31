@@ -13,7 +13,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         bool IsExtensionMethod { get; }
 
         /// <summary>
-        /// Gets the <see cref="IConstructor"/>'s parameters, as an <see cref="IParameter"/>
+        /// Gets the <see cref="IMethodBase"/>'s parameters, as an <see cref="IParameter"/>
         /// collection.
         /// </summary>
         ReadOnlyCollection<IParameter> GetParameters();
