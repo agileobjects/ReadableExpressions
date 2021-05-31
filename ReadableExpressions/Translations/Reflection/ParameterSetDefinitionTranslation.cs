@@ -72,7 +72,7 @@
             {
                 _isExtensionMethod = true;
                 TranslationSize += "this ".Length;
-                FormattingSize += settings.GetKeywordFormattingSize();
+                FormattingSize += keywordFormattingSize;
             }
         }
 
