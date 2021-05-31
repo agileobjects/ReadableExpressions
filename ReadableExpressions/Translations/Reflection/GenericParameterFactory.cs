@@ -114,13 +114,13 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             public IEnumerable<IMember> AllMembers => _type.AllMembers;
 
-            public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfiguator)
-                => _type.GetMembers(selectionConfiguator);
+            public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfigurator)
+                => _type.GetMembers(selectionConfigurator);
 
-            public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfiguator)
+            public IEnumerable<TMember> GetMembers<TMember>(Action<MemberSelector> selectionConfigurator)
                 where TMember : IMember
             {
-                return _type.GetMembers(selectionConfiguator).OfType<TMember>();
+                return _type.GetMembers(selectionConfigurator).OfType<TMember>();
             }
 
             public bool Equals(IType otherType) => _type.Equals(otherType);
