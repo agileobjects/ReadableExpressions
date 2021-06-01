@@ -47,13 +47,38 @@
         public ConstructorDefinitionTranslation(
             IConstructor ctor,
             TranslationSettings settings)
+            : this(
+                ctor,
+                ParameterSetDefinitionTranslation.For(ctor, settings),
+                settings)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConstructorDefinitionTranslation"/> class
+        /// for the given <paramref name="ctor"/> and with the given
+        /// <paramref name="parametersTranslation"/>.
+        /// </summary>
+        /// <param name="ctor">
+        /// The <see cref="IConstructor"/> describing the ConstructorInfo for which to create the
+        /// <see cref="ConstructorDefinitionTranslation"/>.
+        /// </param>
+        /// <param name="parametersTranslation">
+        /// The <see cref="ITranslatable"/> to use to translate the <paramref name="ctor"/>'s
+        /// parameters.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        public ConstructorDefinitionTranslation(
+            IConstructor ctor,
+            ITranslatable parametersTranslation,
+            TranslationSettings settings)
         {
             _modifiers = ctor.IsStatic
                 ? "static "
                 : ctor.GetAccessibilityForTranslation();
-            
+
             _typeNameTranslation = new TypeNameTranslation(ctor.DeclaringType, settings);
-            _parametersTranslation = ParameterSetDefinitionTranslation.For(ctor, settings);
+            _parametersTranslation = parametersTranslation;
 
             TranslationSize =
                 _typeNameTranslation.TranslationSize +

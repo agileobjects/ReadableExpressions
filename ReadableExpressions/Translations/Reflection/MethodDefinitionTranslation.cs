@@ -20,10 +20,14 @@
         private readonly ITranslatable _genericParameterConstraintsTranslation;
         private readonly ITranslatable _parametersTranslation;
 
-        internal MethodDefinitionTranslation(
+        private MethodDefinitionTranslation(
             IMethod method,
             TranslationSettings settings)
-            : this(method, includeDeclaringType: true, settings)
+            : this(
+                method,
+                ParameterSetDefinitionTranslation.For(method, settings),
+                includeDeclaringType: true,
+                settings)
         {
         }
 
@@ -34,6 +38,10 @@
         /// <param name="method">
         /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
         /// </param>
+        /// <param name="parametersTranslation">
+        /// The <see cref="ITranslatable"/> to use to translate the <paramref name="method"/>'s
+        /// parameters.
+        /// </param>
         /// <param name="includeDeclaringType">
         /// Whether to include the name of the <paramref name="method"/>'s declaring type in the
         /// <see cref="MethodDefinitionTranslation"/>.
@@ -41,6 +49,7 @@
         /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
         public MethodDefinitionTranslation(
             IMethod method,
+            ITranslatable parametersTranslation,
             bool includeDeclaringType,
             TranslationSettings settings)
         {
@@ -98,7 +107,7 @@
                     _genericParameterConstraintsTranslation.FormattingSize;
             }
 
-            _parametersTranslation = ParameterSetDefinitionTranslation.For(method, settings);
+            _parametersTranslation = parametersTranslation;
 
             TranslationSize = translationSize + _parametersTranslation.TranslationSize;
             FormattingSize = formattingSize + _parametersTranslation.FormattingSize;

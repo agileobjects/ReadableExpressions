@@ -85,7 +85,7 @@
 
             if (!type.IsGeneric)
             {
-                var substitutedTypeName = type.GetSubstitutionOrNull();
+                var substitutedTypeName = type.GetKeywordOrNull();
 
                 if (type.IsNested)
                 {

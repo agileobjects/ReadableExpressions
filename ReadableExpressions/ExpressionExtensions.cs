@@ -62,7 +62,6 @@
             }
 
             var settings = new TranslationSettings();
-
             configuration.Invoke(settings);
 
             return settings;

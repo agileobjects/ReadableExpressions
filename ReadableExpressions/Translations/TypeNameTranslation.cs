@@ -93,7 +93,7 @@
             ref int translationSize,
             ref int formattingSize)
         {
-            translationSize += type.GetSubstitutionOrNull()?.Length ?? type.Name.Length;
+            translationSize += type.GetKeywordOrNull()?.Length ?? type.Name.Length;
             formattingSize += typeNameFormattingSize;
 
             if (_settings.FullyQualifyTypeNames && (type.Namespace != null))
