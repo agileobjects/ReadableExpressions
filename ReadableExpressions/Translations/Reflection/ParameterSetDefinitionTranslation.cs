@@ -57,16 +57,10 @@
                 var parameter = _parameters[i];
                 var parameterType = parameter.Type;
 
-                if (parameter.IsOut)
+                if (parameter.IsRef || parameter.IsOut)
                 {
                     parameterType = parameterType.ElementType;
-                    translationSize += _out.Length;
-                    formattingSize += keywordFormattingSize;
-                }
-                else if (parameterType.IsByRef)
-                {
-                    parameterType = parameterType.ElementType;
-                    translationSize += _ref.Length;
+                    translationSize += (parameter.IsOut ? _out : _ref).Length;
                     formattingSize += keywordFormattingSize;
                 }
                 else if (i == finalParameterIndex && parameter.IsParamsArray)

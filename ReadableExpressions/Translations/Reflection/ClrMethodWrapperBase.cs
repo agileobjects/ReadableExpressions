@@ -1,5 +1,6 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
+    using System;
     using System.Collections.ObjectModel;
     using System.Reflection;
     using Extensions;
@@ -103,11 +104,15 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
             public IType Type
-                => _type ??= ClrTypeWrapper.For(_parameter.ParameterType);
+                => _type ??= ClrTypeWrapper.For(ParameterType);
+
+            private Type ParameterType => _parameter.ParameterType;
 
             public string Name => _parameter.Name;
 
             public bool IsOut => _parameter.IsOut;
+
+            public bool IsRef => !IsOut && ParameterType.IsByRef;
 
             public bool IsParamsArray => _parameter.IsParamsArray();
         }

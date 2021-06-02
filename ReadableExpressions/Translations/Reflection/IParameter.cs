@@ -19,6 +19,11 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Gets a value indicating whether the method parameter is an out parameter.
         /// </summary>
         bool IsOut { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the method parameter is a ref parameter.
+        /// </summary>
+        bool IsRef { get; }
         
         /// <summary>
         /// Gets a value indicating whether the method parameter is a params array.
