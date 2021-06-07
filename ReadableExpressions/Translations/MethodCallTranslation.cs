@@ -138,11 +138,7 @@
         }
 
         private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
-        {
-            var property = methodCall.Method.GetProperty();
-
-            return property?.IsIndexer() == true && property.GetIndexParameters().Any();
-        }
+            => methodCall.Method.GetProperty()?.GetIndexParameters().Any() == true;
 
         /// <summary>
         /// Creates an <see cref="ITranslation"/> for the given <paramref name="method"/>.
