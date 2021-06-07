@@ -83,11 +83,9 @@
                 return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
-            var subject = methodCall.GetSubjectTranslation(context);
-
             if (IsIndexedPropertyAccess(methodCall))
             {
-                return new IndexAccessTranslation(subject, parameters, methodCall.Type);
+                return new IndexAccessTranslation(methodCall, parameters, context);
             }
 
             parameters = parameters.WithParentheses();
@@ -99,7 +97,12 @@
                     context.GetTranslationFor(methodCall.Method.ReturnType));
             }
 
-            var methodCallTranslation = new StandardMethodCallTranslation(Call, subject, method, parameters, context);
+            var methodCallTranslation = new StandardMethodCallTranslation(
+                Call,
+                methodCall.GetSubjectTranslation(context),
+                method,
+                parameters,
+                context);
 
             if (context.Analysis.IsPartOfMethodCallChain(methodCall))
             {
@@ -136,13 +139,9 @@
 
         private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
         {
-            var property = methodCall
-                .Object?
-                .Type
-                .GetPublicInstanceProperties()
-                .FirstOrDefault(p => p.IsIndexer() && p.GetAccessors().Contains(methodCall.Method));
+            var property = methodCall.Method.GetProperty();
 
-            return property?.GetIndexParameters().Any() == true;
+            return property?.IsIndexer() == true && property.GetIndexParameters().Any();
         }
 
         /// <summary>
