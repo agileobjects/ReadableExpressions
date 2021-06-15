@@ -3,7 +3,13 @@
     using System;
     using Common;
     using ReadableExpressions.Translations.Reflection;
+#if !NET35
     using Xunit;
+#else
+    using Fact = NUnit.Framework.TestAttribute;
+
+    [NUnit.Framework.TestFixture]
+#endif
 
     public class WhenWorkingWithClrTypes
     {

@@ -7,17 +7,23 @@
 #endif
     using Extensions;
     using static System.Environment;
+    using static System.StringComparison;
 
     /// <summary>
     /// Represents a double-slash-commented text comment.
     /// </summary>
     public class Comment
     {
-        private const string _commentString = "// ";
+        private const string _commentSlashes = "//";
+        private const string _commentString = _commentSlashes + " ";
 
         internal Comment(string text)
         {
-            var textLines = text.Trim().SplitToLines();
+            var textLines = text
+                .Trim()
+                .SplitToLines()
+                .ProjectToArray(line => line.StartsWith(_commentSlashes, Ordinal)
+                    ? line.Substring(_commentSlashes.Length).TrimStart() : line);
 
             Text =
                 _commentString +

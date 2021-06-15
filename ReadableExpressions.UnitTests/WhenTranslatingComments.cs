@@ -53,6 +53,22 @@ but I will anyway");
         }
 
         [Fact]
+        public void ShouldTranslateAPreFormattedMultipleLineCommentString()
+        {
+            var comment = ReadableExpression.Comment(@"
+// This one already has
+// comment slashes in it");
+
+            var translated = comment.ToReadableString();
+
+            const string EXPECTED = @"
+// This one already has
+// comment slashes in it";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateABlockWithAComment()
         {
             var comment = ReadableExpression.Comment("Anyone listening?");
