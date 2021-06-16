@@ -90,24 +90,25 @@
                 return GetVariableName(type.ElementType, settings) + "Array";
             }
 
-            var typeIsEnumerable = type.IsEnumerable;
-            var typeIsDictionary = typeIsEnumerable && type.IsDictionary;
-            var namingType = (typeIsEnumerable && !typeIsDictionary) ? type.ElementType : type;
-            var variableName = GetBaseVariableName(namingType, settings);
+            string variableName;
 
-            if (namingType.IsInterface && variableName.StartsWith('I'))
+            if (type.IsGeneric)
+            {
+                variableName = GetGenericTypeVariableName(type, settings);
+                goto FinaliseName;
+            }
+
+            variableName = GetBaseVariableName(type, settings);
+
+            if (type.IsInterface && variableName.StartsWith('I'))
             {
                 variableName = variableName.Substring(1);
             }
 
-            if (namingType.IsGeneric)
-            {
-                variableName = GetGenericTypeVariableName(namingType, settings);
-            }
-
+        FinaliseName:
             variableName = RemoveLeadingNonAlphaNumerics(variableName);
 
-            return (typeIsDictionary || !typeIsEnumerable) ? variableName : variableName.Pluralise();
+            return variableName;
         }
 
         private static string GetBaseVariableName(IType namingType, TranslationSettings translationSettings)
@@ -146,6 +147,7 @@
         private class GenericVariableNameWriter : GenericTypeNameWriterBase
         {
             private readonly TranslationSettings _settings;
+            private int _typeArgumentOffset;
 
             public GenericVariableNameWriter(TranslationSettings settings)
             {
@@ -156,26 +158,35 @@
             public string TypeName { get; private set; }
 
             protected override void WriteTypeName(string name)
-                => TypeName += name;
+            {
+                TypeName += name;
+                _typeArgumentOffset = name.Length;
+            }
 
-            protected override void WriteInterfaceName(string name)
-                => TypeName += name;
+            protected override void WriteInterfaceName(string name) 
+                => WriteTypeName(name);
 
             protected override void WriteTypeArgumentNamePrefix()
-                => TypeName += "_";
+            {
+            }
 
-            protected override void WriteTypeName(IType type)
-                => TypeName += type.GetVariableNameInPascalCase(_settings);
+            protected override void WriteTypeArgumentName(IType type)
+            {
+                TypeName = TypeName.Insert(
+                    TypeName.Length - _typeArgumentOffset,
+                    type.GetVariableNameInPascalCase(_settings));
+            }
 
             protected override void WriteTypeArgumentNameSeparator()
-                => TypeName += "_";
+            {
+            }
 
             protected override void WriteTypeArgumentNameSuffix()
             {
             }
 
             protected override void WriteNestedTypeNamesSeparator()
-                => TypeName += "__";
+                => TypeName += "_";
         }
     }
 }

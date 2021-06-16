@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using NetStandardPolyfills;
 
@@ -99,7 +100,19 @@
                 .FirstOrDefault(interfaceType => interfaceType.IsClosedTypeOf(typeof(IEnumerable<>)));
 
             elementType = enumerableInterfaceType?.GetGenericTypeArguments().First();
-            return elementType != null;
+
+            if (elementType != null)
+            {
+                return true;
+            }
+
+            if (type.IsAssignableTo(typeof(IEnumerable)))
+            {
+                elementType = typeof(object);
+                return true;
+            }
+
+            return false;
         }
     }
 }

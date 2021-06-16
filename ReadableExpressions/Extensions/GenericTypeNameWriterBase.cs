@@ -142,7 +142,7 @@
             {
                 var typeArgument = typeArguments[i];
 
-                WriteTypeName(typeArgument);
+                WriteTypeArgumentName(typeArgument);
                 ++i;
 
                 if (i == typeArguments.Count)
@@ -160,7 +160,7 @@
 
         protected abstract void WriteTypeArgumentNamePrefix();
 
-        protected abstract void WriteTypeName(IType type);
+        protected abstract void WriteTypeArgumentName(IType type);
 
         protected abstract void WriteTypeArgumentNameSeparator();
 

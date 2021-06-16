@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.Extensions
 {
+    using System.Collections;
     using System.Collections.Generic;
     using Common;
     using ReadableExpressions.Extensions;
@@ -19,45 +20,45 @@
         }
 
         [Fact]
-        public void ShouldNameAVariableForACollectionTypeEndingInX()
+        public void ShouldNameAVariableForAnIEnumerableType()
         {
-            typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxes");
+            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("FuzzIEnumerable");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnEnumerableTypeEndingInZ()
+        public void ShouldNameAVariableForAnICollectionType()
         {
-            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("Fuzzes");
+            typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxICollection");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnEnumerableTypeEndingInDoubleS()
+        public void ShouldNameAVariableForAnIListType()
         {
-            typeof(IEnumerable<Glass>).GetVariableNameInPascalCase().ShouldBe("Glasses");
+            typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("BodyIList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInCh()
+        public void ShouldNameAVariableForAListType()
         {
-            typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churches");
+            typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churchList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInSh()
+        public void ShouldNameAVariableForAHashSetType()
         {
-            typeof(List<Hush>).GetVariableNameInCamelCase().ShouldBe("hushes");
+            typeof(HashSet<int>).GetVariableNameInCamelCase().ShouldBe("intHashSet");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInVowelY()
+        public void ShouldNameAVariableForAnArrayListType()
         {
-            typeof(List<Journey>).GetVariableNameInCamelCase().ShouldBe("journeys");
+            typeof(ArrayList).GetVariableNameInCamelCase().ShouldBe("arrayList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnIListTypeEndingInConsonantY()
+        public void ShouldNameAVariableForADictionaryType()
         {
-            typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("Bodies");
+            typeof(Dictionary<string, Church>).GetVariableNameInCamelCase().ShouldBe("stringChurchDictionary");
         }
 
         [Fact]
@@ -78,7 +79,7 @@
         {
             typeof(Issue48<int>.Inner)
                 .GetVariableNameInPascalCase()
-                .ShouldBe($"{nameof(WhenGeneratingVariableNames)}__Issue48_Int__Inner");
+                .ShouldBe($"{nameof(WhenGeneratingVariableNames)}_IntIssue48_Inner");
         }
 
         #region Helper Members
@@ -88,16 +89,11 @@
 
         private class Fuzz { }
 
-        private class Glass { }
-
         private class Church { }
-
-        private class Hush { }
-
-        private class Journey { }
 
         private class Body { }
 
+        // ReSharper disable once UnusedTypeParameter
         private class Issue48<T>
         {
             public class Inner { }

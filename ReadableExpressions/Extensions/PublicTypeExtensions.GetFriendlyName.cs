@@ -195,7 +195,7 @@
             protected override void WriteTypeArgumentNamePrefix()
                 => _writer.WriteToTranslation('<');
 
-            protected override void WriteTypeName(IType type)
+            protected override void WriteTypeArgumentName(IType type)
                 => _writer.WriteFriendlyName(type, _settings);
 
             protected override void WriteTypeArgumentNameSeparator()
