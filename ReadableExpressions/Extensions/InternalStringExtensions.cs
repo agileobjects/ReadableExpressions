@@ -22,54 +22,6 @@ namespace AgileObjects.ReadableExpressions.Extensions
         public static string ToCamelCase(this string value)
             => char.ToLowerInvariant(value[0]) + value.Substring(1);
 
-        public static string Pluralise(this string value)
-        {
-            if (value.Length == 1)
-            {
-                return value + "s";
-            }
-
-            switch (value.Substring(value.Length - 2))
-            {
-                case "ch":
-                case "sh":
-                case "ss":
-                    return value + "es";
-            }
-
-            if (value.EndsWith('s'))
-            {
-                return value;
-            }
-
-            if (value.EndsWith('y') && IsConsonant(value[value.Length - 2]))
-            {
-                return value.Substring(0, value.Length - 1) + "ies";
-            }
-
-            if (value.EndsWith('x') || value.EndsWith('z'))
-            {
-                return value + "es";
-            }
-
-            return value + "s";
-        }
-
-        private static bool IsConsonant(char character)
-        {
-            switch (char.ToUpperInvariant(character))
-            {
-                case 'A':
-                case 'E':
-                case 'I':
-                case 'O':
-                case 'U':
-                    return false;
-            }
-
-            return true;
-        }
-
         public static string Join(this IEnumerable<string> items, string separator)
         {
 #if NET35
