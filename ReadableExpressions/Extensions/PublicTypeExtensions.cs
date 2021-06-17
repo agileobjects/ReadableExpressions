@@ -78,7 +78,7 @@
                 return elementType;
             }
 
-            return typeof(object);
+            return null;
         }
 
         internal static bool TryGetElementType(this Type type, out Type elementType)

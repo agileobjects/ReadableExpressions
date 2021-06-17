@@ -14,49 +14,55 @@
     public class WhenGeneratingVariableNames
     {
         [Fact]
-        public void ShouldNameAVariableForAnArrayType()
+        public void ShouldNameAStringVariable()
+        {
+            typeof(string).GetVariableNameInCamelCase().ShouldBe("string");
+        }
+
+        [Fact]
+        public void ShouldNameAnArrayTypeVariable()
         {
             typeof(Box[]).GetVariableNameInCamelCase().ShouldBe("boxArray");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnIEnumerableType()
+        public void ShouldNameAnIEnumerableTypeVariable()
         {
             typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("FuzzIEnumerable");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnICollectionType()
+        public void ShouldNameAnICollectionTypeVariable()
         {
             typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxICollection");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnIListType()
+        public void ShouldNameAnIListTypeVariable()
         {
             typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("BodyIList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListType()
+        public void ShouldNameAListTypeVariable()
         {
             typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churchList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAHashSetType()
+        public void ShouldNameAHashSetTypeVariable()
         {
             typeof(HashSet<int>).GetVariableNameInCamelCase().ShouldBe("intHashSet");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnArrayListType()
+        public void ShouldNameAnArrayListVariable()
         {
             typeof(ArrayList).GetVariableNameInCamelCase().ShouldBe("arrayList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForADictionaryType()
+        public void ShouldNameADictionaryTypeVariable()
         {
             typeof(Dictionary<string, Church>).GetVariableNameInCamelCase().ShouldBe("stringChurchDictionary");
         }
@@ -75,11 +81,19 @@
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/48
         [Fact]
-        public void ShouldNameAnInnerClassOfAGenericType()
+        public void ShouldNameAGenericTypeInnerClassVariable()
         {
             typeof(Issue48<int>.Inner)
                 .GetVariableNameInPascalCase()
                 .ShouldBe($"{nameof(WhenGeneratingVariableNames)}_IntIssue48_Inner");
+        }
+
+        [Fact]
+        public void ShouldNameAGenericGenericTypeArgument()
+        {
+            typeof(Dictionary<int, Dictionary<string, List<byte>>>)
+                .GetVariableNameInPascalCase()
+                .ShouldBe("IntStringByteListDictionaryDictionary");
         }
 
         #region Helper Members
