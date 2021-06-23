@@ -28,7 +28,7 @@
     <Copyright>Copyright © AgileObjects Ltd 2021</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
-    <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
+    <PackageTags>"Expression Trees";Debugging;"Debugger Visualizers"</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
@@ -62,9 +62,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-    <PackageReference Include="DynamicLanguageRuntime">
-      <Version>1.1.2</Version>
-    </PackageReference>
+    <PackageReference Include="DynamicLanguageRuntime" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
