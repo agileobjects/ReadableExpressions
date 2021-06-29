@@ -187,7 +187,7 @@ checked
 
             var translated = increment.ToReadableString();
 
-            translated.ShouldBe("++i");
+            translated.ShouldBe("i + 1");
         }
 
         [Fact]
@@ -220,7 +220,7 @@ checked
 
             var translated = decrement.ToReadableString();
 
-            translated.ShouldBe("--i");
+            translated.ShouldBe("i - 1");
         }
 
         [Fact]

@@ -37,7 +37,7 @@ while (true)
             var breakLoop = Break(Label());
             var ifGreaterThanTwoBreak = IfThen(intGreaterThanTwo, breakLoop);
             var writeLine = CreateLambda(() => Console.WriteLine());
-            var incrementVariable = Increment(intVariable);
+            var incrementVariable = PreIncrementAssign(intVariable);
             var loopBody = Block(ifGreaterThanTwoBreak, writeLine.Body, incrementVariable);
             var loop = Loop(loopBody, breakLoop.Target);
 
@@ -62,7 +62,7 @@ while (true)
         {
             var intVariable = Variable(typeof(int), "i");
             var intLessThanThree = LessThan(intVariable, Constant(3));
-            var incrementVariable = Increment(intVariable);
+            var incrementVariable = PreIncrementAssign(intVariable);
             var continueLoop = Continue(Label());
             var incrementAndContinue = Block(incrementVariable, continueLoop);
             var ifLessThanThreeContinue = IfThen(intLessThanThree, incrementAndContinue);

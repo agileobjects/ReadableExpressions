@@ -1152,7 +1152,18 @@
         /// if no replacement is required.
         /// </returns>
         protected virtual Expression VisitAndConvert(UnaryExpression unary)
-            => unary.Update(VisitAndConvert(unary.Operand));
+        {
+            switch (unary.NodeType)
+            {
+                case Increment:
+                    return Expression.Add(unary.Operand, Expression.Constant(1));
+                
+                case Decrement:
+                    return Expression.Subtract(unary.Operand, Expression.Constant(1));
+            }
+
+            return unary.Update(VisitAndConvert(unary.Operand));
+        }
 
         /// <summary>
         /// Visits the given <paramref name="parameters"/>, returning a replacement ParameterExpression
