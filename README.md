@@ -21,8 +21,8 @@ The visualizer has both Light and Dark themes:
 
 ## ASP.NET Core 5 Known Issue
 
-.NET 5 has [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default.
-This causes issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) 
+.NET 5 had [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default.
+This has caused issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) 
 when debugging ASP.NET Core apps as the VS debugger [uses](https://wrightfully.com/writing-a-readonly-debugger-visualizer) `BinaryFormatter` 
 to serialize objects before sending them to the visualizer.
 
