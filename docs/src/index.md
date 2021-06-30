@@ -1,32 +1,59 @@
-## Overview
+# Overview
 
-**BuildableExpressions** enables runtime [CLR type generation](/building-types/). It can build 
-[classes](/api/Building-Classes), [structs](/api/Building-Structs), [interfaces](/api/Building-Interfaces),
-[enums](/api/Building-Enums) and [attributes](/api/Building-Attributes).
+ReadableExpressions provides extension methods and a 
+[Debugger Visualizer](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers) 
+for readable, source-code versions of 
+[Expression Trees](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees),
+as well as reflection objects like `Type`, `FieldInfo`, `PropertyInfo`, etc.
 
-To install from NuGet, use:
+## Debugger Visualizer
+
+The Debugger Visualizer installer can be downloaded from 
+[the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
+
+The visualizer has both Light and Dark themes:
+
+[![Visualizer themes](/assets/images/Themes.gif)]
+
+...and output can be customised using various options:
+
+[![Visualizer options](/assets/images/Options.gif)]
+
+## ASP.NET Core 5 Known Issue
+
+.NET 5 had [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default.
+This has caused issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) 
+when debugging ASP.NET Core apps as the VS debugger [uses](https://wrightfully.com/writing-a-readonly-debugger-visualizer) `BinaryFormatter` 
+to serialize objects before sending them to the visualizer.
+
+[The solution](https://developercommunity2.visualstudio.com/t/visual-studio-debugger-visualizers-and-binaryforma/1278642) is to enable the 
+`BinaryFormatter` in Debug only by adding the following to your ASP.NET Core csproj:
+
+```xml
+<PropertyGroup>
+  <TargetFramework>net5.0</TargetFramework>
+  <EnableUnsafeBinaryFormatterSerialization Condition=" '$(Configuration)' == 'Debug' ">
+    true
+  </EnableUnsafeBinaryFormatterSerialization>
+</PropertyGroup>
+```
+
+## Extension Methods
+
+The extension methods are available [on NuGet](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), 
+targeting .NET 3.5+ and [.NETStandard 1.0](https://dotnet.microsoft.com/platform/dotnet-standard)+:
 
 ```shell
-PM> Install-Package AgileObjects.BuildableExpressions
+PM> Install-Package AgileObjects.ReadableExpressions
 ```
-[![NuGet version](https://badge.fury.io/nu/AgileObjects.BuildableExpressions.svg)](https://badge.fury.io/nu/AgileObjects.BuildableExpressions)
+[![NuGet version](https://badge.fury.io/nu/AgileObjects.ReadableExpressions.svg)](https://badge.fury.io/nu/AgileObjects.ReadableExpressions)
 
-**BuildableExpressions.Generator** enables build-time [C# source code generation](/generating-code/)
-via a [configurable](/generating-code/Configuration) 
-[MSBuild task](https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-tasks). It works within
-Visual Studio or from `dotnet build`, and supports 
-[SDK](https://docs.microsoft.com/en-us/dotnet/core/project-sdk/overview) and non-SDK projects.
+...and are used like so:
 
+```csharp
+using AgileObjects.ReadableExpressions;
 
-To install from NuGet, use:
-
-```shell
-PM> Install-Package AgileObjects.BuildableExpressions.Generator
+string readable = myExpression.ToReadableString();
 ```
-[![NuGet version](https://badge.fury.io/nu/AgileObjects.BuildableExpressions.Generator.svg)](https://badge.fury.io/nu/AgileObjects.BuildableExpressions.Generator)
 
-Both packages generate from C# source-code strings or
-[Expression Trees](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees), target .NET 4.6.1
-and [.NETStandard 2.0](https://dotnet.microsoft.com/platform/dotnet-standard), and are available under the 
-[MIT licence](https://github.com/agileobjects/BuildableExpressions/blob/master/LICENCE.md). 
-
+...it also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
