@@ -40,15 +40,16 @@ to serialize objects before sending them to the visualizer.
 
 ## Extension Methods
 
-The extension methods are available [on NuGet](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), 
-targeting .NET 3.5+ and [.NETStandard 1.0](https://dotnet.microsoft.com/platform/dotnet-standard)+:
+[The extension methods](https://readableexpressions.readthedocs.io/extension-methods) are available 
+[on NuGet](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), 
+and target .NET 3.5+ and [.NETStandard 1.0](https://dotnet.microsoft.com/platform/dotnet-standard)+:
 
 ```shell
 PM> Install-Package AgileObjects.ReadableExpressions
 ```
 [![NuGet version](https://badge.fury.io/nu/AgileObjects.ReadableExpressions.svg)](https://badge.fury.io/nu/AgileObjects.ReadableExpressions)
 
-...and are used like so:
+To translate an Expression, use:
 
 ```csharp
 using AgileObjects.ReadableExpressions;
@@ -56,7 +57,7 @@ using AgileObjects.ReadableExpressions;
 string readable = myExpression.ToReadableString();
 ```
 
-...it also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
+...this also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
 
 All code is licensed with the [MIT licence](LICENCE.md). Check out 
 [the documentation](https://readableexpressions.readthedocs.io) for more!
