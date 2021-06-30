@@ -16,6 +16,7 @@ extra_javascript:
     
 nav:
     - Configuration: configuration.md
+    - Extension Methods: extension-methods.md
     - Extensibility: extensibility.md
 
 theme: readthedocs

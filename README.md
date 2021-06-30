@@ -13,11 +13,11 @@ The Debugger Visualizer installer can be downloaded from
 
 The visualizer has both Light and Dark themes:
 
-[![Visualizer themes](/docs/assets/images/Themes.gif)]
+[![Visualizer themes](/docs/src/assets/images/Themes.gif)]
 
 ...and output can be customised using various options:
 
-[![Visualizer options](/docs/assets/images/Options.gif)]
+[![Visualizer options](/docs/src/assets/images/Options.gif)]
 
 ## ASP.NET Core 5 Known Issue
 
