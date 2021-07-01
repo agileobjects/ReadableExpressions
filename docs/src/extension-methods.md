@@ -52,7 +52,7 @@ To retrieve the definition of a `MethodInfo`, use:
 ```cs
 string readable = myMethodInfo.ToReadableString();
 // Returns, e.g.
-// public TasK<string> MyStreamMethod<TStream>
+// public Task<string> MyStreamMethod<TStream>
 // (
 //     TStream stream
 // )
