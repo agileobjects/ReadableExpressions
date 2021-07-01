@@ -123,10 +123,10 @@
         [Fact]
         public void ShouldTranslateAParameterlessTwoOpenGenericsCtorInfo()
         {
-            var method = typeof(Helper<,>)
+            var ctor = typeof(Helper<,>)
                 .GetPublicInstanceConstructor();
 
-            var translated = method.ToReadableString();
+            var translated = ctor.ToReadableString();
 
             translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T1, T2>()");
         }
