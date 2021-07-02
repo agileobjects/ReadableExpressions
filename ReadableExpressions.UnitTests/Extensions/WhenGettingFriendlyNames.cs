@@ -7,8 +7,10 @@
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
+    using static System.Linq.Expressions.Expression;
 #else
     using Microsoft.Scripting.Ast;
+    using static Microsoft.Scripting.Ast.Expression;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
@@ -18,9 +20,9 @@
         [Fact]
         public void ShouldUseFriendlyNamesForArrays()
         {
-            var intArrayVariable = Expression.Variable(typeof(int[]), "ints");
-            var assignNull = Expression.Assign(intArrayVariable, Expression.Default(intArrayVariable.Type));
-            var assignNullBlock = Expression.Block(new[] { intArrayVariable }, assignNull);
+            var intArrayVariable = Variable(typeof(int[]), "ints");
+            var assignNull = Assign(intArrayVariable, Default(intArrayVariable.Type));
+            var assignNullBlock = Block(new[] { intArrayVariable }, assignNull);
 
             var translated = assignNullBlock.ToReadableString();
 
@@ -62,7 +64,7 @@
         [Fact]
         public void ShouldUseFriendlyNamesForMultiplyNestedTypes()
         {
-            var nestedType = Expression.Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
+            var nestedType = Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
 
             var translated = nestedType.ToReadableString();
 
@@ -72,7 +74,7 @@
         [Fact]
         public void ShouldUseFriendlyNamesForListsOfNestedTypes()
         {
-            var newNestedTypeList = Expression.New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
+            var newNestedTypeList = New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
 
             var translated = newNestedTypeList.ToReadableString();
 
@@ -80,9 +82,19 @@
         }
 
         [Fact]
+        public void ShouldUseFriendlyNamesForGenericTypes()
+        {
+            var genericListEnumeratorType = Constant(typeof(HashSet<decimal[]>), typeof(Type));
+
+            var translated = genericListEnumeratorType.ToReadableString();
+
+            translated.ShouldBe("typeof(HashSet<decimal[]>)");
+        }
+
+        [Fact]
         public void ShouldUseFriendlyNamesForGenericNestedTypes()
         {
-            var genericListEnumeratorType = Expression.Constant(typeof(List<string>.Enumerator), typeof(Type));
+            var genericListEnumeratorType = Constant(typeof(List<string>.Enumerator), typeof(Type));
 
             var translated = genericListEnumeratorType.ToReadableString();
 
@@ -92,7 +104,7 @@
         [Fact]
         public void ShouldUseFriendlyNamesForNestedGenericTypes()
         {
-            var genericListEnumeratorType = Expression.Constant(typeof(GenericTestHelper<int>), typeof(Type));
+            var genericListEnumeratorType = Constant(typeof(GenericTestHelper<int>), typeof(Type));
 
             var translated = genericListEnumeratorType.ToReadableString();
 
@@ -102,13 +114,25 @@
         [Fact]
         public void ShouldUseFriendlyNamesForGenericMultiplyNestedTypes()
         {
-            var nestedGenericType = Expression.Constant(
+            var nestedGenericType = Constant(
                 typeof(OuterGeneric<int>.InnerGeneric<long>.Nested),
                 typeof(Type));
 
             var translated = nestedGenericType.ToReadableString();
 
             translated.ShouldBe("typeof(OuterGeneric<int>.InnerGeneric<long>.Nested)");
+        }
+
+        [Fact]
+        public void ShouldUseFriendlyNamesForGenericGenericTypeArguments()
+        {
+            var nestedGenericType = Constant(
+                typeof(Dictionary<int, Dictionary<string, List<byte>>>),
+                typeof(Type));
+
+            var translated = nestedGenericType.ToReadableString();
+
+            translated.ShouldBe("typeof(Dictionary<int, Dictionary<string, List<byte>>>)");
         }
 
         #region Helper Classes

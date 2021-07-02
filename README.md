@@ -1,29 +1,33 @@
-## ReadableExpressions
+# ReadableExpressions
 
-[![NuGet](http://img.shields.io/nuget/v/AgileObjects.ReadableExpressions.svg)](https://www.nuget.org/packages/AgileObjects.ReadableExpressions)
+ReadableExpressions provides extension methods and a 
+[Debugger Visualizer](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers) 
+for readable, source-code versions of 
+[Expression Trees](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/expression-trees),
+as well as reflection objects like `Type`, `FieldInfo`, `PropertyInfo`, etc.
 
-ReadableExpressions is set of [Debugger Visualizers](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers)
-and [a NuGet-packaged](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) extension method for 
-readable, source-code versions of [Expression Trees](https://msdn.microsoft.com/en-us/library/bb397951.aspx). 
+## Debugger Visualizer
 
-### Debugger Visualizers
-
-An installer for the Expression Debugger Visualizers can be downloaded from 
+The Debugger Visualizer installer can be downloaded from 
 [the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
 
 The visualizer has both Light and Dark themes:
 
-[![Visualizer themes](/docs/Themes.gif)]
+[![Visualizer themes](/docs/src/assets/images/Themes.gif)]
 
 ...and output can be customised using various options:
 
-[![Visualizer options](/docs/Options.gif)]
+[![Visualizer options](/docs/src/assets/images/Options.gif)]
 
 ## ASP.NET Core 5 Known Issue
 
-.NET 5 has [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default. This causes issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) when debugging ASP.NET Core apps as the VS debugger [uses](https://wrightfully.com/writing-a-readonly-debugger-visualizer) `BinaryFormatter` to serialize objects before sending them to the visualizer.
+.NET 5 had [a breaking change](https://github.com/dotnet/runtime/issues/29976), which disables `BinaryFormatter` serialization by default.
+This has caused issues with the ReadableExpressions visualizers (and [elsewhere](https://github.com/nhibernate/nhibernate-core/issues/2603)) 
+when debugging ASP.NET Core apps as the VS debugger [uses](https://wrightfully.com/writing-a-readonly-debugger-visualizer) `BinaryFormatter` 
+to serialize objects before sending them to the visualizer.
 
-[The solution](https://developercommunity2.visualstudio.com/t/visual-studio-debugger-visualizers-and-binaryforma/1278642?from=email&viewtype=all#T-N1314383) is to enable the `BinaryFormatter` in Debug only by adding the following to your ASP.NET Core csproj:
+[The solution](https://developercommunity2.visualstudio.com/t/visual-studio-debugger-visualizers-and-binaryforma/1278642) is to enable the 
+`BinaryFormatter` in Debug only by adding the following to your ASP.NET Core csproj:
 
 ```xml
 <PropertyGroup>
@@ -34,17 +38,18 @@ The visualizer has both Light and Dark themes:
 </PropertyGroup>
 ```
 
-### NuGet Package
+## Extension Methods
 
-The extension method is available in [a NuGet package](https://www.nuget.org/packages/AgileObjects.ReadableExpressions) 
-targeting [.NETStandard 1.0](https://blogs.msdn.microsoft.com/dotnet/2016/09/26/introducing-net-standard)+ and 
-.NET 3.5+:
+[The extension methods](https://readableexpressions.readthedocs.io/extension-methods) are available 
+[on NuGet](https://www.nuget.org/packages/AgileObjects.ReadableExpressions), 
+and target .NET 3.5+ and [.NETStandard 1.0](https://dotnet.microsoft.com/platform/dotnet-standard)+:
 
 ```shell
 PM> Install-Package AgileObjects.ReadableExpressions
 ```
+[![NuGet version](https://badge.fury.io/nu/AgileObjects.ReadableExpressions.svg)](https://badge.fury.io/nu/AgileObjects.ReadableExpressions)
 
-...and is used like so:
+To translate an Expression, use:
 
 ```csharp
 using AgileObjects.ReadableExpressions;
@@ -52,78 +57,7 @@ using AgileObjects.ReadableExpressions;
 string readable = myExpression.ToReadableString();
 ```
 
-...it also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
+...this also works on [DynamicLanguageRuntime](https://www.nuget.org/packages/DynamicLanguageRuntime) expressions.
 
-### Options
-
-To include namespaces when outputting type names, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.UseFullyQualifiedTypeNames);
-```
-
-To use full type names instead of `var` for local and inline-declared output parameter variables, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.UseExplicitTypeNames);
-```
-
-To declare output parameter variables inline with the method where they are first used, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.DeclareOutputParametersInline);
-```
-
-To maintain explicit generic arguments on method calls where they are implied, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.UseExplicitGenericParameters);
-```
-
-To show implicitly-typed array type names, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.ShowImplicitArrayTypes);
-```
-
-To show lambda parameter type names, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.ShowLambdaParameterTypes);
-```
-
-To output a source code comment when a lambda is '[quoted](https://stackoverflow.com/questions/3716492/what-does-expression-quote-do-that-expression-constant-can-t-already-do)', use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.ShowQuotedLambdaComments);
-```
-
-To define a custom factory for naming anonymous types, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.NameAnonymousTypesUsing(
-        anonType => GetAnonTypeName(anonType)));
-```
-
-To define a custom factory for translating `ConstantExpression` values, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.TranslateConstantsUsing(
-        (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
-```
-
-To specify a custom string for code indenting, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.IndentUsing("\t"));
-```
+All code is licensed with the [MIT licence](LICENCE.md). Check out 
+[the documentation](https://readableexpressions.readthedocs.io) for more!

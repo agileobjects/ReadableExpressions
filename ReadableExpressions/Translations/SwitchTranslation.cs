@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
     {
@@ -171,7 +172,7 @@
                 {
                     lineCount += 1;
                 }
-                
+
                 ++i;
 
                 if (i == _casesCount)
@@ -268,7 +269,7 @@
             WriteCaseBody(_defaultCaseTranslation, writer);
         }
 
-        private static bool WriteBreak(ITranslation caseTranslation)
-            => !((caseTranslation is IPotentialGotoTranslatable gotoTranslatable) && gotoTranslatable.HasGoto);
+        private static bool WriteBreak(ITranslatable caseTranslation) 
+            => !caseTranslation.HasGoto();
     }
 }

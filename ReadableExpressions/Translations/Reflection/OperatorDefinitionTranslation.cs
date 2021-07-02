@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
+    using Extensions;
     using static MethodTranslationHelpers;
 
     internal class OperatorDefinitionTranslation : ITranslatable
@@ -12,14 +13,14 @@
         public OperatorDefinitionTranslation(
             MethodInfo @operator,
             string typeKeyword,
-            ITranslationSettings settings)
+            TranslationSettings settings)
         {
-            _modifiers = GetAccessibility(@operator) + "static " + typeKeyword + " operator ";
+            _modifiers = GetAccessibilityForTranslation(@operator, settings) + "static " + typeKeyword + " operator ";
 
             _returnTypeTranslation =
                 new TypeNameTranslation(@operator.ReturnType, settings);
 
-            _parametersTranslation = new ParameterSetDefinitionTranslation(@operator, settings);
+            _parametersTranslation = ParameterSetDefinitionTranslation.For(@operator, settings);
 
             TranslationSize =
                 _modifiers.Length +

@@ -5,6 +5,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     internal class ArrayInitializerSetTranslation : InitializerSetTranslationBase<Expression>
     {

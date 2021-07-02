@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Linq;
 #if !NET35
     using System.Collections.Generic;
 #endif
@@ -444,6 +445,54 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateASwitchStatementWithReturns()
+        {
+            var returnTarget = Label(typeof(string), "Return");
+
+            var switchCases = Enumerable.Range(0, 5).Select(i => SwitchCase(
+                Return(returnTarget, Constant(i.ToString())),
+                Constant(i))).ToArray();
+
+            switchCases[1] = SwitchCase(
+                Throw(New(typeof(NotSupportedException).GetPublicInstanceConstructor(Type.EmptyTypes))),
+                Constant(1));
+
+            var @switch = Switch(
+                Constant(3),
+                Return(returnTarget, Constant("Nope")),
+                switchCases);
+
+            var switchBlock = Block(@switch, Label(returnTarget, Constant(string.Empty)));
+
+            var translated = switchBlock.ToReadableString();
+
+            const string EXPECTED = @"
+switch (3)
+{
+    case 0:
+        return ""0"";
+
+    case 1:
+        throw new NotSupportedException();
+
+    case 2:
+        return ""2"";
+
+    case 3:
+        return ""3"";
+
+    case 4:
+        return ""4"";
+
+    default:
+        return ""Nope"";
+}
+
+return """";";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

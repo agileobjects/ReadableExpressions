@@ -1,82 +1,43 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using NetStandardPolyfills;
+    using Translations.Reflection;
 
     internal static class InternalReflectionExtensions
     {
-        private static readonly Dictionary<Type, string> _typeNameSubstitutions = new Dictionary<Type, string>
+        private static readonly Dictionary<string, string> _typeNameKeywords = new()
         {
-            { typeof(string), "string" },
-            { typeof(int), "int" },
-            { typeof(bool), "bool" },
-            { typeof(decimal), "decimal" },
-            { typeof(long), "long" },
-            { typeof(double), "double" },
-            { typeof(object), "object" },
-            { typeof(byte), "byte" },
-            { typeof(short), "short" },
-            { typeof(float), "float" },
-            { typeof(char), "char" },
-            { typeof(uint), "uint" },
-            { typeof(ulong), "ulong" },
-            { typeof(sbyte), "sbyte" },
-            { typeof(ushort), "ushort" },
-            { typeof(void), "void" }
+            // ReSharper disable AssignNullToNotNullAttribute
+            { typeof(string).FullName, "string" },
+            { typeof(int).FullName, "int" },
+            { typeof(bool).FullName, "bool" },
+            { typeof(decimal).FullName, "decimal" },
+            { typeof(long).FullName, "long" },
+            { typeof(double).FullName, "double" },
+            { typeof(object).FullName, "object" },
+            { typeof(byte).FullName, "byte" },
+            { typeof(short).FullName, "short" },
+            { typeof(float).FullName, "float" },
+            { typeof(char).FullName, "char" },
+            { typeof(uint).FullName, "uint" },
+            { typeof(ulong).FullName, "ulong" },
+            { typeof(sbyte).FullName, "sbyte" },
+            { typeof(ushort).FullName, "ushort" },
+            { typeof(void).FullName, "void" }
+            // ReSharper restore AssignNullToNotNullAttribute
         };
 
-        internal static ICollection<string> TypeNames => _typeNameSubstitutions.Values;
+        public static ICollection<string> TypeNames => _typeNameKeywords.Values;
 
-        public static string GetSubstitutionOrNull(this Type type)
+        public static string GetKeywordOrNull(this IType type)
         {
-            return _typeNameSubstitutions.TryGetValue(type, out var substitutedName)
-                ? substitutedName : null;
-        }
-
-        public static bool IsPropertyGetterOrSetterCall(this MethodInfo method, out PropertyInfo property)
-        {
-            if (method.IsAbstract || method.HasAttribute<CompilerGeneratedAttribute>())
-            {
-                // Find declaring property
-                property = GetPropertyOrNull(method);
-
-                if (property != null)
-                {
-                    return true;
-                }
-            }
-
-            property = null;
-            return false;
-        }
-
-        private static PropertyInfo GetPropertyOrNull(MethodInfo method)
-        {
-            var hasSingleArgument = method.GetParameters().Length == 1;
-            var hasReturnType = method.ReturnType != typeof(void);
-
-            if (hasSingleArgument == hasReturnType)
+            if (type.FullName == null)
             {
                 return null;
             }
 
-            var type = method.DeclaringType;
-
-            var allProperties =
-                type.GetPublicInstanceProperties()
-                    .Concat(type.GetNonPublicInstanceProperties())
-                    .Concat(type.GetPublicStaticProperties())
-                    .Concat(type.GetNonPublicStaticProperties());
-
-            return allProperties.FirstOrDefault(property => Equals(
-                hasReturnType
-                    ? property.GetGetter(nonPublic: true)
-                    : property.GetSetter(nonPublic: true),
-                method));
+            return _typeNameKeywords.TryGetValue(type.FullName, out var substitutedName)
+                ? substitutedName : null;
         }
     }
 }

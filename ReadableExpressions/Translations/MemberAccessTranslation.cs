@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using Extensions;
     using Formatting;
 
     internal class MemberAccessTranslation : ITranslation
@@ -23,6 +24,8 @@
             TranslationSize = GetTranslationSize();
             FormattingSize = GetFormattingSize();
         }
+
+        #region Setup
 
         private static ITranslation GetSubjectOrNull(MemberExpression memberAccess, ITranslationContext context)
             => GetSubjectOrNull(memberAccess.Expression, memberAccess.Member, context);
@@ -56,6 +59,8 @@
 
             return subjectType == member.DeclaringType;
         }
+
+        #endregion 
 
         public MemberAccessTranslation(
             ITranslation subject,

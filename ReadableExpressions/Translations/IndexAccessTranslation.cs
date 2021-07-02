@@ -14,13 +14,13 @@
         private readonly ParameterSetTranslation _parameters;
 
         public IndexAccessTranslation(
-            ITranslation subject,
+            MethodCallExpression indexAccessCall,
             ParameterSetTranslation parameters,
-            Type indexValueType)
-            : this(subject, parameters)
+            ITranslationContext context)
+            : this(context.GetTranslationFor(indexAccessCall.Object), parameters)
         {
             NodeType = ExpressionType.Call;
-            Type = indexValueType;
+            Type = indexAccessCall.Type;
         }
 
         public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)

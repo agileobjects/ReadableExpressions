@@ -5,6 +5,7 @@
     using System.Data.Common;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
     using System.Text.RegularExpressions;
     using Common;
 #if !NET35
@@ -183,6 +184,46 @@
             var translated = enumConstant.ToReadableString();
 
             translated.ShouldBe("OddNumber.One");
+        }
+
+        [Fact]
+        public void ShouldTranslateADefaultFlagsEnumMember()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Default, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Default");
+        }
+
+        [Fact]
+        public void ShouldTranslateASingleFlagsEnumMember()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Instance, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Instance");
+        }
+
+        [Fact]
+        public void ShouldTranslateACompositeFlagsEnumValue()
+        {
+            var flagsEnumConstant = Constant(BindingFlags.Public | BindingFlags.Static, typeof(BindingFlags));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("BindingFlags.Static | BindingFlags.Public");
+        }
+
+        [Fact]
+        public void ShouldTranslateAConjunctionFlagsEnumValue()
+        {
+            var flagsEnumConstant = Constant(AttributeTargets.All, typeof(AttributeTargets));
+
+            var translated = flagsEnumConstant.ToReadableString();
+
+            translated.ShouldBe("AttributeTargets.All");
         }
 
         [Fact]
@@ -372,7 +413,7 @@
 
             var translated = regexConstant.ToReadableString();
 
-            translated.ShouldBe("Regex /* ^[0-9]+$ */");
+            translated.ShouldBe("new Regex(\"^[0-9]+$\")");
         }
 
         [Fact]
@@ -473,6 +514,58 @@
             const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
 
             translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAStringArrayConstant()
+        {
+            var arrayConstant = Constant(new[] { "One", "Two", "Three" }, typeof(string[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new[] { \"One\", \"Two\", \"Three\" }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAStringArrayICollectionConstant()
+        {
+            var arrayConstant = Constant(new[] { "Five", "Five", "Five" }, typeof(ICollection<string>));
+
+            var translated = arrayConstant.ToReadableString();
+            
+            translated.ShouldBe("(ICollection<string>)new[] { \"Five\", \"Five\", \"Five\" }");
+        }
+
+        [Fact]
+        public void ShouldTranslateATimeSpanArrayConstant()
+        {
+            var arrayConstant = Constant(
+                new[] { TimeSpan.FromHours(1), TimeSpan.FromHours(2) },
+                typeof(TimeSpan[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new[] { TimeSpan.FromHours(1), TimeSpan.FromHours(2) }");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnEmptyIntArrayConstant()
+        {
+            var arrayConstant = Constant(new int[0], typeof(int[]));
+
+            var translated = arrayConstant.ToReadableString();
+
+            translated.ShouldBe("new int[0]");
+        }
+
+        [Fact]
+        public void ShouldTranslateADictionaryConstant()
+        {
+            var dictionaryConstant = Constant(new Dictionary<int, int>(0));
+
+            var translated = dictionaryConstant.ToReadableString();
+
+            translated.ShouldBe("Dictionary<int, int>");
         }
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/35

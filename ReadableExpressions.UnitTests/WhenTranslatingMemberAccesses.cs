@@ -22,6 +22,7 @@
     public class WhenTranslatingMemberAccesses : TestClassBase
     {
         [Fact]
+
         public void ShouldTranslateAnArrayLengthExpression()
         {
             var getArrayLength = CreateLambda((string[] a) => a.Length);
@@ -433,7 +434,7 @@ string.Join(
         }
 
         [Fact]
-        public void ShouldTranslateAMethodCallWithGenericArgumentIncluded()
+        public void ShouldTranslateAMethodCallWithExplicitGenericArgumentIncluded()
         {
             var getFirstItem = CreateLambda((IndexedProperty ip) => ip.GetFirst<string>());
 
@@ -453,7 +454,7 @@ string.Join(
         }
 
         [Fact]
-        public void ShouldTranslateAMethodCallWithoutGenericArgumentIncluded()
+        public void ShouldTranslateAMethodCallWithoutImplicitGenericArgumentIncluded()
         {
             var setFirstItem = CreateLambda((IndexedProperty ip, string str) => ip.SetFirst(str));
 
@@ -470,6 +471,16 @@ string.Join(
             var translated = setFirstItem.Body.ToReadableString(stgs => stgs.UseExplicitGenericParameters);
 
             translated.ShouldBe("ip.SetFirst<string>(str)");
+        }
+
+        [Fact]
+        public void ShouldTranslateAMethodCallWithGenericArgumentGivenByDefaultOperator()
+        {
+            var setFirstItem = CreateLambda((IndexedProperty ip) => ip.SetFirst(default(string)));
+
+            var translated = setFirstItem.Body.ToReadableString();
+
+            translated.ShouldBe("ip.SetFirst(default(string))");
         }
 
         [Fact]

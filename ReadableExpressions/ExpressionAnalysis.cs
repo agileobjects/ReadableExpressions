@@ -9,8 +9,16 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
-    internal class ExpressionAnalysis
+    /// <summary>
+    /// Contains information about an analysed Expression.
+    /// </summary>
+    public class ExpressionAnalysis
     {
         private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
@@ -19,6 +27,7 @@
         private IList<ParameterExpression> _joinedAssignmentVariables;
         private ICollection<BinaryExpression> _joinedAssignments;
         private ICollection<Expression> _assignedAssignments;
+        private ICollection<Expression> _nestedCasts;
         private Stack<BlockExpression> _blocks;
         private Stack<object> _constructs;
         private ICollection<ParameterExpression> _catchBlockVariables;
@@ -26,294 +35,770 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
+        private ICollection<ParameterExpression> _declaredOutputParameters;
 
-        public ExpressionAnalysis(TranslationSettings settings)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
+        /// </summary>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> being used in the current Expression translation.
+        /// </param>
+        protected ExpressionAnalysis(TranslationSettings settings)
         {
             _settings = settings;
         }
 
         #region Factory Method
 
+        /// <summary>
+        /// Create an <see cref="ExpressionAnalysis"/> for the given <paramref name="expression"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to analyse.</param>
+        /// <param name="settings">
+        /// The <see cref="TranslationSettings"/> for the current Expression translation.
+        /// </param>
+        /// <returns>The <see cref="ExpressionAnalysis"/>.</returns>
         public static ExpressionAnalysis For(Expression expression, TranslationSettings settings)
         {
-            switch (expression.NodeType)
-            {
-                case ExpressionType.DebugInfo:
-                case ExpressionType.Default:
-                case ExpressionType.Extension:
-                case ExpressionType.Parameter:
-                case ExpressionType.RuntimeVariables:
-                    return settings.EmptyAnalysis;
-            }
-
             var analysis = new ExpressionAnalysis(settings);
-
-            analysis.Visit(expression);
-            analysis.Finalise();
+            analysis.Analyse(expression);
 
             return analysis;
         }
 
-        public ExpressionAnalysis Finalise()
-        {
-            _inlineOutputVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            _joinedAssignmentVariables ??= Enumerable<ParameterExpression>.EmptyArray;
-            return this;
-        }
-
         #endregion
 
-        public ICollection<ParameterExpression> InlineOutputVariables => _inlineOutputVariables;
-
-        public ICollection<ParameterExpression> JoinedAssignmentVariables => _joinedAssignmentVariables;
-
-        public bool IsJoinedAssignment(Expression expression)
+        /// <summary>
+        /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
+        /// to the Expression returned from <see cref="VisitAndConvert(Expression)"/>.
+        /// </summary>
+        /// <param name="expression">The Expression to analyse.</param>
+        protected virtual void Analyse(Expression expression)
         {
-            return (expression.NodeType == ExpressionType.Assign) &&
-                   _joinedAssignments?.Contains((BinaryExpression)expression) == true;
+            switch (expression.NodeType)
+            {
+                case DebugInfo:
+                case Default:
+                case Parameter:
+                case RuntimeVariables:
+                    ResultExpression = expression;
+                    break;
+
+                default:
+                    ResultExpression = VisitAndConvert(expression);
+                    break;
+            }
         }
 
+        /// <summary>
+        /// Gets the Expression which was the final result of the analysis.
+        /// </summary>
+        public Expression ResultExpression { get; private set; }
+
+        /// <summary>
+        /// Determines if the given <paramref name="variable"/> should be declared in a list of
+        /// variables at the start of the given <paramref name="block"/> to which it belongs.
+        /// </summary>
+        /// <param name="variable">The ParameterExpression for which to make the determination.</param>
+        /// <param name="block">The BlockExpression to which the <paramref name="variable"/> belongs.</param>
+        /// <returns>
+        /// True if the given <paramref name="variable"/> should be declared in a list of variables
+        /// at the given <paramref name="block"/> to which it belongs, or false if the variable will
+        /// be declared inline when it is assigned or passed as an out parameter.
+        /// </returns>
+        public virtual bool ShouldBeDeclaredInVariableList(
+            ParameterExpression variable,
+            BlockExpression block)
+        {
+            return _inlineOutputVariables?.Contains(variable) != true &&
+                   _joinedAssignmentVariables?.Contains(variable) != true;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
+        /// parameter that should be declared inline.
+        /// </summary>
+        /// <param name="parameter">The parameter for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="parameter"/> is an output parameter that should be
+        /// declared inline, otherwise false.
+        /// </returns>
+        public bool ShouldBeDeclaredInline(Expression parameter)
+        {
+            var declareInline =
+                _inlineOutputVariables?.Contains(parameter) == true &&
+                _declaredOutputParameters?.Contains(parameter) != true;
+
+            if (declareInline)
+            {
+                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add((ParameterExpression)parameter);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
+        /// assignment where the assigned variable is declared as part of the assignment statement.
+        /// </summary>
+        /// <param name="expression">The Expression to evaluate.</param>
+        /// <param name="assignment">
+        /// Populated with the BinaryExpression representing the assignment statement, if the given
+        /// <paramref name="expression"/> represents an assignment.
+        /// </param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> represents an assignment where the assigned
+        /// variable is declared as part of the assignment statement, otherwise false.
+        /// </returns>
+        public bool IsJoinedAssignment(Expression expression, out BinaryExpression assignment)
+        {
+            if (expression.NodeType != Assign || _joinedAssignments == null)
+            {
+                assignment = null;
+                return false;
+            }
+
+            assignment = (BinaryExpression)expression;
+            return _joinedAssignments.Contains(assignment);
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
+        /// variable in a Catch block.
+        /// </summary>
+        /// <param name="variable">The Expression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="variable"/> is the Exception variable in a Catch block,
+        /// otherwise false.
+        /// </returns>
         public bool IsCatchBlockVariable(Expression variable)
         {
-            return (variable.NodeType == ExpressionType.Parameter) &&
+            return (variable.NodeType == Parameter) &&
                   (_catchBlockVariables?.Contains((ParameterExpression)variable) == true);
         }
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// <see cref="GotoExpression"/>.
+        /// </summary>
+        /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
+        /// otherwise false.
+        /// </returns>
         public bool IsReferencedByGoto(LabelTarget labelTarget)
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="cast"/> is nested inside
+        /// another cast UnaryExpression, as part of a set of nested type casts.
+        /// </summary>
+        /// <param name="cast">
+        /// The UnaryExpression describing the cast for which to make the determination.
+        /// </param>
+        /// <returns>
+        /// True if the given <paramref name="cast"/> is nested inside another cast UnaryExpression,
+        /// otherwise false.
+        /// </returns>
+        public bool IsNestedCast(UnaryExpression cast) => _nestedCasts?.Contains(cast) == true;
+
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
+        /// final statement in a block, and so should be rendered as a return statement.
+        /// </summary>
+        /// <param name="goto">The GotoExpression for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// otherwise false.
+        /// </returns>
         public bool GoesToReturnLabel(GotoExpression @goto)
             => _gotoReturnGotos?.Contains(@goto) == true;
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
+        /// of multiple method calls.
+        /// </summary>
+        /// <param name="methodCall">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
+        /// otherwise false.
+        /// </returns>
         public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
             => _chainedMethodCalls?.Contains(methodCall) == true;
 
-        public Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
+        /// <summary>
+        /// Returns the 1-based index of the given <paramref name="variable"/> in the set of
+        /// unnamed, accessed variables of its Type.
+        /// </summary>
+        /// <param name="variable">The variable for which to get the 1-based index.</param>
+        /// <returns>
+        /// The 1-based index of the given <paramref name="variable"/>, or null if only variable of
+        /// this Type is declared.
+        /// </returns>
+        public int? GetUnnamedVariableNumberOrNull(ParameterExpression variable)
+        {
+            var variablesOfType = UnnamedVariablesByType[variable.Type];
+
+            if (variablesOfType.Length == 1)
+            {
+                return null;
+            }
+
+            return Array.IndexOf(variablesOfType, variable, 0) + 1;
+        }
+
+        private Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
             => _unnamedVariablesByType ??= _accessedVariables?
                 .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
                 .GroupBy(variable => variable.Type)
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
                  EmptyDictionary<Type, ParameterExpression[]>.Instance;
 
-        private void Visit(Expression expression)
+        /// <summary>
+        /// Visits the given <paramref name="expression"/>, returning a converted Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="expression">The Expression to visit.</param>
+        /// <returns>
+        /// An updated version of the given <paramref name="expression"/>, or the given Expression
+        /// if no updates are required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(Expression expression)
         {
             while (true)
             {
                 if (expression == null)
                 {
-                    return;
+                    return null;
+                }
+
+                if (expression is ICustomAnalysableExpression customExpression)
+                {
+                    return (Expression)VisitAndConvert(customExpression);
                 }
 
                 switch (expression.NodeType)
                 {
-                    case ExpressionType.Constant:
-                    case ExpressionType.DebugInfo:
-                    case ExpressionType.Default:
-                    case ExpressionType.Extension:
-                        return;
+                    case Constant when expression.IsComment():
+                        return VisitAndConvert((CommentExpression)expression);
 
-                    case ExpressionType.ArrayLength:
+                    case Constant:
+                        return VisitAndConvert((ConstantExpression)expression);
+
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
-                    case ExpressionType.Decrement:
-                    case ExpressionType.Increment:
-                    case ExpressionType.IsFalse:
-                    case ExpressionType.IsTrue:
-                    case ExpressionType.Negate:
-                    case ExpressionType.NegateChecked:
-                    case ExpressionType.Not:
-                    case ExpressionType.OnesComplement:
-                    case ExpressionType.PostDecrementAssign:
-                    case ExpressionType.PostIncrementAssign:
-                    case ExpressionType.PreDecrementAssign:
-                    case ExpressionType.PreIncrementAssign:
-                    case ExpressionType.Quote:
-                    case ExpressionType.Throw:
-                    case ExpressionType.TypeAs:
-                    case ExpressionType.UnaryPlus:
-                    case ExpressionType.Unbox:
-                        expression = ((UnaryExpression)expression).Operand;
-                        continue;
+                    case ConvertChecked:
+                        return VisitAndConvertCast(expression);
 
-                    case ExpressionType.Add:
-                    case ExpressionType.AddAssign:
-                    case ExpressionType.AddAssignChecked:
-                    case ExpressionType.AddChecked:
-                    case ExpressionType.And:
-                    case ExpressionType.AndAlso:
-                    case ExpressionType.AndAssign:
-                    case ExpressionType.ArrayIndex:
-                    case ExpressionType.Assign:
-                    case ExpressionType.Coalesce:
-                    case ExpressionType.Divide:
-                    case ExpressionType.DivideAssign:
-                    case ExpressionType.Equal:
-                    case ExpressionType.ExclusiveOr:
-                    case ExpressionType.ExclusiveOrAssign:
-                    case ExpressionType.GreaterThan:
-                    case ExpressionType.GreaterThanOrEqual:
-                    case ExpressionType.LeftShift:
-                    case ExpressionType.LeftShiftAssign:
-                    case ExpressionType.LessThan:
-                    case ExpressionType.LessThanOrEqual:
-                    case ExpressionType.ModuloAssign:
-                    case ExpressionType.Multiply:
-                    case ExpressionType.MultiplyAssign:
-                    case ExpressionType.MultiplyAssignChecked:
-                    case ExpressionType.MultiplyChecked:
-                    case ExpressionType.Modulo:
-                    case ExpressionType.NotEqual:
-                    case ExpressionType.Or:
-                    case ExpressionType.OrAssign:
-                    case ExpressionType.OrElse:
-                    case ExpressionType.Power:
-                    case ExpressionType.PowerAssign:
-                    case ExpressionType.RightShift:
-                    case ExpressionType.RightShiftAssign:
-                    case ExpressionType.Subtract:
-                    case ExpressionType.SubtractAssign:
-                    case ExpressionType.SubtractAssignChecked:
-                    case ExpressionType.SubtractChecked:
-                        Visit((BinaryExpression)expression);
-                        return;
+                    case ArrayLength:
+                    case Decrement:
+                    case Increment:
+                    case IsFalse:
+                    case IsTrue:
+                    case Negate:
+                    case NegateChecked:
+                    case Not:
+                    case OnesComplement:
+                    case PostDecrementAssign:
+                    case PostIncrementAssign:
+                    case PreDecrementAssign:
+                    case PreIncrementAssign:
+                    case Quote:
+                    case Throw:
+                    case TypeAs:
+                    case UnaryPlus:
+                    case Unbox:
+                        return VisitAndConvert((UnaryExpression)expression);
 
-                    case ExpressionType.Block:
-                        Visit((BlockExpression)expression);
-                        return;
+                    case Add:
+                    case AddAssign:
+                    case AddAssignChecked:
+                    case AddChecked:
+                    case And:
+                    case AndAlso:
+                    case AndAssign:
+                    case ArrayIndex:
+                    case Assign:
+                    case Coalesce:
+                    case Divide:
+                    case DivideAssign:
+                    case Equal:
+                    case ExclusiveOr:
+                    case ExclusiveOrAssign:
+                    case GreaterThan:
+                    case GreaterThanOrEqual:
+                    case LeftShift:
+                    case LeftShiftAssign:
+                    case LessThan:
+                    case LessThanOrEqual:
+                    case ModuloAssign:
+                    case Multiply:
+                    case MultiplyAssign:
+                    case MultiplyAssignChecked:
+                    case MultiplyChecked:
+                    case Modulo:
+                    case NotEqual:
+                    case Or:
+                    case OrAssign:
+                    case OrElse:
+                    case Power:
+                    case PowerAssign:
+                    case RightShift:
+                    case RightShiftAssign:
+                    case Subtract:
+                    case SubtractAssign:
+                    case SubtractAssignChecked:
+                    case SubtractChecked:
+                        return VisitAndConvert((BinaryExpression)expression);
 
-                    case ExpressionType.Call:
-                        Visit((MethodCallExpression)expression);
-                        return;
+                    case Block:
+                        return VisitAndConvert((BlockExpression)expression);
 
-                    case ExpressionType.Conditional:
-                        Visit((ConditionalExpression)expression);
-                        return;
+                    case Call:
+                        return VisitAndConvert((MethodCallExpression)expression);
 
-                    case ExpressionType.Dynamic:
-                        Visit(((DynamicExpression)expression).Arguments);
-                        return;
+                    case Conditional:
+                        return VisitAndConvert((ConditionalExpression)expression);
 
-                    case ExpressionType.Goto:
-                        Visit((GotoExpression)expression);
-                        return;
+                    case Dynamic:
+                        return VisitAndConvert((DynamicExpression)expression);
 
-                    case ExpressionType.Index:
-                        Visit((IndexExpression)expression);
-                        return;
+                    case Goto:
+                        return VisitAndConvert((GotoExpression)expression);
 
-                    case ExpressionType.Invoke:
-                        Visit((InvocationExpression)expression);
-                        return;
+                    case Index:
+                        return VisitAndConvert((IndexExpression)expression);
 
-                    case ExpressionType.Label:
-                        expression = ((LabelExpression)expression).DefaultValue;
-                        continue;
+                    case Invoke:
+                        return VisitAndConvert((InvocationExpression)expression);
 
-                    case ExpressionType.Lambda:
-                        Visit((LambdaExpression)expression);
-                        return;
+                    case Label:
+                        return VisitAndConvert((LabelExpression)expression);
 
-                    case ExpressionType.ListInit:
-                        Visit((ListInitExpression)expression);
-                        return;
+                    case Lambda:
+                        return VisitAndConvert((LambdaExpression)expression);
 
-                    case ExpressionType.Loop:
-                        expression = ((LoopExpression)expression).Body;
-                        continue;
+                    case ListInit:
+                        return VisitAndConvert((ListInitExpression)expression);
 
-                    case ExpressionType.MemberAccess:
-                        expression = ((MemberExpression)expression).Expression;
-                        continue;
+                    case Loop:
+                        return VisitAndConvert((LoopExpression)expression);
 
-                    case ExpressionType.MemberInit:
-                        Visit((MemberInitExpression)expression);
-                        return;
+                    case MemberAccess:
+                        return VisitAndConvert((MemberExpression)expression);
 
-                    case ExpressionType.New:
-                        Visit((NewExpression)expression);
-                        return;
+                    case MemberInit:
+                        return VisitAndConvert((MemberInitExpression)expression);
 
-                    case ExpressionType.NewArrayInit:
-                    case ExpressionType.NewArrayBounds:
-                        Visit((NewArrayExpression)expression);
-                        return;
+                    case New:
+                        return VisitAndConvert((NewExpression)expression);
 
-                    case ExpressionType.Parameter:
-                        Visit((ParameterExpression)expression);
-                        return;
+                    case NewArrayInit:
+                    case NewArrayBounds:
+                        return VisitAndConvert((NewArrayExpression)expression);
 
-                    case ExpressionType.RuntimeVariables:
-                        Visit(((RuntimeVariablesExpression)expression).Variables);
-                        return;
+                    case Parameter:
+                        return VisitAndConvert((ParameterExpression)expression);
 
-                    case ExpressionType.Switch:
-                        Visit((SwitchExpression)expression);
-                        return;
+                    case RuntimeVariables:
+                        return VisitAndConvert((RuntimeVariablesExpression)expression);
 
-                    case ExpressionType.Try:
-                        Visit((TryExpression)expression);
-                        return;
+                    case Switch:
+                        return VisitAndConvert((SwitchExpression)expression);
 
-                    case ExpressionType.TypeEqual:
-                    case ExpressionType.TypeIs:
-                        expression = ((TypeBinaryExpression)expression).Expression;
-                        continue;
+                    case Try:
+                        return VisitAndConvert((TryExpression)expression);
+
+                    case TypeEqual:
+                    case TypeIs:
+                        return VisitAndConvert((TypeBinaryExpression)expression);
 
                     default:
-                        return;
+                        return expression;
                 }
             }
         }
 
-        private void Visit(BinaryExpression binary)
+        /// <summary>
+        /// Visits the given <paramref name="binary"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="binary">The BinaryExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="binary"/>, or the given BinaryExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(BinaryExpression binary)
         {
-            if ((binary.NodeType == ExpressionType.Assign) &&
-                (binary.Left.NodeType == ExpressionType.Parameter) &&
-               (_joinedAssignmentVariables?.Contains(binary.Left) != true) &&
-               (_assignedAssignments?.Contains(binary) != true))
-            {
-                var variable = (ParameterExpression)binary.Left;
+            var isConstructAssignment = false;
+            var isJoinedAssignment = false;
 
-                if (VariableHasNotYetBeenAccessed(variable))
+            if (IsJoinableVariableAssignment(binary, out var variable))
+            {
+                if (IsFirstAccess(variable))
                 {
                     if (_constructs?.Any() == true)
                     {
                         (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
                             .Add(binary, _constructs.Peek());
+
+                        isConstructAssignment = true;
                     }
 
                     (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
-                    (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
                     (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
+
+                    isJoinedAssignment = true;
+
+                    AddVariableAccess(variable);
                 }
 
-                AddAssignmentIfAppropriate(binary.Right);
+                AddAssignedAssignmentIfAppropriate(binary.Right);
             }
 
-            Visit(binary.Left);
+            var updatedBinary = binary.Update(
+                VisitAndConvert(binary.Left),
+                VisitAndConvert(binary.Conversion),
+                VisitAndConvert(binary.Right));
 
-            if (binary.Conversion != null)
+            if (updatedBinary == binary)
             {
-                Visit(binary.Conversion.Body);
+                return updatedBinary;
             }
 
-            Visit(binary.Right);
+            if (isConstructAssignment)
+            {
+                _constructsByAssignment.Add(updatedBinary, _constructsByAssignment[binary]);
+                _constructsByAssignment.Remove(binary);
+            }
+
+            if (isJoinedAssignment)
+            {
+                _joinedAssignments.Add(updatedBinary);
+                _joinedAssignments.Remove(binary);
+            }
+
+            return updatedBinary;
         }
 
-        private void Visit(BlockExpression block)
+        private bool IsJoinableVariableAssignment(
+            BinaryExpression binary,
+            out ParameterExpression variable)
+        {
+            if (binary.NodeType != Assign ||
+                binary.Left.NodeType != Parameter ||
+               _assignedAssignments?.Contains(binary) == true)
+            {
+                variable = null;
+                return false;
+            }
+
+            variable = (ParameterExpression)binary.Left;
+
+            return IsAssignmentJoinable(variable);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the assignment of the given <paramref name="variable"/>
+        /// can be joined with its declaration.
+        /// </summary>
+        /// <param name="variable">The variable for which to make the determination.</param>
+        /// <returns>
+        /// True if the assignment of the given <paramref name="variable"/> can be joined with its
+        /// declaration, otherwise false.
+        /// </returns>
+        protected virtual bool IsAssignmentJoinable(ParameterExpression variable)
+            => _joinedAssignmentVariables?.Contains(variable) != true;
+
+        private bool IsFirstAccess(Expression variable)
+            => _accessedVariables?.Contains(variable) != true;
+
+        private void AddVariableAccess(ParameterExpression variable)
+            => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+
+        /// <summary>
+        /// Visits the given <paramref name="block"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="block">The BlockExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="block"/>, or the given BlockExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(BlockExpression block)
         {
             (_blocks ??= new Stack<BlockExpression>()).Push(block);
 
-            Visit(block.Expressions);
-            Visit(block.Variables);
+            var expressions = VisitAndConvert(block.Expressions);
+            var variables = VisitAndConvert(block.Variables);
 
             _blocks.Pop();
+
+            return block.Update(variables, expressions);
         }
 
-        private bool VariableHasNotYetBeenAccessed(Expression variable)
-            => _accessedVariables?.Contains(variable) != true;
+        /// <summary>
+        /// Visits and returns the Expressions contained in the given <paramref name="customExpression"/>.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of <see cref="ICustomAnalysableExpression"/> to visit.</typeparam>
+        /// <param name="customExpression">The <see cref="ICustomAnalysableExpression"/> to visit.</param>
+        /// <returns>The given <paramref name="customExpression"/>.</returns>
+        protected virtual TExpression VisitAndConvert<TExpression>(TExpression customExpression)
+            where TExpression : ICustomAnalysableExpression
+        {
+            foreach (var expr in customExpression.Expressions)
+            {
+                VisitAndConvert(expr);
+            }
 
-        private void Visit(MethodCallExpression methodCall)
+            return customExpression;
+        }
+
+        private Expression VisitAndConvertCast(Expression castExpression)
+        {
+            return VisitConstruct(castExpression, cast =>
+            {
+                if (ParentConstructIsCast())
+                {
+                    (_nestedCasts ??= new List<Expression>()).Add(cast);
+                }
+
+                return VisitAndConvert((UnaryExpression)cast);
+            });
+        }
+
+        private bool ParentConstructIsCast()
+        {
+            if (_constructs.Count < 2)
+            {
+                return false;
+            }
+
+            var parent = _constructs.ElementAt(1);
+            return parent is UnaryExpression { NodeType: ExpressionType.Convert or ConvertChecked };
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="conditional"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="conditional">The ConditionalExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="conditional"/>, or the given
+        /// ConditionalExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(ConditionalExpression conditional)
+        {
+            return VisitConstruct(conditional, cnd => cnd.Update(
+                VisitAndConvert(cnd.Test),
+                VisitAndConvert(cnd.IfTrue),
+                VisitAndConvert(cnd.IfFalse)));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="comment"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="comment">The CommentExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="comment"/>, or the given
+        /// CommentExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(CommentExpression comment)
+            => comment;
+
+        /// <summary>
+        /// Visits the given <paramref name="constant"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="constant">The ConstantExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="constant"/>, or the given
+        /// ConstantExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(ConstantExpression constant)
+            => constant;
+
+        /// <summary>
+        /// Visits the given <paramref name="dynamic"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="dynamic">The DynamicExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="dynamic"/>, or the given
+        /// DynamicExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(DynamicExpression dynamic)
+            => dynamic.Update(VisitAndConvert(dynamic.Arguments));
+
+        /// <summary>
+        /// Visits the given <paramref name="goto"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="goto">The GotoExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="goto"/>, or the given GotoExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(GotoExpression @goto)
+        {
+            if (@goto.Kind != GotoExpressionKind.Goto)
+            {
+                goto VisitValue;
+            }
+
+            var currentBlockFinalExpression = _blocks?.Peek()?.Expressions.Last();
+
+            if (currentBlockFinalExpression?.NodeType == Label)
+            {
+                var returnLabel = (LabelExpression)currentBlockFinalExpression;
+
+                if (@goto.Target == returnLabel.Target)
+                {
+                    (_gotoReturnGotos ??= new List<GotoExpression>()).Add(@goto);
+                    goto VisitValue;
+                }
+            }
+
+            (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
+
+        VisitValue:
+            return @goto.Update(@goto.Target, VisitAndConvert(@goto.Value));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="index"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="index">The IndexExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="index"/>, or the given IndexExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(IndexExpression index)
+        {
+            return VisitAndConvert(
+                index,
+                index.Object,
+                index.Arguments,
+                (idx, exp, args) => Expression
+                    .MakeIndex(exp, idx.Indexer, args));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="invocation"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="invocation">The InvocationExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="invocation"/>, or the given
+        /// InvocationExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(InvocationExpression invocation)
+        {
+            return VisitAndConvert(
+                invocation,
+                invocation.Expression,
+                invocation.Arguments,
+                (_, exp, args) => Expression.Invoke(exp, args));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="label"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="label">The LabelExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="label"/>, or the given
+        /// LabelExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(LabelExpression label)
+            => label.Update(label.Target, VisitAndConvert(label.DefaultValue));
+
+        /// <summary>
+        /// Visits the given <paramref name="lambda"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="lambda">The LambdaExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="lambda"/>, or the given
+        /// LambdaExpression if no replacement is required.
+        /// </returns>
+        protected virtual LambdaExpression VisitAndConvert(LambdaExpression lambda)
+        {
+            if (lambda == null)
+            {
+                return null;
+            }
+
+            var parameters = VisitAndConvert(lambda.Parameters);
+            var body = VisitAndConvert(lambda.Body);
+
+            if (parameters == lambda.Parameters && body == lambda.Body)
+            {
+                return lambda;
+            }
+
+            return lambda.Update(body, parameters);
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="listInit"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="listInit">The ListInitExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="listInit"/>, or the given
+        /// ListInitExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(ListInitExpression listInit)
+        {
+            var updatedNewing = VisitAndConvert(listInit.NewExpression);
+
+            if (updatedNewing.NodeType != New)
+            {
+                return updatedNewing;
+            }
+
+            return listInit.Update(
+                (NewExpression)updatedNewing,
+                VisitAndConvert(listInit.Initializers));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="loop"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="loop">The LoopExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="loop"/>, or the given
+        /// LoopExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(LoopExpression loop)
+            => loop.Update(loop.BreakLabel, loop.ContinueLabel, VisitAndConvert(loop.Body));
+
+        /// <summary>
+        /// Visits the given <paramref name="memberAccess"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="memberAccess">The MemberExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="memberAccess"/>, or the given
+        /// CommentExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(MemberExpression memberAccess)
+            => memberAccess.Update(VisitAndConvert(memberAccess.Expression));
+
+        /// <summary>
+        /// Visits the given <paramref name="methodCall"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="methodCall">The MethodCallExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="methodCall"/>, or the given
+        /// MethodCallExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(MethodCallExpression methodCall)
         {
             if (_chainedMethodCalls?.Contains(methodCall) != true)
             {
@@ -330,7 +815,7 @@
                     else if (methodCallChain[0].ToString().Contains(" ... "))
                     {
                         // Expression.ToString() replaces multiple lines with ' ... ';
-                        // potential fragile, but works unless MS change it:
+                        // potentially fragile, but works unless MS change it:
                         _chainedMethodCalls.AddRange(methodCallChain);
                     }
                 }
@@ -342,8 +827,8 @@
                 {
                     var argument = methodCall.Arguments[i];
 
-                    if ((argument.NodeType == ExpressionType.Parameter) &&
-                        VariableHasNotYetBeenAccessed(argument))
+                    if ((argument.NodeType == Parameter) &&
+                        IsFirstAccess(argument))
                     {
                         (_inlineOutputVariables ??= new List<ParameterExpression>())
                             .Add((ParameterExpression)argument);
@@ -351,11 +836,15 @@
                 }
             }
 
-            Visit(methodCall.Object);
-            Visit(methodCall.Arguments);
+            return VisitAndConvert(
+                methodCall,
+                methodCall.Object,
+                methodCall.Arguments,
+                (mc, s, args) => Expression.Call(s, mc.Method, args));
         }
 
-        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(MethodCallExpression methodCall)
+        private static IEnumerable<MethodCallExpression> GetChainedMethodCalls(
+            MethodCallExpression methodCall)
         {
             while (methodCall != null)
             {
@@ -365,128 +854,152 @@
             }
         }
 
-        private void Visit(ConditionalExpression conditional)
-        {
-            VisitConstruct(conditional, c =>
-            {
-                Visit(c.Test);
-                Visit(c.IfTrue);
-                Visit(c.IfFalse);
-            });
-        }
+        /// <summary>
+        /// Visits the given <paramref name="newing"/>, returning a replacement NewExpression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="newing">The NewExpression to visit.</param>
+        /// <returns>
+        /// A NewExpression to replace the given <paramref name="newing"/>, or the given
+        /// NewExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(NewExpression newing)
+            => newing.Update(VisitAndConvert(newing.Arguments));
 
-        private void Visit(GotoExpression @goto)
+        private IEnumerable<ElementInit> VisitAndConvert(IList<ElementInit> elementInits)
         {
-            if (@goto.Kind != GotoExpressionKind.Goto)
+            var initCount = elementInits.Count;
+            var updatedInits = new ElementInit[initCount];
+            var initsUpdated = false;
+
+            for (var i = 0; i < initCount; ++i)
             {
-                goto VisitValue;
+                var init = elementInits[i];
+                var arguments = init.Arguments;
+                var updatedArguments = VisitAndConvert(arguments);
+
+                if (updatedArguments != arguments)
+                {
+                    initsUpdated = true;
+                    init = Expression.ElementInit(init.AddMethod, updatedArguments);
+                }
+
+                updatedInits[i] = init;
             }
 
-            var currentBlockFinalExpression = _blocks?.Peek()?.Expressions.Last();
+            return initsUpdated ? updatedInits : elementInits;
+        }
 
-            if (currentBlockFinalExpression?.NodeType == ExpressionType.Label)
+        /// <summary>
+        /// Visits the given <paramref name="memberInit"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="memberInit">The MemberInitExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="memberInit"/>, or the given
+        /// MemberInitExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(MemberInitExpression memberInit)
+        {
+            var updatedNewing = VisitAndConvert(memberInit.NewExpression);
+
+            if (updatedNewing.NodeType != New)
             {
-                var returnLabel = (LabelExpression)currentBlockFinalExpression;
+                return updatedNewing;
+            }
 
-                if (@goto.Target == returnLabel.Target)
+            return memberInit.Update(
+                (NewExpression)updatedNewing,
+                VisitAndConvert(memberInit.Bindings));
+        }
+
+        private IEnumerable<MemberBinding> VisitAndConvert(IList<MemberBinding> bindings)
+        {
+            var bindingCount = bindings.Count;
+            var updatedBindings = new MemberBinding[bindingCount];
+            var bindingsUpdated = false;
+
+            for (var i = 0; i < bindingCount; ++i)
+            {
+                var binding = bindings[i];
+                var updatedBinding = VisitAndConvert(binding);
+                updatedBindings[i] = updatedBinding;
+
+                if (updatedBinding != binding)
                 {
-                    (_gotoReturnGotos ??= new List<GotoExpression>()).Add(@goto);
-                    goto VisitValue;
+                    bindingsUpdated = true;
                 }
             }
 
-            (_namedLabelTargets ??= new List<LabelTarget>()).Add(@goto.Target);
-
-            VisitValue:
-            Visit(@goto.Value);
+            return bindingsUpdated ? updatedBindings : bindings;
         }
 
-        private void Visit(IndexExpression index)
-        {
-            Visit(index.Object);
-            Visit(index.Arguments);
-        }
-
-        private void Visit(InvocationExpression invocation)
-        {
-            Visit(invocation.Arguments);
-            Visit(invocation.Expression);
-        }
-
-        private void Visit(LambdaExpression lambda)
-        {
-            Visit(lambda.Parameters);
-            Visit(lambda.Body);
-        }
-
-        private void Visit(ListInitExpression init)
-        {
-            Visit(init.NewExpression);
-            Visit(init.Initializers);
-        }
-
-        private void Visit(NewExpression newing) => Visit(newing.Arguments);
-
-        private void Visit(IList<ElementInit> elementInits)
-        {
-            for (int i = 0, n = elementInits.Count; i < n; ++i)
-            {
-                Visit(elementInits[i].Arguments);
-            }
-        }
-
-        private void Visit(MemberInitExpression memberInit)
-        {
-            Visit(memberInit.NewExpression);
-            Visit(memberInit.Bindings);
-        }
-
-        private void Visit(IList<MemberBinding> original)
-        {
-            for (int i = 0, n = original.Count; i < n; ++i)
-            {
-                Visit(original[i]);
-            }
-        }
-
-        private void Visit(MemberBinding binding)
+        private MemberBinding VisitAndConvert(MemberBinding binding)
         {
             switch (binding.BindingType)
             {
                 case MemberBindingType.Assignment:
-                    Visit(((MemberAssignment)binding).Expression);
-                    return;
+                    return VisitAndConvert((MemberAssignment)binding);
 
                 case MemberBindingType.MemberBinding:
-                    Visit(((MemberMemberBinding)binding).Bindings);
-                    return;
+                    return VisitAndConvert((MemberMemberBinding)binding);
 
                 case MemberBindingType.ListBinding:
-                    Visit(((MemberListBinding)binding).Initializers);
-                    return;
+                    return VisitAndConvert((MemberListBinding)binding);
 
                 default:
                     throw new NotSupportedException("Unable to analyze bindings of type " + binding.BindingType);
             }
         }
 
-        private void Visit(NewArrayExpression na) => Visit(na.Expressions);
+        private MemberBinding VisitAndConvert(MemberAssignment assignment)
+            => assignment.Update(VisitAndConvert(assignment.Expression));
 
-        private void Visit(ParameterExpression variable)
+        private MemberBinding VisitAndConvert(MemberMemberBinding binding)
+            => binding.Update(VisitAndConvert(binding.Bindings));
+
+        private MemberBinding VisitAndConvert(MemberListBinding listBinding)
+            => listBinding.Update(VisitAndConvert(listBinding.Initializers));
+
+        /// <summary>
+        /// Visits the given <paramref name="newArray"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="newArray">The NewArrayExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="newArray"/>, or the given
+        /// NewArrayExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(NewArrayExpression newArray)
+            => newArray.Update(VisitAndConvert(newArray.Expressions));
+
+        /// <summary>
+        /// Visits the given <paramref name="variable"/>, returning a replacement ParameterExpression
+        /// if appropriate.
+        /// </summary>
+        /// <param name="variable">The ParameterExpression to visit.</param>
+        /// <returns>
+        /// A ParameterExpression to replace the given <paramref name="variable"/>, or the given
+        /// ParameterExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(ParameterExpression variable)
+            => Visit(variable);
+
+        private ParameterExpression Visit(ParameterExpression variable)
         {
             if (variable == null)
             {
-                return;
+                return null;
             }
 
-            if (VariableHasNotYetBeenAccessed(variable))
+            if (IsFirstAccess(variable))
             {
-                (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+                AddVariableAccess(variable);
             }
 
             if (_joinedAssignmentVariables?.Contains(variable) != true)
             {
-                return;
+                return variable;
             }
 
             var joinedAssignmentData = _constructsByAssignment?
@@ -499,9 +1012,9 @@
                 .FirstOrDefault();
 
             if ((joinedAssignmentData == null) ||
-               (_constructs?.Contains(joinedAssignmentData.Construct) == true))
+                _constructs.Contains(joinedAssignmentData.Construct))
             {
-                return;
+                return variable;
             }
 
             // This variable was assigned within a construct but is being accessed 
@@ -509,101 +1022,294 @@
             _joinedAssignmentVariables.Remove(variable);
             _joinedAssignments.Remove(joinedAssignmentData.Assignment);
             _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
+
+            return variable;
         }
 
-        private void Visit(SwitchExpression @switch)
-        {
-            Visit(@switch.SwitchValue);
+        /// <summary>
+        /// Visits the given <paramref name="runtimeVariables"/>, returning a replacement Expression
+        /// if appropriate.
+        /// </summary>
+        /// <param name="runtimeVariables">The RuntimeVariablesExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="runtimeVariables"/>, or the given
+        /// RuntimeVariablesExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(RuntimeVariablesExpression runtimeVariables)
+            => runtimeVariables.Update(VisitAndConvert(runtimeVariables.Variables));
 
-            for (int i = 0, n = @switch.Cases.Count; i < n; ++i)
+        /// <summary>
+        /// Visits the given <paramref name="switch"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="switch">The SwitchExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="switch"/>, or the given
+        /// SwitchExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(SwitchExpression @switch)
+        {
+            var updatedValue = VisitAndConvert(@switch.SwitchValue);
+
+            var caseCount = @switch.Cases.Count;
+            var updatedCases = new SwitchCase[caseCount];
+
+            for (var i = 0; i < caseCount; ++i)
             {
-                Visit(@switch.Cases[i]);
+                updatedCases[i] = VisitAndConvert(@switch.Cases[i]);
             }
 
-            Visit(@switch.DefaultBody);
+            var updatedDefault = VisitAndConvert(@switch.DefaultBody);
+
+            return @switch.Update(updatedValue, updatedCases, updatedDefault);
         }
 
-        private void Visit(SwitchCase @case)
+        private SwitchCase VisitAndConvert(SwitchCase @case)
         {
-            VisitConstruct(@case, c =>
-            {
-                Visit(c.TestValues);
-                Visit(c.Body);
-            });
+            return VisitConstruct(@case, c => c.Update(
+                VisitAndConvert(c.TestValues),
+                VisitAndConvert(c.Body)));
         }
 
-        private void Visit(TryExpression @try)
+        /// <summary>
+        /// Visits the given <paramref name="try"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="try">The TryExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="try"/>, or the given TryExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(TryExpression @try)
         {
-            VisitConstruct(@try, t =>
+            return VisitConstruct(@try, t =>
             {
-                Visit(t.Body);
+                var updatedBody = VisitAndConvert(t.Body);
 
-                for (int i = 0, n = t.Handlers.Count; i < n; ++i)
+                var handlerCount = t.Handlers.Count;
+                var updatedHandlers = new CatchBlock[handlerCount];
+
+                for (var i = 0; i < handlerCount; ++i)
                 {
-                    Visit(t.Handlers[i]);
+                    updatedHandlers[i] = VisitAndConvert(t.Handlers[i]);
                 }
 
-                Visit(t.Finally);
-                Visit(t.Fault);
+                var updatedFinally = VisitAndConvert(t.Finally);
+                var updatedFault = VisitAndConvert(t.Fault);
+
+                return t.Update(
+                    updatedBody,
+                    updatedHandlers,
+                    updatedFinally,
+                    updatedFault);
             });
         }
 
-        private void Visit(CatchBlock @catch)
+        /// <summary>
+        /// Visits the given <paramref name="catch"/>, returning a replacement CatchBlock if
+        /// appropriate.
+        /// </summary>
+        /// <param name="catch">The CatchBlock to visit.</param>
+        /// <returns>
+        /// A CatchBlock to replace the given <paramref name="catch"/>, or the given CatchBlock if
+        /// no replacement is required.
+        /// </returns>
+        protected virtual CatchBlock VisitAndConvert(CatchBlock @catch)
         {
-            if (@catch.Variable != null)
+            var catchVariable = @catch.Variable;
+
+            if (catchVariable != null)
             {
-                (_catchBlockVariables ??= new List<ParameterExpression>()).Add(@catch.Variable);
+                (_catchBlockVariables ??= new List<ParameterExpression>())
+                    .Add(catchVariable);
             }
 
-            VisitConstruct(@catch, c =>
-            {
-                Visit(c.Variable);
-                Visit(c.Filter);
-                Visit(c.Body);
-            });
+            return VisitConstruct(@catch, c => c.Update(
+                Visit(c.Variable),
+                VisitAndConvert(c.Filter),
+                VisitAndConvert(c.Body)));
         }
 
-        private void Visit(IList<ParameterExpression> parameters)
+        /// <summary>
+        /// Visits the given <paramref name="typing"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="typing">The TypeBinaryExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="typing"/>, or the given
+        /// TypeBinaryExpression if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(TypeBinaryExpression typing)
+            => typing.Update(VisitAndConvert(typing.Expression));
+
+        /// <summary>
+        /// Visits the given <paramref name="unary"/>, returning a replacement Expression if
+        /// appropriate.
+        /// </summary>
+        /// <param name="unary">The UnaryExpression to visit.</param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="unary"/>, or the given UnaryExpression
+        /// if no replacement is required.
+        /// </returns>
+        protected virtual Expression VisitAndConvert(UnaryExpression unary)
         {
-            for (int i = 0, n = parameters.Count; i < n; ++i)
+            switch (unary.NodeType)
             {
-                Visit(parameters[i]);
+                case Increment:
+                    return Expression.Add(unary.Operand, Expression.Constant(1));
+                
+                case Decrement:
+                    return Expression.Subtract(unary.Operand, Expression.Constant(1));
+            }
+
+            return unary.Update(VisitAndConvert(unary.Operand));
+        }
+
+        /// <summary>
+        /// Visits the given <paramref name="parameters"/>, returning a replacement ParameterExpression
+        /// collection if appropriate.
+        /// </summary>
+        /// <param name="parameters">The ParameterExpressions to visit.</param>
+        /// <returns>
+        /// A ParameterExpression collection to replace the given <paramref name="parameters"/>, or
+        /// the given collection if no replacement is required.
+        /// </returns>
+        protected IList<ParameterExpression> VisitAndConvert(IList<ParameterExpression> parameters)
+            => VisitAndConvert(parameters, Visit);
+
+        /// <summary>
+        /// Visits the given <paramref name="expressions"/>, returning a replacement Expression
+        /// collection if appropriate.
+        /// </summary>
+        /// <param name="expressions">The Expressions to visit.</param>
+        /// <returns>
+        /// An Expression collection to replace the given <paramref name="expressions"/>, or the
+        /// given collection if no replacement is required.
+        /// </returns>
+        protected IList<Expression> VisitAndConvert(IList<Expression> expressions)
+            => VisitAndConvert(expressions, VisitAndConvert);
+
+        /// <summary>
+        /// Visits the given <paramref name="expressions"/>, returning a replacement
+        /// <typeparamref name="TExpression"/> collection if appropriate.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of Expression contained in the collection.</typeparam>
+        /// <param name="expressions">The <typeparamref name="TExpression"/>s to visit.</param>
+        /// <param name="visitor">A Func with which to process each <typeparamref name="TExpression"/>.</param>
+        /// <returns>
+        /// A <typeparamref name="TExpression"/> collection to replace the given
+        /// <paramref name="expressions"/>, or the given collection if no replacement is required.
+        /// </returns>
+        protected static IList<TExpression> VisitAndConvert<TExpression>(
+            IList<TExpression> expressions,
+            Func<TExpression, TExpression> visitor)
+            where TExpression : Expression
+        {
+            var expressionCount = expressions.Count;
+
+            switch (expressionCount)
+            {
+                case 0:
+                    return expressions;
+
+                case 1:
+                    {
+                        var expression = expressions[0];
+                        var updatedExpression = visitor.Invoke(expression);
+
+                        return expression != updatedExpression
+                            ? new[] { updatedExpression } : expressions;
+                    }
+
+                default:
+                    var updatedExpressions = new TExpression[expressionCount];
+                    var expressionsUpdated = false;
+
+                    for (var i = 0; ;)
+                    {
+                        var expression = expressions[i];
+                        var updatedExpression = visitor.Invoke(expression);
+                        updatedExpressions[i] = updatedExpression;
+
+                        if (expression != updatedExpression)
+                        {
+                            expressionsUpdated = true;
+                        }
+
+                        ++i;
+
+                        if (i == expressionCount)
+                        {
+                            return expressionsUpdated
+                                ? updatedExpressions : expressions;
+                        }
+                    }
             }
         }
 
-        private void Visit(IList<Expression> expressions)
+        /// <summary>
+        /// Visits the given <paramref name="subject"/> and <paramref name="expressions"/>, and uses
+        /// the <paramref name="expressionFactory"/> to create a replacement
+        /// <typeparamref name="TExpression"/> if appropriate.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of Expression to visit.</typeparam>
+        /// <param name="expression">The <typeparamref name="TExpression"/> to visit.</param>
+        /// <param name="subject">The <paramref name="expression"/>'s subject.</param>
+        /// <param name="expressions">The <paramref name="expression"/>'s expressions.</param>
+        /// <param name="expressionFactory">
+        /// A Func with which to create a new <typeparamref name="TExpression"/> instance.
+        /// </param>
+        /// <returns>
+        /// An Expression to replace the given <paramref name="expression"/>, or the given
+        /// <paramref name="expression"/> if no replacement is required.
+        /// </returns>
+        protected Expression VisitAndConvert<TExpression>(
+            TExpression expression,
+            Expression subject,
+            IList<Expression> expressions,
+            Func<TExpression, Expression, IList<Expression>, Expression> expressionFactory)
+            where TExpression : Expression
         {
-            for (int i = 0, n = expressions.Count; i < n; ++i)
+            var updatedSubject = VisitAndConvert(subject);
+            var updatedArguments = VisitAndConvert(expressions);
+
+            if (updatedSubject == subject && updatedArguments == expressions)
             {
-                Visit(expressions[i]);
+                return expression;
             }
+
+            return expressionFactory.Invoke(expression, subject, updatedArguments);
         }
 
-        private void VisitConstruct<TExpression>(TExpression expression, Action<TExpression> baseMethod)
+        private TConstruct VisitConstruct<TConstruct>(
+            TConstruct expression,
+            Func<TConstruct, TConstruct> visitor)
         {
             (_constructs ??= new Stack<object>()).Push(expression);
 
-            baseMethod.Invoke(expression);
+            var updatedConstruct = visitor.Invoke(expression);
 
             _constructs.Pop();
+
+            return updatedConstruct;
         }
 
-        private void AddAssignmentIfAppropriate(Expression assignedValue)
+        private void AddAssignedAssignmentIfAppropriate(Expression assignedValue)
         {
             while (true)
             {
                 switch (assignedValue.NodeType)
                 {
-                    case ExpressionType.Block:
+                    case Block:
                         assignedValue = ((BlockExpression)assignedValue).Result;
                         continue;
 
                     case ExpressionType.Convert:
-                    case ExpressionType.ConvertChecked:
+                    case ConvertChecked:
                         assignedValue = ((UnaryExpression)assignedValue).Operand;
                         continue;
 
-                    case ExpressionType.Assign:
+                    case Assign:
                         (_assignedAssignments ??= new List<Expression>()).Add(assignedValue);
                         break;
                 }

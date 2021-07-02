@@ -18,7 +18,7 @@
         /// <returns>A readable string version of this <paramref name="type"/>.</returns>
         public static string ToReadableString(
             this Type type,
-            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (type == null)
             {
@@ -40,7 +40,7 @@
         /// <returns>A readable string version of this <paramref name="ctor"/>.</returns>
         public static string ToReadableString(
             this ConstructorInfo ctor,
-            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (ctor == null)
             {
@@ -55,22 +55,22 @@
         }
 
         /// <summary>
-        /// Translates this <paramref name="method"/> into a readable string.
+        /// Translates this <paramref name="field"/> into a readable string.
         /// </summary>
-        /// <param name="method">The MethodInfo to translate.</param>
+        /// <param name="field">The FieldInfo to translate.</param>
         /// <param name="configuration">The configuration to use for the translation, if required.</param>
-        /// <returns>A readable string version of this <paramref name="method"/>.</returns>
+        /// <returns>A readable string version of this <paramref name="field"/>.</returns>
         public static string ToReadableString(
-            this MethodInfo method,
-            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
+            this FieldInfo field,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            if (method == null)
+            if (field == null)
             {
-                return "[Method not found]";
+                return "[Field not found]";
             }
 
             var settings = configuration.GetTranslationSettings();
-            var translation = MethodDefinitionTranslation.For(method, settings);
+            var translation = new FieldDefinitionTranslation(field, settings);
             var writer = new TranslationWriter(settings, translation);
 
             return writer.GetContent();
@@ -84,7 +84,7 @@
         /// <returns>A readable string version of this <paramref name="property"/>.</returns>
         public static string ToReadableString(
             this PropertyInfo property,
-            Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (property == null)
             {
@@ -98,10 +98,26 @@
             return writer.GetContent();
         }
 
-        private static ITranslationSettings GetTranslationSettings(
-            this Func<TranslationFormattingSettings, TranslationFormattingSettings> configuration)
+        /// <summary>
+        /// Translates this <paramref name="method"/> into a readable string.
+        /// </summary>
+        /// <param name="method">The MethodInfo to translate.</param>
+        /// <param name="configuration">The configuration to use for the translation, if required.</param>
+        /// <returns>A readable string version of this <paramref name="method"/>.</returns>
+        public static string ToReadableString(
+            this MethodInfo method,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            return configuration?.Invoke(new TranslationFormattingSettings()) ?? TranslationFormattingSettings.Default;
+            if (method == null)
+            {
+                return "[Method not found]";
+            }
+
+            var settings = configuration.GetTranslationSettings();
+            var translation = MethodDefinitionTranslation.For(method, settings);
+            var writer = new TranslationWriter(settings, translation);
+
+            return writer.GetContent();
         }
     }
 }

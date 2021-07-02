@@ -1,5 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.Extensions
 {
+    using System.Collections;
     using System.Collections.Generic;
     using Common;
     using ReadableExpressions.Extensions;
@@ -13,51 +14,57 @@
     public class WhenGeneratingVariableNames
     {
         [Fact]
-        public void ShouldNameAVariableForAnArrayType()
+        public void ShouldNameAStringVariable()
+        {
+            typeof(string).GetVariableNameInCamelCase().ShouldBe("string");
+        }
+
+        [Fact]
+        public void ShouldNameAnArrayTypeVariable()
         {
             typeof(Box[]).GetVariableNameInCamelCase().ShouldBe("boxArray");
         }
 
         [Fact]
-        public void ShouldNameAVariableForACollectionTypeEndingInX()
+        public void ShouldNameAnIEnumerableTypeVariable()
         {
-            typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxes");
+            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("FuzzIEnumerable");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnEnumerableTypeEndingInZ()
+        public void ShouldNameAnICollectionTypeVariable()
         {
-            typeof(IEnumerable<Fuzz>).GetVariableNameInPascalCase().ShouldBe("Fuzzes");
+            typeof(ICollection<Box>).GetVariableNameInCamelCase().ShouldBe("boxICollection");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnEnumerableTypeEndingInDoubleS()
+        public void ShouldNameAnIListTypeVariable()
         {
-            typeof(IEnumerable<Glass>).GetVariableNameInPascalCase().ShouldBe("Glasses");
+            typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("BodyIList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInCh()
+        public void ShouldNameAListTypeVariable()
         {
-            typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churches");
+            typeof(List<Church>).GetVariableNameInCamelCase().ShouldBe("churchList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInSh()
+        public void ShouldNameAHashSetTypeVariable()
         {
-            typeof(List<Hush>).GetVariableNameInCamelCase().ShouldBe("hushes");
+            typeof(HashSet<int>).GetVariableNameInCamelCase().ShouldBe("intHashSet");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAListTypeEndingInVowelY()
+        public void ShouldNameAnArrayListVariable()
         {
-            typeof(List<Journey>).GetVariableNameInCamelCase().ShouldBe("journeys");
+            typeof(ArrayList).GetVariableNameInCamelCase().ShouldBe("arrayList");
         }
 
         [Fact]
-        public void ShouldNameAVariableForAnIListTypeEndingInConsonantY()
+        public void ShouldNameADictionaryTypeVariable()
         {
-            typeof(IList<Body>).GetVariableNameInPascalCase().ShouldBe("Bodies");
+            typeof(Dictionary<string, Church>).GetVariableNameInCamelCase().ShouldBe("stringChurchDictionary");
         }
 
         [Fact]
@@ -74,11 +81,19 @@
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/48
         [Fact]
-        public void ShouldNameAnInnerClassOfAGenericType()
+        public void ShouldNameAGenericTypeInnerClassVariable()
         {
             typeof(Issue48<int>.Inner)
                 .GetVariableNameInPascalCase()
-                .ShouldBe($"{nameof(WhenGeneratingVariableNames)}__Issue48_Int__Inner");
+                .ShouldBe($"{nameof(WhenGeneratingVariableNames)}_IntIssue48_Inner");
+        }
+
+        [Fact]
+        public void ShouldNameAGenericGenericTypeArgument()
+        {
+            typeof(Dictionary<int, Dictionary<string, List<byte>>>)
+                .GetVariableNameInPascalCase()
+                .ShouldBe("IntStringByteListDictionaryDictionary");
         }
 
         #region Helper Members
@@ -88,16 +103,11 @@
 
         private class Fuzz { }
 
-        private class Glass { }
-
         private class Church { }
-
-        private class Hush { }
-
-        private class Journey { }
 
         private class Body { }
 
+        // ReSharper disable once UnusedTypeParameter
         private class Issue48<T>
         {
             public class Inner { }

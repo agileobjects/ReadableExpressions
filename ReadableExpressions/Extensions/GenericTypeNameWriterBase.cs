@@ -1,15 +1,15 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-    using System;
     using System.Collections.Generic;
-    using NetStandardPolyfills;
+    using Translations.Reflection;
+    using static System.StringComparison;
 
     internal abstract class GenericTypeNameWriterBase
     {
-        public void WriteGenericTypeName(Type genericType)
-            => WriteGenericTypeName(genericType, genericType.GetGenericTypeArguments());
+        public void WriteGenericTypeName(IType genericType)
+            => WriteGenericTypeName(genericType, genericType.GenericTypeArguments);
 
-        public void WriteGenericTypeName(Type genericType, Type[] typeGenericTypeArguments)
+        public void WriteGenericTypeName(IType genericType, IList<IType> typeGenericTypeArguments)
         {
             if (!genericType.IsNested)
             {
@@ -18,7 +18,7 @@
                 return;
             }
 
-            var types = new List<Type> { genericType };
+            var types = new List<IType> { genericType };
 
             // ReSharper disable once PossibleNullReferenceException
             while (genericType.IsNested)
@@ -43,23 +43,22 @@
             }
         }
 
-        private void WriteClosedGenericTypeName(Type genericType, ref Type[] typeGenericTypeArguments)
+        private void WriteClosedGenericTypeName(
+            IType genericType,
+            ref IList<IType> typeGenericTypeArguments)
         {
             var typeName = genericType.Name;
+            var numberOfParameters = genericType.GenericParameterCount;
 
-            var backtickIndex = typeName.IndexOf("`", StringComparison.Ordinal);
-
-            if (backtickIndex == -1)
+            if (numberOfParameters == 0)
             {
                 WriteTypeName(typeName, genericType);
                 return;
             }
 
-            var numberOfParameters = int.Parse(typeName.Substring(backtickIndex + 1));
+            IList<IType> typeArguments;
 
-            Type[] typeArguments;
-
-            if (numberOfParameters == typeGenericTypeArguments.Length)
+            if (numberOfParameters == typeGenericTypeArguments.Count)
             {
                 typeArguments = typeGenericTypeArguments;
                 goto WriteName;
@@ -76,35 +75,29 @@
                     break;
 
                 default:
-                    typeArguments = new Type[numberOfParameters];
-
-                    Array.Copy(
-                        typeGenericTypeArguments,
-                        typeArguments,
-                        numberOfParameters);
-
+                    typeArguments = new IType[numberOfParameters];
+                    typeGenericTypeArguments.CopyTo(typeArguments, numberOfParameters);
                     break;
             }
 
-            var numberOfRemainingTypeArguments = typeGenericTypeArguments.Length - numberOfParameters;
-            var typeGenericTypeArgumentsSubset = new Type[numberOfRemainingTypeArguments];
+            var numberOfRemainingTypeArguments = typeGenericTypeArguments.Count - numberOfParameters;
+            var typeGenericTypeArgumentsSubset = new IType[numberOfRemainingTypeArguments];
 
-            Array.Copy(
-                typeGenericTypeArguments,
-                numberOfParameters,
+            typeGenericTypeArguments.CopyTo(
                 typeGenericTypeArgumentsSubset,
+                numberOfParameters,
                 0,
                 numberOfRemainingTypeArguments);
 
             typeGenericTypeArguments = typeGenericTypeArgumentsSubset;
 
-            WriteName:
+        WriteName:
             WriteGenericTypeName(genericType, numberOfParameters, typeArguments);
         }
 
-        private void WriteTypeName(string name, Type type)
+        private void WriteTypeName(string name, IType type)
         {
-            if (type.IsInterface())
+            if (type.IsInterface)
             {
                 WriteInterfaceName(name);
             }
@@ -119,11 +112,11 @@
         protected abstract void WriteInterfaceName(string name);
 
         private void WriteGenericTypeName(
-            Type type,
+            IType type,
             int numberOfParameters,
-            IList<Type> typeArguments)
+            IList<IType> typeArguments)
         {
-            var isAnonType = type.IsAnonymous();
+            var isAnonType = type.IsAnonymous;
 
             if (isAnonType && TryWriteCustomAnonTypeName(type))
             {
@@ -138,7 +131,7 @@
             }
             else
             {
-                var parameterCountIndex = type.Name.IndexOf("`" + numberOfParameters, StringComparison.Ordinal);
+                var parameterCountIndex = type.Name.IndexOf("`" + numberOfParameters, Ordinal);
                 typeName = type.Name.Substring(0, parameterCountIndex);
             }
 
@@ -149,8 +142,7 @@
             {
                 var typeArgument = typeArguments[i];
 
-                WriteTypeName(typeArgument);
-
+                WriteTypeArgumentName(typeArgument);
                 ++i;
 
                 if (i == typeArguments.Count)
@@ -164,17 +156,17 @@
             WriteTypeArgumentNameSuffix();
         }
 
-        protected virtual bool TryWriteCustomAnonTypeName(Type anonType) => false;
+        protected virtual bool TryWriteCustomAnonTypeName(IType anonType) => false;
 
         protected abstract void WriteTypeArgumentNamePrefix();
 
-        protected abstract void WriteTypeName(Type type);
+        protected abstract void WriteTypeArgumentName(IType type);
 
         protected abstract void WriteTypeArgumentNameSeparator();
 
         protected abstract void WriteTypeArgumentNameSuffix();
 
-        protected virtual void WriteTypeNamePrefix(Type genericType)
+        protected virtual void WriteTypeNamePrefix(IType genericType)
         {
         }
 

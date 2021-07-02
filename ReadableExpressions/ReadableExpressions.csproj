@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AssemblyTitle>AgileObjects.ReadableExpressions</AssemblyTitle>
     <TargetFrameworks>net35;net40;netstandard1.0;netstandard2.0;</TargetFrameworks>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>latest</LangVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -14,11 +14,11 @@
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    
-    <AssemblyVersion>2.6.0.0</AssemblyVersion>
-    <FileVersion>2.6.0.0</FileVersion>
-    <VersionPrefix>2.6.0</VersionPrefix>
-    <Version>2.6.0-preview1</Version>
+
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <FileVersion>3.0.0.0</FileVersion>
+    <VersionPrefix>3.0.0</VersionPrefix>
+    <Version>3.0.0-preview1</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Authors>Steve Wilkes</Authors>
@@ -28,25 +28,41 @@
     <Copyright>Copyright © AgileObjects Ltd 2021</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
-    <PackageTags>Expression Trees;Debugging;Debugger Visualizers</PackageTags>
+    <PackageTags>"Expression Trees";Debugging;"Debugger Visualizers"</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <PackageReleaseNotes>- Adding .NET Standard 2.0 target
-- Fixing escape character translation verbatim strings
+    <PackageReleaseNotes>- Making translation extensible
+- Adding ToReadableString() extension methods for FieldInfo, PropertyInfo, etc.
+- Translating flags enum values
+- Improving variable name generation
+- Improving simple type array translation
+- Improving Regex translation
+- Improving comment translation
+- Improving boxing translation
+- Fixing nested cast translation
+- Fixing unreachable statement translation
+- Fixing translation to Method groups if return type is ignored
+- Fixing Increment and Decrement translation, re: #84
     </PackageReleaseNotes>
+    <PackageOutputPath>../NuGet</PackageOutputPath>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="../Icon.png" Pack="true" PackagePath="./" />
   </ItemGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <DefineConstants>$(DefineConstants);FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD1_0</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0;FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -56,9 +72,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net35'">
-    <PackageReference Include="DynamicLanguageRuntime">
-      <Version>1.1.2</Version>
-    </PackageReference>
+    <PackageReference Include="DynamicLanguageRuntime" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
@@ -71,11 +85,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.5.0" />
+    <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.6.0" />
   </ItemGroup>
 
   <PropertyGroup>
     <FrameworkPathOverride Condition="'$(TargetFramework)' == 'net35'">$(MSBuildProgramFiles32)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
   </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(TargetFramework)' == 'net40' ">
+    <Exec Command="xcopy $(TargetDir)AgileObjects.NetStandardPolyfills.dll &quot;$(SolutionDir)VisualizerAssemblies&quot; /Y&#xD;&#xA;xcopy $(TargetPath) &quot;$(SolutionDir)VisualizerAssemblies&quot; /Y" />
+  </Target>
 
 </Project>

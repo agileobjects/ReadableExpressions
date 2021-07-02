@@ -1,0 +1,22 @@
+site_name: ReadableExpressions
+site_description: ''
+site_author: Steve Wilkes
+repo_url: https://github.com/agileobjects/ReadableExpressions
+
+docs_dir: 'docs/src'
+site_dir: 'docs/site'
+
+extra_css:
+    - https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/vs2015.min.css
+    - https://agileobjects.co.uk/assets/css/docs-styles.min.css
+
+extra_javascript:
+    - assets/scripts/dox-cls.js
+    - https://agileobjects.co.uk/assets/js/ao-docs.min.js
+    
+nav:
+    - Configuration: configuration.md
+    - Extension Methods: extension-methods.md
+    - Extensibility: extensibility.md
+
+theme: readthedocs

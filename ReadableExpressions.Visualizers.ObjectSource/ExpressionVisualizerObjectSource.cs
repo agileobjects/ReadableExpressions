@@ -54,15 +54,7 @@
         private static string Translate(Type type)
             => type.ToReadableString(ApplyDialogSettings);
 
-        private static TranslationFormattingSettings ApplyDialogSettings(
-            TranslationFormattingSettings settings)
-        {
-            return settings
-                .FormatUsing(_htmlFormatter)
-                .IndentUsing(GetDialogSettings().Indent);
-        }
-
-        private static TranslationSettings ApplyDialogSettings(TranslationSettings settings)
+        private static ITranslationSettings ApplyDialogSettings(ITranslationSettings settings) 
             => GetDialogSettings().Update(settings.FormatUsing(_htmlFormatter));
 
         private static VisualizerDialogSettings GetDialogSettings()

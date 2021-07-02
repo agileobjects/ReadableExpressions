@@ -8,9 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
-#if NET35
     using Extensions;
-#endif
     using static Formatting.TokenType;
 
     internal class MethodGroupTranslation : ITranslation

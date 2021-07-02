@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using NetStandardPolyfills;
     using Reflection;
 #if NET35
@@ -24,9 +25,14 @@
             {
                 case ExpressionType.Convert:
                 case ConvertChecked:
-                    if (cast.Type == typeof(object))
+                    if (IsBoxing(cast))
                     {
-                        // Don't bother to show a boxing cast:
+                        if (context.Analysis.IsNestedCast(cast))
+                        {
+                            break;
+                        }
+
+                        // Don't bother to show boxing:
                         return castValueTranslation;
                     }
 
@@ -48,7 +54,7 @@
 
                         return MethodCallTranslation.ForCustomMethodCast(
                             context.GetTranslationFor(cast.Type),
-                            new BclMethodWrapper(cast.Method),
+                            new ClrMethodWrapper(cast.Method, context),
                             castValueTranslation,
                             context);
                     }
@@ -65,6 +71,12 @@
             }
 
             return new StandardCastTranslation(cast, castValueTranslation, context);
+        }
+
+        private static bool IsBoxing(UnaryExpression cast)
+        {
+            return cast.Type == typeof(object) &&
+                  (cast.Operand.Type == typeof(string) || cast.Operand.Type.IsValueType());
         }
 
         private static bool IsDelegateCast(UnaryExpression cast, out MethodCallExpression createDelegateCall)

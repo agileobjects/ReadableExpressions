@@ -13,9 +13,9 @@
     {
         private readonly string _comment;
 
-        public CommentTranslation(string comment, ITranslationContext context)
+        public CommentTranslation(CommentExpression comment, ITranslationContext context)
         {
-            _comment = comment;
+            _comment = comment.Comment.Text;
             FormattingSize = context.GetFormattingSize(TokenType.Comment);
         }
 

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Common;
@@ -247,6 +248,101 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnOpenNewableClassConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessNewableClassConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessNewableClassConstraintGeneric<T>()
+    where T : class, new()";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenStructConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessStructConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public T WhenTranslatingMethodInfos.Helper.InstanceParameterlessStructConstraintGeneric<T>()
+    where T : struct";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenInterfaceTypeConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceParameterlessInterfaceTypeConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public TItem WhenTranslatingMethodInfos.Helper.InstanceParameterlessInterfaceTypeConstraintGeneric<TItem>()
+    where TItem : IList<TItem>";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenClassTypeConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceClassTypeConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public long WhenTranslatingMethodInfos.Helper.InstanceClassTypeConstraintGeneric<TStream>
+(
+    TStream stream
+)
+    where TStream : Stream";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOpenStructAndInterfaceTypesConstraintGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceStructAndInterfaceTypesConstraintGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public Type WhenTranslatingMethodInfos.Helper.InstanceStructAndInterfaceTypesConstraintGeneric<T>()
+    where T : struct, WhenTranslatingMethodInfos.IMarker, IDisposable";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldTranslateMultipleConstrainedTypesOpenGenericMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.InstanceMultipleConstraintsGeneric));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED = @"
+public void WhenTranslatingMethodInfos.Helper.InstanceMultipleConstraintsGeneric<T1, T2, T3>()
+    where T1 : struct, IDisposable
+    where T2 : Stream, new()
+    where T3 : Enum";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldTranslateAThreeParametersTwoOpenGenericsMethodInfo()
         {
             var method = typeof(Helper)
@@ -261,6 +357,62 @@
     Func<int, T1> func,
     T2 value2
 )";
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOverriddenVirtualParentMethodInfo()
+        {
+            var method = typeof(Helper)
+                .GetPublicInstanceMethod(nameof(Helper.ToString));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.Helper.ToString()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOverriddenVirtualGrandParentMethodInfo()
+        {
+            var method = typeof(DerivedHelper)
+                .GetPublicInstanceMethod(nameof(DerivedHelper.ToString));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.DerivedHelper.ToString()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnOverriddenAbstractParentMethodInfo()
+        {
+            var method = typeof(DerivedHelper)
+                .GetPublicInstanceMethod(nameof(DerivedHelper.InstanceAbstractParameterless));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"public override string WhenTranslatingMethodInfos.DerivedHelper.InstanceAbstractParameterless()";
+
+            translated.ShouldBe(EXPECTED);
+        }
+
+        [Fact]
+        public void ShouldTranslateAnInterfaceMethodInfo()
+        {
+            var method = typeof(IInterfaceHelper)
+                .GetPublicInstanceMethod(nameof(IInterfaceHelper.GetName));
+
+            var translated = method.ToReadableString();
+
+            const string EXPECTED =
+                @"string WhenTranslatingMethodInfos.IInterfaceHelper.GetName()";
+
             translated.ShouldBe(EXPECTED);
         }
 
@@ -372,33 +524,6 @@ public static explicit operator int
         }
 
         [Fact]
-        public void ShouldTranslateAStaticProperty()
-        {
-            var publicInstanceProperty = typeof(PropertiesHelper)
-                .GetPublicStaticProperty(nameof(PropertiesHelper.PublicStatic));
-
-            publicInstanceProperty.ShouldNotBeNull();
-
-            var translated = publicInstanceProperty.ToReadableString();
-
-            translated.ShouldBe("public static int PropertiesHelper.PublicStatic { get; set; }");
-        }
-
-        [Fact]
-        public void ShouldTranslateAnInstanceProperty()
-        {
-            var nonPublicInstanceProperty = typeof(PropertiesHelper)
-                .GetPublicInstanceProperty(nameof(PropertiesHelper.NonPublicInstanceSetter));
-
-            nonPublicInstanceProperty.ShouldNotBeNull();
-
-            var translated = nonPublicInstanceProperty.ToReadableString();
-
-            translated.ShouldBe(
-                "public virtual int PropertiesHelper.NonPublicInstanceSetter { get; internal set; }");
-        }
-
-        [Fact]
         public void ShouldTranslateAnInstancePropertyGetter()
         {
             var publicInstanceGetter = typeof(PropertiesHelper)
@@ -451,7 +576,7 @@ public static explicit operator int
         {
             public Helper()
             {
-                ProtectedInstanceProperty = PrivateInstanceProperty = "hello";
+                ProtectedInstanceProperty = "hello";
             }
 
             public int PublicInstanceProperty { get; set; }
@@ -480,6 +605,43 @@ public static explicit operator int
 
             public Type InstanceParameterlessSingleGeneric<T>() => typeof(T);
 
+            public T InstanceParameterlessNewableClassConstraintGeneric<T>()
+                where T : class, new()
+            {
+                return new T();
+            }
+
+            public T InstanceParameterlessStructConstraintGeneric<T>()
+                where T : struct
+            {
+                return new T();
+            }
+
+            public TItem InstanceParameterlessInterfaceTypeConstraintGeneric<TItem>()
+                where TItem : IList<TItem>
+            {
+                return default(TItem);
+            }
+
+            public long InstanceClassTypeConstraintGeneric<TStream>(TStream stream)
+                where TStream : Stream
+            {
+                return stream.Length;
+            }
+
+            public Type InstanceStructAndInterfaceTypesConstraintGeneric<T>()
+                where T : struct, IMarker, IDisposable
+            {
+                return typeof(T);
+            }
+
+            public void InstanceMultipleConstraintsGeneric<T1, T2, T3>()
+                where T1 : struct, IDisposable
+                where T2 : Stream, new()
+                where T3 : Enum
+            {
+            }
+
             public static string StaticOutParameter(out int value)
             {
                 value = 1;
@@ -492,6 +654,8 @@ public static explicit operator int
                 Console.WriteLine(value);
                 value = default(T);
             }
+
+            public override string ToString() => "Hello!";
         }
         // ReSharper restore MemberCanBePrivate.Local
         // ReSharper restore AutoPropertyCanBeMadeGetOnly.Local
@@ -506,10 +670,28 @@ public static explicit operator int
             public abstract string InstanceAbstractParameterless();
         }
 
+        private class DerivedHelper : AbstractHelper
+        {
+            public override int PublicInstanceProperty => 123;
+
+            public override string InstanceAbstractParameterless() => ToString();
+
+            public override string ToString() => "Hello!";
+        }
+
+        private interface IInterfaceHelper
+        {
+            string GetName();
+        }
+
         internal class CustomAdder
         {
             public static implicit operator string(CustomAdder adder) => adder.ToString();
             public static explicit operator int(CustomAdder adder) => adder.GetHashCode();
+        }
+
+        internal interface IMarker
+        {
         }
 
         #endregion

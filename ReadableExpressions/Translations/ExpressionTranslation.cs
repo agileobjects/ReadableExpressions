@@ -1,12 +1,11 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
-    using System;
-    using System.Collections.Generic;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Initialisations;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -14,77 +13,59 @@
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class ExpressionTranslation : ITranslationContext
+    /// <summary>
+    /// The root class which translates an Expression. Also provides the default
+    /// <see cref="ITranslationContext"/> implementation.
+    /// </summary>
+    public class ExpressionTranslation : ITranslationContext
     {
+        private readonly Expression _expression;
         private readonly TranslationSettings _settings;
-        private readonly ExpressionAnalysis _expressionAnalysis;
-        private readonly ITranslation _root;
-        private ICollection<ParameterExpression> _declaredOutputParameters;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expression">The Expression to translate.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
         public ExpressionTranslation(Expression expression, TranslationSettings settings)
+            : this(ExpressionAnalysis.For(expression, settings), settings)
         {
-            _settings = settings;
-            _expressionAnalysis = ExpressionAnalysis.For(expression, settings);
-            _root = GetTranslationFor(expression);
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExpressionTranslation"/> class.
+        /// </summary>
+        /// <param name="expressionAnalysis">
+        /// The <see cref="ExpressionAnalysis"/> describing the analysed Expression.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use in the translation.</param>
+        protected ExpressionTranslation(
+            ExpressionAnalysis expressionAnalysis,
+            TranslationSettings settings)
+        {
+            _expression = expressionAnalysis.ResultExpression;
+            _settings = settings;
+            Analysis = expressionAnalysis;
+        }
+
+        /// <inheritdoc />
+        public ExpressionAnalysis Analysis { get; }
 
         #region ITranslationContext Members
 
         TranslationSettings ITranslationContext.Settings => _settings;
 
-        ICollection<ParameterExpression> ITranslationContext.InlineOutputVariables
-            => _expressionAnalysis.InlineOutputVariables;
-
-        bool ITranslationContext.ShouldBeDeclaredInline(ParameterExpression parameter)
-        {
-            var declareInline =
-                _expressionAnalysis.InlineOutputVariables.Contains(parameter) &&
-                _declaredOutputParameters?.Contains(parameter) != true;
-
-            if (declareInline)
-            {
-                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
-                return true;
-            }
-
-            return false;
-        }
-
-        ICollection<ParameterExpression> ITranslationContext.JoinedAssignmentVariables
-            => _expressionAnalysis.JoinedAssignmentVariables;
-
-        bool ITranslationContext.IsJoinedAssignment(Expression expression)
-            => _expressionAnalysis.IsJoinedAssignment(expression);
-
-        bool ITranslationContext.IsCatchBlockVariable(Expression expression)
-            => _expressionAnalysis.IsCatchBlockVariable(expression);
-
-        bool ITranslationContext.IsReferencedByGoto(LabelTarget labelTarget)
-            => _expressionAnalysis.IsReferencedByGoto(labelTarget);
-
-        bool ITranslationContext.GoesToReturnLabel(GotoExpression @goto)
-            => _expressionAnalysis.GoesToReturnLabel(@goto);
-
-        bool ITranslationContext.IsPartOfMethodCallChain(MethodCallExpression methodCall)
-            => _expressionAnalysis.IsPartOfMethodCallChain(methodCall);
-
-        int? ITranslationContext.GetUnnamedVariableNumberOrNull(ParameterExpression variable)
-        {
-            var variablesOfType = _expressionAnalysis.UnnamedVariablesByType[variable.Type];
-
-            if (variablesOfType.Length == 1)
-            {
-                return null;
-            }
-
-            return Array.IndexOf(variablesOfType, variable, 0) + 1;
-        }
-
-        public ITranslation GetTranslationFor(Expression expression)
+        /// <inheritdoc />
+        public virtual ITranslation GetTranslationFor(Expression expression)
         {
             if (expression == null)
             {
                 return null;
+            }
+
+            if (expression is ICustomTranslationExpression translationExpression)
+            {
+                return translationExpression.GetTranslation(this);
             }
 
             switch (expression.NodeType)
@@ -158,10 +139,13 @@
                 case Conditional:
                     return ConditionalTranslation.For((ConditionalExpression)expression, this);
 
+                case Constant when expression.IsComment():
+                    return new CommentTranslation((CommentExpression)expression, this);
+
                 case Constant:
                     return ConstantTranslation.For((ConstantExpression)expression, this);
 
-                case ExpressionType.Convert:
+                case Convert:
                 case ConvertChecked:
                 case TypeAs:
                 case Unbox:
@@ -171,7 +155,7 @@
                     return DebugInfoTranslation.For((DebugInfoExpression)expression, this);
 
                 case Default:
-                    return new DefaultValueTranslation(expression, this);
+                    return DefaultValueTranslation.For(expression, this);
 
                 case Dynamic:
                     return DynamicTranslation.For((DynamicExpression)expression, this);
@@ -189,7 +173,7 @@
                     return MethodCallTranslation.For((InvocationExpression)expression, this);
 
                 case Label:
-                    return new LabelTranslation((LabelExpression)expression, this);
+                    return LabelTranslation.For((LabelExpression)expression, this);
 
                 case Lambda:
                     return new LambdaTranslation((LambdaExpression)expression, this);
@@ -243,16 +227,22 @@
 
                 case TypeIs:
                     return CastTranslation.For((TypeBinaryExpression)expression, this);
-            }
 
-            return new FixedValueTranslation(expression, this);
+                default:
+                    return new FixedValueTranslation(expression, this);
+            }
         }
 
         #endregion
 
+        /// <summary>
+        /// Gets the source-code string translation of the given Expression.
+        /// </summary>
+        /// <returns>The source-code string translation of the given Expression.</returns>
         public string GetTranslation()
         {
-            var writer = new TranslationWriter(_settings, _root);
+            var root = GetTranslationFor(_expression);
+            var writer = new TranslationWriter(_settings, root);
 
             return writer.GetContent();
         }

@@ -79,7 +79,40 @@
         }
 
         [Fact]
-        public void ShouldTranslateAnUnboxExpression()
+        public void ShouldTranslateABoxingExpression()
+        {
+            var intVariable = Variable(typeof(int), "i");
+            var boxInt = Convert(intVariable, typeof(object));
+
+            var translated = boxInt.ToReadableString();
+
+            translated.ShouldBe("i");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnUpcastClassToObjectExpression()
+        {
+            var streamVariable = Variable(typeof(Stream), "stream");
+            var upcastStreamToObject = Convert(streamVariable, typeof(object));
+
+            var translated = upcastStreamToObject.ToReadableString();
+
+            translated.ShouldBe("(object)stream");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnUpcastStringToObjectExpression()
+        {
+            var stringVariable = Variable(typeof(string), "str");
+            var upcastStringToObject = Convert(stringVariable, typeof(object));
+
+            var translated = upcastStringToObject.ToReadableString();
+
+            translated.ShouldBe("str");
+        }
+
+        [Fact]
+        public void ShouldTranslateAnUnboxingExpression()
         {
             var objectVariable = Variable(typeof(object), "o");
             var unboxObjectToInt = Unbox(objectVariable, typeof(int));

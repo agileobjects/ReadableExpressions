@@ -6,8 +6,9 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
-    internal class ThrowTranslation : ITranslation
+    internal class ThrowTranslation : ITranslation, IPotentialGotoTranslatable
     {
         private const string _throw = "throw";
         private readonly ITranslation _thrownItemTranslation;
@@ -20,7 +21,8 @@
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             // unary.Operand is null when using Expression.Rethrow():
-            if ((throwExpression.Operand == null) || context.IsCatchBlockVariable(throwExpression.Operand))
+            if ((throwExpression.Operand == null) || 
+                 context.Analysis.IsCatchBlockVariable(throwExpression.Operand))
             {
                 return;
             }
@@ -37,6 +39,8 @@
         public int TranslationSize { get; }
 
         public int FormattingSize { get; }
+
+        public bool HasGoto => true;
 
         public int GetIndentSize() => _thrownItemTranslation?.GetIndentSize() ?? 0;
 

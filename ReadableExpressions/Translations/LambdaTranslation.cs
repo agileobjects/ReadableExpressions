@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     internal class LambdaTranslation : ITranslation, IPotentialMultiStatementTranslatable
     {

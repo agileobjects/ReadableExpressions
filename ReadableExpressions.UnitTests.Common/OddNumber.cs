@@ -1,4 +1,4 @@
-namespace AgileObjects.ReadableExpressions.UnitTests.Common
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Common
 {
     public enum OddNumber
     {

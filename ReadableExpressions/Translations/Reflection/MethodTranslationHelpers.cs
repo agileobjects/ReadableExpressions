@@ -1,92 +1,42 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
     using System.Reflection;
+    using Extensions;
 #if NETSTANDARD1_0
     using NetStandardPolyfills;
 #endif
 
     internal static class MethodTranslationHelpers
     {
-        public static string GetAccessibility(PropertyInfo property)
+        public static string GetAccessibilityForTranslation(
+            MethodInfo method,
+            TranslationSettings settings)
         {
-            var accessors = property.GetAccessors(nonPublic: true);
-
-            if (accessors[0].IsPublic || accessors[1].IsPublic)
-            {
-                return "public ";
-            }
-
-            if (accessors[0].IsAssembly || accessors[1].IsAssembly)
-            {
-                return "internal ";
-            }
-
-            if (accessors[0].IsFamily || accessors[1].IsFamily)
-            {
-                return "protected ";
-            }
-
-            if (accessors[0].IsFamilyOrAssembly || accessors[1].IsFamilyOrAssembly)
-            {
-                return "protected internal ";
-            }
-
-            if (accessors[0].IsPrivate || accessors[1].IsPrivate)
-            {
-                return "private ";
-            }
-
-            return string.Empty;
+            return new ClrMethodWrapper(method, settings).GetAccessibilityForTranslation();
         }
 
-        public static string GetAccessibility(MethodBase method)
+        public static string GetAccessibilityForTranslation(this IMember member)
         {
-            if (method.IsPublic)
+            var accessibility = member.GetAccessibility();
+
+            if (accessibility != string.Empty)
             {
-                return "public ";
+                accessibility += ' ';
             }
 
-            if (method.IsAssembly)
-            {
-                return "internal ";
-            }
-
-            if (method.IsFamily)
-            {
-                return "protected ";
-            }
-
-            if (method.IsFamilyOrAssembly)
-            {
-                return "protected internal ";
-            }
-
-            if (method.IsPrivate)
-            {
-                return "private ";
-            }
-
-            return string.Empty;
+            return accessibility;
         }
 
-        public static string GetModifiers(MethodBase method)
+        public static string GetModifiersForTranslation(this IComplexMember member)
         {
-            if (method.IsAbstract)
+            var modifiers = member.GetModifiers();
+
+            if (modifiers != string.Empty)
             {
-                return "abstract ";
+                modifiers += ' ';
             }
 
-            if (method.IsStatic)
-            {
-                return "static ";
-            }
-
-            if (method.IsVirtual)
-            {
-                return "virtual ";
-            }
-
-            return string.Empty;
+            return modifiers;
         }
     }
 }

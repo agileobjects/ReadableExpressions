@@ -11,7 +11,6 @@
     internal class LabelTranslation :
         ITranslation,
         IPotentialSelfTerminatingTranslatable,
-        IPotentialEmptyTranslatable,
         IPotentialGotoTranslatable
     {
         private readonly string _labelName;
@@ -19,25 +18,20 @@
         private readonly bool _labelHasNoValue;
         private readonly ITranslatable _labelValueTranslation;
 
-        public LabelTranslation(LabelExpression label, ITranslationContext context)
+        private LabelTranslation(
+            LabelExpression label,
+            string labelName,
+            ITranslationContext context)
         {
             Type = label.Type;
-            _labelName = GetLabelNamePart(label, context);
-            _labelIsNamed = _labelName != null;
+            _labelName = labelName;
             _labelHasNoValue = label.DefaultValue == null;
 
-            if (_labelIsNamed)
+            if (_labelName != null)
             {
-                // ReSharper disable once PossibleNullReferenceException
+                _labelIsNamed = true;
                 TranslationSize = _labelName.Length + 1 + Environment.NewLine.Length;
             }
-            else if (_labelHasNoValue)
-            {
-                IsEmpty = true;
-                return;
-            }
-
-            IsTerminated = true;
 
             if (_labelHasNoValue)
             {
@@ -49,9 +43,25 @@
             FormattingSize = _labelValueTranslation.FormattingSize;
         }
 
+        #region Factory Methods
+
+        public static ITranslation For(LabelExpression label, ITranslationContext context)
+        {
+            var labelName = GetLabelNamePart(label, context);
+
+            if (labelName == null && label.DefaultValue == null)
+            {
+                return new EmptyLabelTranslation(label);
+            }
+
+            return new LabelTranslation(label, labelName, context);
+        }
+
+        #endregion
+
         private static string GetLabelNamePart(LabelExpression label, ITranslationContext context)
         {
-            if (context.IsReferencedByGoto(label.Target))
+            if (context.Analysis.IsReferencedByGoto(label.Target))
             {
                 return label.Target.Name.IsNullOrWhiteSpace() ? null : label.Target.Name;
             }
@@ -67,10 +77,8 @@
 
         public int FormattingSize { get; }
 
-        public bool IsTerminated { get; }
-
-        public bool IsEmpty { get; }
-
+        public bool IsTerminated => true;
+        
         public bool HasGoto => !_labelHasNoValue;
 
         public int GetIndentSize() => _labelValueTranslation?.GetIndentSize() ?? 0;
@@ -93,6 +101,18 @@
             writer.WriteReturnToTranslation();
             _labelValueTranslation.WriteTo(writer);
             writer.WriteToTranslation(';');
+        }
+
+        private class EmptyLabelTranslation : EmptyTranslatable, ITranslation
+        {
+            public EmptyLabelTranslation(Expression label)
+            {
+                Type = label.Type;
+            }
+
+            public ExpressionType NodeType => ExpressionType.Label;
+
+            public Type Type { get; }
         }
     }
 }

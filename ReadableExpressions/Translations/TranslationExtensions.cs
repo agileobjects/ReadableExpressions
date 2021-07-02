@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
     using Formatting;
 
     internal static class TranslationExtensions
@@ -46,8 +47,7 @@
                     return false;
             }
 
-            return (translation is IPotentialMultiStatementTranslatable multiStatementTranslatable) &&
-                    multiStatementTranslatable.IsMultiStatement;
+            return translation is IPotentialMultiStatementTranslatable { IsMultiStatement: true };
         }
 
         public static bool IsTerminated(this ITranslatable translation)
@@ -57,10 +57,7 @@
         }
 
         public static bool HasGoto(this ITranslatable translation)
-        {
-            return (translation is IPotentialGotoTranslatable gotoTranslatable) &&
-                   gotoTranslatable.HasGoto;
-        }
+            => translation is IPotentialGotoTranslatable { HasGoto: true };
 
         public static bool ExceedsLengthThreshold(this ITranslatable translatable)
             => translatable.TranslationSize > 100;
@@ -80,30 +77,7 @@
         public static ITranslation WithTypes(this ITranslatable translatable, ExpressionType nodeType, Type type)
             => new ModifiedTranslation(translatable, nodeType, type);
 
-        public static void WriteOpeningBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
-        {
-            if (startOnNewLine && writer.TranslationQuery(q => !q.TranslationEndsWith('{')))
-            {
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.WriteToTranslation('{');
-            writer.WriteNewLineToTranslation();
-            writer.Indent();
-        }
-
-        public static void WriteClosingBraceToTranslation(this TranslationWriter writer, bool startOnNewLine = true)
-        {
-            if (startOnNewLine)
-            {
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.Unindent();
-            writer.WriteToTranslation('}');
-        }
-
-        public static void WriteInParentheses(this ITranslation translation, TranslationWriter writer)
+        public static void WriteInParentheses(this ITranslatable translation, TranslationWriter writer)
         {
             writer.WriteToTranslation('(');
             translation.WriteTo(writer);
@@ -133,23 +107,11 @@
 
         public static void WriteNewToTranslation(this TranslationWriter writer)
             => writer.WriteKeywordToTranslation("new ");
-
-        public static void WriteSpaceToTranslation(this TranslationWriter writer)
-            => writer.WriteToTranslation(' ');
-
-        public static void WriteDotToTranslation(this TranslationWriter writer)
-            => writer.WriteToTranslation('.');
-
+        
         public static void WriteReturnToTranslation(this TranslationWriter writer)
             => writer.WriteControlStatementToTranslation("return ");
 
         public static void WriteControlStatementToTranslation(this TranslationWriter writer, string statement)
             => writer.WriteToTranslation(statement, TokenType.ControlStatement);
-
-        public static void WriteKeywordToTranslation(this TranslationWriter writer, string keyword)
-            => writer.WriteToTranslation(keyword, TokenType.Keyword);
-
-        public static void WriteTypeNameToTranslation(this TranslationWriter writer, string name)
-            => writer.WriteToTranslation(name, TokenType.TypeName);
     }
 }

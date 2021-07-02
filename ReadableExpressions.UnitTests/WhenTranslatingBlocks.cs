@@ -64,7 +64,7 @@ Console.Beep();";
         {
             var countVariable = Variable(typeof(int), "count");
             var assignZeroToCount = Assign(countVariable, Constant(0));
-            var incrementCount = Increment(countVariable);
+            var incrementCount = PreIncrementAssign(countVariable);
             var returnVoid = Default(typeof(void));
 
             var countBlock = Block(
@@ -87,7 +87,7 @@ var count = 0;
         {
             var countVariable = Variable(typeof(short), "count");
             var assignTenToCount = Assign(countVariable, Constant((short)10));
-            var decrementCount = Decrement(countVariable);
+            var decrementCount = PostDecrementAssign(countVariable);
 
             var countBlock = Block(
                 new[] { countVariable },
@@ -101,7 +101,7 @@ var count = 0;
             const string EXPECTED = @"() =>
 {
     var count = 10;
-    --count;
+    count--;
 }";
 
             translated.ShouldBe(EXPECTED.TrimStart());
@@ -112,7 +112,7 @@ var count = 0;
         {
             var countVariable = Variable(typeof(ushort), "count");
             var countEqualsZero = Assign(countVariable, Constant((ushort)0));
-            var incrementCount = Increment(countVariable);
+            var incrementCount = PostIncrementAssign(countVariable);
             var returnCount = countVariable;
 
             var countBlock = Block(
@@ -128,7 +128,7 @@ var count = 0;
             const string EXPECTED = @"() =>
 {
     var count = 0;
-    ++count;
+    count++;
 
     return count;
 }";
@@ -597,6 +597,43 @@ catch
 {
     throw;
 }";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotIncludeAnUnreachableReturnStatement()
+        {
+            var stringParam = Parameter(typeof(string), "str");
+
+            var returnTarget = Label(typeof(int), "Return");
+
+            var @switch = Switch(
+                stringParam,
+                SwitchCase(Return(returnTarget, Constant(1)), Constant("One")),
+                SwitchCase(Return(returnTarget, Constant(2)), Constant("Two")),
+                SwitchCase(Return(returnTarget, Constant(3)), Constant("Three")));
+
+            var @throw = Throw(New(typeof(NotSupportedException)
+                .GetPublicInstanceConstructor(Type.EmptyTypes)));
+
+            var block = Block(@switch, @throw, Label(returnTarget, Constant(0)));
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+switch (str)
+{
+    case ""One"":
+        return 1;
+
+    case ""Two"":
+        return 2;
+
+    case ""Three"":
+        return 3;
+}
+
+throw new NotSupportedException();";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

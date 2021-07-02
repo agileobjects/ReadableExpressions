@@ -4,6 +4,7 @@
 #if NETSTANDARD1_0
     using System.Reflection;
 #endif
+    using Extensions;
     using NetStandardPolyfills;
 
     internal class TypeDefinitionTranslation : ITranslatable
@@ -12,7 +13,7 @@
         private readonly string _modifiers;
         private readonly ITranslatable _typeNameTranslatable;
 
-        public TypeDefinitionTranslation(Type type, ITranslationSettings settings)
+        public TypeDefinitionTranslation(Type type, TranslationSettings settings)
         {
             _accessibility = GetAccessibility(type);
             _modifiers = GetModifiers(type);

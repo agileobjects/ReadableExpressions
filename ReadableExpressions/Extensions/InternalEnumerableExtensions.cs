@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
 #if NET35
     using System.Linq;
@@ -9,37 +10,68 @@
 
     internal static class InternalEnumerableExtensions
     {
+        public static void CopyTo<T>(
+            this IList<T> source,
+            IList<T> destination,
+            int count)
+        {
+            source.CopyTo(destination, 0, 0, count);
+        }
+
+        public static void CopyTo<T>(
+            this IList<T> source,
+            IList<T> destination,
+            int sourceIndex,
+            int destinationIndex,
+            int count)
+        {
+            for (var i = 0; i < count; ++i)
+            {
+                destination[destinationIndex + i] = source[sourceIndex + i];
+            }
+        }
+
+        public static ReadOnlyCollection<T> ToReadOnlyCollection<T>(
+            this IList<T> items)
+        {
+            return items.Count != 0
+                ? new ReadOnlyCollection<T>(items)
+                : Enumerable<T>.EmptyReadOnlyCollection;
+        }
+
         [DebuggerStepThrough]
         public static bool Any<T>(this ICollection<T> items) => items.Count > 0;
 
-        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, TResult> projector)
+        public static TResult[] ProjectToArray<TItem, TResult>(
+            this IList<TItem> items,
+            Func<TItem, TResult> projector)
         {
             var itemCount = items.Count;
-            var result = new TResult[itemCount];
 
-            for (var i = 0; i < itemCount; ++i)
+            switch (itemCount)
             {
-                result[i] = projector.Invoke(items[i]);
+                case 0:
+                    return Enumerable<TResult>.EmptyArray;
+
+                case 1:
+                    return new[] { projector.Invoke(items[0]) };
+
+                default:
+                    var result = new TResult[itemCount];
+
+                    for (var i = 0; i < itemCount; ++i)
+                    {
+                        result[i] = projector.Invoke(items[i]);
+                    }
+
+                    return result;
             }
-
-            return result;
-        }
-
-        public static IList<TResult> ProjectToArray<TItem, TResult>(this IList<TItem> items, Func<TItem, int, TResult> projector)
-        {
-            var itemCount = items.Count;
-            var result = new TResult[itemCount];
-
-            for (var i = 0; i < itemCount; ++i)
-            {
-                result[i] = projector.Invoke(items[i], i);
-            }
-
-            return result;
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, TResult> projector)
         {
             foreach (var item in items)
             {
@@ -48,7 +80,9 @@
         }
 
         [DebuggerStepThrough]
-        public static IEnumerable<TResult> Project<TItem, TResult>(this IEnumerable<TItem> items, Func<TItem, int, TResult> projector)
+        public static IEnumerable<TResult> Project<TItem, TResult>(
+            this IEnumerable<TItem> items,
+            Func<TItem, int, TResult> projector)
         {
             var i = 0;
 

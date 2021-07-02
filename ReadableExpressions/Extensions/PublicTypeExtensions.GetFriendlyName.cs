@@ -1,9 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System;
-    using NetStandardPolyfills;
     using Translations;
     using Translations.Formatting;
+    using Translations.Reflection;
     using static ExpressionExtensions;
     using static Translations.Formatting.TokenType;
 
@@ -18,15 +18,30 @@
         /// <param name="type">The type for which to retrieve a friendly, readable name.</param>
         /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
         /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
-        public static string GetFriendlyName(this Type type, Func<TranslationSettings, TranslationSettings> configuration = null)
+        public static string GetFriendlyName(
+            this Type type,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
+        {
+            return ClrTypeWrapper.For(type).GetFriendlyName(configuration);
+        }
+
+        /// <summary>
+        /// Returns a friendly, readable version of the name of the given <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> for which to retrieve a friendly, readable name.</param>
+        /// <param name="configuration">The configuration to use for the variable naming, if required.</param>
+        /// <returns>A friendly, readable version of the name of the given <paramref name="type"/>.</returns>
+        public static string GetFriendlyName(
+            this IType type,
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             var settings = configuration.GetTranslationSettings();
 
-            return GetFriendlyName(type, settings, settings.Formatter);
+            return type.GetFriendlyName(settings, settings.Formatter);
         }
 
         internal static string GetFriendlyName(
-            this Type type, 
+            this IType type,
             TranslationSettings translationSettings,
             ITranslationFormatter formatter)
         {
@@ -40,17 +55,14 @@
             return writer.GetContent();
         }
 
-        internal static void WriteFriendlyName(this TranslationWriter writer, Type type)
-            => WriteFriendlyName(writer, type, TranslationSettings.Default);
-
         internal static void WriteFriendlyName(
             this TranslationWriter writer,
-            Type type,
-            ITranslationSettings settings)
+            IType type,
+            TranslationSettings settings)
         {
             if (type.FullName == null)
             {
-                if (type.IsGenericType())
+                if (type.IsGeneric)
                 {
                     // A generic open generic parameter Type:
                     writer.WriteGenericTypeName(type, settings);
@@ -66,14 +78,14 @@
 
             if (type.IsArray)
             {
-                writer.WriteFriendlyName(type.GetElementType(), settings);
+                writer.WriteFriendlyName(type.ElementType, settings);
                 writer.WriteToTranslation("[]");
                 return;
             }
 
-            if (!type.IsGenericType())
+            if (!type.IsGeneric)
             {
-                var substitutedTypeName = type.GetSubstitutionOrNull();
+                var substitutedTypeName = type.GetKeywordOrNull();
 
                 if (type.IsNested)
                 {
@@ -98,16 +110,14 @@
                 return;
             }
 
-            Type underlyingNullableType;
-
-            if ((underlyingNullableType = Nullable.GetUnderlyingType(type)) == null)
+            if (type.IsNullable)
             {
-                writer.WriteGenericTypeName(type, settings);
+                writer.WriteFriendlyName(type.NonNullableUnderlyingType, settings);
+                writer.WriteToTranslation('?');
                 return;
             }
 
-            writer.WriteFriendlyName(underlyingNullableType, settings);
-            writer.WriteToTranslation('?');
+            writer.WriteGenericTypeName(type, settings);
         }
 
         private static bool WriteSubstituteToTranslation(
@@ -125,8 +135,8 @@
 
         private static void WriteTypeNamespaceIfRequired(
             this TranslationWriter writer,
-            Type type,
-            ITranslationSettings settings)
+            IType type,
+            TranslationSettings settings)
         {
             if (!settings.FullyQualifyTypeNames || (type.Namespace == null))
             {
@@ -137,16 +147,16 @@
             writer.WriteDotToTranslation();
         }
 
-        private static void WriteTypeName(this TranslationWriter writer, Type type)
+        private static void WriteTypeName(this TranslationWriter writer, IType type)
         {
-            var tokenType = type.IsClass() ? TypeName : InterfaceName;
+            var tokenType = type.IsClass ? TypeName : InterfaceName;
             writer.WriteToTranslation(type.Name, tokenType);
         }
 
         private static void WriteGenericTypeName(
             this TranslationWriter writer,
-            Type genericType,
-            ITranslationSettings settings)
+            IType genericType,
+            TranslationSettings settings)
         {
             new GenericTypeNameWriter(writer, settings).WriteGenericTypeName(genericType);
         }
@@ -154,9 +164,9 @@
         private class GenericTypeNameWriter : GenericTypeNameWriterBase
         {
             private readonly TranslationWriter _writer;
-            private readonly ITranslationSettings _settings;
+            private readonly TranslationSettings _settings;
 
-            public GenericTypeNameWriter(TranslationWriter writer, ITranslationSettings settings)
+            public GenericTypeNameWriter(TranslationWriter writer, TranslationSettings settings)
             {
                 _writer = writer;
                 _settings = settings;
@@ -168,21 +178,24 @@
             protected override void WriteInterfaceName(string name)
                 => _writer.WriteToTranslation(name, InterfaceName);
 
-            protected override bool TryWriteCustomAnonTypeName(Type anonType)
+            protected override bool TryWriteCustomAnonTypeName(IType anonType)
             {
                 if (_settings.AnonymousTypeNameFactory == null)
                 {
                     return base.TryWriteCustomAnonTypeName(anonType);
                 }
 
-                _writer.WriteToTranslation(_settings.AnonymousTypeNameFactory.Invoke(anonType));
+                var anonTypeNameTranslation = _settings
+                    .AnonymousTypeNameFactory.Invoke(anonType.AsType());
+
+                _writer.WriteToTranslation(anonTypeNameTranslation);
                 return true;
             }
 
             protected override void WriteTypeArgumentNamePrefix()
                 => _writer.WriteToTranslation('<');
 
-            protected override void WriteTypeName(Type type)
+            protected override void WriteTypeArgumentName(IType type)
                 => _writer.WriteFriendlyName(type, _settings);
 
             protected override void WriteTypeArgumentNameSeparator()
@@ -191,7 +204,7 @@
             protected override void WriteTypeArgumentNameSuffix()
                 => _writer.WriteToTranslation('>');
 
-            protected override void WriteTypeNamePrefix(Type genericType)
+            protected override void WriteTypeNamePrefix(IType genericType)
                 => _writer.WriteTypeNamespaceIfRequired(genericType, _settings);
 
             protected override void WriteNestedTypeNamesSeparator()

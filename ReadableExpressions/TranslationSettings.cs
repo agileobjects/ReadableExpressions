@@ -1,7 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Translations;
     using Translations.Formatting;
 
     /// <summary>
@@ -13,9 +12,11 @@
 
         private bool _commentQuotedLambdas;
         private int? _indentLength;
-        private ExpressionAnalysis _emptyAnalysis;
 
-        internal TranslationSettings()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TranslationSettings"/> class.
+        /// </summary>
+        protected internal TranslationSettings()
         {
             UseImplicitTypeNames = true;
             UseImplicitGenericParameters = true;
@@ -24,13 +25,10 @@
             Formatter = NullTranslationFormatter.Instance;
         }
 
-        internal ExpressionAnalysis EmptyAnalysis =>
-            _emptyAnalysis ??= new ExpressionAnalysis(this).Finalise();
-
         /// <summary>
         /// Fully qualify type names with their namespaces.
         /// </summary>
-        public TranslationSettings UseFullyQualifiedTypeNames
+        ITranslationSettings ITranslationSettings.UseFullyQualifiedTypeNames
         {
             get
             {
@@ -39,14 +37,15 @@
             }
         }
 
-        bool ITranslationSettings.FullyQualifyTypeNames => FullyQualifyTypeNames;
-
-        internal bool FullyQualifyTypeNames { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether type names should be fully-qualified with their namespace.
+        /// </summary>
+        public bool FullyQualifyTypeNames { get; private set; }
 
         /// <summary>
         /// Use full type names instead of 'var' for local and inline-declared output parameter variables.
         /// </summary>
-        public TranslationSettings UseExplicitTypeNames
+        ITranslationSettings ITranslationSettings.UseExplicitTypeNames
         {
             get
             {
@@ -55,12 +54,16 @@
             }
         }
 
-        internal bool UseImplicitTypeNames { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether 'var' should be used instead of full type names local
+        /// and inline-declared output parameter variables.
+        /// </summary>
+        public bool UseImplicitTypeNames { get; private set; }
 
         /// <summary>
         /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;
         /// </summary>
-        public TranslationSettings UseExplicitGenericParameters
+        ITranslationSettings ITranslationSettings.UseExplicitGenericParameters
         {
             get
             {
@@ -69,12 +72,16 @@
             }
         }
 
-        internal bool UseImplicitGenericParameters { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether implicitly-typed generic parameter arguments should be
+        /// excluded from method calls when possible.
+        /// </summary>
+        public bool UseImplicitGenericParameters { get; private set; }
 
         /// <summary>
         /// Declare output parameter variables inline with the method call where they are first used.
         /// </summary>
-        public TranslationSettings DeclareOutputParametersInline
+        ITranslationSettings ITranslationSettings.DeclareOutputParametersInline
         {
             get
             {
@@ -83,12 +90,16 @@
             }
         }
 
-        internal bool DeclareOutParamsInline { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether output parameter varables should be declared inline with
+        /// the method call where they are first used.
+        /// </summary>
+        public bool DeclareOutParamsInline { get; private set; }
 
         /// <summary>
         /// Show the names of implicitly-typed array types.
         /// </summary>
-        public TranslationSettings ShowImplicitArrayTypes
+        ITranslationSettings ITranslationSettings.ShowImplicitArrayTypes
         {
             get
             {
@@ -97,12 +108,16 @@
             }
         }
 
-        internal bool HideImplicitlyTypedArrayTypes { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether the element type names of implicitly-typed arrays should
+        /// be hidden.
+        /// </summary>
+        public bool HideImplicitlyTypedArrayTypes { get; private set; }
 
         /// <summary>
-        /// Show the names of lambda parameter types.
+        /// Show the names of Lambda Expression parameter types.
         /// </summary>
-        public TranslationSettings ShowLambdaParameterTypes
+        ITranslationSettings ITranslationSettings.ShowLambdaParameterTypes
         {
             get
             {
@@ -111,12 +126,16 @@
             }
         }
 
-        internal bool ShowLambdaParamTypes { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether the names of Lambda Expression parameter types should
+        /// be shown.
+        /// </summary>
+        public bool ShowLambdaParamTypes { get; private set; }
 
         /// <summary>
         /// Annotate Quoted Lambda Expressions with a comment indicating they have been Quoted.
         /// </summary>
-        public TranslationSettings ShowQuotedLambdaComments
+        ITranslationSettings ITranslationSettings.ShowQuotedLambdaComments
         {
             get
             {
@@ -125,7 +144,11 @@
             }
         }
 
-        internal bool DoNotCommentQuotedLambdas => !_commentQuotedLambdas;
+        /// <summary>
+        /// Gets a value indicating whether Quoted Lambda Expressions not should be annotated with
+        /// a comment indicating they have been Quoted.
+        /// </summary>
+        public bool DoNotCommentQuotedLambdas => !_commentQuotedLambdas;
 
         /// <summary>
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
@@ -135,31 +158,35 @@
         /// The factory method to execute to retrieve the name for an anonymous type.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public TranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory)
+        ITranslationSettings ITranslationSettings.NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
             return this;
         }
 
-        Func<Type, string> ITranslationSettings.AnonymousTypeNameFactory => AnonymousTypeNameFactory;
-
-        internal Func<Type, string> AnonymousTypeNameFactory { get; private set; }
+        /// <summary>
+        /// Gets a factory to use to name anonymous types instead of the default method.
+        /// </summary>
+        public Func<Type, string> AnonymousTypeNameFactory { get; private set; }
 
         /// <summary>
-        /// Translate ConstantExpressions using the given <paramref name="valueFactory"/> instead of
-        /// the default method.
+        /// Translate ConstantExpression values using the given <paramref name="valueFactory"/>
+        /// instead of the default method.
         /// </summary>
         /// <param name="valueFactory">
         /// The factory method to execute to retrieve the ConstantExpression's translated value.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public TranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory)
+        ITranslationSettings ITranslationSettings.TranslateConstantsUsing(Func<Type, object, string> valueFactory)
         {
             ConstantExpressionValueFactory = valueFactory;
             return this;
         }
 
-        internal Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
+        /// <summary>
+        /// Gets a factory to use to translate ConstantExpression values instead of the default method.
+        /// </summary>
+        public Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
 
         /// <summary>
         /// Indent multi-line Expression translations using the given <paramref name="indent"/>.
@@ -168,17 +195,22 @@
         /// The value with which to indent multi-line Expression translations.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public TranslationSettings IndentUsing(string indent)
+        ITranslationSettings ITranslationSettings.IndentUsing(string indent)
         {
             Indent = indent;
             return this;
         }
 
-        string ITranslationSettings.Indent => Indent;
+        /// <summary>
+        /// Gets the whitespace string with which to indent multi-line Expression translations.
+        /// </summary>
+        public string Indent { get; private set; }
 
-        internal string Indent { get; private set; }
-
-        internal int IndentLength => _indentLength ??= Indent.Length;
+        /// <summary>
+        /// Gets the number of characters of whitespace with which to indent multi-line Expression
+        /// translations.
+        /// </summary>
+        public int IndentLength => _indentLength ??= Indent.Length;
 
         /// <summary>
         /// Format Expression translations using the given <paramref name="formatter"/>.
@@ -187,14 +219,15 @@
         /// The <see cref="ITranslationFormatter"/> with which to format Expression translations.
         /// </param>
         /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
-        public TranslationSettings FormatUsing(ITranslationFormatter formatter)
+        ITranslationSettings ITranslationSettings.FormatUsing(ITranslationFormatter formatter)
         {
             Formatter = formatter;
             return this;
         }
 
-        ITranslationFormatter ITranslationSettings.Formatter => Formatter;
-
-        internal ITranslationFormatter Formatter { get; private set; }
+        /// <summary>
+        /// Gats the <see cref="ITranslationFormatter"/> with which to format the translation.
+        /// </summary>
+        public ITranslationFormatter Formatter { get; private set; }
     }
 }

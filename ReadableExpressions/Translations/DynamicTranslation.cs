@@ -3,6 +3,7 @@
     using System;
     using System.Reflection;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
@@ -31,7 +32,7 @@
                 return translation;
             }
 
-            if (DynamicMethodCallTranslation.TryGetTranslation(args, out translation))
+            if (DynamicMethodCallTranslation.TryGetTranslation(args, context, out translation))
             {
                 return translation;
             }
@@ -128,7 +129,10 @@
         {
             private static readonly Regex _matcher = new Regex(@"^Call (?<MethodName>[^\(]+)\(");
 
-            public static bool TryGetTranslation(DynamicTranslationArgs args, out ITranslation translation)
+            public static bool TryGetTranslation(
+                DynamicTranslationArgs args,
+                ITranslationContext context,
+                out ITranslation translation)
             {
                 if (!args.IsMatch(_matcher, out var match))
                 {
@@ -146,7 +150,8 @@
                     methodName,
                     methodInfo,
                     methodArguments,
-                    args.ExpressionType);
+                    args.ExpressionType,
+                    context);
 
                 translation = MethodCallTranslation.ForDynamicMethodCall(
                     subjectTranslation,
@@ -160,27 +165,29 @@
             private static IMethod GetMethod(
                 string methodName,
                 MethodInfo method,
-                Expression[] methodArguments,
-                Type methodReturnType)
+                IList<Expression> methodArguments,
+                Type methodReturnType,
+                ITranslationContext context)
             {
                 if (method == null)
                 {
                     return new MissingMethod(methodName);
                 }
 
-                return new BclMethodWrapper(
+                return new ClrMethodWrapper(
                     method,
-                    GetGenericArgumentsOrNull(method, methodArguments, methodReturnType));
+                    GetGenericArguments(method, methodArguments, methodReturnType),
+                    context.Settings);
             }
 
-            private static Type[] GetGenericArgumentsOrNull(
+            private static Type[] GetGenericArguments(
                 MethodInfo method,
                 IList<Expression> methodArguments,
                 Type methodReturnType)
             {
                 if (!method.IsGenericMethod)
                 {
-                    return null;
+                    return Enumerable<Type>.EmptyArray;
                 }
 
                 var genericParameterTypes = method.GetGenericArguments();
@@ -202,7 +209,7 @@
 
                     if (methodArgumentCount == 0)
                     {
-                        return null;
+                        return Enumerable<Type>.EmptyArray;
                     }
 
                     for (var j = 0; j < methodParameterCount; ++j)
@@ -220,7 +227,7 @@
                             break;
                         }
 
-                        return null;
+                        return Enumerable<Type>.EmptyArray;
                     }
                 }
 
@@ -234,19 +241,47 @@
                     Name = name;
                 }
 
+                public IType DeclaringType => null;
+
+                public bool IsPublic => false;
+
+                public bool IsInternal => false;
+
+                public bool IsProtectedInternal => false;
+
+                public bool IsProtected => false;
+
+                public bool IsPrivateProtected => false;
+
+                public bool IsPrivate => false;
+
+                public bool IsAbstract => false;
+
+                public bool IsStatic => false;
+
+                public bool IsVirtual => false;
+
+                public bool IsOverride => this.IsOverride();
+
                 public string Name { get; }
 
                 public bool IsGenericMethod => false;
 
                 public bool IsExtensionMethod => false;
 
+                public bool HasBody => false;
+
                 public IMethod GetGenericMethodDefinition() => null;
 
-                public Type[] GetGenericArguments() => Enumerable<Type>.EmptyArray;
+                public ReadOnlyCollection<IGenericParameter> GetGenericArguments()
+                    => Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
 
-                public ParameterInfo[] GetParameters() => Enumerable<ParameterInfo>.EmptyArray;
+                public ReadOnlyCollection<IParameter> GetParameters()
+                    => Enumerable<IParameter>.EmptyReadOnlyCollection;
 
-                public Type ReturnType => typeof(void);
+                public IType Type => ReturnType;
+
+                public IType ReturnType => ClrTypeWrapper.Void;
             }
         }
     }

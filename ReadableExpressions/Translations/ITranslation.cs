@@ -7,10 +7,19 @@
     using System.Linq.Expressions;
 #endif
 
-    internal interface ITranslation : ITranslatable
+    /// <summary>
+    /// Implementing classes will translate an Expression to a source-code string.
+    /// </summary>
+    public interface ITranslation : ITranslatable
     {
+        /// <summary>
+        /// Gets the ExpressionType of the translated Expression.
+        /// </summary>
         ExpressionType NodeType { get; }
 
+        /// <summary>
+        /// Gets the type of the translated Expression.
+        /// </summary>
         Type Type { get; }
     }
 }

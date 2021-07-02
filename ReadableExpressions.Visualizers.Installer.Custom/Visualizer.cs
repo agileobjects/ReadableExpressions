@@ -7,10 +7,11 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
     using static System.StringComparison;
+    using static EmbeddedResourceExtensions;
 
-    internal class VisualizerAssembly
+    internal class Visualizer
     {
-        private static readonly Assembly _thisAssembly = typeof(VisualizerAssembly).Assembly;
+        private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
 
         private static readonly Regex _versionNumberMatcher =
             new Regex(@"Vs(?<VersionNumber>[\d]+)\.dll$", RegexOptions.IgnoreCase);
@@ -26,20 +27,24 @@
         };
 
         private readonly Action<string> _logger;
+        private readonly CoreAssemblies _coreAssemblies;
         private readonly string _visualizerResourceFileName;
         private readonly string _objectSourceResourceName;
         private readonly string _objectSourceResourceFileName;
 
-        public VisualizerAssembly(Action<string> logger, string visualizerResourceName)
+        public Visualizer(
+            Action<string> logger,
+            CoreAssemblies coreAssemblies,
+            string visualizerResourceName)
         {
             _logger = logger;
+            _coreAssemblies = coreAssemblies;
             VisualizerResourceName = visualizerResourceName;
 
-            var resourceAssemblyNameLength = (typeof(VisualizerAssembly).Namespace?.Length + 1).GetValueOrDefault();
-            _visualizerResourceFileName = visualizerResourceName.Substring(resourceAssemblyNameLength);
+            _visualizerResourceFileName = GetResourceFileName(visualizerResourceName);
 
             _objectSourceResourceName = visualizerResourceName.Replace(".dll", ".ObjectSource.dll");
-            _objectSourceResourceFileName = _objectSourceResourceName.Substring(resourceAssemblyNameLength);
+            _objectSourceResourceFileName = GetResourceFileName(_objectSourceResourceName);
 
             var versionInfoMatch = _versionNumberMatcher.Match(visualizerResourceName);
             var vsVersionNumber = versionInfoMatch.Groups["VersionNumber"].Value;
@@ -58,30 +63,18 @@
         {
             var visualizerInstallPath = GetVisualizerInstallPath(visualizersDirectory);
 
-            using (var resourceStream = GetResourceStream(VisualizerResourceName))
-            using (var visualizerFileStream = File.OpenWrite(visualizerInstallPath))
-            {
-                Log("Writing visualizer to " + visualizerInstallPath);
-                // ReSharper disable once PossibleNullReferenceException
-                resourceStream.CopyTo(visualizerFileStream);
-            }
+            Log("Writing visualizer to " + visualizerInstallPath);
+            _thisAssembly.WriteFileFromResource(VisualizerResourceName, visualizerInstallPath);
 
             var objectSourceInstallPaths = GetObjectSourceInstallPaths(visualizersDirectory);
 
             foreach (var objectSourceInstallPath in objectSourceInstallPaths)
             {
-                using (var resourceStream = GetResourceStream(_objectSourceResourceName))
-                using (var objectSourceFileStream = File.OpenWrite(objectSourceInstallPath))
-                {
-                    Log("Writing object source to " + objectSourceInstallPath);
-                    // ReSharper disable once PossibleNullReferenceException
-                    resourceStream.CopyTo(objectSourceFileStream);
-                }
+                Log("Writing object source to " + objectSourceInstallPath);
+                _coreAssemblies.Install(objectSourceInstallPath);
+                _thisAssembly.WriteFileFromResource(_objectSourceResourceName, objectSourceInstallPath);
             }
         }
-
-        private static Stream GetResourceStream(string resourceName)
-            => _thisAssembly.GetManifestResourceStream(resourceName);
 
         private IEnumerable<string> GetObjectSourceInstallPaths(string visualizersDirectory)
         {
@@ -127,6 +120,8 @@
 
                 var legacyVisualizerInstallPath = GetVisualizerInstallPath(objectSourceInstallDirectory);
                 DeleteIfExists(legacyVisualizerInstallPath);
+
+                _coreAssemblies.Uninstall(objectSourceInstallPath);
             }
         }
 
@@ -136,7 +131,7 @@
         private string GetObjectSourceInstallPath(string objectSourceDirectory)
             => Path.Combine(objectSourceDirectory, _objectSourceResourceFileName);
 
-        private void DeleteIfExists(string filePath)
+        private static void DeleteIfExists(string filePath)
         {
             if (File.Exists(filePath))
             {

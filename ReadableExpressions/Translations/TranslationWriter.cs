@@ -8,7 +8,10 @@
     using Formatting;
     using static Formatting.TokenType;
 
-    internal class TranslationWriter : ITranslationQuery
+    /// <summary>
+    /// Writes a translated Expression into a StringBuilder.
+    /// </summary>
+    public class TranslationWriter : ITranslationQuery
     {
         private readonly ITranslationFormatter _formatter;
         private readonly string _indent;
@@ -19,7 +22,14 @@
         private int _currentIndent;
         private bool _writeIndent;
 
-        public TranslationWriter(ITranslationSettings settings, ITranslatable translatable)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TranslationWriter"/> class. The given
+        /// <paramref name="translatable"/> is immediately written to this object using the given
+        /// <paramref name="settings"/>.
+        /// </summary>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <param name="translatable">The <see cref="ITranslatable"/> to translate.</param>
+        protected internal TranslationWriter(TranslationSettings settings, ITranslatable translatable)
             : this(
                 settings.Formatter,
                 settings.Indent,
@@ -30,12 +40,12 @@
             translatable.WriteTo(this);
         }
 
-        public TranslationWriter(ITranslationSettings settings, int estimatedSize)
+        internal TranslationWriter(TranslationSettings settings, int estimatedSize)
             : this(settings.Formatter, settings.Indent, estimatedSize)
         {
         }
 
-        public TranslationWriter(
+        internal TranslationWriter(
             ITranslationFormatter formatter,
             string indent,
             int estimatedSize)
@@ -188,9 +198,22 @@
 
         #endregion
 
+        /// <summary>
+        /// Returns a value indicating whether the given <paramref name="predicate"/> evaluates to
+        /// true for the current translation.
+        /// </summary>
+        /// <param name="predicate">The predicate for which to make the determination.</param>
+        /// <returns>
+        /// True if the given <paramref name="predicate"/> evaluates to true for the current
+        /// translation, otherwise false.
+        /// </returns>
         public bool TranslationQuery(Func<ITranslationQuery, bool> predicate)
             => predicate.Invoke(this);
 
+        /// <summary>
+        /// Indents the translation writing by the configured or default indent size. Written
+        /// translation will continue to be indented until <see cref="Unindent"/> is called.
+        /// </summary>
         public void Indent()
         {
             ++_currentIndent;
@@ -201,8 +224,14 @@
             }
         }
 
+        /// <summary>
+        /// Cancels the previously-requested translation indenting.
+        /// </summary>
         public void Unindent() => --_currentIndent;
 
+        /// <summary>
+        /// Writes a new line string to the translation.
+        /// </summary>
         public void WriteNewLineToTranslation()
         {
             _content.Append(Environment.NewLine);
@@ -213,6 +242,10 @@
             }
         }
 
+        /// <summary>
+        /// Writes the given <paramref name="character"/> to the translation.
+        /// </summary>
+        /// <param name="character">The character to write to the translation.</param>
         public void WriteToTranslation(char character)
             => WriteToTranslation(character, Default);
 
@@ -224,6 +257,15 @@
 
         private void Write(char character) => _content.Append(character);
 
+        /// <summary>
+        /// Writes the given <paramref name="stringValue"/> to the translation, with the optional
+        /// <paramref name="tokenType"/>.
+        /// </summary>
+        /// <param name="stringValue">The string to write to the translation.</param>
+        /// <param name="tokenType">
+        /// The <see cref="TokenType"/> indicating the type of code fragment represented by the given
+        /// <paramref name="stringValue"/>.
+        /// </param>
         public void WriteToTranslation(string stringValue, TokenType tokenType = Default)
         {
             if (stringValue.Length == 1)
@@ -245,6 +287,10 @@
 
         private void Write(string stringValue) => _content.Append(stringValue);
 
+        /// <summary>
+        /// Writes the given <paramref name="intValue"/> to the translation.
+        /// </summary>
+        /// <param name="intValue">The int value to write to the translation.</param>
         public void WriteToTranslation(int intValue)
         {
             WriteIndentIfRequired();
@@ -253,6 +299,10 @@
 
         private void Write(int intValue) => _content.Append(intValue);
 
+        /// <summary>
+        /// Writes the given <paramref name="longValue"/> to the translation.
+        /// </summary>
+        /// <param name="longValue">The long value to write to the translation.</param>
         public void WriteToTranslation(long longValue)
         {
             WriteIndentIfRequired();
@@ -261,6 +311,11 @@
 
         private void Write(long longValue) => _content.Append(longValue);
 
+        /// <summary>
+        /// Writes the string representation of the given object <paramref name="value"/> to the
+        /// translation.
+        /// </summary>
+        /// <param name="value">The object value to write to the translation.</param>
         public void WriteToTranslation(object value)
         {
             WriteIndentIfRequired();
@@ -280,6 +335,10 @@
             }
         }
 
+        /// <summary>
+        /// Retrieves the written translation string.
+        /// </summary>
+        /// <returns>The written translation string</returns>
         public string GetContent()
         {
 #if DEBUG && NET40
@@ -287,7 +346,7 @@
             {
                 Debug.WriteIf(
                     _estimatedSize >= _content.Length,
-                    $"TranslationBuffer: estimated: {_estimatedSize}, actual " + _content.Length);
+                    $"TranslationWriter: estimated: {_estimatedSize}, actual " + _content.Length);
             }
 #endif
             return (_content.Length > 0) ? _content.ToString() : null;

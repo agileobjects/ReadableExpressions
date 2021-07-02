@@ -8,6 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using Extensions;
     using Initialisations;
 
     internal class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
@@ -30,7 +31,7 @@
             for (var i = 0; ;)
             {
                 initializers[i] = new AnonymousTypeInitializerTranslation(
-                    ctorParameters[i], 
+                    ctorParameters[i],
                     Parameters[i]);
 
                 ++i;

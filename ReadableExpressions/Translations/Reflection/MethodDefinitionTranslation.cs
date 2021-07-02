@@ -3,93 +3,127 @@
     using System.Reflection;
     using Extensions;
     using NetStandardPolyfills;
-    using static MethodTranslationHelpers;
 
-    internal class MethodDefinitionTranslation : ITranslatable
+    /// <summary>
+    /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope,
+    /// generic arguments and constraints, and method parameters.
+    /// </summary>
+    public class MethodDefinitionTranslation : ITranslatable
     {
+        private readonly bool _writeModifiers;
         private readonly string _accessibility;
         private readonly string _modifiers;
         private readonly TypeNameTranslation _returnTypeTranslation;
         private readonly TypeNameTranslation _declaringTypeNameTranslation;
         private readonly string _methodName;
-        private readonly ITranslatable[] _genericArgumentTranslations;
-        private readonly int _genericArgumentCount;
+        private readonly ITranslatable _genericParametersTranslation;
+        private readonly ITranslatable _genericParameterConstraintsTranslation;
         private readonly ITranslatable _parametersTranslation;
 
         private MethodDefinitionTranslation(
-            MethodInfo method,
-            ITranslationSettings settings)
+            IMethod method,
+            TranslationSettings settings)
+            : this(
+                method,
+                ParameterSetDefinitionTranslation.For(method, settings),
+                includeDeclaringType: true,
+                settings)
         {
-            _accessibility = GetAccessibility(method);
-            _modifiers = GetModifiers(method);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MethodDefinitionTranslation"/> class for
+        /// the given <paramref name="method"/>.
+        /// </summary>
+        /// <param name="method">
+        /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
+        /// </param>
+        /// <param name="parametersTranslation">
+        /// The <see cref="ITranslatable"/> to use to translate the <paramref name="method"/>'s
+        /// parameters.
+        /// </param>
+        /// <param name="includeDeclaringType">
+        /// Whether to include the name of the <paramref name="method"/>'s declaring type in the
+        /// <see cref="MethodDefinitionTranslation"/>.
+        /// </param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        public MethodDefinitionTranslation(
+            IMethod method,
+            ITranslatable parametersTranslation,
+            bool includeDeclaringType,
+            TranslationSettings settings)
+        {
+            var translationSize = 0;
+            var formattingSize = 0;
+
+            _writeModifiers = !method.IsInterfaceMember();
+
+            if (_writeModifiers)
+            {
+                _accessibility = method.GetAccessibilityForTranslation();
+                _modifiers = method.GetModifiersForTranslation();
+
+                translationSize += _accessibility.Length + _modifiers.Length;
+                formattingSize += settings.GetKeywordFormattingSize();
+            }
 
             _returnTypeTranslation =
                 new TypeNameTranslation(method.ReturnType, settings);
 
-            if (method.DeclaringType != null)
-            {
-                _declaringTypeNameTranslation =
-                    new TypeNameTranslation(method.DeclaringType, settings);
-            }
-
             _methodName = method.Name;
 
-            if (method.IsGenericMethod)
-            {
-                TranslationSize += 2;
-
-                var genericArguments = method.GetGenericArguments();
-                _genericArgumentCount = genericArguments.Length;
-
-                _genericArgumentTranslations = new ITranslatable[_genericArgumentCount];
-
-                for (var i = 0; ;)
-                {
-                    var argumentTranslation = new TypeNameTranslation(genericArguments[i], settings);
-
-                    TranslationSize += argumentTranslation.TranslationSize;
-                    FormattingSize += argumentTranslation.FormattingSize;
-                    _genericArgumentTranslations[i] = argumentTranslation;
-
-                    ++i;
-
-                    if (i == _genericArgumentCount)
-                    {
-                        break;
-                    }
-
-                    TranslationSize += ", ".Length;
-                }
-            }
-            else
-            {
-                _genericArgumentTranslations = Enumerable<ITranslatable>.EmptyArray;
-            }
-
-            _parametersTranslation = new ParameterSetDefinitionTranslation(method, settings);
-
-            TranslationSize =
-                _accessibility.Length +
-                _modifiers.Length +
+            translationSize +=
                 _returnTypeTranslation.TranslationSize +
                 _methodName.Length;
 
-            var keywordFormattingSize = settings.GetKeywordFormattingSize();
-
-            FormattingSize =
-                keywordFormattingSize + // <- For modifiers
+            formattingSize +=
                 _returnTypeTranslation.FormattingSize;
 
-            if (_declaringTypeNameTranslation != null)
+            if (includeDeclaringType && method.DeclaringType != null)
             {
-                TranslationSize += _declaringTypeNameTranslation.TranslationSize + 1;
-                FormattingSize += _declaringTypeNameTranslation.FormattingSize;
+                _declaringTypeNameTranslation =
+                    new TypeNameTranslation(method.DeclaringType, settings);
+
+                translationSize += _declaringTypeNameTranslation.TranslationSize;
+                formattingSize += _declaringTypeNameTranslation.FormattingSize;
             }
+
+            if (method.IsGenericMethod)
+            {
+                var genericArguments = method.GetGenericArguments();
+
+                _genericParametersTranslation =
+                    new GenericParameterSetDefinitionTranslation(genericArguments, settings);
+
+                _genericParameterConstraintsTranslation =
+                    new GenericParameterSetConstraintsTranslation(genericArguments, settings);
+
+                translationSize +=
+                    _genericParametersTranslation.TranslationSize +
+                    _genericParameterConstraintsTranslation.TranslationSize;
+
+                formattingSize +=
+                    _genericParametersTranslation.FormattingSize +
+                    _genericParameterConstraintsTranslation.FormattingSize;
+            }
+
+            _parametersTranslation = parametersTranslation;
+
+            TranslationSize = translationSize + _parametersTranslation.TranslationSize;
+            FormattingSize = formattingSize + _parametersTranslation.FormattingSize;
         }
 
-        public static ITranslatable For(MethodInfo method, ITranslationSettings settings)
+        /// <summary>
+        /// Creates an <see cref="ITranslatable"/> for the given <paramref name="method"/>, handling
+        /// properties and operators as well as regular methods. Includes the declaring type name in
+        /// the translation.
+        /// </summary>
+        /// <param name="method">The MethodInfo for which to create the <see cref="ITranslatable"/>.</param>
+        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+        /// <returns>An <see cref="ITranslatable"/> for the given <paramref name="method"/>.</returns>
+        public static ITranslatable For(MethodInfo method, TranslationSettings settings)
         {
-            if (method.IsPropertyGetterOrSetterCall(out var property))
+            if (method.IsAccessor(out var property))
             {
                 return new PropertyDefinitionTranslation(property, method, settings);
             }
@@ -104,20 +138,38 @@
                 return new OperatorDefinitionTranslation(method, "explicit", settings);
             }
 
-            return new MethodDefinitionTranslation(method, settings);
+            return new MethodDefinitionTranslation(
+                new ClrMethodWrapper(method, settings),
+                settings);
         }
 
+        /// <inheritdoc />
         public int TranslationSize { get; }
 
+        /// <inheritdoc />
         public int FormattingSize { get; }
 
-        public int GetIndentSize() => _parametersTranslation.GetIndentSize();
+        /// <inheritdoc />
+        public int GetIndentSize()
+        {
+            return _parametersTranslation.GetIndentSize() +
+                   _genericParameterConstraintsTranslation?.GetIndentSize() ?? 0;
+        }
 
-        public int GetLineCount() => _parametersTranslation.GetLineCount() + 1;
+        /// <inheritdoc />
+        public int GetLineCount()
+        {
+            return _parametersTranslation.GetLineCount() +
+                   _genericParameterConstraintsTranslation?.GetLineCount() ?? 0;
+        }
 
+        /// <inheritdoc />
         public void WriteTo(TranslationWriter writer)
         {
-            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            if (_writeModifiers)
+            {
+                writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+            }
 
             _returnTypeTranslation.WriteTo(writer);
             writer.WriteSpaceToTranslation();
@@ -130,28 +182,9 @@
 
             writer.WriteToTranslation(_methodName);
 
-            if (_genericArgumentCount != 0)
-            {
-                writer.WriteToTranslation('<');
-
-                for (var i = 0; ;)
-                {
-                    _genericArgumentTranslations[i].WriteTo(writer);
-
-                    ++i;
-
-                    if (i == _genericArgumentCount)
-                    {
-                        break;
-                    }
-
-                    writer.WriteToTranslation(", ");
-                }
-
-                writer.WriteToTranslation('>');
-            }
-
+            _genericParametersTranslation?.WriteTo(writer);
             _parametersTranslation.WriteTo(writer);
+            _genericParameterConstraintsTranslation?.WriteTo(writer);
         }
     }
 }

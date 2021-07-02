@@ -49,7 +49,7 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var translated = ToReadableHtmlString(assignment);
 
             const string EXPECTED = @"
-<span class=""vb"">anonymousType_Bool_Int</span> = <span class=""kw"">new </span>
+<span class=""vb"">boolIntAnonymousType</span> = <span class=""kw"">new </span>
 {
     ValueBool = <span class=""kw"">true</span>,
     ValueInt = <span class=""nm"">1001</span>
@@ -279,7 +279,7 @@ Two:
 
         private static string ToReadableHtmlString(
             Expression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return expression.ToReadableString(settings =>
             {

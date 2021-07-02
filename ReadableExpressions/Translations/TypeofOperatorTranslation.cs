@@ -1,39 +1,41 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
+    using Extensions;
+    using Reflection;
 
-    internal class TypeofOperatorTranslation : ITranslation
+    /// <summary>
+    /// A <see cref="UnaryOperatorTranslationBase"/> for the typeof operator.
+    /// </summary>
+    public class TypeOfOperatorTranslation : UnaryOperatorTranslationBase
     {
-        private readonly ITranslation _typeNameTranslation;
-
-        public TypeofOperatorTranslation(Type type, ITranslationContext context)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeOfOperatorTranslation"/> class.
+        /// </summary>
+        /// <param name="type">The Type to which the typeof operator is being applied.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the Expression translation.
+        /// </param>
+        public TypeOfOperatorTranslation(Type type, ITranslationContext context)
+            : this(ClrTypeWrapper.For(type), context)
         {
-            _typeNameTranslation = context.GetTranslationFor(type);
-            TranslationSize = _typeNameTranslation.TranslationSize + "typeof()".Length;
-            FormattingSize = _typeNameTranslation.FormattingSize + context.GetKeywordFormattingSize();
         }
 
-        public ExpressionType NodeType => ExpressionType.Constant;
-
-        public Type Type => typeof(Type);
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public int GetIndentSize() => _typeNameTranslation.GetIndentSize();
-
-        public int GetLineCount() => _typeNameTranslation.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeOfOperatorTranslation"/> class.
+        /// </summary>
+        /// <param name="type">The <see cref="IType"/> to which the typeof operator is being applied.</param>
+        /// <param name="context">
+        /// The <see cref="ITranslationContext"/> describing the Expression translation.
+        /// </param>
+        public TypeOfOperatorTranslation(IType type, ITranslationContext context)
+            : base("typeof", context.GetTranslationFor(type), context.Settings)
         {
-            writer.WriteKeywordToTranslation("typeof");
-            _typeNameTranslation.WriteInParentheses(writer);
         }
+
+        /// <summary>
+        /// Gets the type of this <see cref="TypeOfOperatorTranslation"/>, which is 'Type'.
+        /// </summary>
+        public override Type Type => typeof(Type);
     }
 }

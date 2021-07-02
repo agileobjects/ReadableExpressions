@@ -8,6 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using Extensions;
     using NetStandardPolyfills;
 
     internal static class TypeEqualTranslation

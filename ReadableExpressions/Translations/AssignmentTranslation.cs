@@ -3,9 +3,13 @@
     using System;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+#endif
+    using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
@@ -91,7 +95,7 @@
         private ITranslation GetValueTranslation(Expression assignedValue, ITranslationContext context)
         {
             return (assignedValue.NodeType == Default)
-                ? new DefaultValueTranslation(assignedValue, context, allowNullKeyword: assignedValue.Type == typeof(string))
+                ? DefaultValueTranslation.For(assignedValue, context, allowNullKeyword: assignedValue.Type == typeof(string))
                 : GetNonDefaultValueTranslation(assignedValue, context);
         }
 
@@ -106,7 +110,7 @@
                     : valueBlock.WithoutBraces().WithoutTermination();
             }
 
-            if (valueBlock.IsMultiStatementLambda(context))
+            if (valueBlock.IsMultiStatementLambda)
             {
                 return valueBlock.WithoutBraces();
             }

@@ -58,36 +58,36 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
         public string ErrorMessage { get; }
 
-        public IEnumerable<VisualizerInstaller> GetInstallersFor(VisualizerAssembly visualizerAssembly)
+        public IEnumerable<VisualizerInstaller> GetInstallersFor(Visualizer visualizer)
         {
-            return TryPopulateInstallers(visualizerAssembly, out var visualizerInstallers)
+            return TryPopulateInstallers(visualizer, out var visualizerInstallers)
                 ? visualizerInstallers
                 : Enumerable.Empty<VisualizerInstaller>();
         }
 
         private bool TryPopulateInstallers(
-            VisualizerAssembly visualizerAssembly,
+            Visualizer visualizer,
             out ICollection<VisualizerInstaller> installers)
         {
             installers = new List<VisualizerInstaller>();
 
-            PopulatePre2017InstallPath(visualizerAssembly, installers);
-            PopulatePost2015InstallPaths(visualizerAssembly, installers);
+            PopulatePre2017InstallPath(visualizer, installers);
+            PopulatePost2015InstallPaths(visualizer, installers);
 
             return installers.Count > 0;
         }
 
         private void PopulatePre2017InstallPath(
-            VisualizerAssembly visualizerAssembly,
+            Visualizer visualizer,
             ICollection<VisualizerInstaller> installers)
         {
-            if (visualizerAssembly.VsYear >= 2017)
+            if (visualizer.VsYear >= 2017)
             {
                 return;
             }
 
             var pre2017Key = _vsPre2017KeyNames
-                .FirstOrDefault(name => name == visualizerAssembly.VsFullVersionNumber);
+                .FirstOrDefault(name => name == visualizer.VsFullVersionNumber);
 
             if (pre2017Key == null)
             {
@@ -103,15 +103,15 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
                     return;
                 }
 
-                installers.Add(CreateInstaller(vsSubKey, installDirectory, visualizerAssembly));
+                installers.Add(CreateInstaller(vsSubKey, installDirectory, visualizer));
             }
         }
 
         private void PopulatePost2015InstallPaths(
-            VisualizerAssembly visualizerAssembly,
+            Visualizer visualizer,
             ICollection<VisualizerInstaller> installers)
         {
-            if (visualizerAssembly.VsYear <= 2015)
+            if (visualizer.VsYear <= 2015)
             {
                 return;
             }
@@ -119,12 +119,12 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             foreach (var dataItem in _vsPost2015Data)
             {
                 if (dataItem.IsValid &&
-                   (dataItem.VsFullVersionNumber == visualizerAssembly.VsFullVersionNumber))
+                   (dataItem.VsFullVersionNumber == visualizer.VsFullVersionNumber))
                 {
                     installers.Add(CreateInstaller(
                         dataItem.RegistryKey,
                         dataItem.InstallDirectory,
-                        visualizerAssembly));
+                        visualizer));
                 }
             }
         }
@@ -132,14 +132,14 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
         private VisualizerInstaller CreateInstaller(
             RegistryKey registryKey,
             string vsInstallDirectory,
-            VisualizerAssembly visualizerAssembly)
+            Visualizer visualizer)
         {
             return new VisualizerInstaller(
                 _logger,
                 _vsixManifest,
                 registryKey,
                 vsInstallDirectory,
-                visualizerAssembly);
+                visualizer);
         }
 
         public void Dispose()

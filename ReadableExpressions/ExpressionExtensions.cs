@@ -1,16 +1,18 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
     using System;
-    using Translations;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using LinqExpression = System.Linq.Expressions.Expression;
 #else
     using System.Linq.Expressions;
 #endif
+    using Translations;
+#if NET35
+    using LinqExpression = System.Linq.Expressions.Expression;
+#endif
 
     /// <summary>
-    /// Provides the Expression translation extension method.
+    /// Provides Expression translation extension methods.
     /// </summary>
     public static class ExpressionExtensions
     {
@@ -23,7 +25,7 @@
         /// <returns>The translated <paramref name="expression"/>.</returns>
         public static string ToReadableString(
             this LinqExpression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             return LinqExpressionToDlrExpressionConverter
                 .Convert(expression)
@@ -38,7 +40,7 @@
         /// <returns>The translated <paramref name="expression"/>.</returns>
         public static string ToReadableString(
             this Expression expression,
-            Func<TranslationSettings, TranslationSettings> configuration = null)
+            Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
             if (expression == null)
             {
@@ -52,9 +54,17 @@
         }
 
         internal static TranslationSettings GetTranslationSettings(
-            this Func<TranslationSettings, TranslationSettings> configuration)
+            this Func<ITranslationSettings, ITranslationSettings> configuration)
         {
-            return configuration?.Invoke(new TranslationSettings()) ?? TranslationSettings.Default;
+            if (configuration == null)
+            {
+                return TranslationSettings.Default;
+            }
+
+            var settings = new TranslationSettings();
+            configuration.Invoke(settings);
+
+            return settings;
         }
     }
 }

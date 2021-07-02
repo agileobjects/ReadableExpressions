@@ -58,11 +58,5 @@
 
         public static bool IsReturnable(this BlockExpression block)
             => block.HasReturnType() && block.Result.IsReturnable();
-
-        public static bool IsComment(this Expression expression)
-            => (expression.NodeType == Constant) && IsComment((ConstantExpression)expression);
-
-        private static bool IsComment(ConstantExpression constant)
-            => (constant.Value is string value) && value.IsComment();
     }
 }

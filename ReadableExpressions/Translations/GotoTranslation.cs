@@ -6,6 +6,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using Extensions;
 
     internal static class GotoTranslation
     {
@@ -27,7 +28,7 @@
 
                     return new ReturnValueTranslation(@goto, context);
 
-                case GotoExpressionKind.Goto when context.GoesToReturnLabel(@goto):
+                case GotoExpressionKind.Goto when context.Analysis.GoesToReturnLabel(@goto):
                     goto case GotoExpressionKind.Return;
 
                 default:
@@ -105,7 +106,7 @@
             }
         }
 
-        private class ReturnValueTranslation : ITranslation
+        private class ReturnValueTranslation : ITranslation, IPotentialGotoTranslatable
         {
             private readonly ITranslation _returnValueTranslation;
 
@@ -123,6 +124,8 @@
             public int TranslationSize { get; }
 
             public int FormattingSize { get; }
+
+            public bool HasGoto => true;
 
             public int GetIndentSize() => _returnValueTranslation.GetIndentSize();
 

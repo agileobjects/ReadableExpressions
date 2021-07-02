@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -9,15 +11,15 @@
     using System.Text.RegularExpressions;
     using Extensions;
     using Formatting;
+    using Initialisations;
     using NetStandardPolyfills;
+    using static System.Convert;
     using static System.Globalization.CultureInfo;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
+    using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #else
     using static System.Linq.Expressions.ExpressionType;
-#endif
-#if NET35
-    using LinqLambda = System.Linq.Expressions.LambdaExpression;
 #endif
     using static Formatting.TokenType;
 
@@ -27,21 +29,24 @@
         {
             if (context.Settings.ConstantExpressionValueFactory != null)
             {
-                var userTranslation = context.Settings.ConstantExpressionValueFactory(constant.Type, constant.Value);
+                var userTranslation = context.Settings
+                    .ConstantExpressionValueFactory(constant.Type, constant.Value);
 
                 return (userTranslation == null)
-                    ? NullTranslation(constant.Type, context)
+                    ? DefaultValueTranslation.For(constant, context)
                     : FixedValueTranslation(userTranslation, constant.Type, context);
             }
 
             if (constant.Value == null)
             {
-                return NullTranslation(constant.Type, context);
+                return DefaultValueTranslation.For(constant, context);
             }
 
             if (constant.Type.IsEnum())
             {
-                return new EnumConstantTranslation(constant, context);
+                return constant.Type.HasAttribute<FlagsAttribute>()
+                    ? new FlagsEnumConstantTranslation(constant, context)
+                    : new EnumConstantTranslation(constant, context);
             }
 
             if (TryTranslateFromTypeCode(constant, context, out var translation))
@@ -75,9 +80,6 @@
         {
             return FixedValueTranslation(value.ToString(), type, tokenType, context);
         }
-
-        private static ITranslation NullTranslation(Type type, ITranslationContext context)
-            => FixedValueTranslation("null", type, Keyword, context);
 
         private static ITranslation FixedValueTranslation(
             string value,
@@ -143,6 +145,7 @@
                 case NetStandardTypeCode.Object:
                     if (TryGetTypeTranslation(constant, context, out translation) ||
                         LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
+                        TryGetSimpleArrayTranslation(constant, context, out translation) ||
                         TryGetRegexTranslation(constant, context, out translation) ||
                         TryTranslateDefault<Guid>(constant, context, out translation) ||
                         TimeSpanConstantTranslation.TryCreate(constant, context, out translation))
@@ -157,21 +160,17 @@
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = (string)constant.Value;
+                    var stringValue = ((string)constant.Value)
+                        .Replace(@"\", @"\\")
+                        .Replace("\0", @"\0")
+                        .Replace(@"""", @"\""");
 
-                    if (stringValue.IsComment())
-                    {
-                        translation = new CommentTranslation(stringValue.Replace("\0", @"\0"), context);
-                        return true;
-                    }
-
-                    stringValue = "\"" + stringValue.Replace(@"\", @"\\").Replace("\0", @"\0").Replace(@"""", @"\""") + "\"";
+                    stringValue = "\"" + stringValue + "\"";
                     translation = FixedValueTranslation(stringValue, typeof(string), Text, context);
                     return true;
             }
 
-            translation = null;
-            return false;
+            return CannotTranslate(out translation);
         }
 
         private static bool TryTranslateDefault<T>(
@@ -181,11 +180,10 @@
         {
             if ((constant.Type != typeof(T)) || !constant.Value.Equals(default(T)))
             {
-                translation = null;
-                return false;
+                return CannotTranslate(out translation);
             }
 
-            translation = new DefaultValueTranslation(constant, context);
+            translation = DefaultValueTranslation.For(constant, context);
             return true;
         }
 
@@ -242,12 +240,41 @@
         {
             if (constant.Type.IsAssignableTo(typeof(Type)))
             {
-                translation = new TypeofOperatorTranslation((Type)constant.Value, context);
+                translation = new TypeOfOperatorTranslation((Type)constant.Value, context);
                 return true;
             }
 
-            translation = null;
-            return false;
+            return CannotTranslate(out translation);
+        }
+
+        private static bool TryGetSimpleArrayTranslation(
+            ConstantExpression constant,
+            ITranslationContext context,
+            out ITranslation translation)
+        {
+            if (constant.Value is not Array array)
+            {
+                return CannotTranslate(out translation);
+            }
+
+            var elementType = array.GetType().GetElementType();
+
+            if (elementType != typeof(string) &&
+               !elementType.IsPrimitive() &&
+               !elementType.IsValueType())
+            {
+                return CannotTranslate(out translation);
+            }
+
+            var arrayInit = Expression.NewArrayInit(elementType, array
+                .Cast<object>()
+                .Project<object, Expression>(item => Expression.Constant(item, elementType)));
+
+            translation = constant.Type.IsArray
+                ? ArrayInitialisationTranslation.For(arrayInit, context)
+                : CastTranslation.For(Expression.Convert(arrayInit, constant.Type), context);
+
+            return true;
         }
 
         private static bool TryGetRegexTranslation(
@@ -257,25 +284,118 @@
         {
             if (constant.Type != typeof(Regex))
             {
-                translation = null;
-                return false;
+                return CannotTranslate(out translation);
             }
 
-            translation = FixedValueTranslation(constant, context);
-            translation = new WrappedTranslation("Regex /* ", translation, " */");
+            var newRegex = Expression.New(
+                typeof(Regex).GetPublicInstanceConstructor(typeof(string)),
+                Expression.Constant(constant.Value.ToString()));
+
+            translation = NewingTranslation.For(newRegex, context);
             return true;
+        }
+
+        private class FlagsEnumConstantTranslation : ITranslation
+        {
+            private readonly ITranslation _typeNameTranslation;
+            private readonly IList<string> _enumMemberNames;
+            private readonly int _enumMembersCount;
+
+            public FlagsEnumConstantTranslation(ConstantExpression constant, ITranslationContext context)
+            {
+                var enumType = constant.Type;
+                _typeNameTranslation = context.GetTranslationFor(enumType);
+
+                var enumValue = constant.Value;
+                var enumLongValue = GetLongValue(enumValue);
+
+                _enumMemberNames = new List<string>();
+
+                var translationSize = 0;
+                var formattingSize = 0;
+                var enumTotalValue = 0L;
+
+                foreach (var enumOption in Enum.GetValues(enumType).Cast<object>().Reverse())
+                {
+                    var enumOptionLongValue = GetLongValue(enumOption);
+
+                    if (enumOptionLongValue == 0)
+                    {
+                        if (enumLongValue != 0)
+                        {
+                            continue;
+                        }
+                    }
+                    else if ((enumLongValue | enumOptionLongValue) != enumLongValue)
+                    {
+                        continue;
+                    }
+
+                    var enumOptionName = enumOption.ToString();
+                    translationSize += _typeNameTranslation.TranslationSize + 1 + enumOptionName.Length;
+                    formattingSize += _typeNameTranslation.FormattingSize;
+                    enumTotalValue += enumOptionLongValue;
+
+                    _enumMemberNames.Insert(0, enumOptionName);
+
+                    if (enumTotalValue == enumLongValue)
+                    {
+                        break;
+                    }
+                }
+
+                _enumMembersCount = _enumMemberNames.Count;
+                TranslationSize = translationSize;
+                FormattingSize = formattingSize;
+            }
+
+            #region Setup
+
+            private static long GetLongValue(object enumValue)
+                => (long)ChangeType(enumValue, typeof(long));
+
+            #endregion
+
+            public ExpressionType NodeType => Constant;
+
+            public Type Type => _typeNameTranslation.Type;
+
+            public int TranslationSize { get; }
+
+            public int FormattingSize { get; }
+
+            public int GetIndentSize()
+                => _typeNameTranslation.GetIndentSize() * _enumMembersCount;
+
+            public int GetLineCount() => _typeNameTranslation.GetLineCount();
+
+            public void WriteTo(TranslationWriter writer)
+            {
+                for (var i = 0; ;)
+                {
+                    writer.WriteEnumValue(_typeNameTranslation, _enumMemberNames[i]);
+                    ++i;
+
+                    if (i == _enumMembersCount)
+                    {
+                        return;
+                    }
+
+                    writer.WriteToTranslation(" | ");
+                }
+            }
         }
 
         private class EnumConstantTranslation : ITranslation
         {
             private readonly ITranslation _typeNameTranslation;
-            private readonly string _enumValue;
+            private readonly string _enumMemberName;
 
             public EnumConstantTranslation(ConstantExpression constant, ITranslationContext context)
             {
                 _typeNameTranslation = context.GetTranslationFor(constant.Type);
-                _enumValue = constant.Value.ToString();
-                TranslationSize = _typeNameTranslation.TranslationSize + 1 + _enumValue.Length;
+                _enumMemberName = constant.Value.ToString();
+                TranslationSize = _typeNameTranslation.TranslationSize + 1 + _enumMemberName.Length;
             }
 
             public ExpressionType NodeType => Constant;
@@ -291,11 +411,17 @@
             public int GetLineCount() => _typeNameTranslation.GetLineCount();
 
             public void WriteTo(TranslationWriter writer)
-            {
-                _typeNameTranslation.WriteTo(writer);
-                writer.WriteDotToTranslation();
-                writer.WriteToTranslation(_enumValue);
-            }
+                => writer.WriteEnumValue(_typeNameTranslation, _enumMemberName);
+        }
+
+        private static void WriteEnumValue(
+            this TranslationWriter writer,
+            ITranslatable enumTypeNameTranslation,
+            string enumMemberName)
+        {
+            enumTypeNameTranslation.WriteTo(writer);
+            writer.WriteDotToTranslation();
+            writer.WriteToTranslation(enumMemberName);
         }
 
         private class DateTimeConstantTranslation : ITranslation
@@ -406,14 +532,13 @@
                     return true;
                 }
 #endif
-                if (constant.Value is LambdaExpression lambda)
+                if (constant.Value is not LambdaExpression lambda)
                 {
-                    lambdaTranslation = new LambdaConstantTranslation(lambda, context);
-                    return true;
+                    return CannotTranslate(out lambdaTranslation);
                 }
 
-                lambdaTranslation = null;
-                return false;
+                lambdaTranslation = new LambdaConstantTranslation(lambda, context);
+                return true;
             }
 
             public ExpressionType NodeType => Constant;
@@ -457,8 +582,7 @@
             {
                 if (constant.Type != typeof(TimeSpan))
                 {
-                    timeSpanTranslation = null;
-                    return false;
+                    return CannotTranslate(out timeSpanTranslation);
                 }
 
                 if (TryTranslateDefault<TimeSpan>(constant, context, out timeSpanTranslation))
@@ -579,6 +703,12 @@
                 writer.WriteToTranslation(')');
                 return true;
             }
+        }
+
+        private static bool CannotTranslate(out ITranslation translation)
+        {
+            translation = null;
+            return false;
         }
     }
 }

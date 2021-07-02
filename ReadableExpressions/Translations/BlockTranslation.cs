@@ -11,8 +11,10 @@
     using Extensions;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
+    using static Microsoft.Scripting.Ast.GotoExpressionKind;
 #else
     using static System.Linq.Expressions.ExpressionType;
+    using static System.Linq.Expressions.GotoExpressionKind;
 #endif
 
     internal class BlockTranslation :
@@ -90,8 +92,7 @@
 
             var variablesByType = block
                 .Variables
-                .Except(context.InlineOutputVariables)
-                .Except(context.JoinedAssignmentVariables)
+                .Filter(v => context.Analysis.ShouldBeDeclaredInVariableList(v, block))
                 .GroupBy(v => v.Type)
                 .ToArray();
 
@@ -133,8 +134,8 @@
 
                 if (Include(expression, block, context))
                 {
-                    var statementTranslation = context.IsJoinedAssignment(expression)
-                        ? new BlockAssignmentStatementTranslation((BinaryExpression)expression, context)
+                    var statementTranslation = context.Analysis.IsJoinedAssignment(expression, out var assignment)
+                        ? new BlockAssignmentStatementTranslation(assignment, context)
                         : new BlockStatementTranslation(expression, context);
 
                     translations[statementIndex] = statementTranslation;
@@ -143,6 +144,13 @@
                     hasMultiStatementStatement = hasMultiStatementStatement || statementTranslation.IsMultiStatement;
 
                     ++statementIndex;
+
+                    if (!isFinalStatement && statementTranslation.IsTerminal &&
+                         HasNoSubsequentGotoTarget(statementIndex, lastExpressionIndex, expressions))
+                    {
+                        isFinalStatement = true;
+                        hasGoto = true;
+                    }
 
                     if (statementIndex == 1)
                     {
@@ -204,7 +212,7 @@
             {
                 case Label:
                     return expression.HasReturnType() ||
-                           context.IsReferencedByGoto(((LabelExpression)expression).Target);
+                           context.Analysis.IsReferencedByGoto(((LabelExpression)expression).Target);
 
                 case Default when !expression.HasReturnType():
                     return false;
@@ -221,6 +229,24 @@
             }
 
             return (expression.NodeType != Constant) || expression.IsComment();
+        }
+
+        private static bool HasNoSubsequentGotoTarget(
+            int statementIndex,
+            int lastExpressionIndex,
+            IList<Expression> expressions)
+        {
+            for (var j = statementIndex; j < lastExpressionIndex; ++j)
+            {
+                var subsequentExpression = expressions[j];
+
+                if (subsequentExpression.NodeType == Label)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void ConfigureFinalStatementReturn(
@@ -250,18 +276,9 @@
 
             var penultimateTranslation = statementTranslations[translationCount - 2];
 
-            switch (penultimateTranslation.NodeType)
-            {
-                case Label:
-                    return false;
-            }
-
-            if (penultimateTranslation.WriteBlankLineAfter())
-            {
-                return false;
-            }
-
-            return !penultimateTranslation.Expression.IsComment();
+            return (penultimateTranslation.NodeType != Label) &&
+                   !penultimateTranslation.WriteBlankLineAfter() &&
+                   !penultimateTranslation.Expression.IsComment();
         }
 
         public ExpressionType NodeType => Block;
@@ -433,6 +450,9 @@
             public bool IsMultiStatement
                 => _isMultiStatement ?? (_isMultiStatement = _statementTranslation.IsMultiStatement()).Value;
 
+            public bool IsTerminal
+                => NodeType == Throw || (NodeType == ExpressionType.Goto && ((GotoExpression)Expression).Kind == Return);
+
             public bool DoNotTerminate { private get; set; }
 
             public void IsFirstStatement() => _writeBlankLineBefore = false;
@@ -507,6 +527,7 @@
                 {
                     case Conditional:
                     case Lambda:
+                    case Switch:
                         return true;
                 }
 
