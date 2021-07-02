@@ -66,22 +66,17 @@ public class NullForgivingOperatorTranslation : ITranslation
             operatorExpression.ObjectExpression);
     }
 
-    public ExpressionType NodeType
-        => _objectTranslation.NodeType;
+    public ExpressionType NodeType => _objectTranslation.NodeType;
 
     public Type Type => _objectTranslation.Type;
 
-    public int TranslationSize
-        => _objectTranslation.TranslationSize + 1;
+    public int TranslationSize => _objectTranslation.TranslationSize + 1;
 
-    public int FormattingSize
-        => _objectTranslation.FormattingSize;
+    public int FormattingSize => _objectTranslation.FormattingSize;
 
-    public int GetIndentSize()
-        => _objectTranslation.GetIndentSize();
+    public int GetIndentSize() => _objectTranslation.GetIndentSize();
 
-    public int GetLineCount()
-        => _objectTranslation.GetLineCount();
+    public int GetLineCount() => _objectTranslation.GetLineCount();
 
     public void WriteTo(TranslationWriter writer)
     {
