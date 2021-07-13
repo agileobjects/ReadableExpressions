@@ -1,18 +1,24 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+    using System.Collections.Generic;
+    using System.Linq;
 #if NET35
     using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
 #else
     using System.Linq.Expressions;
+#endif
+    using System.Reflection;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
     using static System.Linq.Expressions.ExpressionType;
 #endif
 
     internal static class InternalExpressionExtensions
     {
-        public static bool HasReturnType(this Expression expression) 
+        public static bool HasReturnType(this Expression expression)
             => expression.Type != typeof(void);
-        
+
         public static bool IsReturnable(this Expression expression)
         {
             if (!expression.HasReturnType())
@@ -58,5 +64,56 @@
 
         public static bool IsReturnable(this BlockExpression block)
             => block.HasReturnType() && block.Result.IsReturnable();
+
+        public static bool TryGetCapturedObject(
+            this Expression expression,
+            out object capturedObject)
+        {
+            capturedObject = null;
+            var capturedMemberAccesses = new List<MemberInfo>();
+
+            while (true)
+            {
+                switch (expression?.NodeType)
+                {
+                    case MemberAccess:
+                        var memberAccess = (MemberExpression)expression;
+                        expression = memberAccess.Expression;
+                        capturedMemberAccesses.Add(memberAccess.Member);
+                        continue;
+
+                    case Call:
+                        var methodCall = (MethodCallExpression)expression;
+                        expression = methodCall.Object;
+                        capturedMemberAccesses.Add(methodCall.Method);
+                        continue;
+
+                    case Constant:
+                        var captureConstant = (ConstantExpression)expression;
+                        var declaringType = capturedMemberAccesses.LastOrDefault()?.DeclaringType;
+
+                        if (captureConstant.Type != declaringType)
+                        {
+                            capturedMemberAccesses.Clear();
+                            break;
+                        }
+
+                        capturedObject = captureConstant.Value;
+                        break;
+                }
+
+                if (capturedMemberAccesses.Count == 0)
+                {
+                    return false;
+                }
+
+                for (var i = capturedMemberAccesses.Count - 1; i >= 0; --i)
+                {
+                    capturedObject = capturedMemberAccesses[i].GetValue(capturedObject);
+                }
+
+                return true;
+            }
+        }
     }
 }

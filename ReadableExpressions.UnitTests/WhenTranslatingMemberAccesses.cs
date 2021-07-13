@@ -515,6 +515,49 @@ string.Join(
             translated.ShouldBe("_i == comparator");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/86
+        [Fact]
+        public void ShouldIncludeCapturedLocalVariableValues()
+        {
+            var value = int.Parse("123");
+
+            var capturedLocalConstantLamda = CreateLambda(
+                (PropertiesHelper helper) => helper.PublicInstance == value);
+
+            var translated = capturedLocalConstantLamda.Body
+                .ToReadableString(stgs => stgs.ShowCapturedValues);
+
+            translated.ShouldBe("helper.PublicInstance == 123");
+        }
+        
+        [Fact]
+        public void ShouldIncludeCapturedInstancePropertyValues()
+        {
+            var capture = new PropertiesHelper { PublicInstance = 999 };
+
+            var capturedLocalConstantLamda = CreateLambda(
+                (PropertiesHelper helper) => helper.PublicInstance == capture.PublicInstance);
+
+            var translated = capturedLocalConstantLamda.Body
+                .ToReadableString(stgs => stgs.ShowCapturedValues);
+
+            translated.ShouldBe("helper.PublicInstance == 999");
+        }
+        
+        [Fact]
+        public void ShouldIncludeCapturedStaticPropertyValues()
+        {
+            PropertiesHelper.PublicStatic = 456;
+
+            var capturedLocalConstantLamda = CreateLambda(
+                (PropertiesHelper helper) => helper.PublicInstance == PropertiesHelper.PublicStatic);
+
+            var translated = capturedLocalConstantLamda.Body
+                .ToReadableString(stgs => stgs.ShowCapturedValues);
+
+            translated.ShouldBe("helper.PublicInstance == 456");
+        }
+
         [Fact]
         public void ShouldIncludeOutParameterKeywords()
         {

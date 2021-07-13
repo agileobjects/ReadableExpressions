@@ -1,6 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
     using System.Collections.Generic;
+    using System.Reflection;
     using Translations.Reflection;
 
     internal static class InternalReflectionExtensions
@@ -38,6 +39,20 @@
 
             return _typeNameKeywords.TryGetValue(type.FullName, out var substitutedName)
                 ? substitutedName : null;
+        }
+
+        public static object GetValue(this MemberInfo member, object subject)
+        {
+            switch (member)
+            {
+                case FieldInfo field:
+                    return field.GetValue(subject);
+
+                case PropertyInfo property:
+                    return property.GetValue(subject, Enumerable<object>.EmptyArray);
+            }
+
+            return null;
         }
     }
 }

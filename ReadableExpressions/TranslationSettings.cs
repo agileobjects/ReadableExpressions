@@ -8,7 +8,7 @@
     /// </summary>
     public class TranslationSettings : ITranslationSettings
     {
-        internal static readonly TranslationSettings Default = new TranslationSettings();
+        internal static readonly TranslationSettings Default = new();
 
         private bool _commentQuotedLambdas;
         private int? _indentLength;
@@ -25,9 +25,6 @@
             Formatter = NullTranslationFormatter.Instance;
         }
 
-        /// <summary>
-        /// Fully qualify type names with their namespaces.
-        /// </summary>
         ITranslationSettings ITranslationSettings.UseFullyQualifiedTypeNames
         {
             get
@@ -42,9 +39,6 @@
         /// </summary>
         public bool FullyQualifyTypeNames { get; private set; }
 
-        /// <summary>
-        /// Use full type names instead of 'var' for local and inline-declared output parameter variables.
-        /// </summary>
         ITranslationSettings ITranslationSettings.UseExplicitTypeNames
         {
             get
@@ -60,9 +54,6 @@
         /// </summary>
         public bool UseImplicitTypeNames { get; private set; }
 
-        /// <summary>
-        /// Always specify generic parameter arguments explicitly in &lt;pointy braces&gt;
-        /// </summary>
         ITranslationSettings ITranslationSettings.UseExplicitGenericParameters
         {
             get
@@ -78,9 +69,6 @@
         /// </summary>
         public bool UseImplicitGenericParameters { get; private set; }
 
-        /// <summary>
-        /// Declare output parameter variables inline with the method call where they are first used.
-        /// </summary>
         ITranslationSettings ITranslationSettings.DeclareOutputParametersInline
         {
             get
@@ -96,9 +84,6 @@
         /// </summary>
         public bool DeclareOutParamsInline { get; private set; }
 
-        /// <summary>
-        /// Show the names of implicitly-typed array types.
-        /// </summary>
         ITranslationSettings ITranslationSettings.ShowImplicitArrayTypes
         {
             get
@@ -114,9 +99,6 @@
         /// </summary>
         public bool HideImplicitlyTypedArrayTypes { get; private set; }
 
-        /// <summary>
-        /// Show the names of Lambda Expression parameter types.
-        /// </summary>
         ITranslationSettings ITranslationSettings.ShowLambdaParameterTypes
         {
             get
@@ -132,9 +114,6 @@
         /// </summary>
         public bool ShowLambdaParamTypes { get; private set; }
 
-        /// <summary>
-        /// Annotate Quoted Lambda Expressions with a comment indicating they have been Quoted.
-        /// </summary>
         ITranslationSettings ITranslationSettings.ShowQuotedLambdaComments
         {
             get
@@ -150,14 +129,21 @@
         /// </summary>
         public bool DoNotCommentQuotedLambdas => !_commentQuotedLambdas;
 
+        ITranslationSettings ITranslationSettings.ShowCapturedValues
+        {
+            get
+            {
+                ShowCapturedValues = true;
+                return this;
+            }
+        }
+
         /// <summary>
-        /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
-        /// default method.
+        /// Gets a value indicating whether the value of any captured variables or members should be
+        /// shown instead of the captured variable or member name.
         /// </summary>
-        /// <param name="nameFactory">
-        /// The factory method to execute to retrieve the name for an anonymous type.
-        /// </param>
-        /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
+        public bool ShowCapturedValues { get; private set; }
+
         ITranslationSettings ITranslationSettings.NameAnonymousTypesUsing(Func<Type, string> nameFactory)
         {
             AnonymousTypeNameFactory = nameFactory;
@@ -169,14 +155,7 @@
         /// </summary>
         public Func<Type, string> AnonymousTypeNameFactory { get; private set; }
 
-        /// <summary>
-        /// Translate ConstantExpression values using the given <paramref name="valueFactory"/>
-        /// instead of the default method.
-        /// </summary>
-        /// <param name="valueFactory">
-        /// The factory method to execute to retrieve the ConstantExpression's translated value.
-        /// </param>
-        /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
+        /// <inheritdoc />
         ITranslationSettings ITranslationSettings.TranslateConstantsUsing(Func<Type, object, string> valueFactory)
         {
             ConstantExpressionValueFactory = valueFactory;
@@ -188,13 +167,6 @@
         /// </summary>
         public Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
 
-        /// <summary>
-        /// Indent multi-line Expression translations using the given <paramref name="indent"/>.
-        /// </summary>
-        /// <param name="indent">
-        /// The value with which to indent multi-line Expression translations.
-        /// </param>
-        /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
         ITranslationSettings ITranslationSettings.IndentUsing(string indent)
         {
             Indent = indent;
@@ -212,13 +184,6 @@
         /// </summary>
         public int IndentLength => _indentLength ??= Indent.Length;
 
-        /// <summary>
-        /// Format Expression translations using the given <paramref name="formatter"/>.
-        /// </summary>
-        /// <param name="formatter">
-        /// The <see cref="ITranslationFormatter"/> with which to format Expression translations.
-        /// </param>
-        /// <returns>These <see cref="TranslationSettings"/>, to support a fluent API.</returns>
         ITranslationSettings ITranslationSettings.FormatUsing(ITranslationFormatter formatter)
         {
             Formatter = formatter;

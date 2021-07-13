@@ -97,7 +97,7 @@
                 var subject = args.Context.GetTranslationFor(args.FirstArgument);
                 var memberName = match.Groups["MemberName"].Value;
 
-                return new MemberAccessTranslation(subject, memberName, args.ExpressionType, args.Context);
+                return new MemberAccessTranslation(subject, args.ExpressionType, memberName, args.Context);
             }
         }
 

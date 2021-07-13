@@ -185,7 +185,7 @@
                     return new LoopTranslation((LoopExpression)expression, this);
 
                 case MemberAccess:
-                    return new MemberAccessTranslation((MemberExpression)expression, this);
+                    return MemberAccessTranslation.For((MemberExpression)expression, this);
 
                 case MemberInit:
                     return MemberInitialisationTranslation.For((MemberInitExpression)expression, this);
