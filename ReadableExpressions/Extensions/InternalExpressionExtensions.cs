@@ -65,11 +65,13 @@
         public static bool IsReturnable(this BlockExpression block)
             => block.HasReturnType() && block.Result.IsReturnable();
 
-        public static bool TryGetCapturedObject(
+        public static bool IsCapturedValue(
             this Expression expression,
-            out object capturedObject)
+            out object capturedValue,
+            out bool isStatic)
         {
-            capturedObject = null;
+            capturedValue = null;
+            isStatic = false;
             var capturedMemberAccesses = new List<MemberInfo>();
 
             while (true)
@@ -94,11 +96,21 @@
 
                         if (captureConstant.Type != declaringType)
                         {
-                            capturedMemberAccesses.Clear();
-                            break;
+                            return false;
                         }
 
-                        capturedObject = captureConstant.Value;
+                        capturedValue = captureConstant.Value;
+                        break;
+
+                    case Convert:
+                        expression = ((UnaryExpression)expression).Operand;
+                        continue;
+
+                    case Parameter:
+                        return false;
+
+                    case null:
+                        isStatic = true;
                         break;
                 }
 
@@ -109,7 +121,7 @@
 
                 for (var i = capturedMemberAccesses.Count - 1; i >= 0; --i)
                 {
-                    capturedObject = capturedMemberAccesses[i].GetValue(capturedObject);
+                    capturedValue = capturedMemberAccesses[i].GetValue(capturedValue);
                 }
 
                 return true;

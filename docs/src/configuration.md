@@ -72,3 +72,10 @@ To specify a custom string for code indenting, use:
 string readable = myExpression
     .ToReadableString(c => c.IndentUsing("\t"));
 ```
+
+To include the values of captured variable, field and property values, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowCapturedValues);
+```

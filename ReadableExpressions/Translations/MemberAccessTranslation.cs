@@ -35,30 +35,41 @@
 
         public static ITranslation For(MemberExpression memberAccess, ITranslationContext context)
         {
-            ITranslation subjectTranslation;
+            bool translateSubject;
 
-            if (memberAccess.TryGetCapturedObject(out var capturedObject))
+            if (memberAccess.IsCapturedValue(out var capturedValue, out var isStatic))
             {
                 if (context.Settings.ShowCapturedValues)
                 {
                     return context.GetTranslationFor(
-                        Expression.Constant(capturedObject, memberAccess.Type));
+                        Expression.Constant(capturedValue, memberAccess.Type));
                 }
 
-                subjectTranslation = null;
+                translateSubject = isStatic;
             }
             else
             {
-                subjectTranslation = GetSubjectTranslationOrNull(
-                    memberAccess.Expression,
-                    memberAccess.Member,
-                    context);
+                translateSubject = true;
             }
+
+            var subjectTranslation = translateSubject
+                ? TranslateSubject(memberAccess, context)
+                : null;
 
             return new MemberAccessTranslation(
                 subjectTranslation,
                 memberAccess.Type,
                 memberAccess.Member.Name,
+                context);
+        }
+
+        private static ITranslation TranslateSubject(
+            MemberExpression memberAccess, 
+            ITranslationContext context)
+        {
+            return GetSubjectTranslationOrNull(
+                memberAccess.Expression,
+                memberAccess.Member,
                 context);
         }
 

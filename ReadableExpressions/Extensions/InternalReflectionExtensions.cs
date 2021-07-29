@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Reflection;
+    using NetStandardPolyfills;
     using Translations.Reflection;
 
     internal static class InternalReflectionExtensions
@@ -43,12 +44,14 @@
 
         public static object GetValue(this MemberInfo member, object subject)
         {
+            var hasSubject = subject != null;
+
             switch (member)
             {
-                case FieldInfo field:
+                case FieldInfo field when hasSubject || field.IsStatic:
                     return field.GetValue(subject);
 
-                case PropertyInfo property:
+                case PropertyInfo property when hasSubject || property.IsStatic():
                     return property.GetValue(subject, Enumerable<object>.EmptyArray);
             }
 
