@@ -235,9 +235,9 @@
                 PropertyInfo property,
                 ITranslationContext context)
                 : base(
-                    GetSubjectOrNull(getterCall.Object, property, context),
-                    property.Name,
+                    GetSubjectTranslationOrNull(getterCall.Object, property, context),
                     property.PropertyType,
+                    property.Name,
                     context)
             {
             }

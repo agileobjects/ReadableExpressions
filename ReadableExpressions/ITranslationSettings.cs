@@ -45,6 +45,12 @@
         ITranslationSettings ShowQuotedLambdaComments { get; }
 
         /// <summary>
+        /// Show the value of any captured variables or members, instead of the captured variable
+        /// or member name.
+        /// </summary>
+        ITranslationSettings ShowCapturedValues { get; }
+
+        /// <summary>
         /// Name anonymous types using the given <paramref name="nameFactory"/> instead of the
         /// default method.
         /// </summary>
