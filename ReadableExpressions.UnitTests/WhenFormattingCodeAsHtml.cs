@@ -275,18 +275,17 @@ Two:
             translated.ShouldBe(expected);
         }
 
-        #region Helper Members
+#region Helper Members
 
         private static string ToReadableHtmlString(
             Expression expression,
             Func<ITranslationSettings, ITranslationSettings> configuration = null)
         {
-            return expression.ToReadableString(settings =>
+            return expression.ToReadableString(stgs =>
             {
-                configuration?.Invoke(settings);
+                configuration?.Invoke(stgs);
 
-                return settings
-                    .FormatUsing(TranslationHtmlFormatter.Instance);
+                return stgs.FormatUsing(TranslationHtmlFormatter.Instance);
             });
         }
 
@@ -296,7 +295,7 @@ Two:
             public string Line1 { get; set; }
         }
 
-        #endregion
+#endregion
     }
 }
 #endif

@@ -757,6 +757,38 @@ number =
             translated.ShouldBe("ext = " + value);
         }
 
+        [Fact]
+        public void ShouldTranslateChainedAssignments()
+        {
+            var intVariable1 = Variable(typeof(int), "int1");
+            var intParameter = Parameter(typeof(int), "intParam");
+            var intVariable2 = Variable(typeof(int), "int2");
+            var oneTwoThree = Constant(123, typeof(int));
+
+            var assignment = Assign(intVariable2, oneTwoThree);
+            var chainedAssignment1 = Assign(intParameter, assignment);
+            var chainedAssignment2 = Assign(intVariable1, chainedAssignment1);
+
+            var chainedAssignmentBlock = Block(
+                new[] { intVariable1, intVariable2 },
+                chainedAssignment2);
+
+            var chainedAssignmentLambda = Lambda<Action<int>>(
+                chainedAssignmentBlock,
+                intParameter);
+
+            var translated = chainedAssignmentLambda
+                .ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
+
+            const string EXPECTED = @"
+(int intParam) =>
+{
+    int int2;
+    var int1 = intParam = int2 = 123;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Members
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)

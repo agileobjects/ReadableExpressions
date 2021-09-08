@@ -14,6 +14,7 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static Translations.AssignmentTranslation;
 
     /// <summary>
     /// Contains information about an analysed Expression.
@@ -26,7 +27,7 @@
         private IList<ParameterExpression> _inlineOutputVariables;
         private IList<ParameterExpression> _joinedAssignmentVariables;
         private ICollection<BinaryExpression> _joinedAssignments;
-        private ICollection<Expression> _assignedAssignments;
+        private IList<BinaryExpression> _assignedAssignments;
         private ICollection<Expression> _nestedCasts;
         private Stack<BlockExpression> _blocks;
         private Stack<object> _constructs;
@@ -487,7 +488,7 @@
         {
             if (binary.NodeType != Assign ||
                 binary.Left.NodeType != Parameter ||
-               _assignedAssignments?.Contains(binary) == true)
+                IsAssigned(binary))
             {
                 variable = null;
                 return false;
@@ -496,6 +497,36 @@
             variable = (ParameterExpression)binary.Left;
 
             return IsAssignmentJoinable(variable);
+        }
+
+        private bool IsAssigned(BinaryExpression binary)
+        {
+            if (_assignedAssignments == null)
+            {
+                return false;
+            }
+
+            foreach (var assignedAssignment in _assignedAssignments)
+            {
+                if (assignedAssignment == binary)
+                {
+                    return true;
+                }
+
+                var assignment = assignedAssignment;
+
+                while (IsAssignment(assignment.Right.NodeType))
+                {
+                    assignment = (BinaryExpression)assignment.Right;
+
+                    if (assignment == binary)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -1157,7 +1188,7 @@
             {
                 case Increment:
                     return Expression.Add(unary.Operand, Expression.Constant(1));
-                
+
                 case Decrement:
                     return Expression.Subtract(unary.Operand, Expression.Constant(1));
             }
@@ -1310,9 +1341,12 @@
                         continue;
 
                     case Assign:
-                        (_assignedAssignments ??= new List<Expression>()).Add(assignedValue);
+                        (_assignedAssignments ??= new List<BinaryExpression>())
+                            .Add((BinaryExpression)assignedValue);
+
                         break;
                 }
+
                 break;
             }
         }
