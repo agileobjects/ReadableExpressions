@@ -617,6 +617,40 @@ if (WhenFormattingCode.JoinStrings(
         }
 
         [Fact]
+        public void ShouldNotIndentSingleArgumentBlockParameters()
+        {
+            var writeString = CreateLambda(() => Console.WriteLine("String!")).Body;
+            
+            var stringsBlock = Block(
+                writeString, 
+                writeString, 
+                writeString,
+                Constant("All done!"));
+
+            var listParameter = Parameter(typeof(List<string>), "strings");
+
+            var addString = Call(
+                listParameter,
+                listParameter.Type.GetPublicMethod("Add"),
+                stringsBlock);
+
+            var addStringLambda = Lambda<Action<List<string>>>(addString, listParameter);
+
+            var translated = addStringLambda.ToReadableString();
+
+            const string EXPECTED = @"
+strings => strings.Add(
+{
+    Console.WriteLine(""String!"");
+    Console.WriteLine(""String!"");
+    Console.WriteLine(""String!"");
+
+    return ""All done!"";
+})";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldPlaceSingleArgumentLambdaParametersOnMethodNameLine()
         {
             var stringParam1 = Parameter(typeof(string), "string1");

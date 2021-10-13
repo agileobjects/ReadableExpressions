@@ -4,8 +4,8 @@ using System.Reflection;
 [assembly: AssemblyTitle("AgileObjects.ReadableExpressions.Visualizers")]
 [assembly: AssemblyCompany("AgileObjects")]
 [assembly: AssemblyProduct("ReadableExpressions.Visualizers")]
-[assembly: AssemblyCopyright("Copyright © 2020")]
+[assembly: AssemblyCopyright("Copyright © 2021")]
 [assembly: NeutralResourcesLanguage("en")]
 
-[assembly: AssemblyVersion("3.4.0")]
-[assembly: AssemblyFileVersion("3.4.0")]
+[assembly: AssemblyVersion("3.5.0")]
+[assembly: AssemblyFileVersion("3.5.0")]
