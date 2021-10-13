@@ -8,12 +8,11 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
     internal class VsPost2015Data : IDisposable
     {
-        private static readonly Dictionary<int, string> _vsVersionsByYear = new Dictionary<int, string>(2)
-        {
-            [2017] = "15.0",
-            [2019] = "16.0",
-            [2022] = "17.0"
-        };
+        private static readonly Dictionary<int, string> _vsVersionsByYear = Visualizer
+            .VsYearByVersionNumber
+            .Select(kvp => new { Version = kvp.Key, Year = kvp.Value })
+            .Where(_ => _.Year > 2015)
+            .ToDictionary(_ => _.Year, _ => _.Version + ".0");
 
         public VsPost2015Data(RegistryKey post2015Key)
         {

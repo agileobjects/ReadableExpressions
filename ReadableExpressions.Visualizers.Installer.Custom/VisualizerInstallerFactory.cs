@@ -74,7 +74,7 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             PopulatePre2017InstallPath(visualizer, installers);
             PopulatePost2015InstallPaths(visualizer, installers);
 
-            return installers.Count > 0;
+            return installers.Any();
         }
 
         private void PopulatePre2017InstallPath(
