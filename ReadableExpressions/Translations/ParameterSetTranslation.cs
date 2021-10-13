@@ -27,7 +27,7 @@
 
         private readonly TranslationSettings _settings;
         private readonly IList<ITranslation> _parameterTranslations;
-        private readonly bool _hasSingleMultiStatementLambdaParameter;
+        private ExpressionType _singleParameterType;
         private ParenthesesMode _parenthesesMode;
 
         /// <summary>
@@ -43,8 +43,7 @@
             var parameterTranslation = GetParameterTranslation(
                 parameter,
                 context,
-                hasSingleParameter: true,
-                ref _hasSingleMultiStatementLambdaParameter);
+                hasSingleParameter: true);
 
             _settings = context.Settings;
             _parameterTranslations = new[] { parameterTranslation };
@@ -54,7 +53,7 @@
         }
 
         private ParameterSetTranslation(
-            IMethod method,
+            IMethodBase method,
             IEnumerable<Expression> parameters,
             int count,
             ITranslationContext context)
@@ -92,7 +91,6 @@
             }
 
             var hasSingleParameter = Count == 1;
-            var singleParameterIsMultiLineLambda = false;
             var showParameterTypeNames = context.Settings.ShowLambdaParamTypes;
             var translationSize = 0;
             var formattingSize = 0;
@@ -138,19 +136,14 @@
                         WithParentheses();
                     }
 
-                    FinaliseParameterTranslation:
+                FinaliseParameterTranslation:
                     translationSize += translation.TranslationSize;
                     formattingSize += translation.FormattingSize;
 
-                    return GetParameterTranslation(
-                        translation,
-                        context,
-                        hasSingleParameter,
-                        ref singleParameterIsMultiLineLambda);
+                    return GetParameterTranslation(translation, context, hasSingleParameter);
                 })
-                .ToArray();
+                .ToList();
 
-            _hasSingleMultiStatementLambdaParameter = singleParameterIsMultiLineLambda;
             TranslationSize = translationSize + (Count * ", ".Length) + 4;
             FormattingSize = formattingSize;
         }
@@ -259,11 +252,10 @@
             return false;
         }
 
-        private static ITranslation GetParameterTranslation(
+        private ITranslation GetParameterTranslation(
             ITranslation translation,
             ITranslationContext context,
-            bool hasSingleParameter,
-            ref bool singleParameterIsMultiLineLambda)
+            bool hasSingleParameter)
         {
             switch (translation.NodeType)
             {
@@ -274,10 +266,17 @@
 
             var parameterCodeBlock = new CodeBlockTranslation(translation, context).WithoutTermination();
 
-            if (hasSingleParameter && parameterCodeBlock.IsMultiStatementLambda)
+            if (hasSingleParameter)
             {
-                singleParameterIsMultiLineLambda = true;
-                parameterCodeBlock.WithSingleLamdaParameterFormatting();
+                if (parameterCodeBlock.NodeType == Block)
+                {
+                    _singleParameterType = Block;
+                }
+                else if (parameterCodeBlock.IsMultiStatementLambda)
+                {
+                    _singleParameterType = Lambda;
+                    parameterCodeBlock.WithSingleLamdaParameterFormatting();
+                }
             }
 
             return parameterCodeBlock;
@@ -433,17 +432,18 @@
         /// <inheritdoc />
         public int GetIndentSize()
         {
+            var indentParameters = IndentParameters && WriteParametersOnNewLines();
+
             switch (Count)
             {
                 case 0:
                     return 0;
 
-                case 1:
+                case 1 when !indentParameters:
                     return _parameterTranslations[0].GetIndentSize();
             }
 
             var indentSize = 0;
-            var writeParametersOnNewLines = WriteParametersOnNewLines();
             var indentLength = _settings.IndentLength;
 
             for (var i = 0; ;)
@@ -451,7 +451,7 @@
                 var parameter = _parameterTranslations[i];
                 var parameterIndentSize = parameter.GetIndentSize();
 
-                if (writeParametersOnNewLines)
+                if (indentParameters)
                 {
                     parameterIndentSize += parameter.GetLineCount() * indentLength;
                 }
@@ -529,11 +529,16 @@
             }
 
             var writeParametersOnNewLines = WriteParametersOnNewLines();
+            var indent = IndentParameters;
 
             if (writeParametersOnNewLines)
             {
                 writer.WriteNewLineToTranslation();
-                writer.Indent();
+
+                if (indent)
+                {
+                    writer.Indent();
+                }
             }
 
             for (var i = 0; ;)
@@ -576,7 +581,7 @@
                 writer.WriteToTranslation(')');
             }
 
-            if (writeParametersOnNewLines)
+            if (indent && writeParametersOnNewLines)
             {
                 writer.Unindent();
             }
@@ -584,13 +589,15 @@
 
         private bool WriteParametersOnNewLines()
         {
-            if (_hasSingleMultiStatementLambdaParameter)
+            if (_singleParameterType == Lambda)
             {
                 return false;
             }
 
             return (Count > _splitArgumentsThreshold) || this.ExceedsLengthThreshold();
         }
+
+        private bool IndentParameters => _singleParameterType != Block;
 
         private enum ParenthesesMode
         {
