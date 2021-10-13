@@ -8,14 +8,20 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class StringConcatenationTranslation : ITranslation
     {
         private readonly int _operandCount;
         private readonly IList<ITranslation> _operandTranslations;
 
-        public StringConcatenationTranslation(
+        private StringConcatenationTranslation(
             ExpressionType nodeType,
+            int operandCount,
             IList<Expression> operands,
             ITranslationContext context)
         {
@@ -23,14 +29,14 @@
 
             var translationSize = 0;
             var formattingSize = 0;
-            _operandCount = operands.Count;
-            _operandTranslations = new ITranslation[_operandCount];
+            _operandCount = operandCount;
+            _operandTranslations = new ITranslation[operandCount];
 
-            for (var i = 0; i < _operandCount; ++i)
+            for (var i = 0; i < operandCount; ++i)
             {
                 var operand = operands[i];
 
-                if (operand.NodeType == ExpressionType.Call)
+                if (operand.NodeType == Call)
                 {
                     var methodCall = (MethodCallExpression)operand;
 
@@ -54,6 +60,50 @@
 
             TranslationSize = translationSize;
             FormattingSize = formattingSize;
+        }
+
+        public static ITranslation ForAddition(
+            BinaryExpression addition,
+            ITranslationContext context)
+        {
+            return new StringConcatenationTranslation(
+                Add,
+                operandCount: 2,
+                new[] { addition.Left, addition.Right },
+                context);
+        }
+
+        public static bool TryCreateForConcatCall(
+            MethodCallExpression methodCall,
+            ITranslationContext context,
+            out ITranslation concatTranslation)
+        {
+            if (!IsStringConcatCall(methodCall))
+            {
+                concatTranslation = null;
+                return false;
+            }
+
+            var operands = methodCall.Arguments;
+            var operandCount = operands.Count;
+
+            if (operandCount == 1 && operands.First().NodeType == NewArrayInit)
+            {
+                operands = ((NewArrayExpression)operands.First()).Expressions;
+                operandCount = operands.Count;
+            }
+
+            concatTranslation =
+                new StringConcatenationTranslation(Call, operandCount, operands, context);
+
+            return true;
+        }
+
+        private static bool IsStringConcatCall(MethodCallExpression methodCall)
+        {
+            return methodCall.Method.IsStatic &&
+                  (methodCall.Method.DeclaringType == typeof(string)) &&
+                  (methodCall.Method.Name == nameof(string.Concat));
         }
 
         public ExpressionType NodeType { get; }
@@ -90,7 +140,7 @@
             {
                 var operandTranslation = _operandTranslations[i];
 
-                if ((operandTranslation.NodeType == ExpressionType.Conditional) || operandTranslation.IsAssignment())
+                if ((operandTranslation.NodeType == Conditional) || operandTranslation.IsAssignment())
                 {
                     operandTranslation.WriteInParentheses(writer);
                 }

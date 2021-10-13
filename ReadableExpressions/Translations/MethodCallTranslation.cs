@@ -18,6 +18,7 @@
 #else
     using static System.Linq.Expressions.ExpressionType;
 #endif
+    using static StringConcatenationTranslation;
 
     /// <summary>
     /// Provides methods for creating <see cref="ITranslation"/>s for different types of methods call.
@@ -70,9 +71,9 @@
                 return new PropertySetterTranslation(methodCall, getterTranslation, context);
             }
 
-            if (IsStringConcatCall(methodCall))
+            if (TryCreateForConcatCall(methodCall, context, out var concatTranslation))
             {
-                return new StringConcatenationTranslation(Call, methodCall.Arguments, context);
+                return concatTranslation;
             }
 
             var method = new ClrMethodWrapper(methodCall.Method, context);
@@ -110,13 +111,6 @@
             }
 
             return methodCallTranslation;
-        }
-
-        private static bool IsStringConcatCall(MethodCallExpression methodCall)
-        {
-            return methodCall.Method.IsStatic &&
-                  (methodCall.Method.DeclaringType == typeof(string)) &&
-                  (methodCall.Method.Name == nameof(string.Concat));
         }
 
         /// <summary>
