@@ -79,7 +79,7 @@
 
             var translated = concat.Body.ToReadableString();
 
-            translated.ShouldBe("string.Concat(\"1\", \"2\", \"3\", \"4\", \"5\")");
+            translated.ShouldBe("\"1\" + \"2\" + \"3\" + \"4\" + \"5\"");
         }
 
         [Fact]
