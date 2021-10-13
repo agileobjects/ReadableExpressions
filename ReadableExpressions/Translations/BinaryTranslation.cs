@@ -39,8 +39,7 @@
                         break;
                     }
 
-                    var operands = new[] { binary.Left, binary.Right };
-                    return new StringConcatenationTranslation(Add, operands, context);
+                    return StringConcatenationTranslation.ForAddition(binary, context);
 
                 case Equal:
                 case NotEqual:

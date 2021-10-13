@@ -71,6 +71,17 @@
             translated.ShouldBe("str1 + str2 + str3");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/89
+        [Fact]
+        public void ShouldTranslateAnExplicitParamsArgumentConcatenation()
+        {
+            var concat = CreateLambda(() => string.Concat("1", "2", "3", "4", "5"));
+
+            var translated = concat.Body.ToReadableString();
+
+            translated.ShouldBe("\"1\" + \"2\" + \"3\" + \"4\" + \"5\"");
+        }
+
         [Fact]
         public void ShouldTranslateAnExplicitMixedTypeThreeArgumentConcatenation()
         {
