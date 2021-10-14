@@ -104,6 +104,12 @@
     <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.dll">
       <Link>AgileObjects.ReadableExpressions.dll</Link>
     </EmbeddedResource>
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll</Link>
+    </EmbeddedResource>
     <Content Include="CustomAction.config" />
   </ItemGroup>
   <ItemGroup>

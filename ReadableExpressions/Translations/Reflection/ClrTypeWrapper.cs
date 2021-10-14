@@ -47,7 +47,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public static readonly IType Void = new ClrTypeWrapper(typeof(void));
 
 #if FEATURE_CONCURRENT_DICTIONARY
-        private static readonly ConcurrentDictionary<Type, Lazy<IType>> _types = new();
+        private static readonly ConcurrentDictionary<Type, IType> _types = new();
 #else
         private static readonly object _typeCacheLock = new();
         private static readonly Dictionary<Type, IType> _types = new();
@@ -121,7 +121,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             }
 
 #if FEATURE_CONCURRENT_DICTIONARY
-            return _types.GetOrAdd(type, new Lazy<IType>(() => new ClrTypeWrapper(type))).Value;
+            return _types.GetOrAdd(type, t => new ClrTypeWrapper(t));
 #else
             lock (_typeCacheLock)
             {

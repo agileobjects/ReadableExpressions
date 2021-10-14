@@ -16,14 +16,15 @@
         private static readonly Regex _versionNumberMatcher =
             new Regex(@"Vs(?<VersionNumber>[\d]+)\.dll$", RegexOptions.IgnoreCase);
 
-        private static readonly Dictionary<string, int> _vsYearByVersionNumber = new Dictionary<string, int>(6)
+        public static readonly Dictionary<string, int> VsYearByVersionNumber = new Dictionary<string, int>(6)
         {
             ["10"] = 2010,
             ["11"] = 2012,
             ["12"] = 2013,
             ["14"] = 2015,
             ["15"] = 2017,
-            ["16"] = 2019
+            ["16"] = 2019,
+            ["17"] = 2022
         };
 
         private readonly Action<string> _logger;
@@ -50,7 +51,7 @@
             var vsVersionNumber = versionInfoMatch.Groups["VersionNumber"].Value;
 
             VsFullVersionNumber = vsVersionNumber + ".0";
-            VsYear = _vsYearByVersionNumber[vsVersionNumber];
+            VsYear = VsYearByVersionNumber[vsVersionNumber];
         }
 
         public string VisualizerResourceName { get; }
