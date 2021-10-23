@@ -38,7 +38,9 @@
         /// <param name="context">
         /// The <see cref="ITranslationContext"/> describing the  Expression translation's context.
         /// </param>
-        public ParameterSetTranslation(ITranslation parameter, ITranslationContext context)
+        public ParameterSetTranslation(
+            ITranslation parameter,
+            ITranslationContext context)
         {
             var parameterTranslation = GetParameterTranslation(
                 parameter,
@@ -55,6 +57,7 @@
         private ParameterSetTranslation(
             IMethodBase method,
             IEnumerable<Expression> parameters,
+            bool areLambdaParameters,
             int count,
             ITranslationContext context)
         {
@@ -91,9 +94,12 @@
             }
 
             var hasSingleParameter = Count == 1;
-            var showParameterTypeNames = context.Settings.ShowLambdaParamTypes;
             var translationSize = 0;
             var formattingSize = 0;
+
+            var showParameterTypeNames =
+                areLambdaParameters &&
+                context.Settings.ShowLambdaParamTypes;
 
             _parameterTranslations = parameters
                 .Project((p, index) =>
@@ -147,6 +153,7 @@
             TranslationSize = translationSize + (Count * ", ".Length) + 4;
             FormattingSize = formattingSize;
         }
+
         #region Setup
 
         private IEnumerable<Expression> GetAllParameters(
@@ -288,6 +295,30 @@
 
         /// <summary>
         /// Creates a <see cref="ParameterSetTranslation"/> for the given
+        /// <paramref name="lambda"/>'s parameters, using the given <paramref name="context"/>.
+        /// </summary>
+        /// <param name="lambda">
+        /// The LambdaExpression the parameters for which to create the
+        /// <see cref="ParameterSetTranslation"/>.
+        /// </param>
+        /// <param name="context">The <see cref="ITranslationContext"/> to use.</param>
+        /// <returns>
+        /// A <see cref="ParameterSetTranslation"/> for the given <paramref name="lambda"/>'s
+        /// parameters.
+        /// </returns>
+        public static ParameterSetTranslation For(
+            LambdaExpression lambda,
+            ITranslationContext context)
+        {
+            return For(
+                method: null,
+                lambda.Parameters,
+                areLambdaParameters: true,
+                context);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ParameterSetTranslation"/> for the given
         /// <paramref name="parameters"/>, using the given <paramref name="context"/>.
         /// </summary>
         /// <typeparam name="TParameterExpression">
@@ -333,6 +364,16 @@
             ITranslationContext context)
             where TParameterExpression : Expression
         {
+            return For(method, parameters, areLambdaParameters: false, context);
+        }
+
+        private static ParameterSetTranslation For<TParameterExpression>(
+            IMethodBase method,
+            ICollection<TParameterExpression> parameters,
+            bool areLambdaParameters,
+            ITranslationContext context)
+            where TParameterExpression : Expression
+        {
             return new(
                 method,
 #if NET35
@@ -340,6 +381,7 @@
 #else
                 parameters,
 #endif
+                areLambdaParameters,
                 parameters.Count,
                 context);
         }

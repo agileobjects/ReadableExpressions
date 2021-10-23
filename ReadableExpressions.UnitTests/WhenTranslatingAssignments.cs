@@ -65,6 +65,28 @@
         }
 
         [Fact]
+        public void ShouldTranslateAnIndexAssignment()
+        {
+            var intVariable = Parameter(typeof(int), "number");
+            var intsVariable = Parameter(typeof(IList<int>), "ints");
+            var indexVariable = Parameter(typeof(int), "i");
+
+            var zeroethInt = MakeIndex(
+                intsVariable,
+                intsVariable.Type
+                    .GetPublicInstanceProperties()
+                    .First(m => m.IsIndexer()),
+                new[] { indexVariable });
+
+            var assignZeroethInt = Assign(intVariable, zeroethInt);
+
+            var translated = assignZeroethInt
+                .ToReadableString(stgs => stgs.ShowLambdaParameterTypes);
+
+            translated.ShouldBe("number = ints[i]");
+        }
+
+        [Fact]
         public void ShouldTranslateAnAdditionAssignment()
         {
             var intVariable = Variable(typeof(int), "i");

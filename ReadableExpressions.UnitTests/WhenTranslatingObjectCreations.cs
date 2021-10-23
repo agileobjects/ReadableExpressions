@@ -130,7 +130,7 @@ new MemoryStream
         }
 
         [Fact]
-        public void ShouldTranslateANewAonymousTypeExpressionWithAMultiLineCtorValue()
+        public void ShouldTranslateANewAnonymousTypeExpressionWithAMultiLineCtorValue()
         {
             var writeBlah = CreateLambda(() => Console.WriteLine("Blah"));
             var read = CreateLambda<long>(() => Console.Read());
@@ -355,13 +355,11 @@ new IDisposable[]
         [Fact]
         public void ShouldTranslateACharacterConstantConstructorParameter()
         {
-            var createStringBuilder = CreateLambda(() => new StringBuilder('f'));
+            var createCharCtor = CreateLambda(() => new CharCtor('f'));
 
-            var translated = createStringBuilder.Body.ToReadableString();
+            var translated = createCharCtor.Body.ToReadableString();
 
-            // Constant character expressions have .Type Int32, so they 
-            // can't be differentiated from int constants :(
-            translated.ShouldBe($"new StringBuilder({((int)'f')})");
+            translated.ShouldBe("new CharCtor('f')");
         }
 
         [Fact]
@@ -397,6 +395,8 @@ new IDisposable[]
                 tryReadInt,
                 tryReadInt);
 
+            var translated = createStringBuilder.ToReadableString();
+
             const string EXPECTED = @"
 new StringBuilder(
     {
@@ -419,8 +419,6 @@ new StringBuilder(
             return default(int);
         }
     })";
-
-            var translated = createStringBuilder.ToReadableString();
 
             translated.ShouldBe(EXPECTED.TrimStart());
         }
@@ -505,6 +503,16 @@ new StringBuilder(
 
             public TValue Value { get; set; }
         }
+    }
+
+    internal class CharCtor
+    {
+        public CharCtor(char value)
+        {
+            Value = value;
+        }
+
+        public char Value { get; }
     }
 
     #endregion

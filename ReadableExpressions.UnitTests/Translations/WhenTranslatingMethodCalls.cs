@@ -1,23 +1,15 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.Translations
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using Common;
-    using NetStandardPolyfills;
     using ReadableExpressions.Translations;
     using ReadableExpressions.Translations.Reflection;
 #if !NET35
     using System.Linq.Expressions;
     using Xunit;
-    using static System.Linq.Expressions.Expression;
-    using static Common.TestTranslationSettings;
 #else
     using Microsoft.Scripting.Ast;
     using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
-    using static Common.TestTranslationSettings;
 
     [NUnit.Framework.TestFixture]
 #endif

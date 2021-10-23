@@ -16,7 +16,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
         /// <param name="method">The <see cref="IMethod"/> for which to make the determination.</param>
         public static bool IsOverride(this IMethod method)
         {
-            if (method.DeclaringType == null)
+            if (method.IsStatic || method.DeclaringType == null)
             {
                 return false;
             }

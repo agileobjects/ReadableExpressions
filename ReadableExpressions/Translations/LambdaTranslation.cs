@@ -18,7 +18,7 @@
         public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
         {
             Type = lambda.Type;
-            _parameters = ParameterSetTranslation.For(lambda.Parameters, context);
+            _parameters = ParameterSetTranslation.For(lambda, context);
             _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
 
             TranslationSize =
