@@ -1,18 +1,19 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Linq;
-    using System.Windows.Forms;
     using Configuration;
     using Controls;
     using Core;
     using Core.Configuration;
     using Core.Theming;
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using System.Windows.Forms;
     using Theming;
-    using static System.Windows.Forms.SystemInformation;
     using static DialogConstants;
+    using static System.Windows.Forms.ScreenOrientation;
+    using static System.Windows.Forms.SystemInformation;
 
     public class VisualizerDialog : Form
     {
@@ -69,7 +70,7 @@
         }
 
         internal TranslationViewModel ViewModel { get; }
-        
+
         internal VisualizerDialogColourTable ColourTable { get; }
 
         internal VisualizerDialogSettings Settings => ViewModel.Settings;
@@ -159,7 +160,23 @@
 
         public override bool AutoSize => _autoSize;
 
-        public override Size MaximumSize => Screen.PrimaryScreen.WorkingArea.Size;
+        public override Size MaximumSize
+        {
+            get
+            {
+                var screenSize = Screen.GetWorkingArea(this).Size;
+
+                switch (SystemInformation.ScreenOrientation)
+                {
+                    case Angle90:
+                    case Angle270:
+                        return new Size(screenSize.Height, screenSize.Width);
+
+                    default:
+                        return screenSize;
+                }
+            }
+        }
 
         public override string Text => string.Empty;
 
@@ -232,7 +249,7 @@
         internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
         {
             Theme = newTheme;
-            
+
             ColourTable.HandleThemeChanged();
 
             foreach (var control in _themeableControls)
