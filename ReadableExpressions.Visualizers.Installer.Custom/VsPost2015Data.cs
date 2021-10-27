@@ -20,34 +20,14 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 
             using (var capabilitiesKey = post2015Key.OpenSubKey("Capabilities"))
             {
-                VsFullVersionNumber = GetVsFullVersion(capabilitiesKey);
                 InstallDirectory = GetInstallPath(capabilitiesKey);
+                VsFullVersionNumber = GetVsFullVersion(InstallDirectory);
             }
 
             IsValid = (VsFullVersionNumber != null) && (InstallDirectory != null);
         }
 
         #region Setup
-
-        private static string GetVsFullVersion(RegistryKey capabilitiesKey)
-        {
-            var appName = capabilitiesKey.GetValue("ApplicationName") as string;
-
-            if (string.IsNullOrWhiteSpace(appName))
-            {
-                return null;
-            }
-
-            var vsYearNumber = appName
-                .TrimEnd()
-                .Split(' ')
-                .Reverse()
-                .Select(segment => int.TryParse(segment, out var yearNumber) ? yearNumber : default(int?))
-                .FirstOrDefault(yearNumber => yearNumber != default(int?));
-
-            return vsYearNumber.HasValue && _vsVersionsByYear.TryGetValue(vsYearNumber.Value, out var vsVersionNumber)
-                ? vsVersionNumber : null;
-        }
 
         private static string GetInstallPath(RegistryKey capabilitiesKey)
         {
@@ -73,6 +53,23 @@ namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
             }
 
             return Directory.Exists(installPath) ? installPath : null;
+        }
+
+        private static string GetVsFullVersion(string installDirectory)
+        {
+            if (string.IsNullOrWhiteSpace(installDirectory))
+            {
+                return null;
+            }
+
+            var vsYearNumber = installDirectory
+                .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                .Reverse()
+                .Select(segment => int.TryParse(segment, out var yearNumber) ? yearNumber : default(int?))
+                .FirstOrDefault(yearNumber => yearNumber != default(int?));
+
+            return vsYearNumber.HasValue && _vsVersionsByYear.TryGetValue(vsYearNumber.Value, out var vsVersionNumber)
+                ? vsVersionNumber : null;
         }
 
         #endregion
