@@ -60,6 +60,13 @@
             IType type,
             TranslationSettings settings)
         {
+            if (type.IsArray)
+            {
+                writer.WriteFriendlyName(type.ElementType, settings);
+                writer.WriteToTranslation("[]");
+                return;
+            }
+
             if (type.FullName == null)
             {
                 if (type.IsGeneric)
@@ -73,13 +80,6 @@
                     writer.WriteToTranslation(type.Name, InterfaceName);
                 }
 
-                return;
-            }
-
-            if (type.IsArray)
-            {
-                writer.WriteFriendlyName(type.ElementType, settings);
-                writer.WriteToTranslation("[]");
                 return;
             }
 

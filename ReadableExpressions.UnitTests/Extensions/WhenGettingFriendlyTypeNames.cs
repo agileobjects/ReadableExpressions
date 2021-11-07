@@ -5,20 +5,18 @@
     using Common;
     using ReadableExpressions.Extensions;
 #if !NET35
-    using System.Linq.Expressions;
     using Xunit;
     using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
     using static Microsoft.Scripting.Ast.Expression;
     using Fact = NUnit.Framework.TestAttribute;
 
     [NUnit.Framework.TestFixture]
 #endif
-    public class WhenGettingFriendlyNames : TestClassBase
+    public class WhenGettingFriendlyTypeNames : TestClassBase
     {
         [Fact]
-        public void ShouldUseFriendlyNamesForArrays()
+        public void ShouldNameAnArray()
         {
             var intArrayVariable = Variable(typeof(int[]), "ints");
             var assignNull = Assign(intArrayVariable, Default(intArrayVariable.Type));
@@ -30,7 +28,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForCharacters()
+        public void ShouldNameAStaticMethodTypeName()
         {
             var characterToNumeric = CreateLambda((char c) => char.GetNumericValue(c));
 
@@ -40,7 +38,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForAnonymousTypes()
+        public void ShouldNameAnAnonymousType()
         {
             var anon = new { One = 1, Two = "two" };
 
@@ -51,7 +49,7 @@
 
         // See https://github.com/agileobjects/ReadableExpressions/pull/25
         [Fact]
-        public void ShouldUseAnonymousTypeNameFactoryIfConfigured()
+        public void ShouldNameAnAnonymousTypeWithAConfiguredNameFactory()
         {
             var anon = new { One = 1, Two = "two" };
 
@@ -62,7 +60,7 @@
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/6
         [Fact]
-        public void ShouldUseFriendlyNamesForMultiplyNestedTypes()
+        public void ShouldNameMultiplyNestedTypes()
         {
             var nestedType = Constant(typeof(OuterClass.InnerClass.Nested), typeof(Type));
 
@@ -72,7 +70,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForListsOfNestedTypes()
+        public void ShouldNameListsOfNestedTypes()
         {
             var newNestedTypeList = New(typeof(List<>).MakeGenericType(typeof(OuterClass.InnerClass)));
 
@@ -82,7 +80,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForGenericTypes()
+        public void ShouldNameGenericTypes()
         {
             var genericListEnumeratorType = Constant(typeof(HashSet<decimal[]>), typeof(Type));
 
@@ -92,7 +90,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForGenericNestedTypes()
+        public void ShouldNameGenericNestedTypes()
         {
             var genericListEnumeratorType = Constant(typeof(List<string>.Enumerator), typeof(Type));
 
@@ -102,17 +100,17 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForNestedGenericTypes()
+        public void ShouldNameNestedGenericTypes()
         {
             var genericListEnumeratorType = Constant(typeof(GenericTestHelper<int>), typeof(Type));
 
             var translated = genericListEnumeratorType.ToReadableString();
 
-            translated.ShouldBe("typeof(WhenGettingFriendlyNames.GenericTestHelper<int>)");
+            translated.ShouldBe("typeof(WhenGettingFriendlyTypeNames.GenericTestHelper<int>)");
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForGenericMultiplyNestedTypes()
+        public void ShouldNameGenericMultiplyNestedTypes()
         {
             var nestedGenericType = Constant(
                 typeof(OuterGeneric<int>.InnerGeneric<long>.Nested),
@@ -124,7 +122,7 @@
         }
 
         [Fact]
-        public void ShouldUseFriendlyNamesForGenericGenericTypeArguments()
+        public void ShouldNameGenericGenericTypeArguments()
         {
             var nestedGenericType = Constant(
                 typeof(Dictionary<int, Dictionary<string, List<byte>>>),
@@ -135,11 +133,23 @@
             translated.ShouldBe("typeof(Dictionary<int, Dictionary<string, List<byte>>>)");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/94
+        [Fact]
+        public void ShouldNamePartClosedGenericTypeArguments()
+        {
+            var name = typeof(GenericTestHelper<>)
+                .GetField("Keys").FieldType
+                .GetFriendlyName();
+
+            name.ShouldBe("KeyValuePair<T, int>[]");
+        }
+
         #region Helper Classes
 
         // ReSharper disable once UnusedTypeParameter
         private class GenericTestHelper<T>
         {
+            public KeyValuePair<T, int>[] Keys;
         }
 
         #endregion
