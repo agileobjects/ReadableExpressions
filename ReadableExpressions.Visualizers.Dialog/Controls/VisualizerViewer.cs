@@ -2,6 +2,7 @@
 {
     using System;
     using System.Drawing;
+    using System.Runtime.InteropServices;
     using System.Windows.Forms;
     using Core.Theming;
 
@@ -19,6 +20,18 @@
 
             var font = _dialog.Settings.Font;
             base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
+
+            Navigated += (sender, args) =>
+            {
+                try
+                {
+                    AllowWebBrowserDrop = false;
+                    ScrollBarsEnabled = false;
+                }
+                catch (COMException)
+                {
+                }
+            };
 
             Resize += (sender, args) =>
             {
@@ -38,12 +51,8 @@
                 return;
             }
 
-            _initialised = true;
-
-            AllowWebBrowserDrop = false;
-            ScrollBarsEnabled = false;
-
             SetInitialContent(translation);
+            _initialised = true;
         }
 
         private void SetInitialContent(string translation)
@@ -165,10 +174,10 @@ body, pre {{
 
         public string GetContentRaw() => TranslationElement.InnerText;
 
-        public void SetContent(string translation) 
-            => TranslationElement.OuterHtml = $"<pre id=\"translation\">{translation}</pre>";
+        public void SetContent(string translation)
+            => TranslationElement.InnerHtml = translation;
 
-        private HtmlElement TranslationElement => Document.GetElementById("translation");
+        private HtmlElement TranslationElement => Document!.GetElementById("translation");
 
         public void SetTheme(VisualizerDialogTheme theme)
         {
@@ -187,19 +196,19 @@ body, pre {{
                 theme.Comment
             };
 
-            Document.InvokeScript("setTheme", args);
+            Document!.InvokeScript("setTheme", args);
         }
 
         public void SetFontFamily(Font newFont)
         {
             Font = newFont;
-            Document.InvokeScript("setFontFamily", new object[] { newFont.Name });
+            Document!.InvokeScript("setFontFamily", new object[] { newFont.Name });
         }
 
         public void SetFontSize(int newFontSize)
         {
             Font = new Font(Font.Name, newFontSize, GraphicsUnit.Point);
-            Document.InvokeScript("setFontSize", new object[] { newFontSize });
+            Document!.InvokeScript("setFontSize", new object[] { newFontSize });
         }
 
         public void SetSize(Size newSize)
