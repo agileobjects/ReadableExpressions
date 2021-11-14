@@ -60,13 +60,13 @@
 
             Application.Idle += LazyLoadMenus;
 
-            Shown += (sender, args) =>
+            Shown += (sender, _) =>
             {
                 var dialog = (VisualizerDialog)sender;
                 dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
             };
 
-            Resize += (sender, args) => ((VisualizerDialog)sender).HandleResize();
+            Resize += (sender, _) => ((VisualizerDialog)sender).HandleResize();
         }
 
         internal TranslationViewModel ViewModel { get; }
