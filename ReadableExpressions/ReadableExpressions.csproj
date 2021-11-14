@@ -26,7 +26,10 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageReleaseNotes>- Adding Source Link support
+- Fixing part-closed generic array naming, re: #94
+- Ensuring generated parameter names are valid, re: #97
+- Removing redundant member names in anonymous type member assignments</PackageReleaseNotes>
     <PackageOutputPath>../NuGet</PackageOutputPath>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
