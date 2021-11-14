@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
-    <LangVersion>8.0</LangVersion>
     <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Core</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Core</RootNamespace>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>

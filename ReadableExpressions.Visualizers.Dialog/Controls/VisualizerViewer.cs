@@ -1,10 +1,10 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls
 {
+    using Core.Theming;
     using System;
     using System.Drawing;
     using System.Runtime.InteropServices;
     using System.Windows.Forms;
-    using Core.Theming;
 
     internal class VisualizerViewer : WebBrowser
     {
@@ -20,18 +20,6 @@
 
             var font = _dialog.Settings.Font;
             base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
-
-            Navigated += (sender, args) =>
-            {
-                try
-                {
-                    AllowWebBrowserDrop = false;
-                    ScrollBarsEnabled = false;
-                }
-                catch (COMException)
-                {
-                }
-            };
 
             Resize += (sender, args) =>
             {
@@ -49,6 +37,15 @@
             if (_initialised)
             {
                 return;
+            }
+
+            try
+            {
+                AllowWebBrowserDrop = false;
+                ScrollBarsEnabled = false;
+            }
+            catch (COMException)
+            {
             }
 
             SetInitialContent(translation);
