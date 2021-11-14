@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net40</TargetFramework>
-    <LangVersion>8.0</LangVersion>
     <AssemblyName>AgileObjects.ReadableExpressions.Visualizers.Vs12</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.Visualizers</RootNamespace>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -12,8 +11,6 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
-    <NoWarn>0649;1701;1702</NoWarn>
-    <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -34,7 +31,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="&quot;$(SolutionDir)tools\ILMerge.2.14.1208\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Dialog.dll&#xD;&#xA;xcopy &quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; &quot;$(DevEnvDir)..\Packages\Debugger\Visualizers&quot; /Y" />
+    <Exec Command="&quot;$(SolutionDir)tools\ILMerge.2.14.1208\ILMerge.exe&quot; /ndebug /targetplatform:v4 /lib:&quot;C:\Windows\Microsoft.NET\Framework\v4.0.30319&quot; /out:&quot;$(SolutionDir)VisualizerAssemblies\$(TargetFileName)&quot; $(TargetPath) $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Core.dll $(TargetDir)AgileObjects.ReadableExpressions.Visualizers.Dialog.dll&#xD;&#xA;" />
   </Target>
 
 </Project>

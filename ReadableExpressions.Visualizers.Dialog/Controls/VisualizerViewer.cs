@@ -2,6 +2,8 @@
 {
     using System;
     using System.Drawing;
+    using System.Runtime.InteropServices;
+    using System.Threading;
     using System.Windows.Forms;
     using Core.Theming;
 
@@ -20,7 +22,7 @@
             var font = _dialog.Settings.Font;
             base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
 
-            Resize += (sender, args) =>
+            Resize += (sender, _) =>
             {
                 var viewer = (VisualizerViewer)sender;
                 viewer._parent.Size = viewer.Size;
@@ -38,12 +40,28 @@
                 return;
             }
 
-            _initialised = true;
-
-            AllowWebBrowserDrop = false;
-            ScrollBarsEnabled = false;
+            if (!TrySetBrowserOptions())
+            {
+                Thread.Sleep(500);
+                TrySetBrowserOptions();
+            }
 
             SetInitialContent(translation);
+            _initialised = true;
+        }
+
+        private bool TrySetBrowserOptions()
+        {
+            try
+            {
+                AllowWebBrowserDrop = false;
+                ScrollBarsEnabled = false;
+                return true;
+            }
+            catch (COMException)
+            {
+                return false;
+            }
         }
 
         private void SetInitialContent(string translation)
@@ -73,7 +91,7 @@ body, pre {{
 </style>
 </head>
 <body scroll=""no"">
-    <pre id=""translation"">{translation}</pre>
+    {GetTranslationElement(translation)}
     <script type=""text/javascript"">
         function setFontFamily(ff) {{
             var cssRules = document.styleSheets[0].rules;
@@ -165,10 +183,13 @@ body, pre {{
 
         public string GetContentRaw() => TranslationElement.InnerText;
 
-        public void SetContent(string translation) 
-            => TranslationElement.OuterHtml = $"<pre id=\"translation\">{translation}</pre>";
+        public void SetContent(string translation)
+            => TranslationElement.OuterHtml = GetTranslationElement(translation);
 
-        private HtmlElement TranslationElement => Document.GetElementById("translation");
+        private static string GetTranslationElement(string translation)
+            => $"<pre id=\"translation\">{translation}</pre>";
+
+        private HtmlElement TranslationElement => Document!.GetElementById("translation");
 
         public void SetTheme(VisualizerDialogTheme theme)
         {
@@ -187,19 +208,19 @@ body, pre {{
                 theme.Comment
             };
 
-            Document.InvokeScript("setTheme", args);
+            Document!.InvokeScript("setTheme", args);
         }
 
         public void SetFontFamily(Font newFont)
         {
             Font = newFont;
-            Document.InvokeScript("setFontFamily", new object[] { newFont.Name });
+            Document!.InvokeScript("setFontFamily", new object[] { newFont.Name });
         }
 
         public void SetFontSize(int newFontSize)
         {
             Font = new Font(Font.Name, newFontSize, GraphicsUnit.Point);
-            Document.InvokeScript("setFontSize", new object[] { newFontSize });
+            Document!.InvokeScript("setFontSize", new object[] { newFontSize });
         }
 
         public void SetSize(Size newSize)
