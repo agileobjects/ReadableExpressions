@@ -24,11 +24,19 @@
     <Description>An extension method for Linq and DLR Expressions, producing readable, C# source-code versions of Expression Trees. Targets .NET 3.5+ and .NET Standard 1.0+</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>./Icon.png</PackageIcon>
-    <PackageTags>"Expression Trees";Debugging;"Debugger Visualizers"</PackageTags>
+    <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageOutputPath>../NuGet</PackageOutputPath>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,6 +76,7 @@
 
   <ItemGroup>
     <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.6.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
   </ItemGroup>
 
   <PropertyGroup>

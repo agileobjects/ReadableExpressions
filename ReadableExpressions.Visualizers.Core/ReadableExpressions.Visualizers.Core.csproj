@@ -11,8 +11,6 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
-    <NoWarn>0649;1701;1702</NoWarn>
-    <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

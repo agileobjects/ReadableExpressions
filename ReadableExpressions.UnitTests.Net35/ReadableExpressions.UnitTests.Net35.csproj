@@ -6,8 +6,6 @@
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
-    <NoWarn>0649;1701;1702</NoWarn>
-    <DebugType>full</DebugType>
     <IsPackable>false</IsPackable>
     <ProjectGuid>{9EB2525F-48E7-4057-98E5-7FE325ECCD32}</ProjectGuid>
   </PropertyGroup>

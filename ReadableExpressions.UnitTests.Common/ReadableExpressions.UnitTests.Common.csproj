@@ -6,8 +6,6 @@
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests.Common</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
-    <NoWarn>0649;1701;1702</NoWarn>
-    <DebugType>full</DebugType>
     <AssemblyOriginatorKeyFile>..\ReadableExpressions.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <IsPackable>false</IsPackable>
