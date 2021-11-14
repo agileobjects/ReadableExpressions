@@ -7,6 +7,7 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+    using static System.StringComparison;
     using static Formatting.TokenType;
 
     internal static class ParameterTranslation
@@ -18,13 +19,22 @@
                 return new UnnamedParameterTranslation(parameter, context);
             }
 
+            if (parameter.Name.StartsWith("<>", Ordinal))
+            {
+                return new FixedValueTranslation(
+                    ExpressionType.Parameter,
+                    "_",
+                    parameter.Type,
+                    Variable,
+                    context);
+            }
+
             return new StandardParameterTranslation(parameter, context);
         }
 
         private abstract class ParameterTranslationBase : IParameterTranslation
         {
             private readonly ParameterExpression _parameter;
-            private readonly string _parameterName;
             private ITranslation _typeNameTranslation;
 
             protected ParameterTranslationBase(
@@ -33,9 +43,9 @@
                 ITranslationContext context)
             {
                 _parameter = parameter;
-                _parameterName = parameterName;
+                Name = parameterName;
 
-                TranslationSize = _parameterName.Length;
+                TranslationSize = Name.Length;
                 FormattingSize = context.GetFormattingSize(Variable);
             }
 
@@ -46,6 +56,8 @@
             public int TranslationSize { get; private set; }
 
             public int FormattingSize { get; private set; }
+
+            public string Name { get; }
 
             public void WithTypeNames(ITranslationContext context)
             {
@@ -77,7 +89,7 @@
                     writer.WriteSpaceToTranslation();
                 }
 
-                writer.WriteToTranslation(_parameterName, Variable);
+                writer.WriteToTranslation(Name, Variable);
             }
         }
 

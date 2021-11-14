@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
     using Common;
     using ReadableExpressions.Extensions;
 #if !NET35
@@ -135,13 +137,36 @@
 
         // See https://github.com/agileobjects/ReadableExpressions/issues/94
         [Fact]
-        public void ShouldNamePartClosedGenericTypeArguments()
+        public void ShouldNamePartClosedGenericTypeArrays()
         {
             var name = typeof(GenericTestHelper<>)
                 .GetField("Keys").FieldType
                 .GetFriendlyName();
 
             name.ShouldBe("KeyValuePair<T, int>[]");
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/97
+        [Fact]
+        public void ShouldNameLinqExpressionVariables()
+        {
+            Expression<Func<IEnumerable<int>>> linqQuery = () =>
+                from s in new[] { "1", "2", "3", "4", "5" }
+                let n = int.Parse(s)
+                where n > 3
+                group s by s into result
+                select result.Count();
+
+            const string EXPECTED = @"
+() => new[] { ""1"", ""2"", ""3"", ""4"", ""5"" }
+    .Select(s => new { s, n = int.Parse(s) })
+    .Where(_ => _.n > 3)
+    .GroupBy(_ => _.s, _ => _.s)
+    .Select(result => result.Count())";
+
+            var translated = linqQuery.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         #region Helper Classes

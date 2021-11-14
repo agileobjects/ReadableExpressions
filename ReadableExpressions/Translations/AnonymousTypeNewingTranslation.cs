@@ -97,9 +97,17 @@
                 ParameterInfo member,
                 ITranslation value)
             {
-                _memberName = member.Name;
                 _value = value;
 
+                if (value is IParameterTranslation parameter &&
+                    parameter.Name == member.Name)
+                {
+                    _memberName = string.Empty;
+                    TranslationSize = value.TranslationSize;
+                    return;
+                }
+
+                _memberName = member.Name;
                 TranslationSize = _memberName.Length + 3 + value.TranslationSize;
             }
 
@@ -117,8 +125,12 @@
 
             public void WriteTo(TranslationWriter writer)
             {
-                writer.WriteToTranslation(_memberName);
-                writer.WriteToTranslation(" = ");
+                if (_memberName != string.Empty)
+                {
+                    writer.WriteToTranslation(_memberName);
+                    writer.WriteToTranslation(" = ");
+                }
+
                 _value.WriteTo(writer);
             }
         }
