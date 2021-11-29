@@ -63,6 +63,25 @@
             translated.ShouldBe(@"""hello\\tthere!""");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/99
+        [Fact]
+        public void ShouldTranslateAVerbatimStringWithDoubleQuotes()
+        {
+            const string VERBATIM = @"
+12
+""1""2
+";
+            var stringConstant = Constant(VERBATIM, typeof(string));
+
+            var translated = stringConstant.ToReadableString();
+
+            translated.ShouldBe(@"@""
+12
+""""1""""2
+""");
+
+        }
+
         [Fact]
         public void ShouldTranslateABoolean()
         {
@@ -532,7 +551,7 @@
             var arrayConstant = Constant(new[] { "Five", "Five", "Five" }, typeof(ICollection<string>));
 
             var translated = arrayConstant.ToReadableString();
-            
+
             translated.ShouldBe("(ICollection<string>)new[] { \"Five\", \"Five\", \"Five\" }");
         }
 

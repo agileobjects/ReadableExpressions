@@ -14,6 +14,7 @@
     using Initialisations;
     using NetStandardPolyfills;
     using static System.Convert;
+    using static System.Environment;
     using static System.Globalization.CultureInfo;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -160,12 +161,14 @@
                     return true;
 
                 case NetStandardTypeCode.String:
-                    var stringValue = ((string)constant.Value)
-                        .Replace(@"\", @"\\")
-                        .Replace("\0", @"\0")
-                        .Replace(@"""", @"\""");
-
+                    var stringValue = GetStringConstant(constant, out var isVerbatim);
                     stringValue = "\"" + stringValue + "\"";
+
+                    if (isVerbatim)
+                    {
+                        stringValue = "@" + stringValue;
+                    }
+
                     translation = FixedValueTranslation(stringValue, typeof(string), Text, context);
                     return true;
             }
@@ -213,6 +216,13 @@
             return FixedValueTranslation(stringValue + "d", constant.Type, Numeric, context);
         }
 
+        private static ITranslation GetLongTranslation(
+            ConstantExpression constant,
+            ITranslationContext context)
+        {
+            return FixedValueTranslation((long)constant.Value + "L", constant.Type, Numeric, context);
+        }
+
         private static ITranslation GetFloatTranslation(
             ConstantExpression constant,
             ITranslationContext context)
@@ -226,11 +236,17 @@
             return FixedValueTranslation(stringValue + "f", constant.Type, Numeric, context);
         }
 
-        private static ITranslation GetLongTranslation(
+        private static string GetStringConstant(
             ConstantExpression constant,
-            ITranslationContext context)
+            out bool isVerbatim)
         {
-            return FixedValueTranslation((long)constant.Value + "L", constant.Type, Numeric, context);
+            var stringValue = (string)constant.Value;
+            isVerbatim = stringValue.Contains(NewLine);
+
+            return stringValue
+                .Replace(@"\", @"\\")
+                .Replace("\0", @"\0")
+                .Replace(@"""", isVerbatim ? @"""""" : @"\""");
         }
 
         private static bool TryGetTypeTranslation(
