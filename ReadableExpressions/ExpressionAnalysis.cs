@@ -80,7 +80,7 @@
             {
                 case DebugInfo:
                 case Default:
-                case Parameter:
+                case Parameter when ((ParameterExpression)expression).IsNamed():
                 case RuntimeVariables:
                     ResultExpression = expression;
                     break;
@@ -234,8 +234,8 @@
         /// </summary>
         /// <param name="variable">The variable for which to get the 1-based index.</param>
         /// <returns>
-        /// The 1-based index of the given <paramref name="variable"/>, or null if only variable of
-        /// this Type is declared.
+        /// The 1-based index of the given <paramref name="variable"/>, or null if only one variable
+        /// of this Type is declared.
         /// </returns>
         public int? GetUnnamedVariableNumberOrNull(ParameterExpression variable)
         {

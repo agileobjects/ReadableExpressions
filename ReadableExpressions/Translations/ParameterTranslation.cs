@@ -14,7 +14,7 @@
     {
         public static ITranslation For(ParameterExpression parameter, ITranslationContext context)
         {
-            if (parameter.Name.IsNullOrWhiteSpace())
+            if (!parameter.IsNamed())
             {
                 return new UnnamedParameterTranslation(parameter, context);
             }

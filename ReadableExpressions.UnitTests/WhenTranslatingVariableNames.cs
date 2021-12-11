@@ -24,6 +24,17 @@
             translated.ShouldBe("@int = default(int)");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/100
+        [Fact]
+        public void ShouldNameARootUnnamedVariable()
+        {
+            var intVariable = Variable(typeof(int));
+
+            var translated = intVariable.ToReadableString();
+
+            translated.ShouldBe("@int");
+        }
+
         [Fact]
         public void ShouldNameAnUnnamedParameter()
         {

@@ -16,6 +16,9 @@
 
     internal static class InternalExpressionExtensions
     {
+        public static bool IsNamed(this ParameterExpression parameter)
+            => !parameter.Name.IsNullOrWhiteSpace();
+
         public static bool HasReturnType(this Expression expression)
             => expression.Type != typeof(void);
 
