@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>3.1.0.0</AssemblyVersion>
-    <FileVersion>3.1.0.0</FileVersion>
-    <VersionPrefix>3.1.0</VersionPrefix>
-    <Version>3.1.0</Version>
+    <AssemblyVersion>3.1.1.0</AssemblyVersion>
+    <FileVersion>3.1.1.0</FileVersion>
+    <VersionPrefix>3.1.1</VersionPrefix>
+    <Version>3.1.1</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
@@ -26,10 +26,8 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Adding Source Link support
-- Fixing part-closed generic array naming, re: #94
-- Ensuring generated parameter names are valid, re: #97
-- Removing redundant member names in anonymous type member assignments</PackageReleaseNotes>
+    <PackageReleaseNotes>- Fixing double quote handling in verbatim strings, re: #99
+- Fixing unnamed root ParameterExpression translation, re: #100</PackageReleaseNotes>
     <PackageOutputPath>../NuGet</PackageOutputPath>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>

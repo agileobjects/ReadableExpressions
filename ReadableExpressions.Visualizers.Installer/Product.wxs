@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Version="4.1.1.0" Name="AgileObjects.ReadableExpressions.Visualizers"
+  <Product Id="*" Version="4.2.0.0" Name="AgileObjects.ReadableExpressions.Visualizers"
            Language="1033"  Manufacturer="AgileObjects" UpgradeCode="BB7C528F-ECFD-45F2-B50C-9F0A71EC8BE9">
 
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
