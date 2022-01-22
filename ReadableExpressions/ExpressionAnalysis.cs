@@ -119,12 +119,12 @@
         /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
         /// parameter that should be declared inline.
         /// </summary>
-        /// <param name="parameter">The parameter for which to make the determination.</param>
+        /// <param name="parameter">The ParameterExpression for which to make the determination.</param>
         /// <returns>
         /// True if the given <paramref name="parameter"/> is an output parameter that should be
         /// declared inline, otherwise false.
         /// </returns>
-        public bool ShouldBeDeclaredInline(Expression parameter)
+        public bool ShouldBeDeclaredInline(ParameterExpression parameter)
         {
             var declareInline =
                 _inlineOutputVariables?.Contains(parameter) == true &&
@@ -132,7 +132,7 @@
 
             if (declareInline)
             {
-                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add((ParameterExpression)parameter);
+                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
                 return true;
             }
 
@@ -438,10 +438,12 @@
             {
                 if (IsFirstAccess(variable))
                 {
-                    if (_constructs?.Any() == true)
+                    var currentConstruct = _constructs?.FirstOrDefault();
+
+                    if (currentConstruct != null)
                     {
                         (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
-                            .Add(binary, _constructs.Peek());
+                            .Add(binary, currentConstruct);
 
                         isConstructAssignment = true;
                     }
@@ -513,16 +515,26 @@
                     return true;
                 }
 
-                var assignment = assignedAssignment;
-
-                while (IsAssignment(assignment.Right.NodeType))
+                if (IsChainedAssignmentWithin(assignedAssignment, binary))
                 {
-                    assignment = (BinaryExpression)assignment.Right;
+                    return true;
+                }
+            }
 
-                    if (assignment == binary)
-                    {
-                        return true;
-                    }
+            return false;
+        }
+
+        private static bool IsChainedAssignmentWithin(
+            BinaryExpression assignedAssignment,
+            BinaryExpression binary)
+        {
+            while (IsAssignment(assignedAssignment.Right.NodeType))
+            {
+                assignedAssignment = (BinaryExpression)assignedAssignment.Right;
+
+                if (assignedAssignment == binary)
+                {
+                    return true;
                 }
             }
 

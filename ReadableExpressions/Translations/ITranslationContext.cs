@@ -17,8 +17,8 @@
         TranslationSettings Settings { get; }
 
         /// <summary>
-        /// Gets the <see cref="ExpressionAnalysis"/> containing information about the Expression
-        /// being translated.
+        /// Gets the <see cref="ExpressionAnalysis"/> containing information about the root
+        /// Expression being translated.
         /// </summary>
         ExpressionAnalysis Analysis { get; }
 
