@@ -36,7 +36,7 @@
 
             dialog.RegisterThemeable(this);
 
-            SelectedIndexChanged += (sender, args) =>
+            SelectedIndexChanged += (sender, _) =>
             {
                 var selector = (FontFamilySelector)sender;
                 var font = (Font)selector.SelectedItem;
@@ -51,7 +51,19 @@
         {
             return new InstalledFontCollection()
                 .Families
-                .Select(ff => new Font(ff, 10))
+                .Select(ff =>
+                {
+                    try
+                    {
+                        return new Font(ff, 10);
+                    }
+                    catch
+                    {
+                        // See https://github.com/agileobjects/ReadableExpressions/issues/102
+                        return null;
+                    }
+                })
+                .Where(font => font != null)
                 .ToArray();
         }
 
