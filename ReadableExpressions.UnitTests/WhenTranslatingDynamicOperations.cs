@@ -2,6 +2,7 @@
 namespace AgileObjects.ReadableExpressions.UnitTests
 {
     using System;
+    using System.Dynamic;
     using System.Globalization;
     using Common;
     using Microsoft.CSharp.RuntimeBinder;
@@ -10,29 +11,37 @@ namespace AgileObjects.ReadableExpressions.UnitTests
 
     public class WhenTranslatingDynamicOperations : TestClassBase
     {
+        // See https://github.com/agileobjects/ReadableExpressions/issues/103
         [Fact]
         public void ShouldTranslateAPropertyReadAccess()
         {
-            var lengthGetterSiteBinder = Binder.GetMember(
+            var dynamicNullableIntGetterSiteBinder = Binder.GetMember(
                 CSharpBinderFlags.None,
-                "Length",
-                typeof(WhenTranslatingDynamicOperations),
+                "NullableInt",
+                typeof(object),
                 new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
 
-            var dynamicParameter = Parameter(typeof(object), "obj");
+            var expandoParameter = Parameter(typeof(ExpandoObject));
 
-            var dynamicLengthGetter = Dynamic(
-                lengthGetterSiteBinder,
+            var dynamicNullableIntGetter = Dynamic(
+                dynamicNullableIntGetterSiteBinder,
                 typeof(object),
-                dynamicParameter);
+                expandoParameter);
 
-            var dynamicLengthLambda = Lambda<Func<object, object>>(dynamicLengthGetter, dynamicParameter);
+            var convertedDynamicNullableInt = 
+                Convert(dynamicNullableIntGetter, typeof(int?));
 
-            dynamicLengthLambda.Compile();
+            var hasValueAccess = Property(convertedDynamicNullableInt, "HasValue");
 
-            var translated = dynamicLengthLambda.ToReadableString();
+            var dynamicNullableIntHasValueLambda = 
+                Lambda<Func<ExpandoObject, bool>>(hasValueAccess, expandoParameter);
 
-            translated.ShouldBe("obj => obj.Length");
+            dynamicNullableIntHasValueLambda.Compile();
+
+            var translated = dynamicNullableIntHasValueLambda.ToReadableString();
+
+            translated.ShouldBe(
+                "expandoObject => ((int?)expandoObject.NullableInt).HasValue");
         }
 
         [Fact]
