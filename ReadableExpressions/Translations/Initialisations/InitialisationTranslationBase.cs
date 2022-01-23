@@ -7,6 +7,7 @@
 #else
     using System.Linq.Expressions;
 #endif
+    using static TranslationConstants;
 
     internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
     {
@@ -63,7 +64,8 @@
 
         public int GetIndentSize()
         {
-            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+            _initializerTranslations.IsLongTranslation =
+                TranslationSize > LongTranslationThreshold;
 
             return _newingTranslation.GetIndentSize() +
                    _initializerTranslations.GetIndentSize();
@@ -71,7 +73,8 @@
 
         public int GetLineCount()
         {
-            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+            _initializerTranslations.IsLongTranslation =
+                TranslationSize > LongTranslationThreshold;
 
             var lineCount = _newingTranslation.GetLineCount();
 
@@ -87,7 +90,8 @@
 
         public void WriteTo(TranslationWriter writer)
         {
-            _initializerTranslations.IsLongTranslation = TranslationSize > 40;
+            _initializerTranslations.IsLongTranslation = 
+                TranslationSize > LongTranslationThreshold;
 
             _newingTranslation.WriteTo(writer);
             _initializerTranslations.WriteTo(writer);
