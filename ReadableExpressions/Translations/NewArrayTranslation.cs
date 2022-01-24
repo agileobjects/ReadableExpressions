@@ -22,7 +22,7 @@
             var translationSize = _typeNameTranslation.TranslationSize + 6;
             var formattingSize = _typeNameTranslation.FormattingSize;
 
-            if (newArray.Expressions.Count == 0)
+            if (newArray.Expressions.None())
             {
                 _boundTranslations = Enumerable<ITranslation>.EmptyArray;
             }

@@ -85,7 +85,7 @@
             BlockExpression block,
             ITranslationContext context)
         {
-            if (block.Variables.Count == 0)
+            if (block.Variables.None())
             {
                 return EmptyDictionary<ITranslation, ParameterSetTranslation>.Instance;
             }
@@ -96,7 +96,7 @@
                 .GroupBy(v => v.Type)
                 .ToArray();
 
-            if (variablesByType.Length == 0)
+            if (variablesByType.None())
             {
                 return EmptyDictionary<ITranslation, ParameterSetTranslation>.Instance;
             }

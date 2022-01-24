@@ -117,7 +117,7 @@
                         return false;
                 }
 
-                if (capturedMemberAccesses.Count == 0)
+                if (capturedMemberAccesses.None())
                 {
                     return false;
                 }
