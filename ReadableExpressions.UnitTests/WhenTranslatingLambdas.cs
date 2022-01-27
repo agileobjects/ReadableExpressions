@@ -111,7 +111,8 @@
 
             var quotedLambda = Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString(stgs => stgs.ShowQuotedLambdaComments);
+            var translated = quotedLambda.ToReadableString(stgs => 
+                stgs.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
 // Quoted to induce a closure:

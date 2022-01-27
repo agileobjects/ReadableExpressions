@@ -109,15 +109,15 @@
                         expression = ((UnaryExpression)expression).Operand;
                         continue;
 
-                    case Parameter:
-                        return false;
-
                     case null:
                         isStatic = true;
                         break;
+
+                    default:
+                        return false;
                 }
 
-                if (capturedMemberAccesses.Count == 0)
+                if (capturedMemberAccesses.None())
                 {
                     return false;
                 }

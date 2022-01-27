@@ -133,6 +133,21 @@
             translated.ShouldBe("d => d.Day");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/101
+        [Fact]
+        public void ShouldTranslateAnExtensionExpressionMemberExpression()
+        {
+            var extension = new ExtensionExpression(typeof(PropertiesHelper));
+
+            var extensionMemberAccess = Property(
+                extension,
+                nameof(PropertiesHelper.PublicInstance));
+
+            var translated = extensionMemberAccess.ToReadableString();
+
+            translated.ShouldBe($"{extension}.PublicInstance");
+        }
+
         [Fact]
         public void ShouldTranslateAStaticMemberExpression()
         {
@@ -994,6 +1009,20 @@ new CustomAdder
         {
             throw new NotImplementedException();
         }
+    }
+
+    internal class ExtensionExpression : Expression
+    {
+        public ExtensionExpression(Type type)
+        {
+            Type = type;
+        }
+
+        public override string ToString() => "Extension_Expr";
+
+        public override Type Type { get; }
+
+        public override ExpressionType NodeType => ExpressionType.Extension;
     }
 
     #endregion

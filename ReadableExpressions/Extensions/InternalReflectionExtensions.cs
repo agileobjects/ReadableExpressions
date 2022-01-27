@@ -1,9 +1,15 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
+#if FEATURE_VALUE_TUPLE
+    using System;
+#endif
     using System.Collections.Generic;
     using System.Reflection;
     using NetStandardPolyfills;
     using Translations.Reflection;
+#if FEATURE_VALUE_TUPLE
+    using static System.StringComparison;
+#endif
 
     internal static class InternalReflectionExtensions
     {
@@ -57,5 +63,13 @@
 
             return null;
         }
+
+#if FEATURE_VALUE_TUPLE
+        public static bool IsValueTuple(this Type type)
+        {
+            return type.IsGenericType() &&
+                   type.FullName?.StartsWith("System.ValueTuple`", Ordinal) == true;
+        }
+#endif
     }
 }

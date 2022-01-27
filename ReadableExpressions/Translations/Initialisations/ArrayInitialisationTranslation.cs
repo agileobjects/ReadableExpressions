@@ -53,7 +53,7 @@
 
         public static ITranslation For(NewArrayExpression arrayInit, ITranslationContext context)
         {
-            if (arrayInit.Expressions.Count == 0)
+            if (arrayInit.Expressions.None())
             {
                 return new NewEmptyBoundedArrayTranslation(arrayInit, context);
             }

@@ -447,7 +447,8 @@ new StringBuilder(
             // ReSharper disable once AssignNullToNotNullAttribute
             var creation = New(constructor, Constant(10));
 
-            var translated = creation.ToReadableString(stgs => stgs.NameAnonymousTypesUsing(t => "MyMagicObject"));
+            var translated = creation.ToReadableString(stgs => stgs
+                .NameAnonymousTypesUsing(_ => "MyMagicObject"));
 
             translated.ShouldBe("new MyMagicObject { ValueInt = 10 }");
         }
@@ -465,6 +466,33 @@ new StringBuilder(
 
             translated.ShouldBe("new { Value = default(System.TimeSpan) }");
         }
+
+#if FEATURE_VALUE_TUPLE
+        [Fact]
+        public void ShouldTranslateAValueTupleNewExpression()
+        {
+            var valueTuple = (default(int), default(string));
+            var valueTupleType = valueTuple.GetType();
+
+            var valueTupleCtor = valueTupleType
+                .GetPublicInstanceConstructor(typeof(int), typeof(string));
+
+            var stringEmpty = typeof(string)
+                .GetPublicStaticField(nameof(string.Empty));
+
+            var newValueTuple = New(
+                valueTupleCtor,
+                Constant(123),
+                Field(null, stringEmpty));
+
+            var tupleVariable = Variable(valueTupleType);
+            var assignTuple = Assign(tupleVariable, newValueTuple);
+
+            var translated = assignTuple.ToReadableString();
+
+            translated.ShouldBe("intStringValueTuple = (123, string.Empty)");
+        }
+#endif
     }
 
     #region Helper Classes

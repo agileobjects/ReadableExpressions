@@ -51,6 +51,12 @@
                 return new AnonymousTypeNewingTranslation(newing, context);
             }
 
+#if FEATURE_VALUE_TUPLE
+            if (newing.Type.IsValueTuple())
+            {
+                return new ValueTupleNewingTranslation(newing, context);
+            }
+#endif
             return new NewingTranslation(newing, context, omitParenthesesIfParameterless);
         }
 

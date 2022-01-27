@@ -664,7 +664,7 @@
 
                 if ((parameter.NodeType == Parameter) &&
                      context.Settings.DeclareOutParamsInline &&
-                     context.Analysis.ShouldBeDeclaredInline(parameter))
+                     context.Analysis.ShouldBeDeclaredInline((ParameterExpression)parameter))
                 {
                     _declareParameterInline = true;
 

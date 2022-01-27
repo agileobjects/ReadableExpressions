@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>3.1.1.0</AssemblyVersion>
-    <FileVersion>3.1.1.0</FileVersion>
-    <VersionPrefix>3.1.1</VersionPrefix>
-    <Version>3.1.1</Version>
+    <AssemblyVersion>3.2.0.0</AssemblyVersion>
+    <FileVersion>3.2.0.0</FileVersion>
+    <VersionPrefix>3.2.0</VersionPrefix>
+    <Version>3.2.0</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
@@ -26,8 +26,9 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Fixing double quote handling in verbatim strings, re: #99
-- Fixing unnamed root ParameterExpression translation, re: #100</PackageReleaseNotes>
+    <PackageReleaseNotes>- Support for translating ValueTuples
+- Fixing MemberAccess translation regression, re: #101, #103
+- Fixing reused ParameterExpression object handling across different scopes</PackageReleaseNotes>
     <PackageOutputPath>../NuGet</PackageOutputPath>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
@@ -45,7 +46,7 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
-    <DefineConstants>$(DefineConstants);FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
+    <DefineConstants>$(DefineConstants);FEATURE_CONCURRENT_DICTIONARY;FEATURE_VALUE_TUPLE</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.0' ">
@@ -53,7 +54,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD2_0;FEATURE_CONCURRENT_DICTIONARY</DefineConstants>
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0;FEATURE_CONCURRENT_DICTIONARY;FEATURE_VALUE_TUPLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

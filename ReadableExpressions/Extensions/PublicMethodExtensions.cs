@@ -27,7 +27,7 @@ namespace AgileObjects.ReadableExpressions.Extensions
             {
                 var parameters = candidateMethod.GetParameters();
 
-                if (parameters.Count == 0)
+                if (parameters.None())
                 {
                     return true;
                 }

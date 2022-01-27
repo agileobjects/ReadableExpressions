@@ -60,8 +60,13 @@
 
             var analysis = ExpressionAnalysis.For(container, new TestTranslationSettings());
 
-            analysis.ShouldBeDeclaredInVariableList(intVariable1, variable1Block).ShouldBeFalse();
-            analysis.ShouldBeDeclaredInVariableList(intVariable2, variable2Block).ShouldBeFalse();
+            analysis.EnterScope(variable1Block);
+            analysis.ShouldBeDeclaredInVariableList(intVariable1).ShouldBeFalse();
+            analysis.ExitScope();
+            
+            analysis.EnterScope(variable2Block);
+            analysis.ShouldBeDeclaredInVariableList(intVariable2).ShouldBeFalse();
+            analysis.ExitScope();
         }
 
         #region Helper Members

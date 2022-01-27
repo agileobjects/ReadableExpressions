@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Linq.Expressions;
     using Common;
+    using NetStandardPolyfills;
     using ReadableExpressions.Extensions;
 #if !NET35
     using Xunit;
@@ -55,7 +56,7 @@
         {
             var anon = new { One = 1, Two = "two" };
 
-            var friendlyName = anon.GetType().GetFriendlyName(c => c.NameAnonymousTypesUsing(t => "object"));
+            var friendlyName = anon.GetType().GetFriendlyName(c => c.NameAnonymousTypesUsing(_ => "object"));
 
             friendlyName.ShouldBe("object");
         }
@@ -140,7 +141,7 @@
         public void ShouldNamePartClosedGenericTypeArrays()
         {
             var name = typeof(GenericTestHelper<>)
-                .GetField("Keys").FieldType
+                .GetPublicInstanceField("Keys").FieldType
                 .GetFriendlyName();
 
             name.ShouldBe("KeyValuePair<T, int>[]");

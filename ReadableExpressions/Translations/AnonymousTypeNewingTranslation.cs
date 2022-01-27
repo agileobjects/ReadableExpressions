@@ -10,6 +10,7 @@
     using System.Reflection;
     using Extensions;
     using Initialisations;
+    using static TranslationConstants;
 
     internal class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
     {
@@ -59,14 +60,16 @@
 
         public int GetIndentSize()
         {
-            _initializers.IsLongTranslation = TranslationSize > 40;
+            _initializers.IsLongTranslation = 
+                TranslationSize > LongTranslationThreshold;
 
             return _initializers.GetIndentSize();
         }
 
         public int GetLineCount()
         {
-            _initializers.IsLongTranslation = TranslationSize > 40;
+            _initializers.IsLongTranslation = 
+                TranslationSize > LongTranslationThreshold;
 
             var initializersLineCount = _initializers.GetLineCount();
 
@@ -75,7 +78,8 @@
 
         public void WriteTo(TranslationWriter writer)
         {
-            _initializers.IsLongTranslation = TranslationSize > 40;
+            _initializers.IsLongTranslation = 
+                TranslationSize > LongTranslationThreshold;
 
             writer.WriteNewToTranslation();
 
