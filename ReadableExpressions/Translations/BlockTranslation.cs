@@ -32,6 +32,8 @@
 
         public BlockTranslation(BlockExpression block, ITranslationContext context)
         {
+            context.Analysis.EnterScope(block);
+
             Type = block.Type;
             _variables = GetVariableDeclarations(block, context);
             _hasVariables = _variables.Count > 0;
@@ -45,6 +47,7 @@
                 out _hasGoto,
                 out _isEmpty);
 
+            context.Analysis.ExitScope();
 
             if (_isEmpty)
             {
@@ -92,7 +95,7 @@
 
             var variablesByType = block
                 .Variables
-                .Filter(v => context.Analysis.ShouldBeDeclaredInVariableList(v, block))
+                .Filter(context.Analysis.ShouldBeDeclaredInVariableList)
                 .GroupBy(v => v.Type)
                 .ToArray();
 

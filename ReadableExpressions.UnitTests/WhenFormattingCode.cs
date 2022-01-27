@@ -488,6 +488,35 @@ catch
         }
 
         [Fact]
+        public void ShouldVarAssignAVariableReusedInASiblingBlock()
+        {
+            var intVariable = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable, Constant(1));
+            var assignmentBlock = Block(new[] { intVariable }, assignVariable1);
+
+            var assignVariable2 = Assign(intVariable, Constant(2));
+            var assignment2Block = Block(new[] { intVariable }, assignVariable2);
+
+            var assign1Or2 = IfThenElse(
+                Constant(true),
+                assignmentBlock,
+                assignment2Block);
+
+            var translated = assign1Or2.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+    var i = 1;
+}
+else
+{
+    var i = 2;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldNotIndentParamsArrayArguments()
         {
             var stringJoiner = CreateLambda(() =>
@@ -620,10 +649,10 @@ if (WhenFormattingCode.JoinStrings(
         public void ShouldNotIndentSingleArgumentBlockParameters()
         {
             var writeString = CreateLambda(() => Console.WriteLine("String!")).Body;
-            
+
             var stringsBlock = Block(
-                writeString, 
-                writeString, 
+                writeString,
+                writeString,
                 writeString,
                 Constant("All done!"));
 
