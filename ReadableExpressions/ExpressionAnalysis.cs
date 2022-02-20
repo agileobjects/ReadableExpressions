@@ -571,6 +571,8 @@
         {
             PushScope(block);
 
+            // Visit child expression first to track
+            // variable usage in child scopes:
             var expressions = VisitAndConvert(block.Expressions);
             var variables = VisitAndConvert(block.Variables, EvaluateJoinedAssignment);
             block = block.Update(variables, expressions);

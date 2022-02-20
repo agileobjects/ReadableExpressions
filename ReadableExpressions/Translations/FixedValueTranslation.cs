@@ -16,7 +16,10 @@
     {
         private readonly string _value;
         private readonly TokenType _tokenType;
+        private readonly bool _isEmptyValue;
+        private readonly int _translationSize;
         private readonly int _formattingSize;
+        private readonly int _lineCount;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="FixedValueTranslation"/> class.
@@ -80,7 +83,16 @@
             Type = type;
             _value = value;
             _tokenType = tokenType;
+            _isEmptyValue = string.IsNullOrEmpty(value);
+
+            if (_isEmptyValue)
+            {
+                return;
+            }
+
+            _translationSize = value!.Length;
             _formattingSize = settings.GetFormattingSize(tokenType);
+            _lineCount = value.GetLineCount();
         }
 
         /// <summary>
@@ -93,15 +105,20 @@
         /// </summary>
         public Type Type { get; }
 
-        int ITranslatable.TranslationSize => _value.Length;
+        int ITranslatable.TranslationSize => _translationSize;
 
         int ITranslatable.FormattingSize => _formattingSize;
 
         int ITranslatable.GetIndentSize() => 0;
 
-        int ITranslatable.GetLineCount() => _value.GetLineCount();
+        int ITranslatable.GetLineCount() => _lineCount;
 
         void ITranslatable.WriteTo(TranslationWriter writer)
-            => writer.WriteToTranslation(_value, _tokenType);
+        {
+            if (!_isEmptyValue)
+            {
+                writer.WriteToTranslation(_value, _tokenType);
+            }
+        }
     }
 }
