@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// Implementing classes will provide basic metadata about a method.
     /// </summary>
-    public interface IMethodBase : IComplexMember
+    public interface IMethodBase
     {
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMethodBase"/> is an extension method.

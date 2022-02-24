@@ -1,10 +1,8 @@
 namespace AgileObjects.ReadableExpressions.Translations.Reflection
 {
-    using System;
     using System.Collections.ObjectModel;
     using System.Reflection;
     using Extensions;
-    using NetStandardPolyfills;
 
     /// <summary>
     /// Helper base class for <see cref="IMethod"/> implementations which wrap MethodBase-derived
@@ -92,29 +90,5 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public abstract IType ReturnType { get; }
-
-        private class ClrParameterWrapper : IParameter
-        {
-            private readonly ParameterInfo _parameter;
-            private IType _type;
-
-            public ClrParameterWrapper(ParameterInfo parameter)
-            {
-                _parameter = parameter;
-            }
-
-            public IType Type
-                => _type ??= ClrTypeWrapper.For(ParameterType);
-
-            private Type ParameterType => _parameter.ParameterType;
-
-            public string Name => _parameter.Name;
-
-            public bool IsOut => _parameter.IsOut;
-
-            public bool IsRef => !IsOut && ParameterType.IsByRef;
-
-            public bool IsParamsArray => _parameter.IsParamsArray();
-        }
     }
 }

@@ -26,9 +26,7 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Support for translating ValueTuples
-- Fixing MemberAccess translation regression, re: #101, #103
-- Fixing reused ParameterExpression object handling across different scopes</PackageReleaseNotes>
+    <PackageReleaseNotes>- Including ref and out parameter keywords in lambda parameter declarations, re: #106</PackageReleaseNotes>
     <PackageOutputPath>../NuGet</PackageOutputPath>
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
