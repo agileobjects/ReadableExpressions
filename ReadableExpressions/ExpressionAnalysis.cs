@@ -23,7 +23,6 @@
     {
         private readonly TranslationSettings _settings;
         private Dictionary<BinaryExpression, object> _constructsByAssignment;
-        private ICollection<Expression> _joinedAssignments;
         private IList<BinaryExpression> _assignedAssignments;
         private ICollection<Expression> _nestedCasts;
         private ExpressionScope _currentExpressionScope;
@@ -136,12 +135,13 @@
         /// </returns>
         public bool IsJoinedAssignment(Expression expression)
         {
-            if (expression.NodeType != Assign || _joinedAssignments == null)
+            if (expression.NodeType != Assign)
             {
                 return false;
             }
 
-            return _joinedAssignments.Contains(expression);
+            return CurrentExpressionScope
+                .IsJoinedAssignment((BinaryExpression)expression);
         }
 
         /// <summary>
@@ -428,9 +428,7 @@
                         isConstructAssignment = true;
                     }
 
-                    (_joinedAssignments ??= new List<Expression>()).Add(binary);
-                    CurrentExpressionScope.DeclareInAssignment(variable);
-
+                    CurrentExpressionScope.DeclareInAssignment(variable, binary);
                     isJoinedAssignment = true;
                 }
 
@@ -455,8 +453,7 @@
 
             if (isJoinedAssignment)
             {
-                _joinedAssignments.Add(updatedBinary);
-                _joinedAssignments.Remove(binary);
+                CurrentExpressionScope.DeclareInAssignment(variable, updatedBinary);
             }
 
             return updatedBinary;
@@ -1035,7 +1032,6 @@
             // This variable was assigned within a construct but is being accessed 
             // outside of that scope, so the assignment shouldn't be joined:
             _currentExpressionScope.DeclareInVariableList(variable);
-            _joinedAssignments.Remove(joinedAssignmentData.Assignment);
             _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
 
             return variable;

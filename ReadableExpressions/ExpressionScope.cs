@@ -8,6 +8,11 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
+#if NET35
+    using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+    using static System.Linq.Expressions.ExpressionType;
+#endif
 
     internal class ExpressionScope
     {
@@ -101,7 +106,7 @@
             return variableAdded;
         }
 
-        public void DeclareInVariableList(ParameterExpression variable) 
+        public void DeclareInVariableList(ParameterExpression variable)
             => GetVariableInfo(variable).DeclarationType = DeclarationType.VariableList;
 
         public void DeclareInOutputParameterUse(ParameterExpression parameter)
@@ -115,8 +120,14 @@
             }
         }
 
-        public void DeclareInAssignment(ParameterExpression variable) 
-            => GetVariableInfo(variable).DeclarationType = DeclarationType.JoinedAssignment;
+        public void DeclareInAssignment(
+            ParameterExpression variable,
+            Expression assignment)
+        {
+            var variableInfo = GetVariableInfo(variable);
+            variableInfo.DeclarationType = DeclarationType.JoinedAssignment;
+            variableInfo.Assignment = assignment;
+        }
 
         public void AddCatchBlockVariable(ParameterExpression variable)
             => GetOrAddVariableInfo(variable, out _).IsCatchBlockVariable = true;
@@ -128,6 +139,21 @@
         {
             return GetVariableInfoOrNull(variable)?
                 .DeclarationType == DeclarationType.JoinedAssignment;
+        }
+
+        public bool IsJoinedAssignment(BinaryExpression assignment)
+        {
+            if (assignment.Left.NodeType != Parameter)
+            {
+                return false;
+            }
+
+            var variable = (ParameterExpression)assignment.Left;
+            var variableInfo = GetVariableInfoOrNull(variable);
+
+            return
+                variableInfo?.Assignment == assignment &&
+                variableInfo.DeclarationType == DeclarationType.JoinedAssignment;
         }
 
         public bool ShouldDeclareInVariableList(ParameterExpression variable)
@@ -214,6 +240,7 @@
         private class VariableInfo
         {
             public DeclarationType DeclarationType;
+            public Expression Assignment;
             public bool IsCatchBlockVariable;
             public bool HasBeenDeclared;
         }
