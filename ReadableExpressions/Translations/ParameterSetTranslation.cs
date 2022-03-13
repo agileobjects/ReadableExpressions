@@ -742,7 +742,7 @@
             {
                 if (parameter.NodeType == Parameter &&
                     context.Settings.DeclareOutParamsInline &&
-                    context.Analysis.ShouldBeDeclaredInline((ParameterExpression)parameter))
+                    context.Analysis.ShouldBeDeclaredInOutputParameterUse((ParameterExpression)parameter))
                 {
                     return false;
                 }

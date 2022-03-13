@@ -32,7 +32,6 @@
         private List<MethodCallExpression> _chainedMethodCalls;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
-        private ICollection<ParameterExpression> _declaredOutputParameters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
@@ -110,10 +109,7 @@
         /// inline when it is assigned or passed as an out parameter.
         /// </returns>
         public virtual bool ShouldBeDeclaredInVariableList(ParameterExpression variable)
-        {
-            return !CurrentExpressionScope.IsInlineOutputParameter(variable) &&
-                   !CurrentExpressionScope.HasBeenJoinAssigned(variable);
-        }
+            => CurrentExpressionScope.ShouldDeclareInVariableList(variable);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
@@ -124,20 +120,8 @@
         /// True if the given <paramref name="parameter"/> is an output parameter that should be
         /// declared inline, otherwise false.
         /// </returns>
-        public bool ShouldBeDeclaredInline(ParameterExpression parameter)
-        {
-            var declareInline =
-                CurrentExpressionScope.IsInlineOutputParameter(parameter) &&
-                _declaredOutputParameters?.Contains(parameter) != true;
-
-            if (declareInline)
-            {
-                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
-                return true;
-            }
-
-            return false;
-        }
+        public bool ShouldBeDeclaredInOutputParameterUse(ParameterExpression parameter)
+            => CurrentExpressionScope.ShouldDeclareInOutputParameterUse(parameter);
 
         /// <summary>
         /// Returns a value indicating whether the given <paramref name="expression"/> represents an
@@ -432,7 +416,7 @@
 
             if (IsJoinableVariableAssignment(binary, out var variable))
             {
-                if (IsFirstAccess(variable))
+                if (CurrentExpressionScope.TryAddFirstAccess(variable))
                 {
                     var currentConstruct = CurrentExpressionScope.GetCurrentConstructObjectOrNull();
 
@@ -445,11 +429,9 @@
                     }
 
                     (_joinedAssignments ??= new List<Expression>()).Add(binary);
-                    CurrentExpressionScope.AddJoinedAssignmentVariable(variable);
+                    CurrentExpressionScope.DeclareInAssignment(variable);
 
                     isJoinedAssignment = true;
-
-                    AddVariableAccess(variable);
                 }
 
                 AddAssignedAssignmentIfAppropriate(binary.Right);
@@ -493,7 +475,7 @@
             }
 
             variable = (ParameterExpression)binary.Left;
-            return !HasBeenAssigned(variable);
+            return !HasBeenJoinAssigned(variable);
         }
 
         private bool IsAssigned(BinaryExpression binary)
@@ -545,14 +527,8 @@
         /// True if the current assignment of the given <paramref name="variable"/> being evaluated
         /// can include a joined declaration of the variable, otherwise false.
         /// </returns>
-        protected virtual bool HasBeenAssigned(ParameterExpression variable)
-            => CurrentExpressionScope.HasBeenJoinAssigned(variable);
-
-        private bool IsFirstAccess(ParameterExpression variable)
-            => !CurrentExpressionScope.HasBeenAccessed(variable);
-
-        private void AddVariableAccess(ParameterExpression variable)
-            => CurrentExpressionScope.AddVariableAccess(variable);
+        protected virtual bool HasBeenJoinAssigned(ParameterExpression variable)
+            => CurrentExpressionScope.IsJoinedAssignmentVariable(variable);
 
         /// <summary>
         /// Visits the given <paramref name="block"/>, returning a replacement Expression if
@@ -869,11 +845,7 @@
                     }
 
                     var parameter = (ParameterExpression)argument;
-
-                    if (IsFirstAccess(parameter))
-                    {
-                        CurrentExpressionScope.AddInlineOutputVariable(parameter);
-                    }
+                    CurrentExpressionScope.DeclareInOutputParameterUse(parameter);
                 }
             }
 
@@ -1033,17 +1005,14 @@
                 return null;
             }
 
-            if (IsFirstAccess(variable))
-            {
-                AddVariableAccess(variable);
-            }
+            CurrentExpressionScope.TryAddFirstAccess(variable);
 
             return EvaluateJoinedAssignment(variable);
         }
 
         private ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
         {
-            if (!CurrentExpressionScope.HasBeenJoinAssigned(variable))
+            if (!CurrentExpressionScope.IsJoinedAssignmentVariable(variable))
             {
                 return variable;
             }
@@ -1065,7 +1034,7 @@
 
             // This variable was assigned within a construct but is being accessed 
             // outside of that scope, so the assignment shouldn't be joined:
-            _currentExpressionScope.RemoveJoinedAssignmentVariable(variable);
+            _currentExpressionScope.DeclareInVariableList(variable);
             _joinedAssignments.Remove(joinedAssignmentData.Assignment);
             _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
 

@@ -1,6 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 #if NET35
@@ -13,10 +12,7 @@
     internal class ExpressionScope
     {
         private BlockExpression _block;
-        private ICollection<ParameterExpression> _accessedVariables;
-        private IList<ParameterExpression> _joinedAssignmentVariables;
-        private IList<ParameterExpression> _inlineOutputVariables;
-        private ICollection<ParameterExpression> _catchBlockVariables;
+        private Dictionary<ParameterExpression, VariableInfo> _variableInfos;
         private List<ExpressionScope> _childScopes;
 
         public ExpressionScope()
@@ -45,9 +41,9 @@
         {
             get
             {
-                if (_accessedVariables != null)
+                if (_variableInfos != null)
                 {
-                    foreach (var variable in _accessedVariables)
+                    foreach (var variable in _variableInfos.Keys)
                     {
                         yield return variable;
                     }
@@ -99,81 +95,113 @@
                 .FirstOrDefault();
         }
 
-        public bool HasBeenAccessed(ParameterExpression variable)
+        public bool TryAddFirstAccess(ParameterExpression variable)
         {
-            var declaringScope = GetDeclaringScope(variable);
-
-            return declaringScope.HasBeenAdded(
-                scope => scope._accessedVariables,
-                variable,
-                out _);
+            GetOrAddVariableInfo(variable, out var variableAdded);
+            return variableAdded;
         }
 
-        public void AddVariableAccess(ParameterExpression variable)
-            => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
+        public void DeclareInVariableList(ParameterExpression variable) 
+            => GetVariableInfo(variable).DeclarationType = DeclarationType.VariableList;
 
-        public bool HasBeenJoinAssigned(ParameterExpression variable)
-            => HasBeenJoinAssigned(variable, out _);
-
-        private bool HasBeenJoinAssigned(
-            ParameterExpression variable,
-            out ICollection<ParameterExpression> variables)
+        public void DeclareInOutputParameterUse(ParameterExpression parameter)
         {
-            var declaringScope = GetDeclaringScope(variable);
+            var variableInfo =
+                GetOrAddVariableInfo(parameter, out var variableAdded);
 
-            return declaringScope.HasBeenAdded(
-                scope => scope._joinedAssignmentVariables,
-                variable,
-                out variables);
-        }
-
-        public void AddJoinedAssignmentVariable(ParameterExpression variable)
-            => (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
-
-        public void RemoveJoinedAssignmentVariable(ParameterExpression variable)
-        {
-            if (HasBeenJoinAssigned(variable, out var variables))
+            if (variableAdded)
             {
-                variables.Remove(variable);
+                variableInfo.DeclarationType = DeclarationType.InlineOutput;
             }
         }
 
-        public bool IsInlineOutputParameter(ParameterExpression variable)
-        {
-            var declaringScope = GetDeclaringScope(variable);
-
-            return declaringScope.HasBeenAdded(
-                scope => scope._inlineOutputVariables,
-                variable,
-                out _);
-        }
-
-        public void AddInlineOutputVariable(ParameterExpression parameter)
-        {
-            (_inlineOutputVariables ??= new List<ParameterExpression>())
-                .Add(parameter);
-        }
+        public void DeclareInAssignment(ParameterExpression variable) 
+            => GetVariableInfo(variable).DeclarationType = DeclarationType.JoinedAssignment;
 
         public void AddCatchBlockVariable(ParameterExpression variable)
-        {
-            (_catchBlockVariables ??= new List<ParameterExpression>())
-                .Add(variable);
-        }
+            => GetOrAddVariableInfo(variable, out _).IsCatchBlockVariable = true;
 
         public bool IsCatchBlockVariable(ParameterExpression variable)
+            => GetVariableInfo(variable).IsCatchBlockVariable;
+
+        public bool IsJoinedAssignmentVariable(ParameterExpression variable)
+        {
+            return GetVariableInfoOrNull(variable)?
+                .DeclarationType == DeclarationType.JoinedAssignment;
+        }
+
+        public bool ShouldDeclareInVariableList(ParameterExpression variable)
+        {
+            var info = GetVariableInfoOrNull(variable);
+
+            return info == null ||
+                   info.DeclarationType == DeclarationType.VariableList;
+        }
+
+        public bool ShouldDeclareInOutputParameterUse(ParameterExpression variable)
+        {
+            var variableInfo = GetVariableInfo(variable);
+
+            if (variableInfo.HasBeenDeclared ||
+                variableInfo.DeclarationType != DeclarationType.InlineOutput)
+            {
+                return false;
+            }
+
+            variableInfo.HasBeenDeclared = true;
+            return true;
+        }
+
+        private VariableInfo GetVariableInfo(ParameterExpression variable)
+            => GetDeclaringScope(variable)._variableInfos[variable];
+
+        private VariableInfo GetVariableInfoOrNull(ParameterExpression variable)
+        {
+            var variableInfos = GetDeclaringScope(variable)._variableInfos;
+
+            if (variableInfos != null &&
+                variableInfos.TryGetValue(variable, out var info))
+            {
+                return info;
+            }
+
+            return null;
+        }
+
+        private VariableInfo GetOrAddVariableInfo(
+            ParameterExpression variable,
+            out bool variableAdded)
         {
             var declaringScope = GetDeclaringScope(variable);
+            var variableInfos = declaringScope._variableInfos;
 
-            return declaringScope.HasBeenAdded(
-                scope => scope._catchBlockVariables,
-                variable,
-                out _);
+            VariableInfo info;
+
+            if (variableInfos != null)
+            {
+                if (variableInfos.TryGetValue(variable, out info))
+                {
+                    variableAdded = false;
+                    return info;
+                }
+
+                goto AddNewInfo;
+            }
+
+            variableInfos = declaringScope._variableInfos =
+                new Dictionary<ParameterExpression, VariableInfo>();
+
+        AddNewInfo:
+            variableAdded = true;
+            info = new();
+            variableInfos.Add(variable, info);
+            return info;
         }
 
         private ExpressionScope GetDeclaringScope(ParameterExpression variable)
         {
             if (Parent == null ||
-                _block?.Variables.Contains(variable) == true)
+               _block?.Variables.Contains(variable) == true)
             {
                 return this;
             }
@@ -181,35 +209,22 @@
             return Parent.GetDeclaringScope(variable);
         }
 
-        private bool HasBeenAdded(
-            Func<ExpressionScope, ICollection<ParameterExpression>> variablesGetter,
-            ParameterExpression variable,
-            out ICollection<ParameterExpression> variables)
+        #region Helper Class
+
+        private class VariableInfo
         {
-            variables = variablesGetter.Invoke(this);
-
-            if (variables?.Contains(variable) == true)
-            {
-                return true;
-            }
-
-            if (_childScopes?.Any() != true)
-            {
-                return false;
-            }
-
-            foreach (var childScope in _childScopes)
-            {
-                if (childScope.HasBeenAdded(
-                        variablesGetter,
-                        variable,
-                        out variables))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            public DeclarationType DeclarationType;
+            public bool IsCatchBlockVariable;
+            public bool HasBeenDeclared;
         }
+
+        private enum DeclarationType
+        {
+            VariableList,
+            InlineOutput,
+            JoinedAssignment
+        }
+
+        #endregion
     }
 }
