@@ -81,12 +81,6 @@
 
         public void Set(object scopeObject) => ScopeObject = scopeObject;
 
-        public bool Contains(object scopeObject)
-        {
-            return ScopeObject == scopeObject ||
-                   Parent?.Contains(scopeObject) == true;
-        }
-
         public ExpressionScope FindScopeFor(BlockExpression block)
         {
             if (_block == block)
@@ -100,13 +94,56 @@
                 .FirstOrDefault();
         }
 
-        public bool TryAddFirstAccess(ParameterExpression variable)
+        public bool TryAddFirstAccess(
+            ParameterExpression variable,
+            BinaryExpression assignment)
         {
-            GetOrAddVariableInfo(variable, out var variableAdded);
+            if (!TryAddFirstAccess(variable, out var variableInfo))
+            {
+                return false;
+            }
+
+            variableInfo.AssignmentParentConstruct = 
+                GetCurrentConstructObjectOrNull();
+
+            DeclareInAssignment(variable, assignment);
+            return true;
+        }
+
+        public bool TryAddFirstAccess(ParameterExpression variable)
+            => TryAddFirstAccess(variable, out _);
+
+        private bool TryAddFirstAccess(
+            ParameterExpression variable,
+            out VariableInfo variableInfo)
+        {
+            variableInfo = GetOrAddVariableInfo(variable, out var variableAdded);
             return variableAdded;
         }
 
-        public void DeclareInVariableList(ParameterExpression variable)
+        public ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
+        {
+            var variableInfo = GetVariableInfoOrNull(variable);
+
+            if (!IsJoinedAssignment(variableInfo))
+            {
+                return variable;
+            }
+
+            var parentConstruct = variableInfo.AssignmentParentConstruct;
+
+            if (parentConstruct == null || IsForOrIsWithin(parentConstruct))
+            {
+                return variable;
+            }
+
+            // This variable was assigned within a construct but is being accessed 
+            // outside of that scope, so the assignment shouldn't be joined:
+            DeclareInVariableList(variable);
+            return variable;
+        }
+
+        private void DeclareInVariableList(ParameterExpression variable)
             => GetVariableInfo(variable).DeclarationType = DeclarationType.VariableList;
 
         public void DeclareInOutputParameterUse(ParameterExpression parameter)
@@ -135,11 +172,17 @@
         public bool IsCatchBlockVariable(ParameterExpression variable)
             => GetVariableInfo(variable).IsCatchBlockVariable;
 
-        public bool IsJoinedAssignmentVariable(ParameterExpression variable)
+        private bool IsForOrIsWithin(object scopeObject)
         {
-            return GetVariableInfoOrNull(variable)?
-                .DeclarationType == DeclarationType.JoinedAssignment;
+            return ScopeObject == scopeObject ||
+                   Parent?.IsForOrIsWithin(scopeObject) == true;
         }
+
+        public bool IsJoinedAssignmentVariable(ParameterExpression variable) 
+            => IsJoinedAssignment(GetVariableInfoOrNull(variable));
+
+        private static bool IsJoinedAssignment(VariableInfo variableInfo) 
+            => variableInfo?.DeclarationType == DeclarationType.JoinedAssignment;
 
         public bool IsJoinedAssignment(BinaryExpression assignment)
         {
@@ -241,6 +284,7 @@
         {
             public DeclarationType DeclarationType;
             public Expression Assignment;
+            public object AssignmentParentConstruct;
             public bool IsCatchBlockVariable;
             public bool HasBeenDeclared;
         }

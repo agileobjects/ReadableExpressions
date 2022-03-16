@@ -22,7 +22,6 @@
     public class ExpressionAnalysis
     {
         private readonly TranslationSettings _settings;
-        private Dictionary<BinaryExpression, object> _constructsByAssignment;
         private IList<BinaryExpression> _assignedAssignments;
         private ICollection<Expression> _nestedCasts;
         private ExpressionScope _currentExpressionScope;
@@ -411,24 +410,12 @@
         /// </returns>
         protected virtual Expression VisitAndConvert(BinaryExpression binary)
         {
-            var isConstructAssignment = false;
             var isJoinedAssignment = false;
 
             if (IsJoinableVariableAssignment(binary, out var variable))
             {
-                if (CurrentExpressionScope.TryAddFirstAccess(variable))
+                if (CurrentExpressionScope.TryAddFirstAccess(variable, binary))
                 {
-                    var currentConstruct = CurrentExpressionScope.GetCurrentConstructObjectOrNull();
-
-                    if (currentConstruct != null)
-                    {
-                        (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
-                            .Add(binary, currentConstruct);
-
-                        isConstructAssignment = true;
-                    }
-
-                    CurrentExpressionScope.DeclareInAssignment(variable, binary);
                     isJoinedAssignment = true;
                 }
 
@@ -443,12 +430,6 @@
             if (updatedBinary == binary)
             {
                 return updatedBinary;
-            }
-
-            if (isConstructAssignment)
-            {
-                _constructsByAssignment.Add(updatedBinary, _constructsByAssignment[binary]);
-                _constructsByAssignment.Remove(binary);
             }
 
             if (isJoinedAssignment)
@@ -1003,39 +984,11 @@
             }
 
             CurrentExpressionScope.TryAddFirstAccess(variable);
-
             return EvaluateJoinedAssignment(variable);
         }
 
         private ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
-        {
-            if (!CurrentExpressionScope.IsJoinedAssignmentVariable(variable))
-            {
-                return variable;
-            }
-
-            var joinedAssignmentData = _constructsByAssignment?
-                .Filter(kvp => kvp.Key.Left == variable)
-                .Project(kvp => new
-                {
-                    Assignment = kvp.Key,
-                    Construct = kvp.Value
-                })
-                .FirstOrDefault();
-
-            if ((joinedAssignmentData == null) ||
-                _currentExpressionScope.Contains(joinedAssignmentData.Construct))
-            {
-                return variable;
-            }
-
-            // This variable was assigned within a construct but is being accessed 
-            // outside of that scope, so the assignment shouldn't be joined:
-            _currentExpressionScope.DeclareInVariableList(variable);
-            _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
-
-            return variable;
-        }
+            => CurrentExpressionScope.EvaluateJoinedAssignment(variable);
 
         /// <summary>
         /// Visits the given <paramref name="runtimeVariables"/>, returning a replacement Expression
