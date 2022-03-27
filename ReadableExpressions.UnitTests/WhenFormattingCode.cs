@@ -788,6 +788,34 @@ HelperClass.GiveMeALambda((string1, string2) =>
         }
 
         [Fact]
+        public void ShouldNotEvaluateMethodGroupArgumentParameters()
+        {
+            var copy = CreateLambda((List<int> list, ICollection<int> items) =>
+                list.ForEach(idx => items.Add(idx)));
+
+            var methodCall = (MethodCallExpression)copy.Body;
+            var methodCallLambdaArgument = (LambdaExpression)methodCall.Arguments[0];
+            var methodCallLambdaParameter = methodCallLambdaArgument.Parameters[0];
+
+            var parameterAssignment = Assign(
+                methodCallLambdaParameter,
+                Constant(123));
+
+            var block = Block(
+                new[] { methodCallLambdaParameter },
+                methodCall,
+                parameterAssignment);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+list.ForEach(items.Add);
+var idx = 123;";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldNotConvertAModifyingArgumentToAMethodGroup()
         {
             var copy = CreateLambda((List<int> list, ICollection<string> items)

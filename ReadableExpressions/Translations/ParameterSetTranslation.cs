@@ -9,7 +9,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using NetStandardPolyfills;
     using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -102,7 +101,7 @@
                 {
                     ITranslation translation;
 
-                    if (CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
+                    if (context.Analysis.CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
                     {
                         translation = new MethodGroupTranslation(
                             Lambda,
@@ -203,57 +202,6 @@
             }
 
             return context.GetTranslationFor(parameter);
-        }
-
-        private static bool CanBeConvertedToMethodGroup(
-            Expression argument,
-            out MethodCallExpression lambdaBodyMethodCall)
-        {
-            if (argument.NodeType != Lambda)
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            var argumentLambda = (LambdaExpression)argument;
-
-            if ((argumentLambda.Body.NodeType != Call) ||
-                (argumentLambda.ReturnType != argumentLambda.Body.Type))
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            lambdaBodyMethodCall = argumentLambda.Body as MethodCallExpression;
-
-            if (lambdaBodyMethodCall == null)
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            IList<Expression> lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments;
-
-            if (lambdaBodyMethodCall.Method.IsExtensionMethod())
-            {
-                lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
-            }
-
-            if (lambdaBodyMethodCallArguments.Count != argumentLambda.Parameters.Count)
-            {
-                return false;
-            }
-
-            var i = 0;
-
-            var allArgumentTypesMatch = argumentLambda
-                .Parameters
-                .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
-
-            return allArgumentTypesMatch;
-        }
-
-        private static bool CannotBeConverted(out MethodCallExpression lambdaBodyMethodCall)
-        {
-            lambdaBodyMethodCall = null;
-            return false;
         }
 
         private ITranslation GetParameterTranslation(

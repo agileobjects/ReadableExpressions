@@ -28,6 +28,7 @@
         private ExpressionScope _previousExpressionScope;
         private ICollection<LabelTarget> _namedLabelTargets;
         private List<MethodCallExpression> _chainedMethodCalls;
+        private List<Expression> _methodGroupLambdas;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
 
@@ -110,8 +111,8 @@
             => CurrentExpressionScope.ShouldDeclareInVariableList(variable);
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
-        /// parameter that should be declared inline.
+        /// Determines if the given <paramref name="parameter"/> is an output parameter that should
+        /// be declared inline.
         /// </summary>
         /// <param name="parameter">The ParameterExpression for which to make the determination.</param>
         /// <returns>
@@ -122,9 +123,8 @@
             => CurrentExpressionScope.ShouldDeclareInOutputParameterUse(parameter);
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
-        /// assignment where the assigned variable should be declared as part of the assignment
-        /// statement.
+        /// Determines if the given <paramref name="expression"/> represents an assignment where the
+        /// assigned variable should be declared as part of the assignment statement.
         /// </summary>
         /// <param name="expression">The Expression to evaluate.</param>
         /// <returns>
@@ -144,8 +144,8 @@
         }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
-        /// variable in a Catch block.
+        /// Determines if the given <paramref name="variable"/> is the Exception variable in a Catch
+        /// block.
         /// </summary>
         /// <param name="variable">The Expression for which to make the determination.</param>
         /// <returns>
@@ -159,7 +159,7 @@
         }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// Determines if the given <paramref name="labelTarget"/> is referenced by a
         /// <see cref="GotoExpression"/>.
         /// </summary>
         /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
@@ -171,8 +171,8 @@
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="cast"/> is nested inside
-        /// another cast UnaryExpression, as part of a set of nested type casts.
+        /// Determines if the given <paramref name="cast"/> is nested inside another cast
+        /// UnaryExpression, as part of a set of nested type casts.
         /// </summary>
         /// <param name="cast">
         /// The UnaryExpression describing the cast for which to make the determination.
@@ -184,8 +184,8 @@
         public bool IsNestedCast(UnaryExpression cast) => _nestedCasts?.Contains(cast) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
-        /// final statement in a block, and so should be rendered as a return statement.
+        /// Determines if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// and so should be rendered as a return statement.
         /// </summary>
         /// <param name="goto">The GotoExpression for which to make the determination.</param>
         /// <returns>
@@ -196,8 +196,8 @@
             => _gotoReturnGotos?.Contains(@goto) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
-        /// of multiple method calls.
+        /// Determines if the given <paramref name="methodCall"/> is part of a chain of multiple
+        /// method calls.
         /// </summary>
         /// <param name="methodCall">The Expression to evaluate.</param>
         /// <returns>
@@ -206,6 +206,28 @@
         /// </returns>
         public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
             => _chainedMethodCalls?.Contains(methodCall) == true;
+
+        /// <summary>
+        /// Determines if the given <paramref name="methodCallArgument"/> can be converted to a
+        /// method group, populating <paramref name="groupMethodCall"/> with the method group if so.
+        /// </summary>
+        /// <param name="methodCallArgument">The method argument for which to make the determination.</param>
+        /// <param name="groupMethodCall"></param>
+        /// <returns></returns>
+        public bool CanBeConvertedToMethodGroup(
+            Expression methodCallArgument,
+            out MethodCallExpression groupMethodCall)
+        {
+            if (_methodGroupLambdas?.Contains(methodCallArgument) != true)
+            {
+                groupMethodCall = null;
+                return false;
+            }
+
+            var methodGroupLambda = (LambdaExpression)methodCallArgument;
+            groupMethodCall = (MethodCallExpression)methodGroupLambda.Body;
+            return true;
+        }
 
         /// <summary>
         /// Returns the 1-based index of the given <paramref name="variable"/> in the set of
@@ -811,26 +833,39 @@
                 }
             }
 
-            if (_settings.DeclareOutParamsInline)
+            IList<Expression> arguments = methodCall.Arguments;
+            var argumentCount = arguments.Count;
+
+            for (var i = 0; i < argumentCount; ++i)
             {
-                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                var argument = arguments[i];
+
+                switch (argument.NodeType)
                 {
-                    var argument = methodCall.Arguments[i];
-
-                    if (argument.NodeType != Parameter)
-                    {
+                    case Parameter when _settings.DeclareOutParamsInline:
+                        var parameter = (ParameterExpression)argument;
+                        CurrentExpressionScope.DeclareInOutputParameterUse(parameter);
                         continue;
-                    }
 
-                    var parameter = (ParameterExpression)argument;
-                    CurrentExpressionScope.DeclareInOutputParameterUse(parameter);
+                    case Lambda when argument.CanBeConvertedToMethodGroup():
+                        (_methodGroupLambdas ??= new()).Add(argument);
+
+                        if (arguments == methodCall.Arguments)
+                        {
+                            var reducedArguments = new Expression[argumentCount];
+                            arguments.CopyTo(reducedArguments, 0, 0, argumentCount);
+                            arguments = reducedArguments;
+                        }
+
+                        arguments[i] = null;
+                        continue;
                 }
             }
 
             return VisitAndConvert(
                 methodCall,
                 methodCall.Object,
-                methodCall.Arguments,
+                arguments,
                (mc, s, args) => Expression.Call(s, mc.Method, args));
         }
 
@@ -1211,14 +1246,14 @@
         }
 
         /// <summary>
-        /// Visits the given <paramref name="subject"/> and <paramref name="expressions"/>, and uses
+        /// Visits the given <paramref name="subject"/> and <paramref name="arguments"/>, and uses
         /// the <paramref name="expressionFactory"/> to create a replacement
         /// <typeparamref name="TExpression"/> if appropriate.
         /// </summary>
         /// <typeparam name="TExpression">The type of Expression to visit.</typeparam>
         /// <param name="expression">The <typeparamref name="TExpression"/> to visit.</param>
         /// <param name="subject">The <paramref name="expression"/>'s subject.</param>
-        /// <param name="expressions">The <paramref name="expression"/>'s expressions.</param>
+        /// <param name="arguments">The <paramref name="expression"/>'s expressions.</param>
         /// <param name="expressionFactory">
         /// A Func with which to create a new <typeparamref name="TExpression"/> instance.
         /// </param>
@@ -1229,14 +1264,14 @@
         protected Expression VisitAndConvert<TExpression>(
             TExpression expression,
             Expression subject,
-            IList<Expression> expressions,
+            IList<Expression> arguments,
             Func<TExpression, Expression, IList<Expression>, Expression> expressionFactory)
             where TExpression : Expression
         {
             var updatedSubject = VisitAndConvert(subject);
-            var updatedArguments = VisitAndConvert(expressions);
+            var updatedArguments = VisitAndConvert(arguments);
 
-            if (updatedSubject == subject && updatedArguments == expressions)
+            if (updatedSubject == subject && updatedArguments == arguments)
             {
                 return expression;
             }
