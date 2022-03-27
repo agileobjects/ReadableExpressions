@@ -105,12 +105,11 @@
         [Fact]
         public void ShouldTranslateAStaticCallExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
-            var oneEqualsTwo = CreateLambda(() => ReferenceEquals(1, 2));
+            var oneEqualsTwo = CreateLambda(() => ReferenceEquals("1", "2"));
 
             var translated = oneEqualsTwo.ToReadableString();
 
-            translated.ShouldBe("() => object.ReferenceEquals(1, 2)");
+            translated.ShouldBe("() => object.ReferenceEquals(\"1\", \"2\")");
         }
 
         [Fact]

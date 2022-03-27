@@ -1,10 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.0</TargetFramework>
-    <RuntimeFrameworkVersion>1.1.13</RuntimeFrameworkVersion>
-    <LangVersion>8.0</LangVersion>
-    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore</AssemblyName>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore3</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
@@ -16,10 +14,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);TRACE;FEATURE_VALUE_TUPLE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="..\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
     <Compile Include="..\ClsCompliant.cs">
       <Link>Properties\ClsCompliant.cs</Link>
     </Compile>
@@ -36,10 +35,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
