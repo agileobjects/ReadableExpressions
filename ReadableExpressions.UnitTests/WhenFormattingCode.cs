@@ -488,6 +488,37 @@ catch
         }
 
         [Fact]
+        public void ShouldVarAssignAnEquivalentVariableUsedInANestedConstruct()
+        {
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+
+            var intVariable2 = Variable(typeof(int), "i");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+            var assignment2Block = Block(new[] { intVariable2 }, assignVariable2);
+
+            var assignment2Construct = IfThen(
+                GreaterThan(intVariable1, Constant(0)),
+                assignment2Block);
+
+            var assignmentsBlock = Block(
+                new[] { intVariable1 },
+                assignVariable1,
+                assignment2Construct);
+
+            var translated = assignmentsBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var i = 1;
+
+if (i > 0)
+{
+    i = 2;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
         public void ShouldVarAssignAVariableReusedInASiblingBlock()
         {
             var intVariable = Variable(typeof(int), "i");

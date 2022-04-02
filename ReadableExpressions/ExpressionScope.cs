@@ -103,10 +103,10 @@
                 return false;
             }
 
-            variableInfo.AssignmentParentConstruct = 
+            variableInfo.AssignmentParentConstruct =
                 GetCurrentConstructObjectOrNull();
 
-            DeclareInAssignment(variable, assignment);
+            DeclareInAssignment(variableInfo, assignment);
             return true;
         }
 
@@ -162,6 +162,13 @@
             Expression assignment)
         {
             var variableInfo = GetVariableInfo(variable);
+            DeclareInAssignment(variableInfo, assignment);
+        }
+
+        private static void DeclareInAssignment(
+            VariableInfo variableInfo,
+            Expression assignment)
+        {
             variableInfo.DeclarationType = DeclarationType.JoinedAssignment;
             variableInfo.Assignment = assignment;
         }
@@ -178,10 +185,10 @@
                    Parent?.IsForOrIsWithin(scopeObject) == true;
         }
 
-        public bool IsJoinedAssignmentVariable(ParameterExpression variable) 
+        public bool IsJoinedAssignmentVariable(ParameterExpression variable)
             => IsJoinedAssignment(GetVariableInfoOrNull(variable));
 
-        private static bool IsJoinedAssignment(VariableInfo variableInfo) 
+        private static bool IsJoinedAssignment(VariableInfo variableInfo)
             => variableInfo?.DeclarationType == DeclarationType.JoinedAssignment;
 
         public bool IsJoinedAssignment(BinaryExpression assignment)
@@ -258,7 +265,8 @@
             }
 
             variableInfos = declaringScope._variableInfos =
-                new Dictionary<ParameterExpression, VariableInfo>();
+                new Dictionary<ParameterExpression, VariableInfo>(
+                    VariableComparer.Instance);
 
         AddNewInfo:
             variableAdded = true;
@@ -269,16 +277,46 @@
 
         private ExpressionScope GetDeclaringScope(ParameterExpression variable)
         {
-            if (Parent == null ||
-               _block?.Variables.Contains(variable) == true)
-            {
-                return this;
-            }
+            var declaringScope = default(ExpressionScope);
+            var searchScope = this;
 
-            return Parent.GetDeclaringScope(variable);
+            ExpressionScope rootScope;
+
+            do
+            {
+                rootScope = searchScope;
+
+                if (searchScope.Declares(variable))
+                {
+                    declaringScope = searchScope;
+                }
+
+                searchScope = searchScope.Parent;
+            }
+            while (searchScope != null);
+
+            return declaringScope ?? rootScope;
         }
 
-        #region Helper Class
+        private bool Declares(ParameterExpression variable)
+        {
+            if (_block?.Variables.Any() != true)
+            {
+                return false;
+            }
+
+            foreach (var blockVariable in _block.Variables)
+            {
+                if (VariableComparer.Instance.Equals(blockVariable, variable))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #region Helper Classes
 
         private class VariableInfo
         {
@@ -294,6 +332,37 @@
             VariableList,
             InlineOutput,
             JoinedAssignment
+        }
+
+        private class VariableComparer : IEqualityComparer<ParameterExpression>
+        {
+            public static readonly IEqualityComparer<ParameterExpression> Instance =
+                new VariableComparer();
+
+            public bool Equals(ParameterExpression x, ParameterExpression y)
+            {
+                if (ReferenceEquals(x, y))
+                {
+                    return true;
+                }
+
+                return x!.Type == y!.Type && x.Name == y.Name;
+            }
+
+            public int GetHashCode(ParameterExpression param)
+            {
+                var hashCode = param.Type.GetHashCode();
+
+                if (param.Name == null)
+                {
+                    return hashCode;
+                }
+
+                unchecked
+                {
+                    return (hashCode * 397) ^ param.Name.GetHashCode();
+                }
+            }
         }
 
         #endregion

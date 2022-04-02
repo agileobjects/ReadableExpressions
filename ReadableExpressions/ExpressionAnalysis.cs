@@ -449,12 +449,7 @@
                 VisitAndConvert(binary.Conversion),
                 VisitAndConvert(binary.Right));
 
-            if (updatedBinary == binary)
-            {
-                return updatedBinary;
-            }
-
-            if (isJoinedAssignment)
+            if (isJoinedAssignment && updatedBinary != binary)
             {
                 CurrentExpressionScope.DeclareInAssignment(variable, updatedBinary);
             }
