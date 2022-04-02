@@ -7,6 +7,7 @@
     using System.Globalization;
     using System.Linq;
     using Common;
+    using Common.Vb;
     using NetStandardPolyfills;
 #if !NET35
     using System.Linq.Expressions;
@@ -375,6 +376,33 @@ string.Join(
             var translated = indexerAccess.ToReadableString();
 
             translated.ShouldBe("p[1]");
+        }
+
+#if FEATURE_PROPERTY_INDEX_DEFAULTS
+        [Fact]
+        public void ShouldTranslateANamedIndexedPropertyAccessExpression()
+        {
+            var instance = Variable(typeof(PublicNamedIndex<int>), "instance");
+            var indexProperty = instance.Type.GetPublicInstanceProperty("Value");
+            var indexAccess = Property(instance, indexProperty);
+
+            var translated = indexAccess.ToReadableString();
+
+            translated.ShouldBe("instance.get_Value(1, null)");
+        }
+#endif
+        [Fact]
+        public void ShouldTranslateANamedIndexedPropertyAccessExpressionWithArguments()
+        {
+            var instance = Variable(typeof(PublicNamedIndex<int>), "instance");
+            var indexProperty = instance.Type.GetPublicInstanceProperty("Value");
+            var index1 = Constant(123);
+            var index2 = Constant(456, typeof(int?));
+            var indexAccess = Property(instance, indexProperty, index1, index2);
+
+            var translated = indexAccess.ToReadableString();
+
+            translated.ShouldBe("instance.get_Value(123, 456)");
         }
 
         [Fact]

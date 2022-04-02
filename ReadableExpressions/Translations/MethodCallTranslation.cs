@@ -84,7 +84,7 @@
                 return new CodeBlockTranslation(parameters[0], context).WithNodeType(Call);
             }
 
-            if (IsIndexedPropertyAccess(methodCall))
+            if (IsDefaultIndexedPropertyAccess(methodCall))
             {
                 return new IndexAccessTranslation(methodCall, parameters, context);
             }
@@ -131,8 +131,11 @@
                    context.GetTranslationFor(methodCall.Method.DeclaringType);
         }
 
-        private static bool IsIndexedPropertyAccess(MethodCallExpression methodCall)
-            => methodCall.Method.GetProperty()?.GetIndexParameters().Any() == true;
+        private static bool IsDefaultIndexedPropertyAccess(MethodCallExpression methodCall)
+        {
+            return methodCall.Method.IsHideBySig &&
+                   methodCall.Method.GetProperty()?.GetIndexParameters().Any() == true;
+        }
 
         /// <summary>
         /// Creates an <see cref="ITranslation"/> for the given <paramref name="method"/>.

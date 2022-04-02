@@ -9,6 +9,7 @@
     using System.Reflection;
     using Extensions;
     using Formatting;
+    using NetStandardPolyfills;
 
     internal class MemberAccessTranslation : ITranslation
     {
@@ -52,6 +53,11 @@
                 translateSubject = true;
             }
 
+            if (IsIndexedPropertyAccess(memberAccess, context, out var translation))
+            {
+                return translation;
+            }
+
             var subjectTranslation = translateSubject
                 ? TranslateSubject(memberAccess, context)
                 : null;
@@ -63,8 +69,49 @@
                 context);
         }
 
+        private static bool IsIndexedPropertyAccess(
+            MemberExpression memberAccess,
+            ITranslationContext context,
+            out ITranslation translation)
+        {
+            if (memberAccess.Member is not PropertyInfo property)
+            {
+                translation = null;
+                return false;
+            }
+
+            var indexParameters = property.GetIndexParameters();
+
+            if (indexParameters.None())
+            {
+                translation = null;
+                return false;
+            }
+
+            var method = memberAccess.Type != typeof(void)
+                ? property.GetGetter() : property.GetSetter();
+
+            var arguments = indexParameters.ProjectToArray(p =>
+            {
+                if (p.DefaultValue != null)
+                {
+                    return Expression.Constant(p.DefaultValue, p.ParameterType);
+                }
+                
+                return (Expression)Expression.Default(p.ParameterType);
+            });
+
+            var indexedPropertyCall = Expression.Call(
+                memberAccess.Expression,
+                method,
+                arguments);
+
+            translation = MethodCallTranslation.For(indexedPropertyCall, context);
+            return true;
+        }
+
         private static ITranslation TranslateSubject(
-            MemberExpression memberAccess, 
+            MemberExpression memberAccess,
             ITranslationContext context)
         {
             return GetSubjectTranslationOrNull(

@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ReadableExpressions.UnitTests.Common.Vb\ReadableExpressions.UnitTests.Common.Vb.vbproj" />
     <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 

@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TRACE;FEATURE_EF;FEATURE_PARTIAL_TRUST;FEATURE_DYNAMIC;FEATURE_VALUE_TUPLE;FEATURE_HTML</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;FEATURE_EF;FEATURE_PARTIAL_TRUST;FEATURE_DYNAMIC;FEATURE_VALUE_TUPLE;FEATURE_HTML;FEATURE_PROPERTY_INDEX_DEFAULTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

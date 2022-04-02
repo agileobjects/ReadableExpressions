@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;FEATURE_PROPERTY_INDEX_DEFAULTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
