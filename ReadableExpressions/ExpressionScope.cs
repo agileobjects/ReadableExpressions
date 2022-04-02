@@ -16,7 +16,9 @@
 
     internal class ExpressionScope
     {
-        private BlockExpression _block;
+        private readonly DeclarationType _defaultDeclarationType;
+        private Expression _scopeExpression;
+        private ICollection<ParameterExpression> _variables;
         private Dictionary<ParameterExpression, VariableInfo> _variableInfos;
         private List<ExpressionScope> _childScopes;
 
@@ -25,15 +27,28 @@
             _childScopes = new List<ExpressionScope>();
         }
 
-        public ExpressionScope(BlockExpression block, ExpressionScope parent)
-            : this((object)block, parent)
+        public ExpressionScope(LambdaExpression lambda, ExpressionScope parent) :
+            this(parent)
         {
-            _block = block;
+            _defaultDeclarationType = DeclarationType.None;
+            Set(lambda);
         }
 
-        public ExpressionScope(object scopeObject, ExpressionScope parent)
+        public ExpressionScope(BlockExpression block, ExpressionScope parent) :
+            this(parent)
         {
-            ScopeObject = scopeObject;
+            _defaultDeclarationType = DeclarationType.VariableList;
+            Set(block);
+        }
+
+        public ExpressionScope(object scopeObject, ExpressionScope parent) :
+            this(parent)
+        {
+            Set(scopeObject);
+        }
+
+        private ExpressionScope(ExpressionScope parent)
+        {
             Parent = parent;
             (parent._childScopes ??= new List<ExpressionScope>()).Add(this);
         }
@@ -68,22 +83,41 @@
         }
 
         public BlockExpression GetCurrentBlockOrNull()
-            => _block ?? Parent?.GetCurrentBlockOrNull();
-
-        public void Set(BlockExpression block) => _block = block;
-
-        public object GetCurrentConstructObjectOrNull()
         {
-            return _block == null
-                ? ScopeObject
-                : Parent?.GetCurrentConstructObjectOrNull();
+            if (_scopeExpression?.NodeType == Block)
+            {
+                return (BlockExpression)_scopeExpression;
+            }
+
+            return Parent?.GetCurrentBlockOrNull();
+        }
+
+        public void Set(LambdaExpression lambda)
+        {
+            ScopeObject = lambda;
+            _scopeExpression = lambda;
+            _variables = lambda.Parameters;
+        }
+
+        public void Set(BlockExpression block)
+        {
+            ScopeObject = block;
+            _scopeExpression = block;
+            _variables = block.Variables;
         }
 
         public void Set(object scopeObject) => ScopeObject = scopeObject;
 
+        public object GetCurrentConstructObjectOrNull()
+        {
+            return _scopeExpression == null
+                ? ScopeObject
+                : Parent?.GetCurrentConstructObjectOrNull();
+        }
+
         public ExpressionScope FindScopeFor(BlockExpression block)
         {
-            if (_block == block)
+            if (_scopeExpression == block)
             {
                 return this;
             }
@@ -264,15 +298,20 @@
                 goto AddNewInfo;
             }
 
-            variableInfos = declaringScope._variableInfos =
-                new Dictionary<ParameterExpression, VariableInfo>(
-                    VariableComparer.Instance);
+            variableInfos = declaringScope.EnsureVariableInfos();
 
         AddNewInfo:
             variableAdded = true;
-            info = new();
+            info = new() { DeclarationType = declaringScope._defaultDeclarationType };
             variableInfos.Add(variable, info);
             return info;
+        }
+
+        private Dictionary<ParameterExpression, VariableInfo> EnsureVariableInfos()
+        {
+            return _variableInfos =
+                new Dictionary<ParameterExpression, VariableInfo>(
+                    VariableComparer.Instance);
         }
 
         private ExpressionScope GetDeclaringScope(ParameterExpression variable)
@@ -300,14 +339,14 @@
 
         private bool Declares(ParameterExpression variable)
         {
-            if (_block?.Variables.Any() != true)
+            if (_variables?.Any() != true)
             {
                 return false;
             }
 
-            foreach (var blockVariable in _block.Variables)
+            foreach (var scopeVariable in _variables)
             {
-                if (VariableComparer.Instance.Equals(blockVariable, variable))
+                if (VariableComparer.Instance.Equals(variable, scopeVariable))
                 {
                     return true;
                 }
@@ -331,7 +370,8 @@
         {
             VariableList,
             InlineOutput,
-            JoinedAssignment
+            JoinedAssignment,
+            None
         }
 
         private class VariableComparer : IEqualityComparer<ParameterExpression>

@@ -356,7 +356,7 @@ else
         }
 
         [Fact]
-        public void ShouldNotVarAssignAVariableAssignedInATryButUsedInACatch()
+        public void ShouldNotVarAssignVariablesAssignedInATryAndUsedInACatch()
         {
             var exceptionFactory = CreateLambda((int number) => new Exception(number.ToString()));
             var intVariable = exceptionFactory.Parameters.First();
@@ -385,7 +385,7 @@ catch
         }
 
         [Fact]
-        public void ShouldVarAssignAVariableUsedInNestedConstructs()
+        public void ShouldVarAssignVariablesUsedInNestedConstructs()
         {
             var returnLabel = Label(typeof(long), "Return");
             var streamVariable = Variable(typeof(Stream), "stream");
@@ -488,7 +488,58 @@ catch
         }
 
         [Fact]
-        public void ShouldVarAssignAnEquivalentVariableUsedInANestedConstruct()
+        public void ShouldVarAssignVariablesReusedInSiblingConstructs()
+        {
+            var intVariable = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable, Constant(1));
+            var assignmentBlock = Block(new[] { intVariable }, assignVariable1);
+
+            var assignVariable2 = Assign(intVariable, Constant(2));
+            var assignment2Block = Block(new[] { intVariable }, assignVariable2);
+
+            var assign1Or2 = IfThenElse(
+                Constant(true),
+                assignmentBlock,
+                assignment2Block);
+
+            var translated = assign1Or2.ToReadableString();
+
+            const string EXPECTED = @"
+if (true)
+{
+    var i = 1;
+}
+else
+{
+    var i = 2;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotVarAssignEquivalentVariablesUsedInSiblingExpressions()
+        {
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+
+            var intVariable2 = Variable(typeof(int), "i");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+
+            var assignmentsBlock = Block(
+                new[] { intVariable1, intVariable2 },
+                assignVariable1,
+                assignVariable2);
+
+            var translated = assignmentsBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var i = 1;
+i = 2;";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotVarAssignEquivalentVariablesUsedInNestedConstructs()
         {
             var intVariable1 = Variable(typeof(int), "i");
             var assignVariable1 = Assign(intVariable1, Constant(1));
@@ -519,31 +570,19 @@ if (i > 0)
         }
 
         [Fact]
-        public void ShouldVarAssignAVariableReusedInASiblingBlock()
+        public void ShouldNotVarAssignEquivalentLambdaParametersAssignedInTheBody()
         {
-            var intVariable = Variable(typeof(int), "i");
-            var assignVariable1 = Assign(intVariable, Constant(1));
-            var assignmentBlock = Block(new[] { intVariable }, assignVariable1);
+            var intParameter = Parameter(typeof(int), "i");
 
-            var assignVariable2 = Assign(intVariable, Constant(2));
-            var assignment2Block = Block(new[] { intVariable }, assignVariable2);
+            var intVariable = Parameter(typeof(int), "i");
+            var assignVariable = Assign(intVariable, Constant(123));
+            var assignmentBlock = Block(new[] { intVariable }, assignVariable);
 
-            var assign1Or2 = IfThenElse(
-                Constant(true),
-                assignmentBlock,
-                assignment2Block);
+            var lambda = Lambda<Action<int>>(assignmentBlock, intParameter);
 
-            var translated = assign1Or2.ToReadableString();
+            var translated = lambda.ToReadableString();
 
-            const string EXPECTED = @"
-if (true)
-{
-    var i = 1;
-}
-else
-{
-    var i = 2;
-}";
+            const string EXPECTED = "i => i = 123";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 

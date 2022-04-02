@@ -542,9 +542,13 @@
             // variable usage in child scopes:
             var expressions = VisitAndConvert(block.Expressions);
             var variables = VisitAndConvert(block.Variables, EvaluateJoinedAssignment);
-            block = block.Update(variables, expressions);
 
-            _currentExpressionScope.Set(block);
+            if (expressions != block.Expressions || variables != block.Variables)
+            {
+                block = block.Update(variables, expressions);
+                _currentExpressionScope.Set(block);
+            }
+
             ExitScope();
             return block;
         }
@@ -738,15 +742,19 @@
                 return null;
             }
 
+            PushScope(lambda);
+
             var parameters = VisitAndConvert(lambda.Parameters);
             var body = VisitAndConvert(lambda.Body);
 
-            if (parameters == lambda.Parameters && body == lambda.Body)
+            if (parameters != lambda.Parameters || body != lambda.Body)
             {
-                return lambda;
+                lambda = lambda.Update(body, parameters);
+                _currentExpressionScope.Set(lambda);
             }
 
-            return lambda.Update(body, parameters);
+            ExitScope();
+            return lambda;
         }
 
         /// <summary>
@@ -1319,8 +1327,14 @@
         /// <param name="block">The BlockExpression the scope for which to access.</param>
         public void EnterScope(BlockExpression block)
         {
+            if (_currentExpressionScope == null)
+            {
+                _previousExpressionScope = null;
+                return;
+            }
+
             _previousExpressionScope = _currentExpressionScope;
-            _currentExpressionScope = _currentExpressionScope?.FindScopeFor(block);
+            _currentExpressionScope = _currentExpressionScope.FindScopeFor(block);
         }
 
         /// <summary>
@@ -1328,6 +1342,9 @@
         /// </summary>
         public void ExitScope()
             => _currentExpressionScope = _previousExpressionScope ?? _currentExpressionScope?.Parent;
+
+        private void PushScope(LambdaExpression lambda)
+            => _currentExpressionScope = new ExpressionScope(lambda, CurrentExpressionScope);
 
         private void PushScope(BlockExpression block)
             => _currentExpressionScope = new ExpressionScope(block, CurrentExpressionScope);
