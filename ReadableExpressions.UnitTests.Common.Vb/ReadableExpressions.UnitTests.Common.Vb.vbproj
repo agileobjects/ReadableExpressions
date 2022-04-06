@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net35;net461;netstandard1.3</TargetFrameworks>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.Common.Vb</AssemblyName>
+    <RootNamespace>AgileObjects.ReadableExpressions.UnitTests.Common.Vb</RootNamespace>
+  </PropertyGroup>
+
+</Project>

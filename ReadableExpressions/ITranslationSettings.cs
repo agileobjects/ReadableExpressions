@@ -30,6 +30,11 @@
         ITranslationSettings DeclareOutputParametersInline { get; }
 
         /// <summary>
+        /// Use discards (_) in place of unused parameters.
+        /// </summary>
+        ITranslationSettings DiscardUnusedParameters { get; }
+
+        /// <summary>
         /// Show the names of implicitly-typed array types.
         /// </summary>
         ITranslationSettings ShowImplicitArrayTypes { get; }

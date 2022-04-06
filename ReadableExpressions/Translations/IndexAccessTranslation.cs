@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using NetStandardPolyfills;
 #if NET35
     using Microsoft.Scripting.Ast;
 #else
@@ -23,7 +24,7 @@
             Type = indexAccessCall.Type;
         }
 
-        public IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
+        private IndexAccessTranslation(IndexExpression indexAccess, ITranslationContext context)
             : this(indexAccess.Object, indexAccess.Arguments, context)
         {
             NodeType = ExpressionType.Index;
@@ -55,6 +56,34 @@
             FormattingSize = subject.FormattingSize + parameters.FormattingSize;
         }
 
+        #region Factory Methods
+
+        public static ITranslation For(IndexExpression indexAccess, ITranslationContext context)
+        {
+            var indexer = indexAccess.Indexer;
+
+            if (indexer == null)
+            {
+                return new IndexAccessTranslation(indexAccess, context);
+            }
+
+            var indexAccessor = indexer.GetGetter() ?? indexer.GetSetter();
+
+            if (indexAccessor.IsHideBySig)
+            {
+                return new IndexAccessTranslation(indexAccess, context);
+            }
+
+            var indexCall = Expression.Call(
+                indexAccess.Object,
+                indexAccessor,
+                indexAccess.Arguments);
+
+            return MethodCallTranslation.For(indexCall, context);
+        }
+
+        #endregion
+
         public ExpressionType NodeType { get; }
 
         public Type Type { get; }
@@ -63,7 +92,7 @@
 
         public int FormattingSize { get; }
 
-        public int GetIndentSize() 
+        public int GetIndentSize()
             => _subject.GetIndentSize() + _parameters.GetIndentSize();
 
         public int GetLineCount()

@@ -8,6 +8,7 @@
     using System.Linq.Expressions;
 #endif
     using System.Reflection;
+    using NetStandardPolyfills;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -129,6 +130,47 @@
 
                 return true;
             }
+        }
+
+        public static bool CanBeConvertedToMethodGroup(this Expression argument)
+        {
+            if (argument.NodeType != Lambda)
+            {
+                return false;
+            }
+
+            var argumentLambda = (LambdaExpression)argument;
+
+            if ((argumentLambda.Body.NodeType != Call) ||
+                (argumentLambda.ReturnType != argumentLambda.Body.Type))
+            {
+                return false;
+            }
+
+            if (argumentLambda.Body is not MethodCallExpression methodCall)
+            {
+                return false;
+            }
+
+            IList<Expression> lambdaBodyMethodCallArguments = methodCall.Arguments;
+
+            if (methodCall.Method.IsExtensionMethod())
+            {
+                lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
+            }
+
+            if (lambdaBodyMethodCallArguments.Count != argumentLambda.Parameters.Count)
+            {
+                return false;
+            }
+
+            var i = 0;
+
+            var allArgumentTypesMatch = argumentLambda
+                .Parameters
+                .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
+
+            return allArgumentTypesMatch;
         }
     }
 }

@@ -34,8 +34,7 @@
         [Fact]
         public void ShouldTranslateAStaticCallExpression()
         {
-            // ReSharper disable once ReferenceEqualsWithValueType
-            var oneEqualsTwo = CreateLambda(() => ReferenceEquals(1, 2));
+            var oneEqualsTwo = CreateLambda(() => ReferenceEquals("1", "2"));
             var referenceEqualsCall = (MethodCallExpression)oneEqualsTwo.Body;
             var context = new TestTranslationContext(referenceEqualsCall);
             var referenceEqualsMethod = new ClrMethodWrapper(referenceEqualsCall.Method, context);
@@ -45,7 +44,7 @@
 
             var translated = new TestTranslationWriter(translation).GetContent();
 
-            translated.ShouldBe("object.ReferenceEquals(1, 2)");
+            translated.ShouldBe("object.ReferenceEquals(\"1\", \"2\")");
         }
 
         [Fact]

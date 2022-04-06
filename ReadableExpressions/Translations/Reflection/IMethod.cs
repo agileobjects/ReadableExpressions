@@ -5,7 +5,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
     /// <summary>
     /// Implementing classes will provide metadata about a method.
     /// </summary>
-    public interface IMethod : IMethodBase
+    public interface IMethod : IMethodMemberBase
     {
         /// <summary>
         /// Gets a value indicating whether the <see cref="IMethod"/> has generic Type parameters.

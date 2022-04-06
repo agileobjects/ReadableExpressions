@@ -356,7 +356,7 @@ else
         }
 
         [Fact]
-        public void ShouldNotVarAssignAVariableAssignedInATryButUsedInACatch()
+        public void ShouldNotVarAssignVariablesAssignedInATryAndUsedInACatch()
         {
             var exceptionFactory = CreateLambda((int number) => new Exception(number.ToString()));
             var intVariable = exceptionFactory.Parameters.First();
@@ -385,7 +385,7 @@ catch
         }
 
         [Fact]
-        public void ShouldVarAssignAVariableUsedInNestedConstructs()
+        public void ShouldVarAssignVariablesUsedInNestedConstructs()
         {
             var returnLabel = Label(typeof(long), "Return");
             var streamVariable = Variable(typeof(Stream), "stream");
@@ -488,7 +488,7 @@ catch
         }
 
         [Fact]
-        public void ShouldVarAssignAVariableReusedInASiblingBlock()
+        public void ShouldVarAssignVariablesReusedInSiblingConstructs()
         {
             var intVariable = Variable(typeof(int), "i");
             var assignVariable1 = Assign(intVariable, Constant(1));
@@ -513,6 +513,76 @@ else
 {
     var i = 2;
 }";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotVarAssignEquivalentVariablesUsedInSiblingExpressions()
+        {
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+
+            var intVariable2 = Variable(typeof(int), "i");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+
+            var assignmentsBlock = Block(
+                new[] { intVariable1, intVariable2 },
+                assignVariable1,
+                assignVariable2);
+
+            var translated = assignmentsBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var i = 1;
+i = 2;";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotVarAssignEquivalentVariablesUsedInNestedConstructs()
+        {
+            var intVariable1 = Variable(typeof(int), "i");
+            var assignVariable1 = Assign(intVariable1, Constant(1));
+
+            var intVariable2 = Variable(typeof(int), "i");
+            var assignVariable2 = Assign(intVariable2, Constant(2));
+            var assignment2Block = Block(new[] { intVariable2 }, assignVariable2);
+
+            var assignment2Construct = IfThen(
+                GreaterThan(intVariable1, Constant(0)),
+                assignment2Block);
+
+            var assignmentsBlock = Block(
+                new[] { intVariable1 },
+                assignVariable1,
+                assignment2Construct);
+
+            var translated = assignmentsBlock.ToReadableString();
+
+            const string EXPECTED = @"
+var i = 1;
+
+if (i > 0)
+{
+    i = 2;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldNotVarAssignEquivalentLambdaParametersAssignedInTheBody()
+        {
+            var intParameter = Parameter(typeof(int), "i");
+
+            var intVariable = Parameter(typeof(int), "i");
+            var assignVariable = Assign(intVariable, Constant(123));
+            var assignmentBlock = Block(new[] { intVariable }, assignVariable);
+
+            var lambda = Lambda<Action<int>>(assignmentBlock, intParameter);
+
+            var translated = lambda.ToReadableString();
+
+            const string EXPECTED = "i => i = 123";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
@@ -785,6 +855,34 @@ HelperClass.GiveMeALambda((string1, string2) =>
             var translated = listContainsEvaluator.Body.ToReadableString();
 
             translated.ShouldBe("evaluatorInvoker.Invoke(list.Contains, i)");
+        }
+
+        [Fact]
+        public void ShouldNotEvaluateMethodGroupArgumentParameters()
+        {
+            var copy = CreateLambda((List<int> list, ICollection<int> items) =>
+                list.ForEach(idx => items.Add(idx)));
+
+            var methodCall = (MethodCallExpression)copy.Body;
+            var methodCallLambdaArgument = (LambdaExpression)methodCall.Arguments[0];
+            var methodCallLambdaParameter = methodCallLambdaArgument.Parameters[0];
+
+            var parameterAssignment = Assign(
+                methodCallLambdaParameter,
+                Constant(123));
+
+            var block = Block(
+                new[] { methodCallLambdaParameter },
+                methodCall,
+                parameterAssignment);
+
+            var translated = block.ToReadableString();
+
+            const string EXPECTED = @"
+list.ForEach(items.Add);
+var idx = 123;";
+
+            translated.ShouldBe(EXPECTED.TrimStart());
         }
 
         [Fact]

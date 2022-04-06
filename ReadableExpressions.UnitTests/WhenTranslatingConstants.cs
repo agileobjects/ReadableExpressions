@@ -79,7 +79,36 @@
 12
 """"1""""2
 """);
+        }
 
+        [Fact]
+        public void ShouldTranslateAStringWithACarriageReturnNewline()
+        {
+            var stringConstant = Constant("hello\r\nthere!", typeof(string));
+            var translated = stringConstant.ToReadableString();
+
+            translated.ShouldBe(@"@""hello
+there!""");
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/107
+        [Fact]
+        public void ShouldTranslateAStringWithJustACarriageReturnline()
+        {
+            var stringConstant = Constant("hello\rthere!", typeof(string));
+            var translated = stringConstant.ToReadableString();
+
+            translated.ShouldBe(@"@""hello" + '\r' + @"there!""");
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/107
+        [Fact]
+        public void ShouldTranslateAStringWithJustANewline()
+        {
+            var stringConstant = Constant("hello\nthere!", typeof(string));
+            var translated = stringConstant.ToReadableString();
+
+            translated.ShouldBe(@"@""hello" + '\n' + @"there!""");
         }
 
         [Fact]

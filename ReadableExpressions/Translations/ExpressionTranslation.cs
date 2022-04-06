@@ -167,7 +167,7 @@
                     return GotoTranslation.For((GotoExpression)expression, this);
 
                 case Index:
-                    return new IndexAccessTranslation((IndexExpression)expression, this);
+                    return IndexAccessTranslation.For((IndexExpression)expression, this);
 
                 case Invoke:
                     return MethodCallTranslation.For((InvocationExpression)expression, this);

@@ -37,6 +37,15 @@
         }
 
         [Fact]
+        public void ShouldTranslateANullExpressionString()
+        {
+            var nullToString = new NullToStringExpression();
+            var translated = nullToString.ToReadableString();
+
+            translated.ShouldBeNull();
+        }
+
+        [Fact]
         public void ShouldTranslateACustomTranslationExpression()
         {
             var custom = new CustomTranslationExpression();
@@ -63,7 +72,7 @@
             analysis.EnterScope(variable1Block);
             analysis.ShouldBeDeclaredInVariableList(intVariable1).ShouldBeFalse();
             analysis.ExitScope();
-            
+
             analysis.EnterScope(variable2Block);
             analysis.ShouldBeDeclaredInVariableList(intVariable2).ShouldBeFalse();
             analysis.ExitScope();
@@ -109,6 +118,21 @@
             {
                 return "You can't know me!";
             }
+        }
+
+        internal class NullToStringExpression : Expression
+        {
+            public override ExpressionType NodeType => ExpressionType.Extension;
+
+            public override Type Type => typeof(string);
+
+            protected override Expression VisitChildren(ExpressionVisitor visitor)
+            {
+                // See ExtensionExpression for why this is necessary:
+                return this;
+            }
+
+            public override string ToString() => null!;
         }
 
         internal class CustomTranslationExpression : Expression, ICustomTranslationExpression

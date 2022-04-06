@@ -9,7 +9,6 @@
     using System.Linq.Expressions;
 #endif
     using Extensions;
-    using NetStandardPolyfills;
     using Reflection;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -57,7 +56,7 @@
         private ParameterSetTranslation(
             IMethodBase method,
             IEnumerable<Expression> parameters,
-            bool areLambdaParameters,
+            bool showParameterTypeNames,
             int count,
             ITranslationContext context)
         {
@@ -97,16 +96,12 @@
             var translationSize = 0;
             var formattingSize = 0;
 
-            var showParameterTypeNames =
-                areLambdaParameters &&
-                context.Settings.ShowLambdaParamTypes;
-
             _parameterTranslations = parameters
                 .Project((p, index) =>
                 {
                     ITranslation translation;
 
-                    if (CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
+                    if (context.Analysis.CanBeConvertedToMethodGroup(p, out var lambdaBodyMethodCall))
                     {
                         translation = new MethodGroupTranslation(
                             Lambda,
@@ -130,10 +125,11 @@
 
                         // ReSharper disable once PossibleNullReferenceException
                         translation = GetParameterTranslation(p, methodParameters[parameterIndex], context);
-                        goto FinaliseParameterTranslation;
                     }
-
-                    translation = context.GetTranslationFor(p);
+                    else
+                    {
+                        translation = context.GetTranslationFor(p);
+                    }
 
                     if (showParameterTypeNames &&
                        (translation is IParameterTranslation parameterTranslation))
@@ -195,6 +191,13 @@
             IParameter info,
             ITranslationContext context)
         {
+            if (context.Analysis.ShouldBeDiscarded(parameter))
+            {
+                return info.IsOut
+                    ? new DiscardedOutParameterTranslation(parameter, context)
+                    : new DiscardedParameterTranslation(parameter, context);
+            }
+
             if (info.IsOut)
             {
                 return new OutParameterTranslation(parameter, context);
@@ -206,57 +209,6 @@
             }
 
             return context.GetTranslationFor(parameter);
-        }
-
-        private static bool CanBeConvertedToMethodGroup(
-            Expression argument,
-            out MethodCallExpression lambdaBodyMethodCall)
-        {
-            if (argument.NodeType != Lambda)
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            var argumentLambda = (LambdaExpression)argument;
-
-            if ((argumentLambda.Body.NodeType != Call) ||
-                (argumentLambda.ReturnType != argumentLambda.Body.Type))
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            lambdaBodyMethodCall = argumentLambda.Body as MethodCallExpression;
-
-            if (lambdaBodyMethodCall == null)
-            {
-                return CannotBeConverted(out lambdaBodyMethodCall);
-            }
-
-            IList<Expression> lambdaBodyMethodCallArguments = lambdaBodyMethodCall.Arguments;
-
-            if (lambdaBodyMethodCall.Method.IsExtensionMethod())
-            {
-                lambdaBodyMethodCallArguments = lambdaBodyMethodCallArguments.Skip(1).ToArray();
-            }
-
-            if (lambdaBodyMethodCallArguments.Count != argumentLambda.Parameters.Count)
-            {
-                return false;
-            }
-
-            var i = 0;
-
-            var allArgumentTypesMatch = argumentLambda
-                .Parameters
-                .All(lambdaParameter => lambdaBodyMethodCallArguments[i++] == lambdaParameter);
-
-            return allArgumentTypesMatch;
-        }
-
-        private static bool CannotBeConverted(out MethodCallExpression lambdaBodyMethodCall)
-        {
-            lambdaBodyMethodCall = null;
-            return false;
         }
 
         private ITranslation GetParameterTranslation(
@@ -310,10 +262,16 @@
             LambdaExpression lambda,
             ITranslationContext context)
         {
+            var lambdaMethod = new LambdaExpressionMethodAdapter(lambda);
+
+            var showParameterTypeNames =
+                context.Settings.ShowLambdaParamTypes ||
+                lambdaMethod.GetParameters().Any(p => p.IsOut || p.IsRef);
+
             return For(
-                method: null,
+                lambdaMethod,
                 lambda.Parameters,
-                areLambdaParameters: true,
+                showParameterTypeNames,
                 context);
         }
 
@@ -364,13 +322,13 @@
             ITranslationContext context)
             where TParameterExpression : Expression
         {
-            return For(method, parameters, areLambdaParameters: false, context);
+            return For(method, parameters, showParameterTypeNames: false, context);
         }
 
         private static ParameterSetTranslation For<TParameterExpression>(
             IMethodBase method,
             ICollection<TParameterExpression> parameters,
-            bool areLambdaParameters,
+            bool showParameterTypeNames,
             ITranslationContext context)
             where TParameterExpression : Expression
         {
@@ -381,7 +339,7 @@
 #else
                 parameters,
 #endif
-                areLambdaParameters,
+                showParameterTypeNames,
                 parameters.Count,
                 context);
         }
@@ -648,120 +606,248 @@
             Never
         }
 
-        private class OutParameterTranslation : ITranslation
+        private abstract class KeywordParameterTranslationBase : IParameterTranslation
         {
-            private const string _out = "out ";
-            private const string _var = "var ";
+            private readonly string _keyword;
             private readonly ITranslation _parameterTranslation;
-            private readonly ITranslation _typeNameTranslation;
-            private readonly bool _declareParameterInline;
+            private readonly IParameterTranslation _wrappedParameterTranslation;
+            private readonly Func<Type, ITranslation> _typeNameTranslationFactory;
+            private int _translationSize;
+            private int _formattingSize;
+            private ITranslation _typeNameTranslation;
 
-            public OutParameterTranslation(Expression parameter, ITranslationContext context)
+            protected KeywordParameterTranslationBase(
+                string keyword,
+                Expression parameter,
+                ITranslationContext context)
             {
+                _keyword = keyword;
                 _parameterTranslation = context.GetTranslationFor(parameter);
-                TranslationSize = _parameterTranslation.TranslationSize + _out.Length;
-                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
-
-                if ((parameter.NodeType == Parameter) &&
-                     context.Settings.DeclareOutParamsInline &&
-                     context.Analysis.ShouldBeDeclaredInline((ParameterExpression)parameter))
-                {
-                    _declareParameterInline = true;
-
-                    if (context.Settings.UseImplicitTypeNames)
-                    {
-                        TranslationSize += _var.Length;
-                        FormattingSize += context.GetKeywordFormattingSize();
-                        return;
-                    }
-
-                    _typeNameTranslation = context.GetTranslationFor(parameter.Type);
-                    TranslationSize += _typeNameTranslation.TranslationSize + 1;
-                    FormattingSize += _typeNameTranslation.FormattingSize;
-                }
+                _wrappedParameterTranslation = _parameterTranslation as IParameterTranslation;
+                _typeNameTranslationFactory = context.GetTranslationFor;
+                _translationSize = _parameterTranslation.TranslationSize + keyword.Length;
+                _formattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
             }
 
             public ExpressionType NodeType => _parameterTranslation.NodeType;
 
-            public Type Type => _parameterTranslation.Type;
+            public virtual Type Type => _parameterTranslation.Type;
 
-            public int TranslationSize { get; }
+            public virtual string Name => _wrappedParameterTranslation?.Name;
 
-            public int FormattingSize { get; }
+            public virtual int TranslationSize => _translationSize;
 
-            public int GetIndentSize()
+            public virtual int FormattingSize => _formattingSize;
+
+            protected ITranslation TypeNameTranslation
             {
-                var indentSize = _parameterTranslation.GetIndentSize();
-
-                if (_typeNameTranslation != null)
-                {
-                    indentSize += _typeNameTranslation.GetIndentSize();
-                }
-
-                return indentSize;
+                get => _typeNameTranslation ??= _typeNameTranslationFactory.Invoke(Type);
+                private set => _typeNameTranslation = value;
             }
 
-            public int GetLineCount()
-            {
-                var parameterLineCount = _parameterTranslation.GetLineCount();
+            protected bool WriteTypeName { get; private set; }
 
-                if (_declareParameterInline && _typeNameTranslation != null)
-                {
-                    parameterLineCount += _typeNameTranslation.GetLineCount();
-                }
+            public virtual int GetIndentSize() => _parameterTranslation.GetIndentSize();
 
-                return parameterLineCount;
-            }
+            public virtual int GetLineCount() => _parameterTranslation.GetLineCount();
 
             public void WriteTo(TranslationWriter writer)
             {
-                writer.WriteKeywordToTranslation(_out);
+                writer.WriteKeywordToTranslation(_keyword);
+                WriteTo(writer, _parameterTranslation);
+            }
 
-                if (_declareParameterInline)
+            protected virtual void WriteTo(
+                TranslationWriter writer,
+                ITranslation parameterTranslation)
+            {
+            }
+
+            public ITranslation WithTypeNames(ITranslationContext context)
+            {
+                if (_wrappedParameterTranslation == null)
                 {
-                    if (_typeNameTranslation != null)
-                    {
-                        _typeNameTranslation.WriteTo(writer);
-                        writer.WriteSpaceToTranslation();
-                    }
-                    else
-                    {
-                        writer.WriteKeywordToTranslation(_var);
-                    }
+                    return null;
                 }
 
-                _parameterTranslation.WriteTo(writer);
+                WriteTypeName = true;
+                SubtractParameterTranslationSizes();
+
+                TypeNameTranslation = _wrappedParameterTranslation
+                    .WithTypeNames(context);
+
+                AddParameterTranslationSizes();
+                return TypeNameTranslation;
+            }
+
+            public void WithoutTypeNames(ITranslationContext context)
+            {
+                if (_wrappedParameterTranslation == null)
+                {
+                    return;
+                }
+
+                WriteTypeName = false;
+                SubtractParameterTranslationSizes();
+                _wrappedParameterTranslation.WithoutTypeNames(context);
+                AddParameterTranslationSizes();
+            }
+
+            private void SubtractParameterTranslationSizes()
+            {
+                _translationSize -= _wrappedParameterTranslation.TranslationSize;
+                _formattingSize -= _wrappedParameterTranslation.FormattingSize;
+            }
+
+            private void AddParameterTranslationSizes()
+            {
+                _translationSize += _wrappedParameterTranslation.TranslationSize;
+                _formattingSize += _wrappedParameterTranslation.FormattingSize;
             }
         }
 
-        private class RefParameterTranslation : ITranslation
+        private class DiscardedParameterTranslation : KeywordParameterTranslationBase
         {
-            private const string _ref = "ref ";
-            private readonly ITranslation _parameterTranslation;
+            private const string _discard = "_";
 
-            public RefParameterTranslation(Expression parameter, ITranslationContext context)
+            public DiscardedParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) :
+                this(keyword: string.Empty, parameter, context)
             {
-                _parameterTranslation = context.GetTranslationFor(parameter);
-                TranslationSize = _parameterTranslation.TranslationSize + _ref.Length;
-                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
             }
 
-            public ExpressionType NodeType => _parameterTranslation.NodeType;
-
-            public Type Type => _parameterTranslation.Type;
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public int GetIndentSize() => _parameterTranslation.GetIndentSize();
-
-            public int GetLineCount() => _parameterTranslation.GetLineCount();
-
-            public void WriteTo(TranslationWriter writer)
+            protected DiscardedParameterTranslation(
+                string keyword,
+                Expression parameter,
+                ITranslationContext context) :
+                base(keyword, parameter, context)
             {
-                writer.WriteKeywordToTranslation(_ref);
-                _parameterTranslation.WriteTo(writer);
+            }
+
+            public override Type Type => typeof(void);
+
+            public override string Name => _discard;
+
+            public override int TranslationSize
+                => base.TranslationSize + _discard.Length;
+
+            protected override void WriteTo(
+                TranslationWriter writer,
+                ITranslation parameterTranslation)
+            {
+                if (WriteTypeName)
+                {
+                    TypeNameTranslation.WriteTo(writer);
+                    writer.WriteSpaceToTranslation();
+                }
+
+                writer.WriteToTranslation(_discard);
+            }
+        }
+
+        private class DiscardedOutParameterTranslation : DiscardedParameterTranslation
+        {
+            private const string _out = "out ";
+            private readonly int _formattingSize;
+
+            public DiscardedOutParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) : base(_out, parameter, context)
+            {
+                _formattingSize = context.GetKeywordFormattingSize();
+            }
+
+            public override int TranslationSize
+                => base.TranslationSize + _out.Length;
+
+            public override int FormattingSize
+                => base.FormattingSize + _formattingSize;
+        }
+
+        private class OutParameterTranslation : KeywordParameterTranslationBase
+        {
+            private const string _out = "out ";
+            private const string _var = "var ";
+            private readonly bool _declareParameterInline;
+            private readonly bool _useImplicitTypeName;
+            private readonly int _translationSize;
+            private readonly int _formattingSize;
+
+            public OutParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) : base(_out, parameter, context)
+            {
+                if (DoNotDeclareInline(parameter, context))
+                {
+                    return;
+                }
+
+                _declareParameterInline = true;
+
+                if (!context.Settings.UseImplicitTypeNames)
+                {
+                    return;
+                }
+
+                _useImplicitTypeName = true;
+                _translationSize += _var.Length;
+                _formattingSize += context.GetKeywordFormattingSize();
+            }
+
+            #region Setup
+
+            private static bool DoNotDeclareInline(
+                Expression parameter,
+                ITranslationContext context)
+            {
+                return !context.Analysis
+                    .ShouldBeDeclaredInOutputParameterUse(parameter);
+            }
+
+            #endregion
+
+            public override int TranslationSize
+                => base.TranslationSize + _translationSize;
+
+            public override int FormattingSize
+                => base.FormattingSize + _formattingSize;
+
+            protected override void WriteTo(
+                TranslationWriter writer,
+                ITranslation parameterTranslation)
+            {
+                if (_declareParameterInline)
+                {
+                    if (_useImplicitTypeName)
+                    {
+                        writer.WriteKeywordToTranslation(_var);
+                    }
+                    else
+                    {
+                        TypeNameTranslation.WriteTo(writer);
+                        writer.WriteSpaceToTranslation();
+                    }
+                }
+
+                parameterTranslation.WriteTo(writer);
+            }
+        }
+
+        private class RefParameterTranslation : KeywordParameterTranslationBase
+        {
+            private const string _ref = "ref ";
+
+            public RefParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) : base(_ref, parameter, context)
+            {
+            }
+
+            protected override void WriteTo(TranslationWriter writer,
+                ITranslation parameterTranslation)
+            {
+                parameterTranslation.WriteTo(writer);
             }
         }
     }

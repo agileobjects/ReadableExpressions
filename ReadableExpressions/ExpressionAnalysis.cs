@@ -22,17 +22,15 @@
     public class ExpressionAnalysis
     {
         private readonly TranslationSettings _settings;
-        private Dictionary<BinaryExpression, object> _constructsByAssignment;
-        private ICollection<BinaryExpression> _joinedAssignments;
         private IList<BinaryExpression> _assignedAssignments;
         private ICollection<Expression> _nestedCasts;
-        private Scope _currentScope;
-        private Scope _previousScope;
+        private ExpressionScope _currentExpressionScope;
+        private ExpressionScope _previousExpressionScope;
         private ICollection<LabelTarget> _namedLabelTargets;
         private List<MethodCallExpression> _chainedMethodCalls;
+        private List<Expression> _methodGroupLambdas;
         private ICollection<GotoExpression> _gotoReturnGotos;
         private Dictionary<Type, ParameterExpression[]> _unnamedVariablesByType;
-        private ICollection<ParameterExpression> _declaredOutputParameters;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionAnalysis"/> class.
@@ -68,9 +66,10 @@
         /// <summary>
         /// Gets the current BlockExpression, or null if none is in scope.
         /// </summary>
-        protected BlockExpression CurrentBlock => _currentScope?.GetCurrentBlockOrNull();
+        protected BlockExpression CurrentBlock => _currentExpressionScope?.GetCurrentBlockOrNull();
 
-        private Scope CurrentScope => _currentScope ??= new Scope();
+        private ExpressionScope CurrentExpressionScope
+            => _currentExpressionScope ??= new ExpressionScope();
 
         /// <summary>
         /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
@@ -111,62 +110,73 @@
         /// </returns>
         public virtual bool ShouldBeDeclaredInVariableList(ParameterExpression variable)
         {
-            return !CurrentScope.IsInlineOutputParameter(variable) &&
-                   !CurrentScope.HasBeenJoinAssigned(variable);
+            var shouldDeclare = CurrentExpressionScope
+                .ShouldDeclareInVariableList(variable, out var isUsed);
+
+            return shouldDeclare && (isUsed || !_settings.DiscardUnusedParams);
         }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="parameter"/> is an output
-        /// parameter that should be declared inline.
+        /// Determines if the given <paramref name="parameter"/> represents an output parameter that
+        /// should be declared inline.
         /// </summary>
-        /// <param name="parameter">The ParameterExpression for which to make the determination.</param>
+        /// <param name="parameter">The parameter Expression for which to make the determination.</param>
         /// <returns>
-        /// True if the given <paramref name="parameter"/> is an output parameter that should be
-        /// declared inline, otherwise false.
+        /// True if the given <paramref name="parameter"/> represents an output parameter that should
+        /// be declared inline, otherwise false.
         /// </returns>
-        public bool ShouldBeDeclaredInline(ParameterExpression parameter)
+        public bool ShouldBeDeclaredInOutputParameterUse(Expression parameter)
         {
-            var declareInline =
-                CurrentScope.IsInlineOutputParameter(parameter) &&
-                _declaredOutputParameters?.Contains(parameter) != true;
-
-            if (declareInline)
+            if (!_settings.DeclareOutParamsInline || parameter.NodeType != Parameter)
             {
-                (_declaredOutputParameters ??= new List<ParameterExpression>()).Add(parameter);
-                return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Returns a value indicating whether the given <paramref name="expression"/> represents an
-        /// assignment where the assigned variable is declared as part of the assignment statement.
-        /// </summary>
-        /// <param name="expression">The Expression to evaluate.</param>
-        /// <param name="assignment">
-        /// Populated with the BinaryExpression representing the assignment statement, if the given
-        /// <paramref name="expression"/> represents an assignment.
-        /// </param>
-        /// <returns>
-        /// True if the given <paramref name="expression"/> represents an assignment where the assigned
-        /// variable is declared as part of the assignment statement, otherwise false.
-        /// </returns>
-        public bool IsJoinedAssignment(Expression expression, out BinaryExpression assignment)
-        {
-            if (expression.NodeType != Assign || _joinedAssignments == null)
-            {
-                assignment = null;
                 return false;
             }
 
-            assignment = (BinaryExpression)expression;
-            return _joinedAssignments.Contains(assignment);
+            var typedParameter = (ParameterExpression)parameter;
+            return CurrentExpressionScope.ShouldDeclareInOutputParameterUse(typedParameter);
         }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="variable"/> is the Exception
-        /// variable in a Catch block.
+        /// Determines if the given <paramref name="parameter"/> is unused, and should be translated
+        /// to a parameter discard (_).
+        /// </summary>
+        /// <param name="parameter">The parameter Expression for which to make the determination.</param>
+        /// <returns>True if the given <paramref name="parameter"/> is unused, otherwise false.</returns>
+        public bool ShouldBeDiscarded(Expression parameter)
+        {
+            if (!_settings.DiscardUnusedParams || parameter.NodeType != Parameter)
+            {
+                return false;
+            }
+
+            var typedParameter = (ParameterExpression)parameter;
+            return !CurrentExpressionScope.IsUsed(typedParameter);
+        }
+
+        /// <summary>
+        /// Determines if the given <paramref name="expression"/> represents an assignment where the
+        /// assigned variable should be declared as part of the assignment statement.
+        /// </summary>
+        /// <param name="expression">The Expression to evaluate.</param>
+        /// <returns>
+        /// True if the given <paramref name="expression"/> represents an assignment where the
+        /// assigned variable should be declared as part of the assignment statement, otherwise
+        /// false.
+        /// </returns>
+        public bool IsJoinedAssignment(Expression expression)
+        {
+            if (expression.NodeType != Assign)
+            {
+                return false;
+            }
+
+            return CurrentExpressionScope
+                .IsJoinedAssignment((BinaryExpression)expression);
+        }
+
+        /// <summary>
+        /// Determines if the given <paramref name="variable"/> is the Exception variable in a Catch
+        /// block.
         /// </summary>
         /// <param name="variable">The Expression for which to make the determination.</param>
         /// <returns>
@@ -176,11 +186,11 @@
         public bool IsCatchBlockVariable(Expression variable)
         {
             return (variable.NodeType == Parameter) &&
-                    CurrentScope.IsCatchBlockVariable((ParameterExpression)variable);
+                    CurrentExpressionScope.IsCatchBlockVariable((ParameterExpression)variable);
         }
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="labelTarget"/> is referenced by a
+        /// Determines if the given <paramref name="labelTarget"/> is referenced by a
         /// <see cref="GotoExpression"/>.
         /// </summary>
         /// <param name="labelTarget">The <see cref="LabelTarget"/> to evaluate.</param>
@@ -192,8 +202,8 @@
             => _namedLabelTargets?.Contains(labelTarget) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="cast"/> is nested inside
-        /// another cast UnaryExpression, as part of a set of nested type casts.
+        /// Determines if the given <paramref name="cast"/> is nested inside another cast
+        /// UnaryExpression, as part of a set of nested type casts.
         /// </summary>
         /// <param name="cast">
         /// The UnaryExpression describing the cast for which to make the determination.
@@ -205,8 +215,8 @@
         public bool IsNestedCast(UnaryExpression cast) => _nestedCasts?.Contains(cast) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="goto"/> goes to the 
-        /// final statement in a block, and so should be rendered as a return statement.
+        /// Determines if the given <paramref name="goto"/> goes to the final statement in a block,
+        /// and so should be rendered as a return statement.
         /// </summary>
         /// <param name="goto">The GotoExpression for which to make the determination.</param>
         /// <returns>
@@ -217,8 +227,8 @@
             => _gotoReturnGotos?.Contains(@goto) == true;
 
         /// <summary>
-        /// Returns a value indicating whether the given <paramref name="methodCall"/> is part of a chain
-        /// of multiple method calls.
+        /// Determines if the given <paramref name="methodCall"/> is part of a chain of multiple
+        /// method calls.
         /// </summary>
         /// <param name="methodCall">The Expression to evaluate.</param>
         /// <returns>
@@ -227,6 +237,28 @@
         /// </returns>
         public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
             => _chainedMethodCalls?.Contains(methodCall) == true;
+
+        /// <summary>
+        /// Determines if the given <paramref name="methodCallArgument"/> can be converted to a
+        /// method group, populating <paramref name="groupMethodCall"/> with the method group if so.
+        /// </summary>
+        /// <param name="methodCallArgument">The method argument for which to make the determination.</param>
+        /// <param name="groupMethodCall"></param>
+        /// <returns></returns>
+        public bool CanBeConvertedToMethodGroup(
+            Expression methodCallArgument,
+            out MethodCallExpression groupMethodCall)
+        {
+            if (_methodGroupLambdas?.Contains(methodCallArgument) != true)
+            {
+                groupMethodCall = null;
+                return false;
+            }
+
+            var methodGroupLambda = (LambdaExpression)methodCallArgument;
+            groupMethodCall = (MethodCallExpression)methodGroupLambda.Body;
+            return true;
+        }
 
         /// <summary>
         /// Returns the 1-based index of the given <paramref name="variable"/> in the set of
@@ -250,7 +282,7 @@
         }
 
         private Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
-            => _unnamedVariablesByType ??= _currentScope?.AllVariables
+            => _unnamedVariablesByType ??= _currentExpressionScope?.AllVariables
                 .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
                 .GroupBy(variable => variable.Type)
                 .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
@@ -431,29 +463,13 @@
         /// </returns>
         protected virtual Expression VisitAndConvert(BinaryExpression binary)
         {
-            var isConstructAssignment = false;
             var isJoinedAssignment = false;
 
             if (IsJoinableVariableAssignment(binary, out var variable))
             {
-                if (IsFirstAccess(variable))
+                if (CurrentExpressionScope.TryAddFirstAccess(variable, binary))
                 {
-                    var currentConstruct = CurrentScope.GetCurrentConstructObjectOrNull();
-
-                    if (currentConstruct != null)
-                    {
-                        (_constructsByAssignment ??= new Dictionary<BinaryExpression, object>())
-                            .Add(binary, currentConstruct);
-
-                        isConstructAssignment = true;
-                    }
-
-                    (_joinedAssignments ??= new List<BinaryExpression>()).Add(binary);
-                    CurrentScope.AddJoinedAssignmentVariable(variable);
-
                     isJoinedAssignment = true;
-
-                    AddVariableAccess(variable);
                 }
 
                 AddAssignedAssignmentIfAppropriate(binary.Right);
@@ -464,21 +480,9 @@
                 VisitAndConvert(binary.Conversion),
                 VisitAndConvert(binary.Right));
 
-            if (updatedBinary == binary)
+            if (isJoinedAssignment && updatedBinary != binary)
             {
-                return updatedBinary;
-            }
-
-            if (isConstructAssignment)
-            {
-                _constructsByAssignment.Add(updatedBinary, _constructsByAssignment[binary]);
-                _constructsByAssignment.Remove(binary);
-            }
-
-            if (isJoinedAssignment)
-            {
-                _joinedAssignments.Add(updatedBinary);
-                _joinedAssignments.Remove(binary);
+                CurrentExpressionScope.DeclareInAssignment(variable, updatedBinary);
             }
 
             return updatedBinary;
@@ -497,7 +501,7 @@
             }
 
             variable = (ParameterExpression)binary.Left;
-            return !HasBeenAssigned(variable);
+            return !HasBeenJoinAssigned(variable);
         }
 
         private bool IsAssigned(BinaryExpression binary)
@@ -549,14 +553,8 @@
         /// True if the current assignment of the given <paramref name="variable"/> being evaluated
         /// can include a joined declaration of the variable, otherwise false.
         /// </returns>
-        protected virtual bool HasBeenAssigned(ParameterExpression variable)
-            => CurrentScope.HasBeenJoinAssigned(variable);
-
-        private bool IsFirstAccess(ParameterExpression variable)
-            => !CurrentScope.HasBeenAccessed(variable);
-
-        private void AddVariableAccess(ParameterExpression variable)
-            => CurrentScope.AddVariableAccess(variable);
+        protected virtual bool HasBeenJoinAssigned(ParameterExpression variable)
+            => CurrentExpressionScope.IsJoinedAssignmentVariable(variable);
 
         /// <summary>
         /// Visits the given <paramref name="block"/>, returning a replacement Expression if
@@ -571,11 +569,17 @@
         {
             PushScope(block);
 
+            // Visit child expression first to track
+            // variable usage in child scopes:
             var expressions = VisitAndConvert(block.Expressions);
-            var variables = VisitAndConvert(block.Variables, EvaluateJoinedAssignment);
-            block = block.Update(variables, expressions);
+            var variables = VisitAndConvert(block.Variables, ReevaluateDeclaration);
 
-            _currentScope.Set(block);
+            if (expressions != block.Expressions || variables != block.Variables)
+            {
+                block = block.Update(variables, expressions);
+                _currentExpressionScope.Set(block);
+            }
+
             ExitScope();
             return block;
         }
@@ -612,7 +616,7 @@
 
         private bool ParentConstructIsCast()
         {
-            var parent = _currentScope.Parent.ScopeObject;
+            var parent = _currentExpressionScope.Parent.ScopeObject;
             return parent is UnaryExpression { NodeType: ExpressionType.Convert or ConvertChecked };
         }
 
@@ -769,15 +773,19 @@
                 return null;
             }
 
+            PushScope(lambda);
+
             var parameters = VisitAndConvert(lambda.Parameters);
             var body = VisitAndConvert(lambda.Body);
 
-            if (parameters == lambda.Parameters && body == lambda.Body)
+            if (parameters != lambda.Parameters || body != lambda.Body)
             {
-                return lambda;
+                lambda = lambda.Update(body, parameters);
+                _currentExpressionScope.Set(lambda);
             }
 
-            return lambda.Update(body, parameters);
+            ExitScope();
+            return lambda;
         }
 
         /// <summary>
@@ -859,30 +867,40 @@
                 }
             }
 
-            if (_settings.DeclareOutParamsInline)
+            var parameters = methodCall.Method.GetParameters();
+            IList<Expression> arguments = methodCall.Arguments;
+            var argumentCount = arguments.Count;
+
+            for (var i = 0; i < argumentCount; ++i)
             {
-                for (int i = 0, l = methodCall.Arguments.Count; i < l; ++i)
+                var argument = arguments[i];
+
+                switch (argument.NodeType)
                 {
-                    var argument = methodCall.Arguments[i];
-
-                    if (argument.NodeType != Parameter)
-                    {
+                    case Parameter when parameters[i].IsOut && _settings.DeclareOutParamsInline:
+                        var parameter = (ParameterExpression)argument;
+                        CurrentExpressionScope.AddOutputParameter(parameter);
                         continue;
-                    }
 
-                    var parameter = (ParameterExpression)argument;
+                    case Lambda when argument.CanBeConvertedToMethodGroup():
+                        (_methodGroupLambdas ??= new()).Add(argument);
 
-                    if (IsFirstAccess(parameter))
-                    {
-                        CurrentScope.AddInlineOutputVariable(parameter);
-                    }
+                        if (arguments == methodCall.Arguments)
+                        {
+                            var reducedArguments = new Expression[argumentCount];
+                            arguments.CopyTo(reducedArguments, 0, 0, argumentCount);
+                            arguments = reducedArguments;
+                        }
+
+                        arguments[i] = null;
+                        continue;
                 }
             }
 
             return VisitAndConvert(
                 methodCall,
                 methodCall.Object,
-                methodCall.Arguments,
+                arguments,
                (mc, s, args) => Expression.Call(s, mc.Method, args));
         }
 
@@ -1035,44 +1053,12 @@
                 return null;
             }
 
-            if (IsFirstAccess(variable))
-            {
-                AddVariableAccess(variable);
-            }
-
-            return EvaluateJoinedAssignment(variable);
+            CurrentExpressionScope.TryAddFirstAccess(variable);
+            return ReevaluateDeclaration(variable);
         }
 
-        private ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
-        {
-            if (!CurrentScope.HasBeenJoinAssigned(variable))
-            {
-                return variable;
-            }
-
-            var joinedAssignmentData = _constructsByAssignment?
-                .Filter(kvp => kvp.Key.Left == variable)
-                .Project(kvp => new
-                {
-                    Assignment = kvp.Key,
-                    Construct = kvp.Value
-                })
-                .FirstOrDefault();
-
-            if ((joinedAssignmentData == null) ||
-                _currentScope.Contains(joinedAssignmentData.Construct))
-            {
-                return variable;
-            }
-
-            // This variable was assigned within a construct but is being accessed 
-            // outside of that scope, so the assignment shouldn't be joined:
-            _currentScope.RemoveJoinedAssignmentVariable(variable);
-            _joinedAssignments.Remove(joinedAssignmentData.Assignment);
-            _constructsByAssignment.Remove(joinedAssignmentData.Assignment);
-
-            return variable;
-        }
+        private ParameterExpression ReevaluateDeclaration(ParameterExpression variable)
+            => CurrentExpressionScope.ReevaluateDeclaration(variable);
 
         /// <summary>
         /// Visits the given <paramref name="runtimeVariables"/>, returning a replacement Expression
@@ -1168,7 +1154,7 @@
 
             if (catchVariable != null)
             {
-                CurrentScope.AddCatchBlockVariable(catchVariable);
+                CurrentExpressionScope.AddCatchBlockVariable(catchVariable);
             }
 
             return VisitConstruct(@catch, c => c.Update(
@@ -1295,14 +1281,14 @@
         }
 
         /// <summary>
-        /// Visits the given <paramref name="subject"/> and <paramref name="expressions"/>, and uses
+        /// Visits the given <paramref name="subject"/> and <paramref name="arguments"/>, and uses
         /// the <paramref name="expressionFactory"/> to create a replacement
         /// <typeparamref name="TExpression"/> if appropriate.
         /// </summary>
         /// <typeparam name="TExpression">The type of Expression to visit.</typeparam>
         /// <param name="expression">The <typeparamref name="TExpression"/> to visit.</param>
         /// <param name="subject">The <paramref name="expression"/>'s subject.</param>
-        /// <param name="expressions">The <paramref name="expression"/>'s expressions.</param>
+        /// <param name="arguments">The <paramref name="expression"/>'s expressions.</param>
         /// <param name="expressionFactory">
         /// A Func with which to create a new <typeparamref name="TExpression"/> instance.
         /// </param>
@@ -1313,14 +1299,14 @@
         protected Expression VisitAndConvert<TExpression>(
             TExpression expression,
             Expression subject,
-            IList<Expression> expressions,
+            IList<Expression> arguments,
             Func<TExpression, Expression, IList<Expression>, Expression> expressionFactory)
             where TExpression : Expression
         {
             var updatedSubject = VisitAndConvert(subject);
-            var updatedArguments = VisitAndConvert(expressions);
+            var updatedArguments = VisitAndConvert(arguments);
 
-            if (updatedSubject == subject && updatedArguments == expressions)
+            if (updatedSubject == subject && updatedArguments == arguments)
             {
                 return expression;
             }
@@ -1335,7 +1321,7 @@
             PushScope(expression);
 
             var updatedConstruct = visitor.Invoke(expression);
-            _currentScope.Set(updatedConstruct);
+            _currentExpressionScope.Set(updatedConstruct);
 
             ExitScope();
             return updatedConstruct;
@@ -1373,227 +1359,29 @@
         /// <param name="block">The BlockExpression the scope for which to access.</param>
         public void EnterScope(BlockExpression block)
         {
-            _previousScope = _currentScope;
-            _currentScope = _currentScope?.FindScopeFor(block);
+            if (_currentExpressionScope == null)
+            {
+                _previousExpressionScope = null;
+                return;
+            }
+
+            _previousExpressionScope = _currentExpressionScope;
+            _currentExpressionScope = _currentExpressionScope.FindScopeFor(block);
         }
 
         /// <summary>
         /// Exits the current scope.
         /// </summary>
         public void ExitScope()
-            => _currentScope = _previousScope ?? _currentScope?.Parent;
+            => _currentExpressionScope = _previousExpressionScope ?? _currentExpressionScope?.Parent;
+
+        private void PushScope(LambdaExpression lambda)
+            => _currentExpressionScope = new ExpressionScope(lambda, CurrentExpressionScope);
 
         private void PushScope(BlockExpression block)
-            => _currentScope = new Scope(block, CurrentScope);
+            => _currentExpressionScope = new ExpressionScope(block, CurrentExpressionScope);
 
         private void PushScope(object scopeObject)
-            => _currentScope = new Scope(scopeObject, CurrentScope);
-
-        #region Helper Class
-
-        private class Scope
-        {
-            private BlockExpression _block;
-            private ICollection<ParameterExpression> _accessedVariables;
-            private IList<ParameterExpression> _joinedAssignmentVariables;
-            private IList<ParameterExpression> _inlineOutputVariables;
-            private ICollection<ParameterExpression> _catchBlockVariables;
-            private List<Scope> _childScopes;
-
-            public Scope()
-            {
-                _childScopes = new List<Scope>();
-            }
-
-            public Scope(BlockExpression block, Scope parent)
-                : this((object)block, parent)
-            {
-                _block = block;
-            }
-
-            public Scope(object scopeObject, Scope parent)
-            {
-                ScopeObject = scopeObject;
-                Parent = parent;
-                (parent._childScopes ??= new List<Scope>()).Add(this);
-            }
-
-            public Scope Parent { get; }
-
-            public object ScopeObject { get; private set; }
-
-            public IEnumerable<ParameterExpression> AllVariables
-            {
-                get
-                {
-                    if (_accessedVariables != null)
-                    {
-                        foreach (var variable in _accessedVariables)
-                        {
-                            yield return variable;
-                        }
-                    }
-
-                    if (_childScopes != null)
-                    {
-                        var childScopeVariables = _childScopes
-                            .SelectMany(childScope => childScope.AllVariables);
-
-                        foreach (var variable in childScopeVariables)
-                        {
-                            yield return variable;
-                        }
-                    }
-                }
-            }
-
-            public BlockExpression GetCurrentBlockOrNull()
-                => _block ?? Parent?.GetCurrentBlockOrNull();
-
-            public void Set(BlockExpression block) => _block = block;
-
-            public object GetCurrentConstructObjectOrNull()
-            {
-                return _block == null
-                    ? ScopeObject
-                    : Parent?.GetCurrentConstructObjectOrNull();
-            }
-
-            public void Set(object scopeObject) => ScopeObject = scopeObject;
-
-            public bool Contains(object scopeObject)
-            {
-                return ScopeObject == scopeObject ||
-                       Parent?.Contains(scopeObject) == true;
-            }
-
-            public Scope FindScopeFor(BlockExpression block)
-            {
-                if (_block == block)
-                {
-                    return this;
-                }
-
-                return _childScopes?
-                    .Project(childScope => childScope.FindScopeFor(block))
-                    .Filter(scope => scope != null)
-                    .FirstOrDefault();
-            }
-
-            public bool HasBeenAccessed(ParameterExpression variable)
-            {
-                var declaringScope = GetDeclaringScope(variable);
-
-                return declaringScope.HasBeenAdded(
-                    scope => scope._accessedVariables,
-                    variable,
-                    out _);
-            }
-
-            public void AddVariableAccess(ParameterExpression variable)
-                => (_accessedVariables ??= new List<ParameterExpression>()).Add(variable);
-
-            public bool HasBeenJoinAssigned(ParameterExpression variable)
-                => HasBeenJoinAssigned(variable, out _);
-
-            private bool HasBeenJoinAssigned(
-                ParameterExpression variable,
-                out ICollection<ParameterExpression> variables)
-            {
-                var declaringScope = GetDeclaringScope(variable);
-
-                return declaringScope.HasBeenAdded(
-                    scope => scope._joinedAssignmentVariables,
-                    variable,
-                    out variables);
-            }
-
-            public void AddJoinedAssignmentVariable(ParameterExpression variable)
-                => (_joinedAssignmentVariables ??= new List<ParameterExpression>()).Add(variable);
-
-            public void RemoveJoinedAssignmentVariable(ParameterExpression variable)
-            {
-                if (HasBeenJoinAssigned(variable, out var variables))
-                {
-                    variables.Remove(variable);
-                }
-            }
-
-            public bool IsInlineOutputParameter(ParameterExpression variable)
-            {
-                var declaringScope = GetDeclaringScope(variable);
-
-                return declaringScope.HasBeenAdded(
-                    scope => scope._inlineOutputVariables,
-                    variable,
-                    out _);
-            }
-
-            public void AddInlineOutputVariable(ParameterExpression parameter)
-            {
-                (_inlineOutputVariables ??= new List<ParameterExpression>())
-                    .Add(parameter);
-            }
-
-            public void AddCatchBlockVariable(ParameterExpression variable)
-            {
-                (_catchBlockVariables ??= new List<ParameterExpression>())
-                    .Add(variable);
-            }
-
-            public bool IsCatchBlockVariable(ParameterExpression variable)
-            {
-                var declaringScope = GetDeclaringScope(variable);
-
-                return declaringScope.HasBeenAdded(
-                    scope => scope._catchBlockVariables,
-                    variable,
-                    out _);
-            }
-
-            private Scope GetDeclaringScope(ParameterExpression variable)
-            {
-                if (Parent == null ||
-                   _block?.Variables.Contains(variable) == true)
-                {
-                    return this;
-                }
-
-                return Parent.GetDeclaringScope(variable);
-            }
-
-            private bool HasBeenAdded(
-                Func<Scope, ICollection<ParameterExpression>> variablesGetter,
-                ParameterExpression variable,
-                out ICollection<ParameterExpression> variables)
-            {
-                variables = variablesGetter.Invoke(this);
-
-                if (variables?.Contains(variable) == true)
-                {
-                    return true;
-                }
-
-                if (_childScopes?.Any() != true)
-                {
-                    return false;
-                }
-
-                foreach (var childScope in _childScopes)
-                {
-                    if (childScope.HasBeenAdded(
-                            variablesGetter,
-                            variable,
-                            out variables))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-        }
-
-        #endregion
+            => _currentExpressionScope = new ExpressionScope(scopeObject, CurrentExpressionScope);
     }
 }

@@ -84,6 +84,21 @@
         /// </summary>
         public bool DeclareOutParamsInline { get; private set; }
 
+        ITranslationSettings ITranslationSettings.DiscardUnusedParameters
+        {
+            get
+            {
+                DiscardUnusedParams = true;
+                return this;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether discards (_) should be used in place of unused
+        /// parameters.
+        /// </summary>
+        public bool DiscardUnusedParams { get; private set; }
+
         ITranslationSettings ITranslationSettings.ShowImplicitArrayTypes
         {
             get

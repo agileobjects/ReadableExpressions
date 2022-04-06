@@ -111,7 +111,7 @@
 
             var quotedLambda = Quote(intToDouble);
 
-            var translated = quotedLambda.ToReadableString(stgs => 
+            var translated = quotedLambda.ToReadableString(stgs =>
                 stgs.ShowQuotedLambdaComments);
 
             const string EXPECTED = @"
@@ -165,6 +165,192 @@ i => (double)i";
             sourceLambda.ToReadableString();
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldTranslateADelegateLambda()
+        {
+            var boolParameter = Parameter(typeof(bool), "regBool");
+            var boolAssignment1 = Assign(boolParameter, Constant(false));
+            var boolAssignment2 = Assign(boolParameter, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.RegularDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                boolParameter);
+
+            const string EXPECTED = @"
+regBool =>
+{
+    regBool = false;
+    regBool = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldIncludeAnOutParameterKeyword()
+        {
+            var boolParameter = Parameter(typeof(bool).MakeByRefType(), "outBool");
+            var boolAssignment1 = Assign(boolParameter, Constant(false));
+            var boolAssignment2 = Assign(boolParameter, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.OutDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                boolParameter);
+
+            const string EXPECTED = @"
+(out bool outBool) =>
+{
+    outBool = false;
+    outBool = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldIncludeARefParameterKeyword()
+        {
+            var boolParameter = Parameter(typeof(bool).MakeByRefType(), "refBool");
+            var boolAssignment1 = Assign(boolParameter, Constant(false));
+            var boolAssignment2 = Assign(boolParameter, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.RefDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                boolParameter);
+
+            const string EXPECTED = @"
+(ref bool refBool) =>
+{
+    refBool = false;
+    refBool = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldTranslateAParamsParameterDelegate()
+        {
+            var boolsParameter = Parameter(typeof(bool[]), "bools");
+            var zeroethBool = ArrayAccess(boolsParameter, Constant(0));
+            var boolAssignment1 = Assign(zeroethBool, Constant(false));
+            var boolAssignment2 = Assign(zeroethBool, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.ParamsDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                boolsParameter);
+
+            const string EXPECTED = @"
+bools =>
+{
+    bools[0] = false;
+    bools[0] = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldTranslateARegularParameterAndParamsParameterDelegate()
+        {
+            var intParameter = Parameter(typeof(int), "regInt");
+            var boolsParameter = Parameter(typeof(bool[]), "bools");
+            var zeroethBool = ArrayAccess(boolsParameter, Constant(0));
+            var boolAssignment1 = Assign(zeroethBool, Constant(false));
+            var boolAssignment2 = Assign(zeroethBool, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.RegAndParamsDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                intParameter,
+                boolsParameter);
+
+            const string EXPECTED = @"
+(regInt, bools) =>
+{
+    bools[0] = false;
+    bools[0] = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldTranslateAnOutParameterAndParamsParameterDelegate()
+        {
+            var intParameter = Parameter(typeof(int).MakeByRefType(), "outInt");
+            var boolsParameter = Parameter(typeof(bool[]), "bools");
+            var zeroethBool = ArrayAccess(boolsParameter, Constant(0));
+            var boolAssignment1 = Assign(zeroethBool, Constant(false));
+            var boolAssignment2 = Assign(zeroethBool, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.OutAndParamsDelegate>(
+                Block(boolAssignment1, boolAssignment2),
+                intParameter,
+                boolsParameter);
+
+            const string EXPECTED = @"
+(out int outInt, bool[] bools) =>
+{
+    bools[0] = false;
+    bools[0] = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/106
+        [Fact]
+        public void ShouldTranslateAMultiParameterDelegate()
+        {
+            var boolParameter = Parameter(typeof(bool), "regBool");
+            var refBoolParameter = Parameter(typeof(bool).MakeByRefType(), "refBool");
+            var outBoolParameter = Parameter(typeof(bool).MakeByRefType(), "outBool");
+            
+            var outBoolAssignment1 = Assign(outBoolParameter, Constant(false));
+            var outBoolAssignment2 = Assign(outBoolParameter, Constant(true));
+
+            var delegateLambda = Lambda<Issue106.MixedDelegate>(
+                Block(outBoolAssignment1, outBoolAssignment2),
+                boolParameter,
+                refBoolParameter,
+                outBoolParameter);
+
+            const string EXPECTED = @"
+(bool regBool, ref bool refBool, out bool outBool) =>
+{
+    outBool = false;
+    outBool = true;
+}";
+            var translated = delegateLambda.ToReadableString();
+
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldDiscardAnUnusedParameter()
+        {
+            var linqSelect = CreateLambda((string[] ints, int index) 
+                => ints.Select(int.Parse));
+
+            var translated = linqSelect.ToReadableString(stgs => stgs
+                .ShowLambdaParameterTypes
+                .DiscardUnusedParameters);
+
+            translated.ShouldBe("(string[] ints, int _) => ints.Select(int.Parse)");
+        }
+
         #region Helper Members
 
         private static class Issue49
@@ -175,6 +361,17 @@ i => (double)i";
             {
                 public bool Remove(DerivedEntity derived) => derived != null;
             }
+        }
+
+        private static class Issue106
+        {
+            public delegate void OutDelegate(out bool outBool);
+            public delegate void RefDelegate(ref bool refBool);
+            public delegate void RegularDelegate(bool regBool);
+            public delegate void ParamsDelegate(params bool[] boolParams);
+            public delegate void RegAndParamsDelegate(int regInt, params bool[] boolParams);
+            public delegate void OutAndParamsDelegate(out int outInt, params bool[] boolParams);
+            public delegate void MixedDelegate(bool regBool, ref bool refBool, out bool outBool);
         }
 
         #endregion

@@ -7,7 +7,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
     <IsPackable>false</IsPackable>
-    <ProjectGuid>{9EB2525F-48E7-4057-98E5-7FE325ECCD32}</ProjectGuid>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -15,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants);TRACE</DefineConstants>
+    <DefineConstants>$(DefineConstants);TRACE;FEATURE_PROPERTY_INDEX_DEFAULTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="System" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.7.0">
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -36,7 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ReadableExpressions.UnitTests.Common\ReadableExpressions.UnitTests.Common.csproj" />
-    <ProjectReference Include="..\ReadableExpressions\ReadableExpressions.csproj" />
   </ItemGroup>
 
 </Project>

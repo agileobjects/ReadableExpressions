@@ -59,12 +59,17 @@
 
             public string Name { get; }
 
-            public void WithTypeNames(ITranslationContext context)
+            public ITranslation WithTypeNames(ITranslationContext context)
             {
-                _typeNameTranslation = context.GetTranslationFor(Type);
+                if (_typeNameTranslation == null)
+                {
+                    _typeNameTranslation = context.GetTranslationFor(Type);
 
-                TranslationSize += _typeNameTranslation.TranslationSize;
-                FormattingSize += _typeNameTranslation.FormattingSize;
+                    TranslationSize += _typeNameTranslation.TranslationSize;
+                    FormattingSize += _typeNameTranslation.FormattingSize;
+                }
+
+                return _typeNameTranslation;
             }
 
             public void WithoutTypeNames(ITranslationContext context)

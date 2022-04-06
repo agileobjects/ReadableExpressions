@@ -20,6 +20,14 @@ To declare output parameter variables inline with the method where they are firs
 string readable = myExpression
     .ToReadableString(c => c.DeclareOutputParametersInline);
 ```
+```
+
+To discard unused output parameter variables or lambda parameters, use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.DiscardUnusedParameters);
+```
 
 To maintain explicit generic arguments on method calls where they are implied, use:
 

@@ -52,7 +52,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private static readonly object _typeCacheLock = new();
         private static readonly Dictionary<Type, IType> _types = new();
 #endif
-        private readonly Type _type;
+        private readonly Type _clrType;
         private IType _baseType;
         private int? _genericParameterCount;
         private ReadOnlyCollection<IType> _genericTypeArguments;
@@ -64,9 +64,9 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private ReadOnlyCollection<IType> _allInterfaces;
         private IEnumerable<IMember> _allMembers;
 
-        private ClrTypeWrapper(Type type)
+        private ClrTypeWrapper(Type clrType)
         {
-            _type = type;
+            _clrType = clrType;
         }
 
         #region Factory Methods
@@ -159,68 +159,68 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         /// <inheritdoc />
         public IType BaseType
-            => _baseType ??= For(_type.GetBaseType());
+            => _baseType ??= For(_clrType.GetBaseType());
 
         /// <inheritdoc />
         public ReadOnlyCollection<IType> AllInterfaces
             => _allInterfaces ??= GetAllInterfaces().ToReadOnlyCollection();
 
         private IList<IType> GetAllInterfaces()
-            => _type.GetAllInterfaces().ProjectToArray(For);
+            => _clrType.GetAllInterfaces().ProjectToArray(For);
 
         /// <inheritdoc />
-        public Assembly Assembly => _type.GetAssembly();
+        public Assembly Assembly => _clrType.GetAssembly();
 
         /// <inheritdoc />
-        public string Namespace => _type.Namespace;
+        public string Namespace => _clrType.Namespace;
 
         /// <inheritdoc />
-        public string Name => _type.Name;
+        public string Name => _clrType.Name;
 
         /// <inheritdoc />
-        public string FullName => _type.FullName;
+        public string FullName => _clrType.FullName;
 
         /// <inheritdoc />
-        public bool IsInterface => _type.IsInterface();
+        public bool IsInterface => _clrType.IsInterface();
 
         /// <inheritdoc />
-        public bool IsClass => _type.IsClass();
+        public bool IsClass => _clrType.IsClass();
 
         /// <inheritdoc />
-        public bool IsEnum => _type.IsEnum();
+        public bool IsEnum => _clrType.IsEnum();
 
         /// <inheritdoc />
-        public bool IsPrimitive => _type.IsPrimitive();
+        public bool IsPrimitive => _clrType.IsPrimitive();
 
         /// <inheritdoc />
-        public bool IsAnonymous => _type.IsAnonymous();
+        public bool IsAnonymous => _clrType.IsAnonymous();
 
         /// <inheritdoc />
-        public bool IsAbstract => _type.IsAbstract();
+        public bool IsAbstract => _clrType.IsAbstract();
 
         /// <inheritdoc />
-        public bool IsSealed => _type.IsSealed();
+        public bool IsSealed => _clrType.IsSealed();
 
         /// <inheritdoc />
-        public bool IsEnumerable => _type.IsEnumerable();
+        public bool IsEnumerable => _clrType.IsEnumerable();
 
         /// <inheritdoc />
-        public bool IsDictionary => _type.IsDictionary();
+        public bool IsDictionary => _clrType.IsDictionary();
 
         /// <inheritdoc />
-        public bool IsGeneric => _type.IsGenericType();
+        public bool IsGeneric => _clrType.IsGenericType();
 
         /// <inheritdoc />
         public bool IsGenericDefinition
 #if NETSTANDARD1_0
-            => _type.GetTypeInfo().IsGenericTypeDefinition;
+            => _clrType.GetTypeInfo().IsGenericTypeDefinition;
 #else
-            => _type.IsGenericTypeDefinition;
+            => _clrType.IsGenericTypeDefinition;
 
 #endif
         /// <inheritdoc />
         public IType GenericDefinition => IsGenericDefinition
-            ? For(_type.GetGenericTypeDefinition())
+            ? For(_clrType.GetGenericTypeDefinition())
             : null;
 
         /// <inheritdoc />
@@ -242,15 +242,15 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         private IType[] GetGenericTypeArguments()
         {
             return IsGeneric
-                ? _type.GetGenericTypeArguments().ProjectToArray(For)
+                ? _clrType.GetGenericTypeArguments().ProjectToArray(For)
                 : Enumerable<IType>.EmptyArray;
         }
 
         /// <inheritdoc />
-        public bool IsGenericParameter => _type.IsGenericParameter();
+        public bool IsGenericParameter => _clrType.IsGenericParameter();
 
         /// <inheritdoc />
-        public GenericParameterAttributes Constraints => _type.GetConstraints();
+        public GenericParameterAttributes Constraints => _clrType.GetConstraints();
 
         /// <inheritdoc />
         public ReadOnlyCollection<IType> ConstraintTypes
@@ -264,7 +264,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
         private IList<IType> GetUniqueConstraintTypes()
         {
-            var typeConstraints = _type.GetConstraintTypes().ProjectToArray(For);
+            var typeConstraints = _clrType.GetConstraintTypes().ProjectToArray(For);
             var constraintCount = typeConstraints.Length;
 
             switch (constraintCount)
@@ -312,19 +312,19 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         }
 
         /// <inheritdoc />
-        public bool IsNested => _type.IsNested;
+        public bool IsNested => _clrType.IsNested;
 
         /// <inheritdoc />
         public IType DeclaringType => _declaringType ??= GetDeclaringType();
 
         private IType GetDeclaringType()
         {
-            return _type.DeclaringType != null
-                ? For(_type.DeclaringType) : null;
+            return _clrType.DeclaringType != null
+                ? For(_clrType.DeclaringType) : null;
         }
 
         /// <inheritdoc />
-        public bool IsArray => _type.IsArray;
+        public bool IsArray => _clrType.IsArray;
 
         /// <inheritdoc />
         public IType ElementType => _elementType ??= GetElementType();
@@ -340,10 +340,10 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
 
             if (IsByRef)
             {
-                return For(_type.GetElementType());
+                return For(_clrType.GetElementType());
             }
 
-            if (_type.TryGetElementType(out var elementType))
+            if (_clrType.TryGetElementType(out var elementType))
             {
                 return For(elementType);
             }
@@ -362,18 +362,18 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
             => _underlyingNonNullableType ??= GetUnderlyingNonNullableType();
 
         /// <inheritdoc />
-        public bool IsByRef => _type.IsByRef;
+        public bool IsByRef => _clrType.IsByRef;
 
         private IType GetUnderlyingNonNullableType()
         {
-            var nonNullableUnderlyingType = Nullable.GetUnderlyingType(_type);
+            var nonNullableUnderlyingType = Nullable.GetUnderlyingType(_clrType);
 
             return nonNullableUnderlyingType != null
                 ? new ClrTypeWrapper(nonNullableUnderlyingType) : null;
         }
 
         /// <inheritdoc />
-        public IEnumerable<IMember> AllMembers => _allMembers ??= _type.GetAllMembers();
+        public IEnumerable<IMember> AllMembers => _allMembers ??= _clrType.GetAllMembers();
 
         /// <inheritdoc />
         public IEnumerable<IMember> GetMembers(Action<MemberSelector> selectionConfigurator)
@@ -411,14 +411,14 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         public bool Equals(IType otherType) => AreEqual(this, otherType);
 
         /// <inheritdoc />
-        public Type AsType() => _type;
+        public Type AsType() => _clrType;
 
         /// <inheritdoc />
         public override int GetHashCode()
         {
             unchecked
             {
-                return _type.GetHashCode() * 397;
+                return _clrType.GetHashCode() * 397;
             }
         }
 
@@ -426,7 +426,7 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
         /// Gets a string representation of this <see cref="IType"/>.
         /// </summary>
         /// <returns>A string representation of this <see cref="IType"/>.</returns>
-        public override string ToString() => _type.ToString();
+        public override string ToString() => _clrType.ToString();
 
         private class ClrBaseTypeWrapper<T> : IType
         {

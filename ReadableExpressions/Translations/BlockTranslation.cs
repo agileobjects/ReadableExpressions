@@ -137,8 +137,8 @@
 
                 if (Include(expression, block, context))
                 {
-                    var statementTranslation = context.Analysis.IsJoinedAssignment(expression, out var assignment)
-                        ? new BlockAssignmentStatementTranslation(assignment, context)
+                    var statementTranslation = context.Analysis.IsJoinedAssignment(expression)
+                        ? new BlockAssignmentStatementTranslation((BinaryExpression)expression, context)
                         : new BlockStatementTranslation(expression, context);
 
                     translations[statementIndex] = statementTranslation;
