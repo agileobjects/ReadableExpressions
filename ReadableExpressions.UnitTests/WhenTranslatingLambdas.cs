@@ -338,6 +338,19 @@ bools =>
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        [Fact]
+        public void ShouldDiscardAnUnusedParameter()
+        {
+            var linqSelect = CreateLambda((string[] ints, int index) 
+                => ints.Select(int.Parse));
+
+            var translated = linqSelect.ToReadableString(stgs => stgs
+                .ShowLambdaParameterTypes
+                .DiscardUnusedParameters);
+
+            translated.ShouldBe("(string[] ints, int _) => ints.Select(int.Parse)");
+        }
+
         #region Helper Members
 
         private static class Issue49

@@ -68,7 +68,8 @@
         /// </summary>
         protected BlockExpression CurrentBlock => _currentExpressionScope?.GetCurrentBlockOrNull();
 
-        private ExpressionScope CurrentExpressionScope => _currentExpressionScope ??= new ExpressionScope();
+        private ExpressionScope CurrentExpressionScope
+            => _currentExpressionScope ??= new ExpressionScope();
 
         /// <summary>
         /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
@@ -108,19 +109,49 @@
         /// inline when it is assigned or passed as an out parameter.
         /// </returns>
         public virtual bool ShouldBeDeclaredInVariableList(ParameterExpression variable)
-            => CurrentExpressionScope.ShouldDeclareInVariableList(variable);
+        {
+            var shouldDeclare = CurrentExpressionScope
+                .ShouldDeclareInVariableList(variable, out var isUsed);
+
+            return shouldDeclare && (isUsed || !_settings.DiscardUnusedParams);
+        }
 
         /// <summary>
-        /// Determines if the given <paramref name="parameter"/> is an output parameter that should
-        /// be declared inline.
+        /// Determines if the given <paramref name="parameter"/> represents an output parameter that
+        /// should be declared inline.
         /// </summary>
-        /// <param name="parameter">The ParameterExpression for which to make the determination.</param>
+        /// <param name="parameter">The parameter Expression for which to make the determination.</param>
         /// <returns>
-        /// True if the given <paramref name="parameter"/> is an output parameter that should be
-        /// declared inline, otherwise false.
+        /// True if the given <paramref name="parameter"/> represents an output parameter that should
+        /// be declared inline, otherwise false.
         /// </returns>
-        public bool ShouldBeDeclaredInOutputParameterUse(ParameterExpression parameter)
-            => CurrentExpressionScope.ShouldDeclareInOutputParameterUse(parameter);
+        public bool ShouldBeDeclaredInOutputParameterUse(Expression parameter)
+        {
+            if (!_settings.DeclareOutParamsInline || parameter.NodeType != Parameter)
+            {
+                return false;
+            }
+
+            var typedParameter = (ParameterExpression)parameter;
+            return CurrentExpressionScope.ShouldDeclareInOutputParameterUse(typedParameter);
+        }
+
+        /// <summary>
+        /// Determines if the given <paramref name="parameter"/> is unused, and should be translated
+        /// to a parameter discard (_).
+        /// </summary>
+        /// <param name="parameter">The parameter Expression for which to make the determination.</param>
+        /// <returns>True if the given <paramref name="parameter"/> is unused, otherwise false.</returns>
+        public bool ShouldBeDiscarded(Expression parameter)
+        {
+            if (!_settings.DiscardUnusedParams || parameter.NodeType != Parameter)
+            {
+                return false;
+            }
+
+            var typedParameter = (ParameterExpression)parameter;
+            return !CurrentExpressionScope.IsUsed(typedParameter);
+        }
 
         /// <summary>
         /// Determines if the given <paramref name="expression"/> represents an assignment where the
@@ -541,7 +572,7 @@
             // Visit child expression first to track
             // variable usage in child scopes:
             var expressions = VisitAndConvert(block.Expressions);
-            var variables = VisitAndConvert(block.Variables, EvaluateJoinedAssignment);
+            var variables = VisitAndConvert(block.Variables, ReevaluateDeclaration);
 
             if (expressions != block.Expressions || variables != block.Variables)
             {
@@ -836,6 +867,7 @@
                 }
             }
 
+            var parameters = methodCall.Method.GetParameters();
             IList<Expression> arguments = methodCall.Arguments;
             var argumentCount = arguments.Count;
 
@@ -845,9 +877,9 @@
 
                 switch (argument.NodeType)
                 {
-                    case Parameter when _settings.DeclareOutParamsInline:
+                    case Parameter when parameters[i].IsOut && _settings.DeclareOutParamsInline:
                         var parameter = (ParameterExpression)argument;
-                        CurrentExpressionScope.DeclareInOutputParameterUse(parameter);
+                        CurrentExpressionScope.AddOutputParameter(parameter);
                         continue;
 
                     case Lambda when argument.CanBeConvertedToMethodGroup():
@@ -1022,11 +1054,11 @@
             }
 
             CurrentExpressionScope.TryAddFirstAccess(variable);
-            return EvaluateJoinedAssignment(variable);
+            return ReevaluateDeclaration(variable);
         }
 
-        private ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
-            => CurrentExpressionScope.EvaluateJoinedAssignment(variable);
+        private ParameterExpression ReevaluateDeclaration(ParameterExpression variable)
+            => CurrentExpressionScope.ReevaluateDeclaration(variable);
 
         /// <summary>
         /// Visits the given <paramref name="runtimeVariables"/>, returning a replacement Expression

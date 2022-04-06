@@ -268,6 +268,11 @@
         /// </param>
         public void WriteToTranslation(string stringValue, TokenType tokenType = Default)
         {
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                return;
+            }
+
             if (stringValue.Length == 1)
             {
                 WriteToTranslation(stringValue[0], tokenType);

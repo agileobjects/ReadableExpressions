@@ -191,6 +191,13 @@
             IParameter info,
             ITranslationContext context)
         {
+            if (context.Analysis.ShouldBeDiscarded(parameter))
+            {
+                return info.IsOut
+                    ? new DiscardedOutParameterTranslation(parameter, context)
+                    : new DiscardedParameterTranslation(parameter, context);
+            }
+
             if (info.IsOut)
             {
                 return new OutParameterTranslation(parameter, context);
@@ -604,6 +611,10 @@
             private readonly string _keyword;
             private readonly ITranslation _parameterTranslation;
             private readonly IParameterTranslation _wrappedParameterTranslation;
+            private readonly Func<Type, ITranslation> _typeNameTranslationFactory;
+            private int _translationSize;
+            private int _formattingSize;
+            private ITranslation _typeNameTranslation;
 
             protected KeywordParameterTranslationBase(
                 string keyword,
@@ -613,19 +624,28 @@
                 _keyword = keyword;
                 _parameterTranslation = context.GetTranslationFor(parameter);
                 _wrappedParameterTranslation = _parameterTranslation as IParameterTranslation;
-                TranslationSize = _parameterTranslation.TranslationSize + keyword.Length;
-                FormattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
+                _typeNameTranslationFactory = context.GetTranslationFor;
+                _translationSize = _parameterTranslation.TranslationSize + keyword.Length;
+                _formattingSize = _parameterTranslation.FormattingSize + context.GetKeywordFormattingSize();
             }
 
             public ExpressionType NodeType => _parameterTranslation.NodeType;
 
-            public Type Type => _parameterTranslation.Type;
+            public virtual Type Type => _parameterTranslation.Type;
 
-            public string Name => _wrappedParameterTranslation?.Name;
+            public virtual string Name => _wrappedParameterTranslation?.Name;
 
-            public virtual int TranslationSize { get; }
+            public virtual int TranslationSize => _translationSize;
 
-            public virtual int FormattingSize { get; }
+            public virtual int FormattingSize => _formattingSize;
+
+            protected ITranslation TypeNameTranslation
+            {
+                get => _typeNameTranslation ??= _typeNameTranslationFactory.Invoke(Type);
+                private set => _typeNameTranslation = value;
+            }
+
+            protected bool WriteTypeName { get; private set; }
 
             public virtual int GetIndentSize() => _parameterTranslation.GetIndentSize();
 
@@ -643,19 +663,114 @@
             {
             }
 
-            public void WithTypeNames(ITranslationContext context)
-                => _wrappedParameterTranslation?.WithTypeNames(context);
+            public ITranslation WithTypeNames(ITranslationContext context)
+            {
+                if (_wrappedParameterTranslation == null)
+                {
+                    return null;
+                }
+
+                WriteTypeName = true;
+                SubtractParameterTranslationSizes();
+
+                TypeNameTranslation = _wrappedParameterTranslation
+                    .WithTypeNames(context);
+
+                AddParameterTranslationSizes();
+                return TypeNameTranslation;
+            }
 
             public void WithoutTypeNames(ITranslationContext context)
-                => _wrappedParameterTranslation?.WithoutTypeNames(context);
+            {
+                if (_wrappedParameterTranslation == null)
+                {
+                    return;
+                }
+
+                WriteTypeName = false;
+                SubtractParameterTranslationSizes();
+                _wrappedParameterTranslation.WithoutTypeNames(context);
+                AddParameterTranslationSizes();
+            }
+
+            private void SubtractParameterTranslationSizes()
+            {
+                _translationSize -= _wrappedParameterTranslation.TranslationSize;
+                _formattingSize -= _wrappedParameterTranslation.FormattingSize;
+            }
+
+            private void AddParameterTranslationSizes()
+            {
+                _translationSize += _wrappedParameterTranslation.TranslationSize;
+                _formattingSize += _wrappedParameterTranslation.FormattingSize;
+            }
+        }
+
+        private class DiscardedParameterTranslation : KeywordParameterTranslationBase
+        {
+            private const string _discard = "_";
+
+            public DiscardedParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) :
+                this(keyword: string.Empty, parameter, context)
+            {
+            }
+
+            protected DiscardedParameterTranslation(
+                string keyword,
+                Expression parameter,
+                ITranslationContext context) :
+                base(keyword, parameter, context)
+            {
+            }
+
+            public override Type Type => typeof(void);
+
+            public override string Name => _discard;
+
+            public override int TranslationSize
+                => base.TranslationSize + _discard.Length;
+
+            protected override void WriteTo(
+                TranslationWriter writer,
+                ITranslation parameterTranslation)
+            {
+                if (WriteTypeName)
+                {
+                    TypeNameTranslation.WriteTo(writer);
+                    writer.WriteSpaceToTranslation();
+                }
+
+                writer.WriteToTranslation(_discard);
+            }
+        }
+
+        private class DiscardedOutParameterTranslation : DiscardedParameterTranslation
+        {
+            private const string _out = "out ";
+            private readonly int _formattingSize;
+
+            public DiscardedOutParameterTranslation(
+                Expression parameter,
+                ITranslationContext context) : base(_out, parameter, context)
+            {
+                _formattingSize = context.GetKeywordFormattingSize();
+            }
+
+            public override int TranslationSize
+                => base.TranslationSize + _out.Length;
+
+            public override int FormattingSize
+                => base.FormattingSize + _formattingSize;
         }
 
         private class OutParameterTranslation : KeywordParameterTranslationBase
         {
             private const string _out = "out ";
             private const string _var = "var ";
-            private readonly ITranslation _typeNameTranslation;
             private readonly bool _declareParameterInline;
+            private readonly bool _useImplicitTypeName;
             private readonly int _translationSize;
             private readonly int _formattingSize;
 
@@ -670,16 +785,14 @@
 
                 _declareParameterInline = true;
 
-                if (context.Settings.UseImplicitTypeNames)
+                if (!context.Settings.UseImplicitTypeNames)
                 {
-                    _translationSize += _var.Length;
-                    _formattingSize += context.GetKeywordFormattingSize();
                     return;
                 }
 
-                _typeNameTranslation = context.GetTranslationFor(parameter.Type);
-                _translationSize += _typeNameTranslation.TranslationSize + 1;
-                _formattingSize += _typeNameTranslation.FormattingSize;
+                _useImplicitTypeName = true;
+                _translationSize += _var.Length;
+                _formattingSize += context.GetKeywordFormattingSize();
             }
 
             #region Setup
@@ -688,15 +801,8 @@
                 Expression parameter,
                 ITranslationContext context)
             {
-                if (parameter.NodeType == Parameter &&
-                    context.Settings.DeclareOutParamsInline &&
-                    context.Analysis.ShouldBeDeclaredInOutputParameterUse((ParameterExpression)parameter))
-                {
-                    return false;
-                }
-
-                return true;
-
+                return !context.Analysis
+                    .ShouldBeDeclaredInOutputParameterUse(parameter);
             }
 
             #endregion
@@ -707,44 +813,20 @@
             public override int FormattingSize
                 => base.FormattingSize + _formattingSize;
 
-            public override int GetIndentSize()
-            {
-                var indentSize = base.GetIndentSize();
-
-                if (_typeNameTranslation != null)
-                {
-                    indentSize += _typeNameTranslation.GetIndentSize();
-                }
-
-                return indentSize;
-            }
-
-            public override int GetLineCount()
-            {
-                var parameterLineCount = base.GetLineCount();
-
-                if (_declareParameterInline && _typeNameTranslation != null)
-                {
-                    parameterLineCount += _typeNameTranslation.GetLineCount();
-                }
-
-                return parameterLineCount;
-            }
-
             protected override void WriteTo(
                 TranslationWriter writer,
                 ITranslation parameterTranslation)
             {
                 if (_declareParameterInline)
                 {
-                    if (_typeNameTranslation != null)
+                    if (_useImplicitTypeName)
                     {
-                        _typeNameTranslation.WriteTo(writer);
-                        writer.WriteSpaceToTranslation();
+                        writer.WriteKeywordToTranslation(_var);
                     }
                     else
                     {
-                        writer.WriteKeywordToTranslation(_var);
+                        TypeNameTranslation.WriteTo(writer);
+                        writer.WriteSpaceToTranslation();
                     }
                 }
 
@@ -762,8 +844,7 @@
             {
             }
 
-            protected override void WriteTo(
-                TranslationWriter writer,
+            protected override void WriteTo(TranslationWriter writer,
                 ITranslation parameterTranslation)
             {
                 parameterTranslation.WriteTo(writer);

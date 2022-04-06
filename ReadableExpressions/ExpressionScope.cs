@@ -58,25 +58,28 @@
         public object ScopeObject { get; private set; }
 
         public IEnumerable<ParameterExpression> AllVariables
+            => AllVariableInfos.Project(info => info.Variable);
+
+        private IEnumerable<VariableInfo> AllVariableInfos
         {
             get
             {
                 if (_variableInfos != null)
                 {
-                    foreach (var variable in _variableInfos.Keys)
+                    foreach (var variableInfo in _variableInfos.Values)
                     {
-                        yield return variable;
+                        yield return variableInfo;
                     }
                 }
 
                 if (_childScopes != null)
                 {
-                    var childScopeVariables = _childScopes
-                        .SelectMany(childScope => childScope.AllVariables);
+                    var childScopeVariableInfos = _childScopes
+                        .SelectMany(childScope => childScope.AllVariableInfos);
 
-                    foreach (var variable in childScopeVariables)
+                    foreach (var variableInfo in childScopeVariableInfos)
                     {
-                        yield return variable;
+                        yield return variableInfo;
                     }
                 }
             }
@@ -152,10 +155,17 @@
             out VariableInfo variableInfo)
         {
             variableInfo = GetOrAddVariableInfo(variable, out var variableAdded);
-            return variableAdded;
+
+            if (variableAdded)
+            {
+                return true;
+            }
+
+            variableInfo.IsUsed = true;
+            return false;
         }
 
-        public ParameterExpression EvaluateJoinedAssignment(ParameterExpression variable)
+        public ParameterExpression ReevaluateDeclaration(ParameterExpression variable)
         {
             var variableInfo = GetVariableInfoOrNull(variable);
 
@@ -180,7 +190,7 @@
         private void DeclareInVariableList(ParameterExpression variable)
             => GetVariableInfo(variable).DeclarationType = DeclarationType.VariableList;
 
-        public void DeclareInOutputParameterUse(ParameterExpression parameter)
+        public void AddOutputParameter(ParameterExpression parameter)
         {
             var variableInfo =
                 GetOrAddVariableInfo(parameter, out var variableAdded);
@@ -240,12 +250,20 @@
                 variableInfo.DeclarationType == DeclarationType.JoinedAssignment;
         }
 
-        public bool ShouldDeclareInVariableList(ParameterExpression variable)
+        public bool ShouldDeclareInVariableList(
+            ParameterExpression variable,
+            out bool isUsed)
         {
             var info = GetVariableInfoOrNull(variable);
 
-            return info == null ||
-                   info.DeclarationType == DeclarationType.VariableList;
+            if (info == null)
+            {
+                isUsed = false;
+                return true;
+            }
+
+            isUsed = info.IsUsed;
+            return info.DeclarationType == DeclarationType.VariableList;
         }
 
         public bool ShouldDeclareInOutputParameterUse(ParameterExpression variable)
@@ -260,6 +278,21 @@
 
             variableInfo.HasBeenDeclared = true;
             return true;
+        }
+
+        public bool IsUsed(ParameterExpression parameter)
+        {
+            var declaringScope = GetDeclaringScope(parameter);
+
+            foreach (var variableInfo in declaringScope.AllVariableInfos)
+            {
+                if (VariableComparer.Instance.Equals(variableInfo.Variable, parameter))
+                {
+                    return variableInfo.IsUsed;
+                }
+            }
+
+            return false;
         }
 
         private VariableInfo GetVariableInfo(ParameterExpression variable)
@@ -301,9 +334,14 @@
             variableInfos = declaringScope.EnsureVariableInfos();
 
         AddNewInfo:
-            variableAdded = true;
-            info = new() { DeclarationType = declaringScope._defaultDeclarationType };
+            info = new()
+            {
+                Variable = variable,
+                DeclarationType = declaringScope._defaultDeclarationType
+            };
+
             variableInfos.Add(variable, info);
+            variableAdded = true;
             return info;
         }
 
@@ -359,19 +397,21 @@
 
         private class VariableInfo
         {
+            public ParameterExpression Variable;
             public DeclarationType DeclarationType;
             public Expression Assignment;
             public object AssignmentParentConstruct;
             public bool IsCatchBlockVariable;
             public bool HasBeenDeclared;
+            public bool IsUsed;
         }
 
         private enum DeclarationType
         {
+            None,
             VariableList,
             InlineOutput,
-            JoinedAssignment,
-            None
+            JoinedAssignment
         }
 
         private class VariableComparer : IEqualityComparer<ParameterExpression>

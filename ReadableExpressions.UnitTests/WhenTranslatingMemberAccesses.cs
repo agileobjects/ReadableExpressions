@@ -713,7 +713,8 @@ ip =>
             var tryGetBlock = Block(new[] { valueVariable }, tryGetCall, valueVariable);
             var tryGetLambda = Lambda<Func<IndexedProperty, object>>(tryGetBlock, helperParameter);
 
-            var translated = tryGetLambda.ToReadableString(stgs => stgs.DeclareOutputParametersInline);
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .DeclareOutputParametersInline);
 
             const string EXPECTED = @"
 ip =>
@@ -776,6 +777,57 @@ ip =>
     ip.TryGetGeneric(1, out System.Collections.Generic.List<int> value);
 
     return value;
+}";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
+        [Fact]
+        public void ShouldIncludeAnInlineOutParameterDiscard()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var intParameter = Parameter(typeof(int), "i");
+            var valueVariable = Variable(typeof(object), "value");
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var tryGetCall = Call(helperParameter, tryGetMethod, intParameter, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, tryGetCall);
+
+            var tryGetLambda = Lambda<Func<IndexedProperty, int, bool>>(
+                tryGetBlock,
+                helperParameter,
+                intParameter);
+
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .DiscardUnusedParameters);
+
+            translated.ShouldBe("(ip, i) => ip.TryGet(i, out _)");
+        }
+
+        [Fact]
+        public void ShouldNotDiscardAPreviouslyUsedOutParameter()
+        {
+            var helperParameter = Parameter(typeof(IndexedProperty), "ip");
+            var valueVariable = Variable(typeof(object), "value");
+            var assignValue = Assign(valueVariable, Constant(123, typeof(object)));
+
+            var tryGetMethod = typeof(IndexedProperty).GetPublicInstanceMethod("TryGet");
+            var zero = Constant(0);
+            var tryGetCall = Call(helperParameter, tryGetMethod, zero, valueVariable);
+            var tryGetBlock = Block(new[] { valueVariable }, assignValue, tryGetCall);
+
+            var tryGetLambda = Lambda<Func<IndexedProperty, bool>>(
+                tryGetBlock,
+                helperParameter);
+
+            var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .DeclareOutputParametersInline
+                .DiscardUnusedParameters);
+
+            const string EXPECTED = @"
+ip =>
+{
+    var value = 123;
+
+    return ip.TryGet(0, out value);
 }";
             translated.ShouldBe(EXPECTED.TrimStart());
         }
