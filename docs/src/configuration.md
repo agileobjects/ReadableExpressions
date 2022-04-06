@@ -20,7 +20,6 @@ To declare output parameter variables inline with the method where they are firs
 string readable = myExpression
     .ToReadableString(c => c.DeclareOutputParametersInline);
 ```
-```
 
 To discard unused output parameter variables or lambda parameters, use:
 
