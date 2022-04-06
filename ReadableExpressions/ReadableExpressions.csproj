@@ -28,6 +28,8 @@
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
     <PackageReleaseNotes>- Support for translating unused parameters to discards (_)
 - Including ref and out parameter keywords in lambda parameter declarations, re: #106
+- Handling null custom Expression values, re: #105
+- Translating strings containing any new line characters as verbatim, re: #107
 - Support for translating VB.NET named, indexed properties
 - Improving variable scope analysis
     </PackageReleaseNotes>
