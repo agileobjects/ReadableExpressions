@@ -14,7 +14,6 @@
     using Initialisations;
     using NetStandardPolyfills;
     using static System.Convert;
-    using static System.Environment;
     using static System.Globalization.CultureInfo;
 #if NET35
     using static Microsoft.Scripting.Ast.ExpressionType;
@@ -236,12 +235,14 @@
             return FixedValueTranslation(stringValue + "f", constant.Type, Numeric, context);
         }
 
+        private static readonly char[] _newlineCharacters = { '\r', '\n' };
+
         private static string GetStringConstant(
             ConstantExpression constant,
             out bool isVerbatim)
         {
             var stringValue = (string)constant.Value;
-            isVerbatim = stringValue.Contains(NewLine);
+            isVerbatim = stringValue.IndexOfAny(_newlineCharacters) != -1;
 
             return stringValue
                 .Replace(@"\", @"\\")
