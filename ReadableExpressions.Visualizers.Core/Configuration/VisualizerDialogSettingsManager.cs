@@ -99,6 +99,11 @@
                 settings.DeclareOutputParametersInline = IsTrue(value);
             }
 
+            if (settingsByName.TryGetValue(nameof(settings.DiscardUnusedParameters), out value))
+            {
+                settings.DiscardUnusedParameters = IsTrue(value);
+            }
+
             if (settingsByName.TryGetValue(nameof(settings.ShowImplicitArrayTypes), out value))
             {
                 settings.ShowImplicitArrayTypes = IsTrue(value);
@@ -269,6 +274,7 @@
 {nameof(settings.UseExplicitTypeNames)}: {settings.UseExplicitTypeNames}
 {nameof(settings.UseExplicitGenericParameters)}: {settings.UseExplicitGenericParameters}
 {nameof(settings.DeclareOutputParametersInline)}: {settings.DeclareOutputParametersInline}
+{nameof(settings.DiscardUnusedParameters)}: {settings.DiscardUnusedParameters}
 {nameof(settings.ShowImplicitArrayTypes)}: {settings.ShowImplicitArrayTypes}
 {nameof(settings.ShowLambdaParameterTypeNames)}: {settings.ShowLambdaParameterTypeNames}
 {nameof(settings.ShowQuotedLambdaComments)}: {settings.ShowQuotedLambdaComments}".TrimStart();

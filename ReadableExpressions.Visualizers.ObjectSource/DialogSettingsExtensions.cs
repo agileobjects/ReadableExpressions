@@ -28,6 +28,11 @@
                 settings = settings.DeclareOutputParametersInline;
             }
 
+            if (dialogSettings.DiscardUnusedParameters)
+            {
+                settings = settings.DiscardUnusedParameters;
+            }
+
             if (dialogSettings.ShowImplicitArrayTypes)
             {
                 settings = settings.ShowImplicitArrayTypes;

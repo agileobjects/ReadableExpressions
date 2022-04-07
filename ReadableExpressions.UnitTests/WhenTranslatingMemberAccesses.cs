@@ -797,6 +797,7 @@ ip =>
                 intParameter);
 
             var translated = tryGetLambda.ToReadableString(stgs => stgs
+                .DeclareOutputParametersInline
                 .DiscardUnusedParameters);
 
             translated.ShouldBe("(ip, i) => ip.TryGet(i, out _)");

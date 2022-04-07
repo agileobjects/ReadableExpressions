@@ -9,7 +9,7 @@ as well as reflection objects like `Type`, `FieldInfo`, `PropertyInfo`, etc.
 ## Debugger Visualizer
 
 The Debugger Visualizer installer can be downloaded from 
-[the Visual Studio Gallery](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=vs-publisher-1232914.ReadableExpressionsVisualizers).
 
 The visualizer has both Light and Dark themes:
 

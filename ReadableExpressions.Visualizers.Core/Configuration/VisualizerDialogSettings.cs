@@ -39,6 +39,8 @@
 
         public bool DeclareOutputParametersInline { get; set; }
 
+        public bool DiscardUnusedParameters { get; set; }
+
         public bool ShowImplicitArrayTypes { get; set; }
 
         public bool ShowLambdaParameterTypeNames { get; set; }

@@ -161,7 +161,7 @@
                 return true;
             }
 
-            variableInfo.IsUsed = true;
+            ++variableInfo.ReferenceCount;
             return false;
         }
 
@@ -197,6 +197,9 @@
 
             if (variableAdded)
             {
+                // Decrement the reference count to ensure this access
+                // doesn't count towards whether the variable is used:
+                --variableInfo.ReferenceCount;
                 variableInfo.DeclarationType = DeclarationType.InlineOutput;
             }
         }
@@ -403,7 +406,9 @@
             public object AssignmentParentConstruct;
             public bool IsCatchBlockVariable;
             public bool HasBeenDeclared;
-            public bool IsUsed;
+            public int ReferenceCount;
+
+            public bool IsUsed => ReferenceCount > 0;
         }
 
         private enum DeclarationType

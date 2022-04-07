@@ -41,6 +41,7 @@
                 new ToolStripControlHost(new ExplicitTypeNamesOption(_dialog)),
                 new ToolStripControlHost(new ExplicitGenericParamsOption(_dialog)),
                 new ToolStripControlHost(new DeclareOutParamsInlineOption(_dialog)),
+                new ToolStripControlHost(new DiscardUnusedParametersOption(_dialog)),
                 new ToolStripControlHost(new ImplicitArrayTypeNamesOption(_dialog)),
                 new ToolStripControlHost(new LambdaParameterTypeNamesOption(_dialog)),
                 new ToolStripControlHost(new QuotedLambdaCommentsOption(_dialog))
