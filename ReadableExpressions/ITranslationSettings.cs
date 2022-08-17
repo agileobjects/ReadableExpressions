@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using AgileObjects.ReadableExpressions.Translations;
     using System;
+    using System.Collections.Generic;
     using Translations.Formatting;
 
     /// <summary>
@@ -92,5 +94,14 @@
         /// </param>
         /// <returns>These <see cref="ITranslationSettings"/>, to support a fluent API.</returns>
         ITranslationSettings FormatUsing(ITranslationFormatter formatter);
+
+        /// <summary>
+        /// Supply a set of ITranslations to override builtins <paramref name="overrides"/>.
+        /// </summary>
+        /// <param name="overrides">
+        /// The <see cref="ITranslation"/> with which to format Expression translations.
+        /// </param>
+        /// <returns>These <see cref="ITranslationSettings"/>, to support a fluent API.</returns>
+        ITranslationSettings OverrideTranslations(IEnumerable<Type> overrides);
     }
 }

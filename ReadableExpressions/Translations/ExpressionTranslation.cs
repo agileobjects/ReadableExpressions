@@ -68,6 +68,11 @@
                 return translationExpression.GetTranslation(this);
             }
 
+            if (_settings.TranslationOverrides != null && _settings.TranslationOverrides.TryGetValue(expression.NodeType, out var ctor))
+            {
+                return ctor(expression, this);
+            }
+
             switch (expression.NodeType)
             {
                 case Decrement:

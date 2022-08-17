@@ -1,7 +1,17 @@
 ﻿namespace AgileObjects.ReadableExpressions
 {
+    using AgileObjects.ReadableExpressions.Translations;
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using Translations.Formatting;
+    using AgileObjects.NetStandardPolyfills;
+
+#if NET35
+    using Microsoft.Scripting.Ast;    
+#else
+    using System.Linq.Expressions;
+#endif
 
     /// <summary>
     /// Provides configuration options to control aspects of source-code string generation.
@@ -209,5 +219,43 @@
         /// Gats the <see cref="ITranslationFormatter"/> with which to format the translation.
         /// </summary>
         public ITranslationFormatter Formatter { get; private set; }
+
+        ITranslationSettings ITranslationSettings.OverrideTranslations(IEnumerable<Type> overrides)
+        {
+            var itranslationType = typeof(ITranslation);
+            var dict = new Dictionary<ExpressionType, Func<Expression, ITranslationContext, ITranslation>>();
+            foreach (var type in overrides)
+            {
+                if (!type.IsAssignableTo(itranslationType))
+                {
+                    throw new Exception("overrides must implement ITranslation");
+                }
+#if NETSTANDARD1_0                
+                Func<Expression,ITranslationContext, ITranslation> ctor = (expr, context) => (ITranslation)Activator.CreateInstance(type, expr, context);                
+#else                
+                var constructor = type.GetConstructors().Where(x => x.GetParameters().Length == 2).Single();
+                var parameter = Expression.Parameter(typeof(Expression), "expression");
+                var convert = Expression.Convert(parameter, constructor.GetParameters().First().ParameterType);
+                var parameter2 = Expression.Parameter(typeof(ITranslationContext), "context");
+                var creatorExpression = Expression.Lambda<Func<Expression, ITranslationContext, ITranslation>>(
+                    Expression.New(constructor, new Expression[] { convert, parameter2 }), parameter, parameter2);
+                var ctor = creatorExpression.Compile();
+#endif
+                var exprType = ctor(null, null).NodeType;
+                dict.Add(exprType, ctor);
+
+            }
+
+            if (dict.Count > 0)
+            {
+                TranslationOverrides = dict;
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Gets a factory to use to name anonymous types instead of the default method.
+        /// </summary>
+        public Dictionary<ExpressionType, Func<Expression, ITranslationContext, ITranslation>> TranslationOverrides { get; private set; }
     }
 }
