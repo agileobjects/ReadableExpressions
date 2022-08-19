@@ -134,7 +134,7 @@
             }
         }
 
-        private class IfStatementTranslation : ConditionalTranslationBase, IPotentialSelfTerminatingTranslatable
+        private class IfStatementTranslation : ConditionalTranslationBase, IPotentialSelfTerminatingTranslatable, IPotentialMultiStatementTranslatable
         {
             public IfStatementTranslation(ConditionalExpression conditional, ITranslationContext context)
                 : base(
@@ -148,6 +148,8 @@
             }
 
             public bool IsTerminated => true;
+
+            public bool IsMultiStatement => true;
 
             public override int GetIndentSize()
                 => TestTranslation.GetIndentSize() + IfTrueTranslation.GetIndentSize();
