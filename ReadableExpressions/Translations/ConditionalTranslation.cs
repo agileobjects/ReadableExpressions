@@ -40,7 +40,9 @@
 
         public static bool IsTernary(this Expression conditional) => conditional.HasReturnType();
 
-        private abstract class ConditionalTranslationBase : ITranslation
+        private abstract class ConditionalTranslationBase :
+            ITranslation,
+            IPotentialMultiStatementTranslatable
         {
             private int? _translationSize;
 
@@ -120,6 +122,8 @@
                 return codeBlockTranslation;
             }
 
+            public virtual bool IsMultiStatement => true;
+
             public abstract int GetIndentSize();
 
             public abstract int GetLineCount();
@@ -171,6 +175,8 @@
             {
                 _context = context;
             }
+
+            public override bool IsMultiStatement => false;
 
             public override int GetIndentSize()
             {
@@ -321,15 +327,16 @@
                     context.GetTranslationFor(conditional.IfFalse),
                     context)
             {
-                _isElseIf = IsElseIf(conditional);
-
-                if (_isElseIf == false)
+                if (IsElseIf(conditional))
                 {
-                    IfFalseTranslation = GetCodeBlockTranslation(
-                        IfFalseTranslation,
-                        conditional.IfFalse.IsReturnable(),
-                        context);
+                    _isElseIf = true;
+                    return;
                 }
+
+                IfFalseTranslation = GetCodeBlockTranslation(
+                    IfFalseTranslation,
+                    conditional.IfFalse.IsReturnable(),
+                    context);
             }
 
             private static bool IsElseIf(ConditionalExpression conditional)

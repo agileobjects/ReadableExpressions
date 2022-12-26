@@ -6,3 +6,28 @@ targetObjects.Add(
             ? sourceObject.GetType().IsSimple() ? sourceObject : oaToOsData.Map(sourceObject, null, i)
             : null;
     });
+
+targetAddressReadOnlyCollectionWrapper.Add(
+    {
+        try
+        {
+            if (sourceAddressElement == null)
+            {
+                return null;
+            }
+
+            var address = new Address();
+            address.Line1 = sourceAddressElement.Line1;
+            address.Line2 = sourceAddressElement.Line2;
+
+            return address;
+        }
+        catch (Exception ex)
+        {
+            throw MappingException.For(
+                "CreateNew",
+                "AnonymousType<Address[]>.Items[i]",
+                "WhenMappingToMetaMembers.PublicFirstItem<Address, Address[]>.Items[i]",
+                ex);
+        }
+    });

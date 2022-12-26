@@ -811,6 +811,40 @@ number =
             translated.ShouldBe(EXPECTED.TrimStart());
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/111
+        [Fact]
+        public void ShouldTranslateAnIfStatementLambdaAssignment()
+        {
+            var ifTrueDoNothing = IfThen(Constant(true), Empty());
+
+            var ifStatementLambda = Lambda(
+                ifTrueDoNothing,
+                "someLambda",
+                Enumerable.Empty<ParameterExpression>());
+
+            var lambdaVariable = Variable(
+                ifStatementLambda.Type,
+                ifStatementLambda.Name);
+
+            var assignLambdaVariable = Assign(lambdaVariable, ifStatementLambda);
+
+            var assignmentBlock = Block(
+                new[] { lambdaVariable },
+                assignLambdaVariable);
+
+            var translated = assignmentBlock.ToReadableString(stgs =>
+                stgs.ShowLambdaParameterTypes);
+
+            const string EXPECTED = @"
+Action someLambda = () =>
+{
+    if (true)
+    {
+    }
+};";
+            translated.ShouldBe(EXPECTED.TrimStart());
+        }
+
         #region Helper Members
 
         private static Expression GetReturnStatementBlock(out ParameterExpression existingInts)
@@ -871,3 +905,4 @@ number =
         #endregion
     }
 }
+

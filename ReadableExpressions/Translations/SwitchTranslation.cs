@@ -8,7 +8,10 @@
 #endif
     using Extensions;
 
-    internal class SwitchTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+    internal class SwitchTranslation : 
+        ITranslation, 
+        IPotentialSelfTerminatingTranslatable,
+        IPotentialMultiStatementTranslatable
     {
         private const string _switch = "switch ";
         private const string _case = "case ";
@@ -117,6 +120,8 @@
         public int FormattingSize { get; }
 
         public bool IsTerminated => true;
+
+        public bool IsMultiStatement => true;
 
         public int GetIndentSize()
         {
