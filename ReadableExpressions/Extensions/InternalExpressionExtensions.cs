@@ -96,6 +96,12 @@
 
                     case Constant:
                         var captureConstant = (ConstantExpression)expression;
+
+                        if (IsCompileTimeConstant(captureConstant))
+                        {
+                            return false;
+                        }
+
                         var declaringType = capturedMemberAccesses.LastOrDefault()?.DeclaringType;
 
                         if (captureConstant.Type != declaringType)
@@ -130,6 +136,28 @@
 
                 return true;
             }
+        }
+
+        private static bool IsCompileTimeConstant(Expression constant)
+        {
+            return constant.Type.GetTypeCode() switch
+            {
+                NetStandardTypeCode.Boolean => true,
+                NetStandardTypeCode.Byte => true,
+                NetStandardTypeCode.SByte => true,
+                NetStandardTypeCode.Char => true,
+                NetStandardTypeCode.Decimal => true,
+                NetStandardTypeCode.Double => true,
+                NetStandardTypeCode.Int16 => true,
+                NetStandardTypeCode.UInt16 => true,
+                NetStandardTypeCode.Int32 => true,
+                NetStandardTypeCode.UInt32 => true,
+                NetStandardTypeCode.Int64 => true,
+                NetStandardTypeCode.UInt64 => true,
+                NetStandardTypeCode.Single => true,
+                NetStandardTypeCode.String => true,
+                _ => false
+            };
         }
 
         public static bool CanBeConvertedToMethodGroup(this Expression argument)
