@@ -1,80 +1,69 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
-    using static Microsoft.Scripting.Ast.ExpressionType;
+using Microsoft.Scripting.Ast;
+using static Microsoft.Scripting.Ast.ExpressionType;
 #else
-    using System.Linq.Expressions;
-    using static System.Linq.Expressions.ExpressionType;
+using System.Linq.Expressions;
+using static System.Linq.Expressions.ExpressionType;
 #endif
 
-    internal class UnaryTranslation : ITranslation
+internal class UnaryTranslation : INodeTranslation
+{
+    private readonly string _operator;
+    private readonly ITranslation _operandTranslation;
+    private readonly bool _operatorIsSuffix;
+
+    public UnaryTranslation(UnaryExpression unary, ITranslationContext context)
     {
-        private readonly string _operator;
-        private readonly ITranslation _operandTranslation;
-        private readonly bool _operatorIsSuffix;
+        NodeType = unary.NodeType;
+        _operator = GetOperatorFor(unary.NodeType);
 
-        public UnaryTranslation(UnaryExpression unary, ITranslationContext context)
+        switch (NodeType)
         {
-            NodeType = unary.NodeType;
-            Type = unary.Type;
-            _operator = GetOperatorFor(unary.NodeType);
-
-            switch (NodeType)
-            {
-                case PostDecrementAssign:
-                case PostIncrementAssign:
-                    _operatorIsSuffix = true;
-                    break;
-            }
-
-            _operandTranslation = context.GetTranslationFor(unary.Operand);
-            TranslationSize = _operandTranslation.TranslationSize + _operator.Length;
+            case PostDecrementAssign:
+            case PostIncrementAssign:
+                _operatorIsSuffix = true;
+                break;
         }
 
-        private static string GetOperatorFor(ExpressionType nodeType)
+        _operandTranslation = context.GetTranslationFor(unary.Operand);
+    }
+
+    private static string GetOperatorFor(ExpressionType nodeType)
+    {
+        return nodeType switch
         {
-            return nodeType switch
-            {
-                Decrement => "--",
-                Increment => "++",
-                IsTrue => string.Empty,
-                IsFalse => "!",
-                OnesComplement => "~",
-                PostDecrementAssign => "--",
-                PostIncrementAssign => "++",
-                PreDecrementAssign => "--",
-                PreIncrementAssign => "++",
-                _ => "+"
-            };
+            Decrement => "--",
+            Increment => "++",
+            IsTrue => string.Empty,
+            IsFalse => "!",
+            OnesComplement => "~",
+            PostDecrementAssign => "--",
+            PostIncrementAssign => "++",
+            PreDecrementAssign => "--",
+            PreIncrementAssign => "++",
+            _ => "+"
+        };
+    }
+
+    public ExpressionType NodeType { get; }
+
+    public int TranslationLength
+        => _operandTranslation.TranslationLength + _operator.Length;
+
+    public void WriteTo(TranslationWriter writer)
+    {
+        if (_operatorIsSuffix == false)
+        {
+            writer.WriteToTranslation(_operator);
         }
 
-        public ExpressionType NodeType { get; }
+        _operandTranslation?.WriteTo(writer);
 
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize => _operandTranslation.FormattingSize;
-
-        public int GetIndentSize() => _operandTranslation.GetIndentSize();
-
-        public int GetLineCount() => _operandTranslation.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
+        if (_operatorIsSuffix)
         {
-            if (_operatorIsSuffix == false)
-            {
-                writer.WriteToTranslation(_operator);
-            }
-
-            _operandTranslation?.WriteTo(writer);
-
-            if (_operatorIsSuffix)
-            {
-                writer.WriteToTranslation(_operator);
-            }
+            writer.WriteToTranslation(_operator);
         }
     }
 }

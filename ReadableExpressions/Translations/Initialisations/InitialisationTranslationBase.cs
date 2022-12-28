@@ -1,100 +1,70 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
-{
-    using System;
-    using System.Collections.Generic;
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations;
+
+using System;
+using System.Collections.Generic;
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using static TranslationConstants;
 
-    internal abstract class InitialisationTranslationBase<TInitializer> : ITranslation
-    {
-        private readonly ITranslation _newingTranslation;
-        private readonly IInitializerSetTranslation _initializerTranslations;
+internal abstract class InitialisationTranslationBase<TInitializer> : INodeTranslation
+{
+    private readonly INodeTranslation _newingTranslation;
+    private readonly IInitializerSetTranslation _initializerTranslations;
 
-        protected InitialisationTranslationBase(
-            ExpressionType initType,
-            NewExpression newing,
-            IInitializerSetTranslation initializerTranslations,
-            ITranslationContext context)
-            : this(
-                initType,
-                NewingTranslation.For(newing, context, omitParenthesesIfParameterless: initializerTranslations.Count != 0),
-                initializerTranslations)
-        {
-        }
-
-        protected InitialisationTranslationBase(
-            ExpressionType initType,
-            ITranslation newingTranslation,
-            IInitializerSetTranslation initializerTranslations)
-        {
-            NodeType = initType;
-            _newingTranslation = newingTranslation;
-            _initializerTranslations = initializerTranslations;
-            TranslationSize = newingTranslation.TranslationSize + initializerTranslations.TranslationSize;
-            FormattingSize = newingTranslation.FormattingSize + initializerTranslations.FormattingSize;
-        }
-
-        protected static bool InitHasNoInitializers(
-            NewExpression newing,
-            ICollection<TInitializer> initializers,
-            ITranslationContext context,
-            out ITranslation newingTranslation)
-        {
-            var hasInitializers = initializers.Count != 0;
-
-            newingTranslation = NewingTranslation.For(
+    protected InitialisationTranslationBase(
+        ExpressionType initType,
+        NewExpression newing,
+        IInitializerSetTranslation initializerTranslations,
+        ITranslationContext context) :
+        this(
+            initType,
+            NewingTranslation.For(
                 newing,
                 context,
-                omitParenthesesIfParameterless: hasInitializers);
+                omitParenthesesIfParameterless: initializerTranslations.Count != 0),
+            initializerTranslations)
+    {
+    }
 
-            return hasInitializers == false;
-        }
+    protected InitialisationTranslationBase(
+        ExpressionType initType,
+        INodeTranslation newingTranslation,
+        IInitializerSetTranslation initializerTranslations)
+    {
+        initializerTranslations.Parent = this;
 
-        public ExpressionType NodeType { get; }
+        NodeType = initType;
+        _newingTranslation = newingTranslation;
+        _initializerTranslations = initializerTranslations;
+    }
 
-        public Type Type => _newingTranslation.Type;
+    protected static bool InitHasNoInitializers(
+        NewExpression newing,
+        ICollection<TInitializer> initializers,
+        ITranslationContext context,
+        out INodeTranslation newingTranslation)
+    {
+        var hasInitializers = initializers.Count != 0;
 
-        public int TranslationSize { get; }
+        newingTranslation = NewingTranslation.For(
+            newing,
+            context,
+            omitParenthesesIfParameterless: hasInitializers);
 
-        public int FormattingSize { get; }
+        return hasInitializers == false;
+    }
 
-        public int GetIndentSize()
-        {
-            _initializerTranslations.IsLongTranslation =
-                TranslationSize > LongTranslationThreshold;
+    public ExpressionType NodeType { get; }
 
-            return _newingTranslation.GetIndentSize() +
-                   _initializerTranslations.GetIndentSize();
-        }
+    public int TranslationLength =>
+        _newingTranslation.TranslationLength +
+        _initializerTranslations.TranslationLength;
 
-        public int GetLineCount()
-        {
-            _initializerTranslations.IsLongTranslation =
-                TranslationSize > LongTranslationThreshold;
-
-            var lineCount = _newingTranslation.GetLineCount();
-
-            var initializersLineCount = _initializerTranslations.GetLineCount();
-
-            if (initializersLineCount > 1)
-            {
-                lineCount += initializersLineCount - 1;
-            }
-
-            return lineCount;
-        }
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            _initializerTranslations.IsLongTranslation = 
-                TranslationSize > LongTranslationThreshold;
-
-            _newingTranslation.WriteTo(writer);
-            _initializerTranslations.WriteTo(writer);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        _newingTranslation.WriteTo(writer);
+        _initializerTranslations.WriteTo(writer);
     }
 }

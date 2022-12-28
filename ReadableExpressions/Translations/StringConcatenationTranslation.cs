@@ -1,163 +1,133 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System.Collections.Generic;
+#if NET35
+using Microsoft.Scripting.Ast;
+#else
+using System.Linq.Expressions;
+#endif
+using Extensions;
+#if NET35
+using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+using static System.Linq.Expressions.ExpressionType;
+#endif
+
+internal class StringConcatenationTranslation : INodeTranslation
 {
-    using System;
-    using System.Collections.Generic;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
-    using Extensions;
-#if NET35
-    using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-    using static System.Linq.Expressions.ExpressionType;
-#endif
+    private readonly int _operandCount;
+    private readonly IList<INodeTranslation> _operandTranslations;
 
-    internal class StringConcatenationTranslation : ITranslation
+    private StringConcatenationTranslation(
+        ExpressionType nodeType,
+        int operandCount,
+        IList<Expression> operands,
+        ITranslationContext context)
     {
-        private readonly int _operandCount;
-        private readonly IList<ITranslation> _operandTranslations;
+        NodeType = nodeType;
 
-        private StringConcatenationTranslation(
-            ExpressionType nodeType,
-            int operandCount,
-            IList<Expression> operands,
-            ITranslationContext context)
+        _operandCount = operandCount;
+        _operandTranslations = new INodeTranslation[operandCount];
+
+        for (var i = 0; i < operandCount; ++i)
         {
-            NodeType = nodeType;
+            var operand = operands[i];
 
-            var translationSize = 0;
-            var formattingSize = 0;
-            _operandCount = operandCount;
-            _operandTranslations = new ITranslation[operandCount];
-
-            for (var i = 0; i < operandCount; ++i)
+            if (operand.NodeType == Call)
             {
-                var operand = operands[i];
+                var methodCall = (MethodCallExpression)operand;
 
-                if (operand.NodeType == Call)
+                if (methodCall.Method.Name == nameof(ToString) &&
+                    methodCall.Arguments.None())
                 {
-                    var methodCall = (MethodCallExpression)operand;
-
-                    if ((methodCall.Method.Name == nameof(ToString)) && !methodCall.Arguments.Any())
-                    {
-                        operand = methodCall.GetSubject();
-                    }
+                    operand = methodCall.GetSubject();
                 }
-
-                var operandTranslation = context.GetTranslationFor(operand);
-
-                if ((operandTranslation.Type != typeof(string)) && operandTranslation.IsBinary())
-                {
-                    operandTranslation = operandTranslation.WithParentheses();
-                }
-
-                _operandTranslations[i] = operandTranslation;
-                translationSize += operandTranslation.TranslationSize + 3; // <- +3 for ' + '
-                formattingSize += operandTranslation.FormattingSize;
             }
 
-            TranslationSize = translationSize;
-            FormattingSize = formattingSize;
-        }
+            var operandTranslation = context.GetTranslationFor(operand);
 
-        public static ITranslation ForAddition(
-            BinaryExpression addition,
-            ITranslationContext context)
-        {
-            return new StringConcatenationTranslation(
-                Add,
-                operandCount: 2,
-                new[] { addition.Left, addition.Right },
-                context);
-        }
-
-        public static bool TryCreateForConcatCall(
-            MethodCallExpression methodCall,
-            ITranslationContext context,
-            out ITranslation concatTranslation)
-        {
-            if (!IsStringConcatCall(methodCall))
+            if (operand.Type != typeof(string) && operandTranslation.IsBinary())
             {
-                concatTranslation = null;
-                return false;
+                operandTranslation = operandTranslation.WithParentheses();
             }
 
-            var operands = methodCall.Arguments;
-            var operandCount = operands.Count;
+            _operandTranslations[i] = operandTranslation;
+        }
+    }
 
-            if (operandCount == 1 && operands.First().NodeType == NewArrayInit)
-            {
-                operands = ((NewArrayExpression)operands.First()).Expressions;
-                operandCount = operands.Count;
-            }
+    public static INodeTranslation ForAddition(
+        BinaryExpression addition,
+        ITranslationContext context)
+    {
+        return new StringConcatenationTranslation(
+            Add,
+            operandCount: 2,
+            new[] { addition.Left, addition.Right },
+            context);
+    }
 
-            concatTranslation =
-                new StringConcatenationTranslation(Call, operandCount, operands, context);
-
-            return true;
+    public static bool TryCreateForConcatCall(
+        MethodCallExpression methodCall,
+        ITranslationContext context,
+        out INodeTranslation concatTranslation)
+    {
+        if (!IsStringConcatCall(methodCall))
+        {
+            concatTranslation = null;
+            return false;
         }
 
-        private static bool IsStringConcatCall(MethodCallExpression methodCall)
+        var operands = methodCall.Arguments;
+        var operandCount = operands.Count;
+
+        if (operandCount == 1 && operands.First().NodeType == NewArrayInit)
         {
-            return methodCall.Method.IsStatic &&
-                  (methodCall.Method.DeclaringType == typeof(string)) &&
-                  (methodCall.Method.Name == nameof(string.Concat));
+            operands = ((NewArrayExpression)operands.First()).Expressions;
+            operandCount = operands.Count;
         }
 
-        public ExpressionType NodeType { get; }
+        concatTranslation =
+            new StringConcatenationTranslation(Call, operandCount, operands, context);
 
-        public Type Type => typeof(string);
+        return true;
+    }
 
-        public int TranslationSize { get; }
+    private static bool IsStringConcatCall(MethodCallExpression methodCall)
+    {
+        return methodCall.Method.IsStatic &&
+               methodCall.Method.DeclaringType == typeof(string) &&
+               methodCall.Method.Name == nameof(string.Concat);
+    }
 
-        public int FormattingSize { get; }
+    public ExpressionType NodeType { get; }
 
-        public int GetIndentSize()
+    public int TranslationLength 
+        => _operandTranslations.TotalTranslationLength(separator: " + ");
+
+    public void WriteTo(TranslationWriter writer)
+    {
+        for (var i = 0; ;)
         {
-            var indentSize = 0;
+            var operandTranslation = _operandTranslations[i];
 
-            for (var i = 0; ;)
+            if (operandTranslation.NodeType == Conditional || 
+                operandTranslation.IsAssignment())
             {
-                indentSize += _operandTranslations[i].GetIndentSize();
-
-                ++i;
-
-                if (i == _operandCount)
-                {
-                    return indentSize;
-                }
+                operandTranslation.WriteInParentheses(writer);
             }
-        }
-
-        public int GetLineCount()
-            => _operandTranslations.GetLineCount(_operandCount);
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            for (var i = 0; ;)
+            else
             {
-                var operandTranslation = _operandTranslations[i];
-
-                if ((operandTranslation.NodeType == Conditional) || operandTranslation.IsAssignment())
-                {
-                    operandTranslation.WriteInParentheses(writer);
-                }
-                else
-                {
-                    operandTranslation.WriteTo(writer);
-                }
-
-                ++i;
-
-                if (i == _operandCount)
-                {
-                    break;
-                }
-
-                writer.WriteToTranslation(" + ");
+                operandTranslation.WriteTo(writer);
             }
+
+            ++i;
+
+            if (i == _operandCount)
+            {
+                break;
+            }
+
+            writer.WriteToTranslation(" + ");
         }
     }
 }

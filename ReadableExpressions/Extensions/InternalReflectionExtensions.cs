@@ -52,16 +52,13 @@
         {
             var hasSubject = subject != null;
 
-            switch (member)
+            return member switch
             {
-                case FieldInfo field when hasSubject || field.IsStatic:
-                    return field.GetValue(subject);
-
-                case PropertyInfo property when hasSubject || property.IsStatic():
-                    return property.GetValue(subject, Enumerable<object>.EmptyArray);
-            }
-
-            return null;
+                FieldInfo field when hasSubject || field.IsStatic => field.GetValue(subject),
+                PropertyInfo property when hasSubject || property.IsStatic() => property.GetValue(subject,
+                    Enumerable<object>.EmptyArray),
+                _ => null
+            };
         }
 
 #if FEATURE_VALUE_TUPLE

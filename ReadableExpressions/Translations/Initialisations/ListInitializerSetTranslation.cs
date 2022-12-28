@@ -1,108 +1,84 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
-{
-    using System.Collections.Generic;
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations;
+
+using System.Collections.Generic;
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class ListInitializerSetTranslation : InitializerSetTranslationBase<ElementInit>
+internal class ListInitializerSetTranslation :
+    InitializerSetTranslationBase<ElementInit>
+{
+    private bool _hasMultiArgumentInitializers;
+
+    public ListInitializerSetTranslation(
+        IList<ElementInit> initializers,
+        ITranslationContext context) :
+        base(initializers, context)
     {
-        private bool _hasMultiArgumentInitializers;
+    }
 
-        public ListInitializerSetTranslation(IList<ElementInit> initializers, ITranslationContext context)
-            : base(initializers, context)
+    protected override ITranslation GetTranslationFor(
+        ElementInit init,
+        ITranslationContext context)
+    {
+        if (init.Arguments.Count == 1)
         {
+            return context.GetCodeBlockTranslationFor(init.Arguments[0]);
         }
 
-        protected override ITranslatable GetTranslation(ElementInit init, ITranslationContext context)
+        _hasMultiArgumentInitializers = true;
+        return new MultiArgumentInitializerTranslation(init, context);
+    }
+
+    protected override bool WriteToMultipleLines
+        => _hasMultiArgumentInitializers || base.WriteToMultipleLines;
+
+    private class MultiArgumentInitializerTranslation : ITranslation
+    {
+        private readonly IList<CodeBlockTranslation> _translations;
+        private readonly int _argumentCount;
+
+        public MultiArgumentInitializerTranslation(
+            ElementInit init,
+            ITranslationContext context)
         {
-            if (init.Arguments.Count == 1)
+            var arguments = init.Arguments;
+            _argumentCount = arguments.Count;
+
+            _translations = new CodeBlockTranslation[_argumentCount];
+
+            for (var i = 0; i < _argumentCount; ++i)
             {
-                return context.GetCodeBlockTranslationFor(init.Arguments[0]);
+                _translations[i] = context.GetCodeBlockTranslationFor(arguments[i]);
             }
-
-            _hasMultiArgumentInitializers = true;
-
-            return new MultiArgumentInitializerTranslation(init, context);
         }
 
-        public override bool ForceWriteToMultipleLines => _hasMultiArgumentInitializers;
+        public int TranslationLength =>
+            _translations.TotalTranslationLength(separator: ", ") +
+            "{ ".Length + " }".Length;
 
-        private class MultiArgumentInitializerTranslation : ITranslatable
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly IList<CodeBlockTranslation> _translations;
-            private readonly int _argumentCount;
+            writer.WriteToTranslation("{ ");
 
-            public MultiArgumentInitializerTranslation(ElementInit init, ITranslationContext context)
+            for (var i = 0; ;)
             {
-                var translationSize = 0;
-                var formattingSize = 0;
+                _translations[i].WriteTo(writer);
 
-                var arguments = init.Arguments;
-                _argumentCount = arguments.Count;
+                ++i;
 
-                _translations = new CodeBlockTranslation[_argumentCount];
-
-                for (var i = 0; i < _argumentCount; ++i)
+                if (i == _argumentCount)
                 {
-                    var translation = context.GetCodeBlockTranslationFor(arguments[i]);
-                    translationSize += translation.TranslationSize;
-                    formattingSize += translation.FormattingSize;
-
-                    _translations[i] = translation;
+                    break;
                 }
 
-                TranslationSize = translationSize;
-                FormattingSize = formattingSize;
+                writer.WriteToTranslation(", ");
             }
 
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public int GetIndentSize()
-            {
-                var indentSize = 0;
-
-                for (var i = 0; ;)
-                {
-                    indentSize += _translations[i].GetIndentSize();
-
-                    ++i;
-
-                    if (i == _argumentCount)
-                    {
-                        return indentSize;
-                    }
-                }
-            }
-
-            public int GetLineCount()
-                => _translations.GetLineCount(_argumentCount);
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteToTranslation("{ ");
-
-                for (var i = 0; ;)
-                {
-                    _translations[i].WriteTo(writer);
-
-                    ++i;
-
-                    if (i == _argumentCount)
-                    {
-                        break;
-                    }
-
-                    writer.WriteToTranslation(", ");
-                }
-
-                writer.WriteToTranslation(" }");
-            }
+            writer.WriteToTranslation(" }");
         }
     }
 }

@@ -1,90 +1,65 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
-    using NetStandardPolyfills;
+using Extensions;
+using NetStandardPolyfills;
 
-    internal class NewingTranslation : NewingTranslationBase, ITranslation
+internal class NewingTranslation : NewingTranslationBase, INodeTranslation
+{
+    private readonly INodeTranslation _typeNameTranslation;
+
+    private NewingTranslation(
+        NewExpression newing,
+        ITranslationContext context,
+        bool omitParenthesesIfParameterless) :
+        base(newing, context)
     {
-        private readonly ITranslation _typeNameTranslation;
+        _typeNameTranslation = context
+            .GetTranslationFor(newing.Type)
+            .WithObjectTypeName();
 
-        private NewingTranslation(
-            NewExpression newing,
-            ITranslationContext context,
-            bool omitParenthesesIfParameterless)
-            : base(newing, context)
+        if (omitParenthesesIfParameterless && Parameters.None)
         {
-            _typeNameTranslation = context.GetTranslationFor(newing.Type).WithObjectTypeName();
-
-            if (omitParenthesesIfParameterless && Parameters.None)
-            {
-                Parameters.WithoutParentheses();
-            }
-            else
-            {
-                Parameters.WithParentheses();
-            }
-
-            TranslationSize =
-                "new ".Length +
-                _typeNameTranslation.TranslationSize +
-                Parameters.TranslationSize;
-
-            FormattingSize =
-                context.GetKeywordFormattingSize() +
-                _typeNameTranslation.FormattingSize +
-                Parameters.FormattingSize;
+            Parameters.WithoutParentheses();
         }
-
-        public static ITranslation For(
-            NewExpression newing,
-            ITranslationContext context,
-            bool omitParenthesesIfParameterless = false)
+        else
         {
-            if (newing.Type.IsAnonymous())
-            {
-                return new AnonymousTypeNewingTranslation(newing, context);
-            }
+            Parameters.WithParentheses();
+        }
+    }
+
+    public static INodeTranslation For(
+        NewExpression newing,
+        ITranslationContext context,
+        bool omitParenthesesIfParameterless = false)
+    {
+        if (newing.Type.IsAnonymous())
+        {
+            return new AnonymousTypeNewingTranslation(newing, context);
+        }
 
 #if FEATURE_VALUE_TUPLE
-            if (newing.Type.IsValueTuple())
-            {
-                return new ValueTupleNewingTranslation(newing, context);
-            }
+        if (newing.Type.IsValueTuple())
+        {
+            return new ValueTupleNewingTranslation(newing, context);
+        }
 #endif
-            return new NewingTranslation(newing, context, omitParenthesesIfParameterless);
-        }
+        return new NewingTranslation(newing, context, omitParenthesesIfParameterless);
+    }
 
-        public int TranslationSize { get; }
+    public int TranslationLength =>
+        "new ".Length +
+        _typeNameTranslation.TranslationLength +
+         Parameters.TranslationLength;
 
-        public int FormattingSize { get; }
-
-        public int GetIndentSize()
-        {
-            return Parameters.None
-                ? _typeNameTranslation.GetIndentSize()
-                : Parameters.GetIndentSize();
-        }
-
-        public int GetLineCount()
-        {
-            return Parameters.None
-                ? _typeNameTranslation.GetLineCount()
-                : Parameters.GetLineCount();
-        }
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteNewToTranslation();
-            _typeNameTranslation.WriteTo(writer);
-            Parameters.WriteTo(writer);
-        }
-
-        public Type Type => _typeNameTranslation.Type;
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteNewToTranslation();
+        _typeNameTranslation.WriteTo(writer);
+        Parameters.WriteTo(writer);
     }
 }

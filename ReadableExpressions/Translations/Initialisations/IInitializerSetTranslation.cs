@@ -1,9 +1,8 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
-{
-    internal interface IInitializerSetTranslation : ITranslatable
-    {
-        int Count { get; }
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations;
 
-        bool IsLongTranslation { get; set; }
-    }
+internal interface IInitializerSetTranslation : ITranslation
+{
+    ITranslation Parent { set; }
+
+    int Count { get; }
 }

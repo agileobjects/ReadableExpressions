@@ -1,52 +1,41 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
+﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection;
+
+using System.Reflection;
+using Extensions;
+using static MethodTranslationHelpers;
+
+internal class OperatorDefinitionTranslation : ITranslation
 {
-    using System.Reflection;
-    using Extensions;
-    using static MethodTranslationHelpers;
+    private readonly string _modifiers;
+    private readonly ITranslation _returnTypeTranslation;
+    private readonly ITranslation _parametersTranslation;
 
-    internal class OperatorDefinitionTranslation : ITranslatable
+    public OperatorDefinitionTranslation(
+        MethodInfo @operator,
+        string typeKeyword,
+        TranslationSettings settings)
     {
-        private readonly string _modifiers;
-        private readonly ITranslatable _returnTypeTranslation;
-        private readonly ITranslatable _parametersTranslation;
+        _modifiers = 
+            GetAccessibilityForTranslation(@operator, settings) + 
+            "static " + typeKeyword + " operator ";
 
-        public OperatorDefinitionTranslation(
-            MethodInfo @operator,
-            string typeKeyword,
-            TranslationSettings settings)
-        {
-            _modifiers = GetAccessibilityForTranslation(@operator, settings) + "static " + typeKeyword + " operator ";
+        _returnTypeTranslation =
+            new TypeNameTranslation(@operator.ReturnType, settings);
 
-            _returnTypeTranslation =
-                new TypeNameTranslation(@operator.ReturnType, settings);
+        _parametersTranslation =
+            ParameterSetDefinitionTranslation.For(@operator, settings);
+    }
 
-            _parametersTranslation = ParameterSetDefinitionTranslation.For(@operator, settings);
+    public int TranslationLength =>
+        _modifiers.Length +
+        _returnTypeTranslation.TranslationLength +
+        _parametersTranslation.TranslationLength;
 
-            TranslationSize =
-                _modifiers.Length +
-                _returnTypeTranslation.TranslationSize +
-                _parametersTranslation.TranslationSize;
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteKeywordToTranslation(_modifiers);
 
-            FormattingSize =
-                settings.GetKeywordFormattingSize() + // <- For modifiers
-                _returnTypeTranslation.FormattingSize +
-                _parametersTranslation.FormattingSize;
-        }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public int GetIndentSize() => _parametersTranslation.GetIndentSize();
-
-        public int GetLineCount() => _parametersTranslation.GetLineCount() + 1;
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteKeywordToTranslation(_modifiers);
-
-            _returnTypeTranslation.WriteTo(writer);
-            _parametersTranslation.WriteTo(writer);
-        }
+        _returnTypeTranslation.WriteTo(writer);
+        _parametersTranslation.WriteTo(writer);
     }
 }

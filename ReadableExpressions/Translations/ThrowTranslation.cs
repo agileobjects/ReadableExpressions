@@ -1,63 +1,49 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class ThrowTranslation : ITranslation, IPotentialGotoTranslatable
+internal class ThrowTranslation : INodeTranslation, IPotentialGotoTranslation
+{
+    private const string _throw = "throw";
+    private readonly INodeTranslation _thrownItemTranslation;
+
+    public ThrowTranslation(
+        UnaryExpression throwExpression,
+        ITranslationContext context)
     {
-        private const string _throw = "throw";
-        private readonly ITranslation _thrownItemTranslation;
-
-        public ThrowTranslation(UnaryExpression throwExpression, ITranslationContext context)
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        // unary.Operand is null when using Expression.Rethrow():
+        if (throwExpression.Operand == null ||
+            context.Analysis.IsCatchBlockVariable(throwExpression.Operand))
         {
-            Type = throwExpression.Type;
-            TranslationSize = _throw.Length;
-            FormattingSize = context.GetKeywordFormattingSize();
-
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-            // unary.Operand is null when using Expression.Rethrow():
-            if ((throwExpression.Operand == null) || 
-                 context.Analysis.IsCatchBlockVariable(throwExpression.Operand))
-            {
-                return;
-            }
-
-            _thrownItemTranslation = context.GetTranslationFor(throwExpression.Operand);
-            TranslationSize = _thrownItemTranslation.TranslationSize;
-            FormattingSize += _thrownItemTranslation.FormattingSize;
+            return;
         }
 
-        public ExpressionType NodeType => ExpressionType.Throw;
+        _thrownItemTranslation = context.GetTranslationFor(throwExpression.Operand);
+    }
 
-        public Type Type { get; }
+    public ExpressionType NodeType => ExpressionType.Throw;
 
-        public int TranslationSize { get; }
+    public int TranslationLength
+        => _throw.Length + (_thrownItemTranslation?.TranslationLength ?? 0);
 
-        public int FormattingSize { get; }
+    public bool HasGoto => true;
 
-        public bool HasGoto => true;
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteKeywordToTranslation(_throw);
 
-        public int GetIndentSize() => _thrownItemTranslation?.GetIndentSize() ?? 0;
-
-        public int GetLineCount()
-            => (_thrownItemTranslation?.GetLineCount() + 1).GetValueOrDefault();
-
-        public void WriteTo(TranslationWriter writer)
+        if (_thrownItemTranslation == null)
         {
-            writer.WriteKeywordToTranslation(_throw);
-
-            if (_thrownItemTranslation == null)
-            {
-                return;
-            }
-
-            writer.WriteSpaceToTranslation();
-            _thrownItemTranslation.WriteTo(writer);
+            return;
         }
+
+        writer.WriteSpaceToTranslation();
+        _thrownItemTranslation.WriteTo(writer);
     }
 }

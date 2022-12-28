@@ -1,141 +1,116 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal static class GotoTranslation
+internal static class GotoTranslation
+{
+    public static INodeTranslation For(
+        GotoExpression @goto,
+        ITranslationContext context)
     {
-        public static ITranslation For(GotoExpression @goto, ITranslationContext context)
+        switch (@goto.Kind)
         {
-            switch (@goto.Kind)
-            {
-                case GotoExpressionKind.Break:
-                    return new TerminatedGotoTranslation(@goto, "break", context);
+            case GotoExpressionKind.Break:
+                return new TerminatedGotoTranslation("break");
 
-                case GotoExpressionKind.Continue:
-                    return new TerminatedGotoTranslation(@goto, "continue", context);
+            case GotoExpressionKind.Continue:
+                return new TerminatedGotoTranslation("continue");
 
-                case GotoExpressionKind.Return:
-                    if (@goto.Value == null)
-                    {
-                        return new TerminatedGotoTranslation(@goto, "return", context);
-                    }
+            case GotoExpressionKind.Return:
+                if (@goto.Value == null)
+                {
+                    return new TerminatedGotoTranslation("return");
+                }
 
-                    return new ReturnValueTranslation(@goto, context);
+                return new ReturnValueTranslation(@goto, context);
 
-                case GotoExpressionKind.Goto when context.Analysis.GoesToReturnLabel(@goto):
-                    goto case GotoExpressionKind.Return;
+            case GotoExpressionKind.Goto when context.Analysis.GoesToReturnLabel(@goto):
+                goto case GotoExpressionKind.Return;
 
-                default:
-                    return new GotoNamedLabelTranslation(@goto, context);
-            }
+            default:
+                return new GotoNamedLabelTranslation(@goto);
+        }
+    }
+
+    private class TerminatedGotoTranslation :
+        INodeTranslation,
+        IPotentialSelfTerminatingTranslation
+    {
+        private readonly string _statement;
+
+        public TerminatedGotoTranslation(string statement)
+        {
+            _statement = statement;
         }
 
-        private class TerminatedGotoTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        public ExpressionType NodeType => ExpressionType.Goto;
+
+        public int TranslationLength => _statement.Length + ";".Length;
+
+        public bool IsTerminated => true;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly string _statement;
+            writer.WriteControlStatementToTranslation(_statement);
+            writer.WriteSemiColonToTranslation();
+        }
+    }
 
-            public TerminatedGotoTranslation(
-                Expression @goto,
-                string statement,
-                ITranslationContext context)
-            {
-                Type = @goto.Type;
-                _statement = statement;
-                TranslationSize = statement.Length + ";".Length;
-                FormattingSize = context.GetControlStatementFormattingSize();
-            }
+    private class GotoNamedLabelTranslation :
+        INodeTranslation,
+        IPotentialSelfTerminatingTranslation
+    {
+        private readonly string _labelName;
 
-            public ExpressionType NodeType => ExpressionType.Goto;
-
-            public Type Type { get; }
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public bool IsTerminated => true;
-
-            public int GetIndentSize() => 0;
-
-            public int GetLineCount() => 1;
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteControlStatementToTranslation(_statement);
-                writer.WriteToTranslation(';');
-            }
+        public GotoNamedLabelTranslation(GotoExpression @goto)
+        {
+            _labelName = @goto.Target.Name;
         }
 
-        private class GotoNamedLabelTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+        public ExpressionType NodeType => ExpressionType.Goto;
+
+        public int TranslationLength
+            => "goto ".Length + _labelName.Length + ";".Length;
+
+        public bool IsTerminated => true;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly string _labelName;
+            writer.WriteControlStatementToTranslation("goto ");
+            writer.WriteToTranslation(_labelName);
+            writer.WriteSemiColonToTranslation();
+        }
+    }
 
-            public GotoNamedLabelTranslation(GotoExpression @goto, ITranslationContext context)
-            {
-                Type = @goto.Type;
-                _labelName = @goto.Target.Name;
-                TranslationSize = "goto ".Length + _labelName.Length + ";".Length;
-                FormattingSize = context.GetControlStatementFormattingSize();
-            }
+    private class ReturnValueTranslation :
+        INodeTranslation,
+        IPotentialGotoTranslation
+    {
+        private readonly INodeTranslation _returnValueTranslation;
 
-            public ExpressionType NodeType => ExpressionType.Goto;
-
-            public Type Type { get; }
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public bool IsTerminated => true;
-
-            public int GetIndentSize() => 0;
-
-            public int GetLineCount() => 1;
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteControlStatementToTranslation("goto ");
-                writer.WriteToTranslation(_labelName);
-                writer.WriteToTranslation(';');
-            }
+        public ReturnValueTranslation(
+            GotoExpression @goto,
+            ITranslationContext context)
+        {
+            _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
         }
 
-        private class ReturnValueTranslation : ITranslation, IPotentialGotoTranslatable
+        public ExpressionType NodeType => ExpressionType.Goto;
+
+        public int TranslationLength
+            => _returnValueTranslation.TranslationLength + "return ".Length;
+
+        public bool HasGoto => true;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly ITranslation _returnValueTranslation;
-
-            public ReturnValueTranslation(GotoExpression @goto, ITranslationContext context)
-            {
-                _returnValueTranslation = context.GetCodeBlockTranslationFor(@goto.Value);
-                TranslationSize = _returnValueTranslation.TranslationSize + "return ".Length;
-                FormattingSize = context.GetControlStatementFormattingSize();
-            }
-
-            public ExpressionType NodeType => ExpressionType.Goto;
-
-            public Type Type => _returnValueTranslation.Type;
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public bool HasGoto => true;
-
-            public int GetIndentSize() => _returnValueTranslation.GetIndentSize();
-
-            public int GetLineCount() => _returnValueTranslation.GetLineCount();
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteReturnToTranslation();
-                _returnValueTranslation.WriteTo(writer);
-            }
+            writer.WriteReturnToTranslation();
+            _returnValueTranslation.WriteTo(writer);
         }
     }
 }

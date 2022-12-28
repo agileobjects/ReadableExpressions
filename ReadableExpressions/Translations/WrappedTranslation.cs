@@ -1,45 +1,40 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
 
-    internal class WrappedTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+internal class WrappedTranslation :
+    INodeTranslation,
+    IPotentialSelfTerminatingTranslation
+{
+    private readonly string _prefix;
+    private readonly INodeTranslation _translation;
+    private readonly string _suffix;
+
+    public WrappedTranslation(
+        string prefix,
+        INodeTranslation translation,
+        string suffix)
     {
-        private readonly string _prefix;
-        private readonly ITranslation _translation;
-        private readonly string _suffix;
+        _prefix = prefix;
+        _translation = translation;
+        _suffix = suffix;
+    }
 
-        public WrappedTranslation(string prefix, ITranslation translation, string suffix)
-        {
-            _prefix = prefix;
-            _translation = translation;
-            _suffix = suffix;
-            TranslationSize = prefix.Length + _translation.TranslationSize + suffix.Length;
-        }
+    public ExpressionType NodeType => _translation.NodeType;
 
-        public ExpressionType NodeType => _translation.NodeType;
+    public int TranslationLength
+        => _prefix.Length + _translation.TranslationLength + _suffix.Length;
 
-        public Type Type => _translation.Type;
+    public bool IsTerminated => _translation.IsTerminated();
 
-        public int TranslationSize { get; }
-
-        public int FormattingSize => _translation.FormattingSize;
-
-        public bool IsTerminated => _translation.IsTerminated();
-
-        public int GetIndentSize() => _translation.GetIndentSize();
-
-        public int GetLineCount() => _translation.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteToTranslation(_prefix);
-            _translation.WriteTo(writer);
-            writer.WriteToTranslation(_suffix);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteToTranslation(_prefix);
+        _translation.WriteTo(writer);
+        writer.WriteToTranslation(_suffix);
     }
 }

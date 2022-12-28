@@ -1,136 +1,71 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class NewArrayTranslation : ITranslation
+internal class NewArrayTranslation : INodeTranslation
+{
+    private readonly INodeTranslation _typeNameTranslation;
+    private readonly INodeTranslation[] _boundTranslations;
+    private readonly int _boundTranslationCount;
+
+    public NewArrayTranslation(
+        NewArrayExpression newArray,
+        ITranslationContext context)
     {
-        private readonly ITranslation _typeNameTranslation;
-        private readonly ITranslation[] _boundTranslations;
-        private readonly int _boundTranslationCount;
+        _typeNameTranslation = context
+            .GetTranslationFor(newArray.Type.GetElementType());
 
-        public NewArrayTranslation(NewArrayExpression newArray, ITranslationContext context)
+        if (newArray.Expressions.None())
         {
-            Type = newArray.Type;
-            _typeNameTranslation = context.GetTranslationFor(newArray.Type.GetElementType());
-
-            var translationSize = _typeNameTranslation.TranslationSize + 6;
-            var formattingSize = _typeNameTranslation.FormattingSize;
-
-            if (newArray.Expressions.None())
-            {
-                _boundTranslations = Enumerable<ITranslation>.EmptyArray;
-            }
-            else
-            {
-                _boundTranslationCount = newArray.Expressions.Count;
-                _boundTranslations = new ITranslation[_boundTranslationCount];
-
-                for (var i = 0; i < _boundTranslationCount; ++i)
-                {
-                    var boundTranslation = context.GetTranslationFor(newArray.Expressions[i]);
-
-                    _boundTranslations[i] = boundTranslation;
-                    translationSize += boundTranslation.TranslationSize + 2;
-                    formattingSize += boundTranslation.FormattingSize;
-                }
-            }
-
-            TranslationSize = translationSize;
-            FormattingSize = formattingSize;
+            _boundTranslations = Enumerable<INodeTranslation>.EmptyArray;
         }
-
-        public ExpressionType NodeType => ExpressionType.NewArrayBounds;
-
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public int GetIndentSize()
+        else
         {
-            var indentSize = _typeNameTranslation.GetIndentSize();
+            _boundTranslationCount = newArray.Expressions.Count;
+            _boundTranslations = new INodeTranslation[_boundTranslationCount];
 
-            switch (_boundTranslationCount)
+            for (var i = 0; i < _boundTranslationCount; ++i)
             {
-                case 0:
-                    return indentSize;
-
-                case 1:
-                    return indentSize + _boundTranslations[0].GetIndentSize();
-
-                default:
-                    for (var i = 0; ;)
-                    {
-                        indentSize += _boundTranslations[i].GetIndentSize();
-
-                        ++i;
-
-                        if (i == _boundTranslationCount)
-                        {
-                            return indentSize;
-                        }
-                    }
+                _boundTranslations[i] = context
+                    .GetTranslationFor(newArray.Expressions[i]);
             }
         }
+    }
 
-        public int GetLineCount()
+    public ExpressionType NodeType => ExpressionType.NewArrayBounds;
+
+    public int TranslationLength =>
+        _typeNameTranslation.TranslationLength + 6 +
+        _boundTranslations.TotalTranslationLength();
+
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteNewToTranslation();
+        _typeNameTranslation.WriteTo(writer);
+        writer.WriteToTranslation('[');
+
+        if (_boundTranslationCount != 0)
         {
-            var lineCount = _typeNameTranslation.GetLineCount();
-
-            if (_boundTranslationCount == 0)
-            {
-                return lineCount;
-            }
-
             for (var i = 0; ;)
             {
-                var boundLineCount = _boundTranslations[i].GetLineCount();
-
-                if (boundLineCount > 1)
-                {
-                    lineCount += boundLineCount - 1;
-                }
+                _boundTranslations[i].WriteTo(writer);
 
                 ++i;
 
                 if (i == _boundTranslationCount)
                 {
-                    return lineCount;
+                    break;
                 }
+
+                writer.WriteToTranslation("[]");
             }
         }
 
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteNewToTranslation();
-            _typeNameTranslation.WriteTo(writer);
-            writer.WriteToTranslation('[');
-
-            if (_boundTranslationCount != 0)
-            {
-                for (var i = 0; ;)
-                {
-                    _boundTranslations[i].WriteTo(writer);
-
-                    ++i;
-
-                    if (i == _boundTranslationCount)
-                    {
-                        break;
-                    }
-
-                    writer.WriteToTranslation("[]");
-                }
-            }
-
-            writer.WriteToTranslation(']');
-        }
+        writer.WriteToTranslation(']');
     }
 }

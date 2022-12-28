@@ -1,60 +1,55 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
 
-    internal class NegationTranslation : ITranslation
+internal class NegationTranslation : INodeTranslation
+{
+    private const char _bang = '!';
+    private readonly ITranslationContext _context;
+    private readonly char _operator;
+    private readonly INodeTranslation _negatedValue;
+
+    public NegationTranslation(
+        UnaryExpression negation,
+        ITranslationContext context)
+        : this(
+            negation.NodeType,
+            negation.NodeType == ExpressionType.Not ? _bang : '-',
+            context.GetTranslationFor(negation.Operand),
+            context)
     {
-        private const char _bang = '!';
-        private readonly ITranslationContext _context;
-        private readonly char _operator;
-        private readonly ITranslation _negatedValue;
+    }
 
-        public NegationTranslation(UnaryExpression negation, ITranslationContext context)
-            : this(
-                negation.NodeType,
-               (negation.NodeType == ExpressionType.Not) ? _bang : '-',
-                context.GetTranslationFor(negation.Operand),
-                context)
-        {
-        }
+    private NegationTranslation(
+        ExpressionType negationType,
+        char @operator,
+        INodeTranslation negatedValue,
+        ITranslationContext context)
+    {
+        _context = context;
+        NodeType = negationType;
+        _operator = @operator;
+        _negatedValue = negatedValue;
+    }
 
-        private NegationTranslation(
-            ExpressionType negationType,
-            char @operator,
-            ITranslation negatedValue,
-            ITranslationContext context)
-        {
-            _context = context;
-            NodeType = negationType;
-            _operator = @operator;
-            _negatedValue = negatedValue;
-            TranslationSize = negatedValue.TranslationSize + 3;
-        }
+    public static INodeTranslation ForNot(
+        INodeTranslation negatedValue,
+        ITranslationContext context)
+    {
+        return new NegationTranslation(ExpressionType.Not, _bang, negatedValue, context);
+    }
 
-        public static ITranslation ForNot(ITranslation negatedValue, ITranslationContext context)
-            => new NegationTranslation(ExpressionType.Not, _bang, negatedValue, context);
+    public ExpressionType NodeType { get; }
 
-        public ExpressionType NodeType { get; }
+    public int TranslationLength => _negatedValue.TranslationLength + 3;
 
-        public Type Type => typeof(bool);
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize => _negatedValue.FormattingSize;
-
-        public int GetIndentSize() => _negatedValue.GetIndentSize();
-
-        public int GetLineCount() => _negatedValue.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteToTranslation(_operator);
-            _negatedValue.WriteInParenthesesIfRequired(writer, _context);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteToTranslation(_operator);
+        _negatedValue.WriteInParenthesesIfRequired(writer, _context);
     }
 }

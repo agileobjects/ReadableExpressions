@@ -1,66 +1,70 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Translations
-{
-    using System.Linq;
-    using Common;
-    using ReadableExpressions.Translations;
-    using ReadableExpressions.Translations.Reflection;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Translations;
+
+using System.Linq;
+using Common;
+using ReadableExpressions.Extensions;
+using ReadableExpressions.Translations;
+using ReadableExpressions.Translations.Reflection;
 #if !NET35
-    using System.Linq.Expressions;
-    using Xunit;
+using System.Linq.Expressions;
+using Xunit;
 #else
-    using Microsoft.Scripting.Ast;
-    using Fact = NUnit.Framework.TestAttribute;
-
-    [NUnit.Framework.TestFixture]
+using Microsoft.Scripting.Ast;
+using Fact = NUnit.Framework.TestAttribute;
 #endif
-    public class WhenTranslatingMethodCalls : TestClassBase
+
+using static Common.TestTranslationSettings;
+
+#if NET35
+[NUnit.Framework.TestFixture]
+#endif
+public class WhenTranslatingMethodCalls : TestClassBase
+{
+    [Fact]
+    public void ShouldTranslateAnInstanceCallExpression()
     {
-        [Fact]
-        public void ShouldTranslateAnInstanceCallExpression()
-        {
-            var objectToString = CreateLambda((object o) => o.ToString());
-            var toStringCall = (MethodCallExpression)objectToString.Body;
-            var context = new TestTranslationContext(toStringCall);
-            var toStringMethod = new ClrMethodWrapper(toStringCall.Method, context);
+        var objectToString = CreateLambda((object o) => o.ToString());
+        var toStringCall = (MethodCallExpression)objectToString.Body;
+        var context = new TestTranslationContext(toStringCall);
+        var toStringMethod = new ClrMethodWrapper(toStringCall.Method, context);
 
-            var translation = MethodCallTranslation
-                .For(toStringMethod, toStringCall.Arguments, context);
+        var translation = MethodCallTranslation
+            .For(toStringMethod, toStringCall.Arguments, context);
 
-            var translated = new TestTranslationWriter(translation).GetContent();
+        var translated = translation.WriteUsing(TestSettings);
 
-            translated.ShouldBe("this.ToString()");
-        }
+        translated.ShouldBe("this.ToString()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAStaticCallExpression()
-        {
-            var oneEqualsTwo = CreateLambda(() => ReferenceEquals("1", "2"));
-            var referenceEqualsCall = (MethodCallExpression)oneEqualsTwo.Body;
-            var context = new TestTranslationContext(referenceEqualsCall);
-            var referenceEqualsMethod = new ClrMethodWrapper(referenceEqualsCall.Method, context);
+    [Fact]
+    public void ShouldTranslateAStaticCallExpression()
+    {
+        var oneEqualsTwo = CreateLambda(() => ReferenceEquals("1", "2"));
+        var referenceEqualsCall = (MethodCallExpression)oneEqualsTwo.Body;
+        var context = new TestTranslationContext(referenceEqualsCall);
+        var referenceEqualsMethod = new ClrMethodWrapper(referenceEqualsCall.Method, context);
 
-            var translation = MethodCallTranslation
-                .For(referenceEqualsMethod, referenceEqualsCall.Arguments, context);
+        var translation = MethodCallTranslation
+            .For(referenceEqualsMethod, referenceEqualsCall.Arguments, context);
 
-            var translated = new TestTranslationWriter(translation).GetContent();
+        var translated = translation.WriteUsing(TestSettings);
 
-            translated.ShouldBe("object.ReferenceEquals(\"1\", \"2\")");
-        }
+        translated.ShouldBe("object.ReferenceEquals(\"1\", \"2\")");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnExtensionMethodCall()
-        {
-            var arrayIsEmpty = CreateLambda((string[] a) => a.Any());
-            var linqAnyCall = (MethodCallExpression)arrayIsEmpty.Body;
-            var context = new TestTranslationContext(linqAnyCall);
-            var linqAnyMethod = new ClrMethodWrapper(linqAnyCall.Method, context);
+    [Fact]
+    public void ShouldTranslateAnExtensionMethodCall()
+    {
+        var arrayIsEmpty = CreateLambda((string[] a) => a.Any());
+        var linqAnyCall = (MethodCallExpression)arrayIsEmpty.Body;
+        var context = new TestTranslationContext(linqAnyCall);
+        var linqAnyMethod = new ClrMethodWrapper(linqAnyCall.Method, context);
 
-            var translation = MethodCallTranslation
-                .For(linqAnyMethod, linqAnyCall.Arguments, context);
+        var translation = MethodCallTranslation
+            .For(linqAnyMethod, linqAnyCall.Arguments, context);
 
-            var translated = new TestTranslationWriter(translation).GetContent();
+        var translated = translation.WriteUsing(TestSettings);
 
-            translated.ShouldBe("this.Any()");
-        }
+        translated.ShouldBe("this.Any()");
     }
 }

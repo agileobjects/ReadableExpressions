@@ -1,190 +1,161 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
+﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection;
+
+using System.Reflection;
+using Extensions;
+using NetStandardPolyfills;
+
+/// <summary>
+/// An <see cref="ITranslation"/> for a method signature, including accessibility, scope,
+/// generic arguments and constraints, and method parameters.
+/// </summary>
+public class MethodDefinitionTranslation : ITranslation
 {
-    using System.Reflection;
-    using Extensions;
-    using NetStandardPolyfills;
+    private readonly bool _writeModifiers;
+    private readonly string _accessibility;
+    private readonly string _modifiers;
+    private readonly TypeNameTranslation _returnTypeTranslation;
+    private readonly TypeNameTranslation _declaringTypeNameTranslation;
+    private readonly string _methodName;
+    private readonly ITranslation _genericParametersTranslation;
+    private readonly ITranslation _genericParameterConstraintsTranslation;
+    private readonly ITranslation _parametersTranslation;
+
+    private MethodDefinitionTranslation(
+        IMethod method,
+        TranslationSettings settings) : 
+        this(
+            method,
+            ParameterSetDefinitionTranslation.For(method, settings),
+            includeDeclaringType: true,
+            settings)
+    {
+    }
 
     /// <summary>
-    /// An <see cref="ITranslatable"/> for a method signature, including accessibility, scope,
-    /// generic arguments and constraints, and method parameters.
+    /// Initializes a new instance of the <see cref="MethodDefinitionTranslation"/> class for
+    /// the given <paramref name="method"/>.
     /// </summary>
-    public class MethodDefinitionTranslation : ITranslatable
+    /// <param name="method">
+    /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
+    /// </param>
+    /// <param name="parametersTranslation">
+    /// The <see cref="ITranslation"/> to use to translate the <paramref name="method"/>'s
+    /// parameters.
+    /// </param>
+    /// <param name="includeDeclaringType">
+    /// Whether to include the name of the <paramref name="method"/>'s declaring type in the
+    /// <see cref="MethodDefinitionTranslation"/>.
+    /// </param>
+    /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+    public MethodDefinitionTranslation(
+        IMethod method,
+        ITranslation parametersTranslation,
+        bool includeDeclaringType,
+        TranslationSettings settings)
     {
-        private readonly bool _writeModifiers;
-        private readonly string _accessibility;
-        private readonly string _modifiers;
-        private readonly TypeNameTranslation _returnTypeTranslation;
-        private readonly TypeNameTranslation _declaringTypeNameTranslation;
-        private readonly string _methodName;
-        private readonly ITranslatable _genericParametersTranslation;
-        private readonly ITranslatable _genericParameterConstraintsTranslation;
-        private readonly ITranslatable _parametersTranslation;
+        var translationLength = 0;
 
-        private MethodDefinitionTranslation(
-            IMethod method,
-            TranslationSettings settings)
-            : this(
-                method,
-                ParameterSetDefinitionTranslation.For(method, settings),
-                includeDeclaringType: true,
-                settings)
+        _writeModifiers = !method.IsInterfaceMember();
+
+        if (_writeModifiers)
         {
+            _accessibility = method.GetAccessibilityForTranslation();
+            _modifiers = method.GetModifiersForTranslation();
+
+            translationLength += _accessibility.Length + _modifiers.Length;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MethodDefinitionTranslation"/> class for
-        /// the given <paramref name="method"/>.
-        /// </summary>
-        /// <param name="method">
-        /// The <see cref="IMethod"/> for which to create the <see cref="MethodDefinitionTranslation"/>.
-        /// </param>
-        /// <param name="parametersTranslation">
-        /// The <see cref="ITranslatable"/> to use to translate the <paramref name="method"/>'s
-        /// parameters.
-        /// </param>
-        /// <param name="includeDeclaringType">
-        /// Whether to include the name of the <paramref name="method"/>'s declaring type in the
-        /// <see cref="MethodDefinitionTranslation"/>.
-        /// </param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        public MethodDefinitionTranslation(
-            IMethod method,
-            ITranslatable parametersTranslation,
-            bool includeDeclaringType,
-            TranslationSettings settings)
+        _returnTypeTranslation =
+            new TypeNameTranslation(method.ReturnType, settings);
+
+        _methodName = method.Name;
+
+        translationLength +=
+            _returnTypeTranslation.TranslationLength +
+            _methodName.Length;
+
+        if (includeDeclaringType && method.DeclaringType != null)
         {
-            var translationSize = 0;
-            var formattingSize = 0;
+            _declaringTypeNameTranslation =
+                new TypeNameTranslation(method.DeclaringType, settings);
 
-            _writeModifiers = !method.IsInterfaceMember();
-
-            if (_writeModifiers)
-            {
-                _accessibility = method.GetAccessibilityForTranslation();
-                _modifiers = method.GetModifiersForTranslation();
-
-                translationSize += _accessibility.Length + _modifiers.Length;
-                formattingSize += settings.GetKeywordFormattingSize();
-            }
-
-            _returnTypeTranslation =
-                new TypeNameTranslation(method.ReturnType, settings);
-
-            _methodName = method.Name;
-
-            translationSize +=
-                _returnTypeTranslation.TranslationSize +
-                _methodName.Length;
-
-            formattingSize +=
-                _returnTypeTranslation.FormattingSize;
-
-            if (includeDeclaringType && method.DeclaringType != null)
-            {
-                _declaringTypeNameTranslation =
-                    new TypeNameTranslation(method.DeclaringType, settings);
-
-                translationSize += _declaringTypeNameTranslation.TranslationSize;
-                formattingSize += _declaringTypeNameTranslation.FormattingSize;
-            }
-
-            if (method.IsGenericMethod)
-            {
-                var genericArguments = method.GetGenericArguments();
-
-                _genericParametersTranslation =
-                    new GenericParameterSetDefinitionTranslation(genericArguments, settings);
-
-                _genericParameterConstraintsTranslation =
-                    new GenericParameterSetConstraintsTranslation(genericArguments, settings);
-
-                translationSize +=
-                    _genericParametersTranslation.TranslationSize +
-                    _genericParameterConstraintsTranslation.TranslationSize;
-
-                formattingSize +=
-                    _genericParametersTranslation.FormattingSize +
-                    _genericParameterConstraintsTranslation.FormattingSize;
-            }
-
-            _parametersTranslation = parametersTranslation;
-
-            TranslationSize = translationSize + _parametersTranslation.TranslationSize;
-            FormattingSize = formattingSize + _parametersTranslation.FormattingSize;
+            translationLength += _declaringTypeNameTranslation.TranslationLength;
         }
 
-        /// <summary>
-        /// Creates an <see cref="ITranslatable"/> for the given <paramref name="method"/>, handling
-        /// properties and operators as well as regular methods. Includes the declaring type name in
-        /// the translation.
-        /// </summary>
-        /// <param name="method">The MethodInfo for which to create the <see cref="ITranslatable"/>.</param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        /// <returns>An <see cref="ITranslatable"/> for the given <paramref name="method"/>.</returns>
-        public static ITranslatable For(MethodInfo method, TranslationSettings settings)
+        if (method.IsGenericMethod)
         {
-            if (method.IsAccessor(out var property))
-            {
-                return new PropertyDefinitionTranslation(property, method, settings);
-            }
+            var genericArguments = method.GetGenericArguments();
 
-            if (method.IsImplicitOperator())
-            {
-                return new OperatorDefinitionTranslation(method, "implicit", settings);
-            }
+            _genericParametersTranslation =
+                new GenericParameterSetDefinitionTranslation(genericArguments, settings);
 
-            if (method.IsExplicitOperator())
-            {
-                return new OperatorDefinitionTranslation(method, "explicit", settings);
-            }
+            _genericParameterConstraintsTranslation =
+                new GenericParameterSetConstraintsTranslation(genericArguments, settings);
 
-            return new MethodDefinitionTranslation(
-                new ClrMethodWrapper(method, settings),
-                settings);
+            translationLength +=
+                _genericParametersTranslation.TranslationLength +
+                _genericParameterConstraintsTranslation.TranslationLength;
         }
 
-        /// <inheritdoc />
-        public int TranslationSize { get; }
+        _parametersTranslation = parametersTranslation;
 
-        /// <inheritdoc />
-        public int FormattingSize { get; }
+        TranslationLength = translationLength + _parametersTranslation.TranslationLength;
+    }
 
-        /// <inheritdoc />
-        public int GetIndentSize()
+    /// <summary>
+    /// Creates an <see cref="ITranslation"/> for the given <paramref name="method"/>, handling
+    /// properties and operators as well as regular methods. Includes the declaring type name in
+    /// the translation.
+    /// </summary>
+    /// <param name="method">The MethodInfo for which to create the <see cref="ITranslation"/>.</param>
+    /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+    /// <returns>An <see cref="ITranslation"/> for the given <paramref name="method"/>.</returns>
+    public static ITranslation For(MethodInfo method, TranslationSettings settings)
+    {
+        if (method.IsAccessor(out var property))
         {
-            return _parametersTranslation.GetIndentSize() +
-                   _genericParameterConstraintsTranslation?.GetIndentSize() ?? 0;
+            return new PropertyDefinitionTranslation(property, method, settings);
         }
 
-        /// <inheritdoc />
-        public int GetLineCount()
+        if (method.IsImplicitOperator())
         {
-            return _parametersTranslation.GetLineCount() +
-                   _genericParameterConstraintsTranslation?.GetLineCount() ?? 0;
+            return new OperatorDefinitionTranslation(method, "implicit", settings);
         }
 
-        /// <inheritdoc />
-        public void WriteTo(TranslationWriter writer)
+        if (method.IsExplicitOperator())
         {
-            if (_writeModifiers)
-            {
-                writer.WriteKeywordToTranslation(_accessibility + _modifiers);
-            }
-
-            _returnTypeTranslation.WriteTo(writer);
-            writer.WriteSpaceToTranslation();
-
-            if (_declaringTypeNameTranslation != null)
-            {
-                _declaringTypeNameTranslation.WriteTo(writer);
-                writer.WriteDotToTranslation();
-            }
-
-            writer.WriteToTranslation(_methodName);
-
-            _genericParametersTranslation?.WriteTo(writer);
-            _parametersTranslation.WriteTo(writer);
-            _genericParameterConstraintsTranslation?.WriteTo(writer);
+            return new OperatorDefinitionTranslation(method, "explicit", settings);
         }
+
+        return new MethodDefinitionTranslation(
+            new ClrMethodWrapper(method, settings),
+            settings);
+    }
+
+    /// <inheritdoc />
+    public int TranslationLength { get; }
+
+    /// <inheritdoc />
+    public void WriteTo(TranslationWriter writer)
+    {
+        if (_writeModifiers)
+        {
+            writer.WriteKeywordToTranslation(_accessibility + _modifiers);
+        }
+
+        _returnTypeTranslation.WriteTo(writer);
+        writer.WriteSpaceToTranslation();
+
+        if (_declaringTypeNameTranslation != null)
+        {
+            _declaringTypeNameTranslation.WriteTo(writer);
+            writer.WriteDotToTranslation();
+        }
+
+        writer.WriteToTranslation(_methodName);
+
+        _genericParametersTranslation?.WriteTo(writer);
+        _parametersTranslation.WriteTo(writer);
+        _genericParameterConstraintsTranslation?.WriteTo(writer);
     }
 }

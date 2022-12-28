@@ -1,158 +1,132 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations
+﻿namespace AgileObjects.ReadableExpressions.Translations.Initialisations;
+
+using System.Linq;
+#if NET35
+using Microsoft.Scripting.Ast;
+#else
+using System.Linq.Expressions;
+#endif
+using Extensions;
+#if NET35
+using static Microsoft.Scripting.Ast.ExpressionType;
+#else
+using static System.Linq.Expressions.ExpressionType;
+#endif
+
+internal class ArrayInitialisationTranslation :
+    InitialisationTranslationBase<Expression>
 {
-    using System;
-    using System.Linq;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
-    using Extensions;
-#if NET35
-    using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-    using static System.Linq.Expressions.ExpressionType;
-#endif
-
-    internal class ArrayInitialisationTranslation : InitialisationTranslationBase<Expression>
+    private ArrayInitialisationTranslation(
+        NewArrayExpression arrayInit,
+        ITranslationContext context) :
+        base(
+            NewArrayInit,
+            GetNewArrayTranslation(arrayInit, context),
+            new ArrayInitializerSetTranslation(arrayInit, context))
     {
-        private ArrayInitialisationTranslation(NewArrayExpression arrayInit, ITranslationContext context)
-            : base(
-                NewArrayInit,
-                GetNewArrayTranslation(arrayInit, context),
-                new ArrayInitializerSetTranslation(arrayInit, context))
+    }
+
+    private static INodeTranslation GetNewArrayTranslation(
+        NewArrayExpression arrayInit,
+        ITranslationContext context)
+    {
+        bool useImplicitlyTypedArray;
+
+        if (context.Settings.HideImplicitlyTypedArrayTypes)
         {
+            var expressionTypes = arrayInit
+                .Expressions
+                .Project(exp => exp.Type)
+                .Distinct()
+                .ToList();
+
+            useImplicitlyTypedArray = expressionTypes.Count == 1;
+        }
+        else
+        {
+            useImplicitlyTypedArray = false;
         }
 
-        private static ITranslation GetNewArrayTranslation(NewArrayExpression arrayInit, ITranslationContext context)
+        if (useImplicitlyTypedArray)
         {
-            bool useImplicitlyTypedArray;
-
-            if (context.Settings.HideImplicitlyTypedArrayTypes)
-            {
-                var expressionTypes = arrayInit
-                    .Expressions
-                    .Project(exp => exp.Type)
-                    .Distinct()
-                    .ToList();
-
-                useImplicitlyTypedArray = expressionTypes.Count == 1;
-            }
-            else
-            {
-                useImplicitlyTypedArray = false;
-            }
-
-            if (useImplicitlyTypedArray)
-            {
-                return new NewImplicitlyTypedArrayTranslation(arrayInit, context);
-            }
-
-            return new NewBoundedArrayTranslation(arrayInit, context);
+            return new NewImplicitlyTypedArrayTranslation();
         }
 
-        public static ITranslation For(NewArrayExpression arrayInit, ITranslationContext context)
-        {
-            if (arrayInit.Expressions.None())
-            {
-                return new NewEmptyBoundedArrayTranslation(arrayInit, context);
-            }
+        return new NewBoundedArrayTranslation(arrayInit, context);
+    }
 
-            return new ArrayInitialisationTranslation(arrayInit, context);
+    public static INodeTranslation For(
+        NewArrayExpression arrayInit,
+        ITranslationContext context)
+    {
+        if (arrayInit.Expressions.None())
+        {
+            return new NewEmptyBoundedArrayTranslation(arrayInit, context);
         }
 
-        private abstract class NewArrayTranslationBase
+        return new ArrayInitialisationTranslation(arrayInit, context);
+    }
+
+    private class NewEmptyBoundedArrayTranslation : INodeTranslation
+    {
+        private readonly INodeTranslation _elementTypeNameTranslation;
+
+        public NewEmptyBoundedArrayTranslation(
+            Expression arrayInit,
+            ITranslationContext context)
         {
-            protected NewArrayTranslationBase(Expression arrayInit)
-            {
-                Type = arrayInit.Type;
-            }
-
-            public ExpressionType NodeType => NewArrayInit;
-
-            public Type Type { get; }
+            _elementTypeNameTranslation = context.GetTranslationFor(arrayInit.Type.GetElementType());
         }
 
-        private class NewEmptyBoundedArrayTranslation : NewArrayTranslationBase, ITranslation
+        public ExpressionType NodeType => NewArrayInit;
+
+        public int TranslationLength
+            => "new ".Length + _elementTypeNameTranslation.TranslationLength + "[0]".Length;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly ITranslation _emptyArrayNewing;
+            writer.WriteNewToTranslation();
+            _elementTypeNameTranslation.WriteTo(writer);
+            writer.WriteToTranslation('[');
+            writer.WriteToTranslation(0);
+            writer.WriteToTranslation(']');
+        }
+    }
 
-            public NewEmptyBoundedArrayTranslation(Expression arrayInit, ITranslationContext context)
-                : base(arrayInit)
-            {
-                _emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
-                TranslationSize = "new ".Length + _emptyArrayNewing.TranslationSize + "[0]".Length;
-                FormattingSize = context.GetKeywordFormattingSize() + _emptyArrayNewing.FormattingSize;
-            }
+    private class NewImplicitlyTypedArrayTranslation : INodeTranslation
+    {
+        public ExpressionType NodeType => NewArrayInit;
 
-            public int TranslationSize { get; }
+        public int TranslationLength => "new[]".Length;
 
-            public int FormattingSize { get; }
+        public void WriteTo(TranslationWriter writer)
+        {
+            writer.WriteKeywordToTranslation("new");
+            writer.WriteToTranslation("[]");
+        }
+    }
 
-            public int GetIndentSize() => _emptyArrayNewing.GetIndentSize();
+    private class NewBoundedArrayTranslation : INodeTranslation
+    {
+        private readonly INodeTranslation _elementTypeNameTranslation;
 
-            public int GetLineCount() => _emptyArrayNewing.GetLineCount();
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteNewToTranslation();
-                _emptyArrayNewing.WriteTo(writer);
-                writer.WriteToTranslation('[');
-                writer.WriteToTranslation(0);
-                writer.WriteToTranslation(']');
-            }
+        public NewBoundedArrayTranslation(
+            Expression arrayInit,
+            ITranslationContext context)
+        {
+            _elementTypeNameTranslation = context.GetTranslationFor(arrayInit.Type.GetElementType());
         }
 
-        private class NewImplicitlyTypedArrayTranslation : NewArrayTranslationBase, ITranslation
+        public ExpressionType NodeType => NewArrayInit;
+
+        public int TranslationLength
+            => "new ".Length + _elementTypeNameTranslation.TranslationLength + "[]".Length;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            public NewImplicitlyTypedArrayTranslation(Expression arrayInit, ITranslationContext context)
-                : base(arrayInit)
-            {
-                TranslationSize = "new[]".Length;
-                FormattingSize = context.GetKeywordFormattingSize();
-            }
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public int GetIndentSize() => 0;
-
-            public int GetLineCount() => 1;
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteKeywordToTranslation("new");
-                writer.WriteToTranslation("[]");
-            }
-        }
-
-        private class NewBoundedArrayTranslation : NewArrayTranslationBase, ITranslation
-        {
-            private readonly ITranslation _emptyArrayNewing;
-
-            public NewBoundedArrayTranslation(Expression arrayInit, ITranslationContext context)
-                : base(arrayInit)
-            {
-                _emptyArrayNewing = context.GetTranslationFor(arrayInit.Type.GetElementType());
-                TranslationSize = "new ".Length + _emptyArrayNewing.TranslationSize + "[]".Length;
-                FormattingSize = context.GetKeywordFormattingSize() + _emptyArrayNewing.FormattingSize;
-            }
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public int GetIndentSize() => _emptyArrayNewing.GetIndentSize();
-
-            public int GetLineCount() => _emptyArrayNewing.GetLineCount();
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                writer.WriteNewToTranslation();
-                _emptyArrayNewing.WriteTo(writer);
-                writer.WriteToTranslation("[]");
-            }
+            writer.WriteNewToTranslation();
+            _elementTypeNameTranslation.WriteTo(writer);
+            writer.WriteToTranslation("[]");
         }
     }
 }

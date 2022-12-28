@@ -1,161 +1,120 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
-    using System.Collections.Generic;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System.Collections.Generic;
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using System.Reflection;
-    using Extensions;
-    using Initialisations;
-    using static TranslationConstants;
+using System.Reflection;
+using Extensions;
+using Initialisations;
 
-    internal class AnonymousTypeNewingTranslation : NewingTranslationBase, ITranslation
+internal class AnonymousTypeNewingTranslation : NewingTranslationBase, INodeTranslation
+{
+    private readonly string _typeName;
+    private readonly IInitializerSetTranslation _initializers;
+
+    public AnonymousTypeNewingTranslation(
+        NewExpression newing,
+        ITranslationContext context) :
+        base(newing, context)
     {
-        private readonly string _typeName;
-        private readonly IInitializerSetTranslation _initializers;
+        _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(newing.Type) ?? string.Empty;
 
-        public AnonymousTypeNewingTranslation(NewExpression newing, ITranslationContext context)
-            : base(newing, context)
+        var ctorParameters = newing.Constructor.GetParameters();
+        var ctorParameterCount = ctorParameters.Length;
+
+        var initializers = new ITranslation[ctorParameterCount];
+
+        for (var i = 0; ;)
         {
-            Type = newing.Type;
-            _typeName = context.Settings.AnonymousTypeNameFactory?.Invoke(Type) ?? string.Empty;
+            initializers[i] = new AnonymousTypeInitializerTranslation(
+                ctorParameters[i],
+                Parameters[i]);
 
-            var ctorParameters = newing.Constructor.GetParameters();
-            var ctorParameterCount = ctorParameters.Length;
+            ++i;
 
-            var initializers = new ITranslation[ctorParameterCount];
-            var translationSize = _typeName.Length + "new ".Length;
-
-            for (var i = 0; ;)
+            if (i == ctorParameterCount)
             {
-                initializers[i] = new AnonymousTypeInitializerTranslation(
-                    ctorParameters[i],
-                    Parameters[i]);
+                break;
+            }
+        }
 
-                ++i;
+        _initializers =
+            new AnonymousTypeInitializerTranslationSet(this, initializers, context);
+    }
 
-                if (i == ctorParameterCount)
-                {
-                    break;
-                }
+    public int TranslationLength
+        => "new ".Length + _typeName.Length + _initializers.TranslationLength;
+
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteNewToTranslation();
+
+        if (_typeName.Length != 0)
+        {
+            writer.WriteTypeNameToTranslation(_typeName);
+            writer.WriteSpaceToTranslation();
+        }
+
+        _initializers.WriteTo(writer);
+    }
+
+    private class AnonymousTypeInitializerTranslation : ITranslation
+    {
+        private readonly string _memberName;
+        private readonly INodeTranslation _value;
+
+        public AnonymousTypeInitializerTranslation(
+            ParameterInfo member,
+            INodeTranslation value)
+        {
+            _value = value;
+
+            if (value is IParameterTranslation parameter &&
+                parameter.Name == member.Name)
+            {
+                _memberName = string.Empty;
+                return;
             }
 
-            _initializers = new AnonymousTypeInitializerTranslationSet(initializers, context);
-
-            TranslationSize = translationSize + _initializers.TranslationSize;
-
-            FormattingSize =
-                context.GetKeywordFormattingSize() + // <- For 'new'
-                _initializers.FormattingSize;
+            _memberName = member.Name;
         }
 
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public int GetIndentSize()
-        {
-            _initializers.IsLongTranslation = 
-                TranslationSize > LongTranslationThreshold;
-
-            return _initializers.GetIndentSize();
-        }
-
-        public int GetLineCount()
-        {
-            _initializers.IsLongTranslation = 
-                TranslationSize > LongTranslationThreshold;
-
-            var initializersLineCount = _initializers.GetLineCount();
-
-            return initializersLineCount == 1 ? 1 : initializersLineCount + 1;
-        }
+        public int TranslationLength => _memberName == string.Empty
+            ? _value.TranslationLength
+            : _memberName.Length + " = ".Length + _value.TranslationLength;
 
         public void WriteTo(TranslationWriter writer)
         {
-            _initializers.IsLongTranslation = 
-                TranslationSize > LongTranslationThreshold;
-
-            writer.WriteNewToTranslation();
-
-            if (_typeName.Length != 0)
+            if (_memberName != string.Empty)
             {
-                writer.WriteTypeNameToTranslation(_typeName);
-                writer.WriteSpaceToTranslation();
+                writer.WriteToTranslation(_memberName);
+                writer.WriteToTranslation(" = ");
             }
 
-            _initializers.WriteTo(writer);
+            _value.WriteTo(writer);
+        }
+    }
+
+    private class AnonymousTypeInitializerTranslationSet :
+        InitializerSetTranslationBase<ITranslation>
+    {
+        public AnonymousTypeInitializerTranslationSet(
+            ITranslation parent,
+            IList<ITranslation> initializers,
+            ITranslationContext context) :
+            base(initializers, context)
+        {
+            Parent = parent;
         }
 
-        private class AnonymousTypeInitializerTranslation : ITranslation
+        protected override ITranslation GetTranslationFor(
+            ITranslation initializer,
+            ITranslationContext context)
         {
-            private readonly string _memberName;
-            private readonly ITranslation _value;
-
-            public AnonymousTypeInitializerTranslation(
-                ParameterInfo member,
-                ITranslation value)
-            {
-                _value = value;
-
-                if (value is IParameterTranslation parameter &&
-                    parameter.Name == member.Name)
-                {
-                    _memberName = string.Empty;
-                    TranslationSize = value.TranslationSize;
-                    return;
-                }
-
-                _memberName = member.Name;
-                TranslationSize = _memberName.Length + 3 + value.TranslationSize;
-            }
-
-            public ExpressionType NodeType => _value.NodeType;
-
-            public Type Type => _value.Type;
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize => _value.FormattingSize;
-
-            public int GetIndentSize() => _value.GetIndentSize();
-
-            public int GetLineCount() => _value.GetLineCount();
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                if (_memberName != string.Empty)
-                {
-                    writer.WriteToTranslation(_memberName);
-                    writer.WriteToTranslation(" = ");
-                }
-
-                _value.WriteTo(writer);
-            }
-        }
-
-        private class AnonymousTypeInitializerTranslationSet : InitializerSetTranslationBase<ITranslation>
-        {
-            public AnonymousTypeInitializerTranslationSet(
-                IList<ITranslation> initializers,
-                ITranslationContext context)
-                : base(initializers, context)
-            {
-            }
-
-            protected override ITranslatable GetTranslation(
-                ITranslation initializer,
-                ITranslationContext context)
-            {
-                return initializer;
-            }
-
-            public override bool ForceWriteToMultipleLines => false;
+            return initializer;
         }
     }
 }

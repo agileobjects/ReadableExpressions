@@ -1,99 +1,81 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
+﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection;
+
+using System.Collections.Generic;
+using static System.Environment;
+
+/// <summary>
+/// An <see cref="ITranslation"/> for a set of generic parameter constraints.
+/// </summary>
+public class GenericParameterSetConstraintsTranslation : ITranslation
 {
-    using System.Collections.Generic;
+    private readonly ITranslation[] _constraintTranslations;
+    private readonly int _constraintsCount;
 
     /// <summary>
-    /// An <see cref="ITranslatable"/> for a set of generic parameter constraints.
+    /// Initializes a new instance of the <see cref="GenericParameterSetConstraintsTranslation"/>
+    /// class.
     /// </summary>
-    public class GenericParameterSetConstraintsTranslation : ITranslatable
+    /// <param name="genericParameters">The <see cref="IGenericParameter"/>s to write to the translation.</param>
+    /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+    public GenericParameterSetConstraintsTranslation(
+        IList<IGenericParameter> genericParameters,
+        TranslationSettings settings)
     {
-        private readonly TranslationSettings _settings;
-        private readonly ITranslatable[] _constraintTranslations;
-        private readonly int _constraintsCount;
+        var genericArgumentCount = genericParameters.Count;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GenericParameterSetConstraintsTranslation"/>
-        /// class.
-        /// </summary>
-        /// <param name="genericParameters">The <see cref="IGenericParameter"/>s to write to the translation.</param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        public GenericParameterSetConstraintsTranslation(
-            IList<IGenericParameter> genericParameters,
-            TranslationSettings settings)
+        _constraintTranslations = new ITranslation[genericArgumentCount];
+
+        for (var i = 0; ;)
         {
-            _settings = settings;
+            var parameter = genericParameters[i];
 
-            var genericArgumentCount = genericParameters.Count;
-            var translationSize = 0;
-            var formattingSize = 0;
+            var constraintsTranslation =
+                GenericConstraintsTranslation.For(parameter, settings);
 
-            _constraintTranslations = new ITranslatable[genericArgumentCount];
+            _constraintTranslations[i] = constraintsTranslation;
 
-            for (var i = 0; ;)
+            if (constraintsTranslation.TranslationLength > 0)
             {
-                var parameter = genericParameters[i];
-                var constraintsTranslation = GenericConstraintsTranslation.For(parameter, settings);
-
-                translationSize += constraintsTranslation.TranslationSize;
-                formattingSize += constraintsTranslation.FormattingSize;
-
-                _constraintTranslations[i] = constraintsTranslation;
-
-                if (constraintsTranslation.TranslationSize > 0)
-                {
-                    ++_constraintsCount;
-                }
-
-                ++i;
-
-                if (i == genericArgumentCount)
-                {
-                    break;
-                }
+                ++_constraintsCount;
             }
 
-            TranslationSize = translationSize;
-            FormattingSize = formattingSize;
+            ++i;
+
+            if (i == genericArgumentCount)
+            {
+                break;
+            }
+        }
+    }
+
+    /// <inheritdoc />
+    public int TranslationLength
+        => _constraintTranslations.TotalTranslationLength(separator: NewLine);
+
+    /// <inheritdoc />
+    public void WriteTo(TranslationWriter writer)
+    {
+        if (_constraintsCount == 0)
+        {
+            return;
         }
 
-        /// <inheritdoc />
-        public int TranslationSize { get; }
+        writer.WriteNewLineToTranslation();
+        writer.Indent();
 
-        /// <inheritdoc />
-        public int FormattingSize { get; }
-
-        /// <inheritdoc />
-        public int GetIndentSize()
-            => _constraintsCount * _settings.Indent.Length;
-
-        /// <inheritdoc />
-        public int GetLineCount() => _constraintsCount + 1;
-
-        /// <inheritdoc />
-        public void WriteTo(TranslationWriter writer)
+        for (var i = 0; ;)
         {
-            if (_constraintsCount == 0)
+            _constraintTranslations[i].WriteTo(writer);
+            ++i;
+
+            if (i == _constraintsCount)
             {
-                return;
+                break;
             }
 
             writer.WriteNewLineToTranslation();
-            writer.Indent();
-
-            for (var i = 0; ;)
-            {
-                _constraintTranslations[i].WriteTo(writer);
-                ++i;
-
-                if (i == _constraintsCount)
-                {
-                    break;
-                }
-
-                writer.WriteNewLineToTranslation();
-            }
-
-            writer.Unindent();
         }
+
+        writer.Unindent();
     }
 }

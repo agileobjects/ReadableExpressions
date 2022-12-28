@@ -1,138 +1,125 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using System.Reflection;
-    using Extensions;
+using System.Reflection;
+using Extensions;
+
+/// <summary>
+/// An <see cref="ITranslation"/> for a field signature, including accessibility and scope.
+/// </summary>
+public class FieldDefinitionTranslation : INodeTranslation
+{
+    private readonly string _modifiers;
+    private readonly ITranslation _fieldTypeNameTranslation;
+    private readonly string _fieldName;
+    private readonly ITranslation _declaringTypeNameTranslation;
+
+    internal FieldDefinitionTranslation(
+        FieldInfo field,
+        TranslationSettings settings)
+        : this(new ClrFieldWrapper(field), includeDeclaringType: true, settings)
+    {
+    }
 
     /// <summary>
-    /// An <see cref="ITranslatable"/> for a field signature, including accessibility and scope.
+    /// Initializes a new instance of the <see cref="FieldDefinitionTranslation"/> class.
     /// </summary>
-    public class FieldDefinitionTranslation : ITranslation
+    /// <param name="field">The <see cref="IField"/> to translate.</param>
+    /// <param name="includeDeclaringType">
+    /// A value indicating whether to include the <paramref name="field"/>'s declaring type
+    /// in the translation.
+    /// </param>
+    /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
+    public FieldDefinitionTranslation(
+        IField field,
+        bool includeDeclaringType,
+        TranslationSettings settings)
     {
-        private readonly IField _field;
-        private readonly string _modifiers;
-        private readonly ITranslatable _fieldTypeNameTranslation;
-        private readonly string _fieldName;
-        private readonly ITranslatable _declaringTypeNameTranslation;
+        _modifiers = field.GetAccessibilityForTranslation();
 
-        internal FieldDefinitionTranslation(
-            FieldInfo field,
-            TranslationSettings settings)
-            : this(new ClrFieldWrapper(field), includeDeclaringType: true, settings)
+        if (field.IsConstant)
         {
+            _modifiers += "const ";
+        }
+        else
+        {
+            if (field.IsStatic)
+            {
+                _modifiers += "static ";
+            }
+
+            if (field.IsReadonly)
+            {
+                _modifiers += "readonly ";
+            }
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="FieldDefinitionTranslation"/> class.
-        /// </summary>
-        /// <param name="field">The <see cref="IField"/> to translate.</param>
-        /// <param name="includeDeclaringType">
-        /// A value indicating whether to include the <paramref name="field"/>'s declaring type
-        /// in the translation.
-        /// </param>
-        /// <param name="settings">The <see cref="TranslationSettings"/> to use.</param>
-        public FieldDefinitionTranslation(
-            IField field,
-            bool includeDeclaringType,
-            TranslationSettings settings)
+        _fieldTypeNameTranslation =
+            new TypeNameTranslation(field.Type, settings);
+
+        _fieldName = field.Name;
+
+        if (includeDeclaringType && field.DeclaringType != null)
         {
-            _field = field;
-            _modifiers = field.GetAccessibilityForTranslation();
+            _declaringTypeNameTranslation =
+                new TypeNameTranslation(field.DeclaringType, settings);
+        }
+    }
 
-            if (field.IsConstant)
-            {
-                _modifiers += "const ";
-            }
-            else
-            {
-                if (field.IsStatic)
-                {
-                    _modifiers += "static ";
-                }
+    /// <inheritdoc />
+    public ExpressionType NodeType => ExpressionType.MemberAccess;
 
-                if (field.IsReadonly)
-                {
-                    _modifiers += "readonly ";
-                }
-            }
-
-            _fieldTypeNameTranslation =
-                new TypeNameTranslation(field.Type, settings);
-
-            _fieldName = field.Name;
-
-            var translationSize =
+    /// <inheritdoc />
+    public virtual int TranslationLength
+    {
+        get
+        {
+            var translationLength =
                 _modifiers.Length +
-                _fieldTypeNameTranslation.TranslationSize +
+                _fieldTypeNameTranslation.TranslationLength +
                 _fieldName.Length +
-                1; // For terminating ;
-
-            var formattingSize =
-                 settings.GetKeywordFormattingSize() +
-                _fieldTypeNameTranslation.FormattingSize;
-
-            if (includeDeclaringType && field.DeclaringType != null)
+                ";".Length;
+            
+            if (_declaringTypeNameTranslation == null)
             {
-                _declaringTypeNameTranslation =
-                    new TypeNameTranslation(field.DeclaringType, settings);
-
-                translationSize += _declaringTypeNameTranslation.TranslationSize + ".".Length;
-                formattingSize += _declaringTypeNameTranslation.FormattingSize;
+                return translationLength;
             }
 
-            TranslationSize = translationSize;
-            FormattingSize = formattingSize;
+            return translationLength + 
+                  _declaringTypeNameTranslation.TranslationLength + 
+                  ".".Length;
         }
+    }
 
-        /// <inheritdoc />
-        public ExpressionType NodeType => ExpressionType.MemberAccess;
+    /// <inheritdoc />
+    public void WriteTo(TranslationWriter writer)
+    {
+        WriteDefinitionTo(writer);
+        writer.WriteSemiColonToTranslation();
+    }
 
-        /// <inheritdoc />
-        public Type Type => _field.Type.AsType();
+    /// <summary>
+    /// Writes the field definition to the given <paramref name="writer"/>, without a terminating
+    /// semi-colon.
+    /// </summary>
+    /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the field definition.</param>
+    public void WriteDefinitionTo(TranslationWriter writer)
+    {
+        writer.WriteKeywordToTranslation(_modifiers);
 
-        /// <inheritdoc />
-        public virtual int TranslationSize { get; }
+        _fieldTypeNameTranslation.WriteTo(writer);
+        writer.WriteSpaceToTranslation();
 
-        /// <inheritdoc />
-        public virtual int FormattingSize { get; }
-
-        /// <inheritdoc />
-        public int GetIndentSize() => 0;
-
-        /// <inheritdoc />
-        public int GetLineCount() => 1;
-
-        /// <inheritdoc />
-        public void WriteTo(TranslationWriter writer)
+        if (_declaringTypeNameTranslation != null)
         {
-            WriteDefinitionTo(writer);
-            writer.WriteToTranslation(';');
+            _declaringTypeNameTranslation.WriteTo(writer);
+            writer.WriteDotToTranslation();
         }
 
-        /// <summary>
-        /// Writes the field definition to the given <paramref name="writer"/>, without a terminating
-        /// semi-colon.
-        /// </summary>
-        /// <param name="writer">The <see cref="TranslationWriter"/> to which to write the field definition.</param>
-        public void WriteDefinitionTo(TranslationWriter writer)
-        {
-            writer.WriteKeywordToTranslation(_modifiers);
-
-            _fieldTypeNameTranslation.WriteTo(writer);
-            writer.WriteSpaceToTranslation();
-
-            if (_declaringTypeNameTranslation != null)
-            {
-                _declaringTypeNameTranslation.WriteTo(writer);
-                writer.WriteDotToTranslation();
-            }
-
-            writer.WriteToTranslation(_fieldName);
-        }
+        writer.WriteToTranslation(_fieldName);
     }
 }
