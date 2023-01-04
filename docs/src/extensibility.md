@@ -1,4 +1,4 @@
-### Custom Translators
+## Custom Translators
 
 Custom `Expression` translators can be configured on a per-`ExpressionType` basis.
 
@@ -45,11 +45,11 @@ In this example the user-defined `UseDefaultTranslation` method enables a fallba
 translation if desired, then embeds the default translations for the array's element initializations
 in curly braces, to produce (*e.g*) the syntax `{ 123, "Hello!", 456 }`.
 
-### Custom Expression Types
+## Custom Expression Types
 
 Custom `Expression` types can be created and made translatable.
 
-For example, the following `Expression` could be used to represent the use of the  
+For example, the following `Expression` could be used to represent the use of the
 [Null-Forgiving](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/null-forgiving) 
 operator:
 
