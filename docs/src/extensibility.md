@@ -30,6 +30,7 @@ string readable = myExpression
 
             if (UseDefaultTranslation(arrayInit))
             {
+                // Fallback to use the default translation:
                 return defaultTranslator(arrayInit);
             }
 
@@ -37,6 +38,7 @@ string readable = myExpression
                 .Expressions
                 .Select(defaultTranslator);
 
+            // Return (eg) { 123, "Hello!", 456 }
             return $"{{ {string.Join(", ", childExpressions)} }}";
         }));
 ```
