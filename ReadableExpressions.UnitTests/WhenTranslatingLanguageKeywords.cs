@@ -34,6 +34,7 @@
         [Fact]
         public void ShouldEscapeAKeywordVariable()
         {
+            VerifyIsEscaped("const");
             VerifyIsEscaped("int");
             VerifyIsEscaped("typeof");
             VerifyIsEscaped("default");

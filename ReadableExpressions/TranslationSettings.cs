@@ -196,7 +196,7 @@ public class TranslationSettings : ITranslationSettings
 
     internal bool TryGetCustomTranslationFor(
         Expression expression,
-        ITranslationContext context,
+        ExpressionTranslation context,
         out INodeTranslation customTranslation)
     {
         if (_customTranslationFactories == null)
@@ -232,18 +232,6 @@ public class TranslationSettings : ITranslationSettings
     /// Gets a factory to use to name anonymous types instead of the default method.
     /// </summary>
     public Func<Type, string> AnonymousTypeNameFactory { get; private set; }
-
-    /// <inheritdoc />
-    ITranslationSettings ITranslationSettings.TranslateConstantsUsing(Func<Type, object, string> valueFactory)
-    {
-        ConstantExpressionValueFactory = valueFactory;
-        return this;
-    }
-
-    /// <summary>
-    /// Gets a factory to use to translate ConstantExpression values instead of the default method.
-    /// </summary>
-    public Func<Type, object, string> ConstantExpressionValueFactory { get; private set; }
 
     ITranslationSettings ITranslationSettings.IndentUsing(string indent)
     {

@@ -91,16 +91,6 @@ public interface ITranslationSettings
     ITranslationSettings NameAnonymousTypesUsing(Func<Type, string> nameFactory);
 
     /// <summary>
-    /// Translate ConstantExpressions using the given <paramref name="valueFactory"/> instead of
-    /// the default method.
-    /// </summary>
-    /// <param name="valueFactory">
-    /// The factory method to execute to retrieve the ConstantExpression's translated value.
-    /// </param>
-    /// <returns>These <see cref="ITranslationSettings"/>, to support a fluent API.</returns>
-    ITranslationSettings TranslateConstantsUsing(Func<Type, object, string> valueFactory);
-
-    /// <summary>
     /// Indent multi-line Expression translations using the given <paramref name="indent"/>.
     /// </summary>
     /// <param name="indent">

@@ -65,14 +65,6 @@ string readable = myExpression
         anonType => GetAnonTypeName(anonType)));
 ```
 
-To define a custom factory for translating `ConstantExpression` values, use:
-
-```csharp
-string readable = myExpression
-    .ToReadableString(c => c.TranslateConstantsUsing(
-        (constantType, constantValue) => GetConstantValue(constantType, constantValue)));
-```
-
 To specify a custom string for code indenting, use:
 
 ```csharp
@@ -80,7 +72,7 @@ string readable = myExpression
     .ToReadableString(c => c.IndentUsing("\t"));
 ```
 
-To include the values of captured variable, field and property values, use:
+To include captured variable, field and property values, use:
 
 ```csharp
 string readable = myExpression

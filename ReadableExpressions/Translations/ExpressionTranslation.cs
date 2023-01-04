@@ -56,7 +56,7 @@ public class ExpressionTranslation : ITranslationContext
             : GetDefaultTranslation(expression);
     }
 
-    private INodeTranslation GetDefaultTranslation(Expression expression)
+    internal INodeTranslation GetDefaultTranslation(Expression expression)
     {
         if (expression is ICustomTranslationExpression translationExpression)
         {

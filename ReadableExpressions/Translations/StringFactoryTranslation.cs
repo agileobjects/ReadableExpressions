@@ -4,13 +4,12 @@
 using Microsoft.Scripting.Ast;
 #else
 using System.Linq.Expressions;
-using AgileObjects.ReadableExpressions.Translations;
 #endif
 using Extensions;
 
 internal class StringFactoryTranslation : INodeTranslation
 {
-    private readonly ITranslationContext _context;
+    private readonly ExpressionTranslation _context;
     private readonly SourceCodeTranslationFactory _translationFactory;
     private readonly Expression _expression;
     private string _translation;
@@ -18,7 +17,7 @@ internal class StringFactoryTranslation : INodeTranslation
     public StringFactoryTranslation(
         Expression expression,
         SourceCodeTranslationFactory translationFactory,
-        ITranslationContext context)
+        ExpressionTranslation context)
     {
         _context = context;
         _translationFactory = translationFactory;
@@ -36,7 +35,7 @@ internal class StringFactoryTranslation : INodeTranslation
     {
         return _translation ??= _translationFactory
             .Invoke(_expression, expression => _context
-                .GetTranslationFor(expression)?
+                .GetDefaultTranslation(expression)?
                 .WriteUsing(_context.Settings));
     }
 }

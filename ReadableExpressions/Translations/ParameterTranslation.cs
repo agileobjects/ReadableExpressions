@@ -129,6 +129,7 @@ internal static class ParameterTranslation
         switch (variableName)
         {
             case "typeof":
+            case "const":
             case "default":
             case "void":
             case "readonly":

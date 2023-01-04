@@ -29,16 +29,6 @@ internal static class ConstantTranslation
         ConstantExpression constant,
         ITranslationContext context)
     {
-        if (context.Settings.ConstantExpressionValueFactory != null)
-        {
-            var userTranslation = context.Settings
-                .ConstantExpressionValueFactory(constant.Type, constant.Value);
-
-            return userTranslation == null
-                ? DefaultValueTranslation.For(constant, context)
-                : FixedValueTranslation(userTranslation);
-        }
-
         if (constant.Value == null)
         {
             return DefaultValueTranslation.For(constant, context);
