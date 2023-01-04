@@ -78,3 +78,19 @@ To include captured variable, field and property values, use:
 string readable = myExpression
     .ToReadableString(c => c.ShowCapturedValues);
 ```
+
+## Default Settings
+
+To configure the default translation settings, use:
+
+```cs
+TranslationSettings.ConfigureDefaults(c => c
+    .DiscardUnusedParameters
+    .ShowImplicitArrayTypes
+    .IndentUsing("\t")
+    // etc
+    );
+```
+
+...any translation settings passed at the point of translation of a particular `Expression`
+will override these defaults.
