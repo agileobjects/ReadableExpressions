@@ -23,8 +23,9 @@ or a child Expression. For example, a custom `NewArrayExpression` translator cou
 
 ```cs
 string readable = myExpression
-    .ToReadableString(c => c
-        .AddTranslatorFor(ExpressionType.NewArrayInit, (expr, defaultTranslator) =>
+    .ToReadableString(c => c.AddTranslatorFor(
+        ExpressionType.NewArrayInit,
+        (expr, defaultTranslator) =>
         {
             var arrayInit = (NewArrayExpression)expr;
 
