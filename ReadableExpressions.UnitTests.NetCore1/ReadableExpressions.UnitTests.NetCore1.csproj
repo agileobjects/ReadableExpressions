@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp1.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
