@@ -1,70 +1,58 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System.Linq;
+#if NET35
+using Microsoft.Scripting.Ast;
+#else
+using System.Linq.Expressions;
+#endif
+using System.Reflection;
+using Extensions;
+using static Formatting.TokenType;
+
+internal class MethodGroupTranslation : INodeTranslation
 {
-    using System;
-    using System.Linq;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
-    using System.Reflection;
-    using Extensions;
-    using static Formatting.TokenType;
+    private readonly INodeTranslation _subjectTranslation;
+    private readonly string _subjectMethodName;
 
-    internal class MethodGroupTranslation : ITranslation
+    public MethodGroupTranslation(
+        ExpressionType nodeType,
+        INodeTranslation subjectTranslation,
+        MethodInfo subjectMethodInfo)
     {
-        private readonly ITranslation _subjectTranslation;
-        private readonly string _subjectMethodName;
+        NodeType = nodeType;
+        _subjectTranslation = subjectTranslation;
+        _subjectMethodName = subjectMethodInfo.Name;
+    }
 
-        public MethodGroupTranslation(
-            ExpressionType nodeType,
-            ITranslation subjectTranslation,
-            MethodInfo subjectMethodInfo,
-            ITranslationContext context)
-        {
-            NodeType = nodeType;
-            Type = subjectMethodInfo.ReturnType;
-            _subjectTranslation = subjectTranslation;
-            _subjectMethodName = subjectMethodInfo.Name;
-            TranslationSize = _subjectTranslation.TranslationSize + ".".Length + _subjectMethodName.Length;
-            FormattingSize = _subjectTranslation.FormattingSize + context.GetFormattingSize(MethodName);
-        }
-
-        public static ITranslation ForCreateDelegateCall(
-            ExpressionType nodeType,
-            MethodCallExpression createDelegateCall,
-            ITranslationContext context)
-        {
+    public static INodeTranslation ForCreateDelegateCall(
+        ExpressionType nodeType,
+        MethodCallExpression createDelegateCall,
+        ITranslationContext context)
+    {
 #if NET35
-            var subjectMethod = (MethodInfo)((ConstantExpression)createDelegateCall.Arguments.Last()).Value;
+        var subjectMethod = (MethodInfo)
+            ((ConstantExpression)createDelegateCall.Arguments.Last()).Value;
 #else
-            // ReSharper disable once PossibleNullReferenceException
-            var subjectMethod = (MethodInfo)((ConstantExpression)createDelegateCall.Object).Value;
+        var subjectMethod = (MethodInfo)
+            ((ConstantExpression)createDelegateCall.Object)!.Value;
 #endif
-            var subjectTranslation = subjectMethod.IsStatic
-                ? context.GetTranslationFor(subjectMethod.DeclaringType)
-                : context.GetTranslationFor(createDelegateCall.Arguments.ElementAtOrDefault(1));
+        var subjectTranslation = subjectMethod.IsStatic
+            ? context.GetTranslationFor(subjectMethod.DeclaringType)
+            : context.GetTranslationFor(createDelegateCall.Arguments.ElementAtOrDefault(1));
 
-            return new MethodGroupTranslation(nodeType, subjectTranslation, subjectMethod, context);
-        }
+        return new MethodGroupTranslation(nodeType, subjectTranslation, subjectMethod);
+    }
 
-        public ExpressionType NodeType { get; }
+    public ExpressionType NodeType { get; }
 
-        public Type Type { get; }
+    public int TranslationLength =>
+        _subjectTranslation.TranslationLength + ".".Length + _subjectMethodName.Length;
 
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public int GetIndentSize() => _subjectTranslation.GetIndentSize();
-
-        public int GetLineCount() => _subjectTranslation.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            _subjectTranslation.WriteTo(writer);
-            writer.WriteDotToTranslation();
-            writer.WriteToTranslation(_subjectMethodName, MethodName);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        _subjectTranslation.WriteTo(writer);
+        writer.WriteDotToTranslation();
+        writer.WriteToTranslation(_subjectMethodName, MethodName);
     }
 }

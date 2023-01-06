@@ -1,58 +1,64 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using Extensions;
+
+internal abstract class CheckedOperationTranslationBase
 {
-    using Extensions;
+    private readonly string _openingSymbol;
+    private readonly string _closingSymbol;
 
-    internal abstract class CheckedOperationTranslationBase
+    protected CheckedOperationTranslationBase(
+        bool isCheckedOperation,
+        string openingSymbol,
+        string closingSymbol)
     {
-        private readonly string _openingSymbol;
-        private readonly string _closingSymbol;
+        _openingSymbol = openingSymbol;
+        _closingSymbol = closingSymbol;
+        IsCheckedOperation = isCheckedOperation;
+    }
 
-        protected CheckedOperationTranslationBase(bool isCheckedOperation, string openingSymbol, string closingSymbol)
+    protected bool IsCheckedOperation { get; }
+
+    protected void WriteOpeningCheckedIfNecessary(
+        TranslationWriter writer,
+        out bool isMultiStatementChecked)
+    {
+        if (IsCheckedOperation == false)
         {
-            _openingSymbol = openingSymbol;
-            _closingSymbol = closingSymbol;
-            IsCheckedOperation = isCheckedOperation;
+            isMultiStatementChecked = false;
+            return;
         }
 
-        protected bool IsCheckedOperation { get; }
+        writer.WriteKeywordToTranslation("checked");
 
-        protected void WriteOpeningCheckedIfNecessary(TranslationWriter writer, out bool isMultiStatementChecked)
+        isMultiStatementChecked = IsMultiStatement();
+
+        if (isMultiStatementChecked)
         {
-            if (IsCheckedOperation == false)
-            {
-                isMultiStatementChecked = false;
-                return;
-            }
-
-            writer.WriteKeywordToTranslation("checked");
-
-            isMultiStatementChecked = IsMultiStatement();
-
-            if (isMultiStatementChecked)
-            {
-                writer.WriteOpeningBraceToTranslation();
-                return;
-            }
-
-            writer.WriteToTranslation(_openingSymbol);
+            writer.WriteOpeningBraceToTranslation();
+            return;
         }
 
-        protected abstract bool IsMultiStatement();
+        writer.WriteToTranslation(_openingSymbol);
+    }
 
-        protected void WriteClosingCheckedIfNecessary(TranslationWriter writer, bool isMultiStatementChecked)
+    protected abstract bool IsMultiStatement();
+
+    protected void WriteClosingCheckedIfNecessary(
+        TranslationWriter writer,
+        bool isMultiStatementChecked)
+    {
+        if (IsCheckedOperation == false)
         {
-            if (IsCheckedOperation == false)
-            {
-                return;
-            }
-
-            if (isMultiStatementChecked)
-            {
-                writer.WriteClosingBraceToTranslation();
-                return;
-            }
-
-            writer.WriteToTranslation(_closingSymbol);
+            return;
         }
+
+        if (isMultiStatementChecked)
+        {
+            writer.WriteClosingBraceToTranslation();
+            return;
+        }
+
+        writer.WriteToTranslation(_closingSymbol);
     }
 }

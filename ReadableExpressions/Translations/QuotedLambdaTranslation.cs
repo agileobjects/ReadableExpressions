@@ -1,51 +1,47 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class QuotedLambdaTranslation : ITranslation 
+internal class QuotedLambdaTranslation : INodeTranslation
+{
+    private readonly INodeTranslation _quotedLambdaTranslation;
+
+    private QuotedLambdaTranslation(
+        UnaryExpression quotedLambda,
+        ITranslationContext context)
     {
-        private readonly ITranslation _quotedLambdaTranslation;
+        var comment = ReadableExpression.Comment("Quoted to induce a closure:");
+        var quotedLambdaBlock = Expression.Block(comment, quotedLambda.Operand);
 
-        private QuotedLambdaTranslation(UnaryExpression quotedLambda, ITranslationContext context)
+        _quotedLambdaTranslation = context.GetTranslationFor(quotedLambdaBlock);
+    }
+
+    public static INodeTranslation For(
+        UnaryExpression quotedLambda,
+        ITranslationContext context)
+    {
+        if (context.Settings.DoNotCommentQuotedLambdas)
         {
-            var comment = ReadableExpression.Comment("Quoted to induce a closure:");
-            var quotedLambdaBlock = Expression.Block(comment, quotedLambda.Operand);
-
-            _quotedLambdaTranslation = context.GetTranslationFor(quotedLambdaBlock);
+            return context
+                .GetCodeBlockTranslationFor(quotedLambda.Operand)
+                .WithNodeType(ExpressionType.Quote);
         }
 
-        public static ITranslation For(UnaryExpression quotedLambda, ITranslationContext context)
-        {
-            if (context.Settings.DoNotCommentQuotedLambdas)
-            {
-                return context.GetCodeBlockTranslationFor(quotedLambda.Operand).WithNodeType(ExpressionType.Quote);
-            }
+        return new QuotedLambdaTranslation(quotedLambda, context);
+    }
 
-            return new QuotedLambdaTranslation(quotedLambda, context);
-        }
+    public ExpressionType NodeType => ExpressionType.Quote;
 
-        public ExpressionType NodeType => ExpressionType.Quote;
+    public int TranslationLength => _quotedLambdaTranslation.TranslationLength;
 
-        public Type Type => _quotedLambdaTranslation.Type;
-
-        public int TranslationSize => _quotedLambdaTranslation.TranslationSize;
-
-        public int FormattingSize => _quotedLambdaTranslation.FormattingSize;
-
-        public int GetIndentSize() => _quotedLambdaTranslation.GetIndentSize();
-
-        public int GetLineCount() => _quotedLambdaTranslation.GetLineCount() + 1;
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteNewLineToTranslation();
-            _quotedLambdaTranslation.WriteTo(writer);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteNewLineToTranslation();
+        _quotedLambdaTranslation.WriteTo(writer);
     }
 }

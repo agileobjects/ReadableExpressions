@@ -1,7 +1,6 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+internal interface IPotentialMultiStatementTranslatable
 {
-    internal interface IPotentialMultiStatementTranslatable
-    {
-        bool IsMultiStatement { get; }
-    }
+    bool IsMultiStatement { get; }
 }

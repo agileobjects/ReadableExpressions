@@ -312,17 +312,12 @@ namespace AgileObjects.ReadableExpressions.Translations
 
             private Expression Convert(LinqExp.ConstantExpression linqConstant)
             {
-                switch (linqConstant.Value)
+                return linqConstant.Value switch
                 {
-                    case Expression dlrExpression:
-                        return dlrExpression;
-                    
-                    case LinqExp.Expression linqExpression:
-                        return ConvertExp(linqExpression);
-                    
-                    default:
-                        return Expression.Constant(linqConstant.Value, linqConstant.Type);
-                }
+                    Expression dlrExpression => dlrExpression,
+                    LinqExp.Expression linqExpression => ConvertExp(linqExpression),
+                    _ => Expression.Constant(linqConstant.Value, linqConstant.Type)
+                };
             }
 
             private Expression Convert(LinqExp.MethodCallExpression linqCall)

@@ -136,17 +136,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                     return true;
                 }
 
-                switch (obj)
+                return obj switch
                 {
-                    case IType type:
-                        return Equals(type);
-
-                    case Type bclType:
-                        return Equals(ClrTypeWrapper.For(bclType));
-
-                    default:
-                        return false;
-                }
+                    IType type => Equals(type),
+                    Type bclType => Equals(ClrTypeWrapper.For(bclType)),
+                    _ => false
+                };
             }
 
             public override int GetHashCode()

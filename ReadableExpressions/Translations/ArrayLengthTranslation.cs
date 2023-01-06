@@ -1,41 +1,32 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
 
-    internal class ArrayLengthTranslation : ITranslation
+internal class ArrayLengthTranslation : INodeTranslation
+{
+    private const string _length = ".Length";
+    private static readonly int _lengthPropertyLength = _length.Length;
+
+    private readonly INodeTranslation _operand;
+
+    public ArrayLengthTranslation(
+        UnaryExpression arrayLength,
+        ITranslationContext context)
     {
-        private const string _length = ".Length";
-        private static readonly int _lengthPropertyLength = _length.Length;
+        _operand = context.GetTranslationFor(arrayLength.Operand);
+    }
 
-        private readonly ITranslation _operand;
+    public ExpressionType NodeType => ExpressionType.ArrayLength;
 
-        public ArrayLengthTranslation(UnaryExpression arrayLength, ITranslationContext context)
-        {
-            _operand = context.GetTranslationFor(arrayLength.Operand);
-            TranslationSize = _operand.TranslationSize + _lengthPropertyLength;
-        }
+    public int TranslationLength => _operand.TranslationLength + _lengthPropertyLength;
 
-        public ExpressionType NodeType => ExpressionType.ArrayLength;
-
-        public Type Type => typeof(int);
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize => _operand.FormattingSize;
-
-        public int GetIndentSize() => _operand.GetIndentSize();
-
-        public int GetLineCount() => _operand.GetLineCount();
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            _operand.WriteTo(writer);
-            writer.WriteToTranslation(_length);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        _operand.WriteTo(writer);
+        writer.WriteToTranslation(_length);
     }
 }

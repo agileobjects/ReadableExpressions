@@ -1,77 +1,45 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class LambdaTranslation : ITranslation, IPotentialMultiStatementTranslatable
+internal class LambdaTranslation : INodeTranslation, IPotentialMultiStatementTranslatable
+{
+    private const string _fatArrow = " => ";
+
+    private readonly ParameterSetTranslation _parameters;
+    private readonly CodeBlockTranslation _bodyTranslation;
+
+    public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
     {
-        private const string _fatArrow = " => ";
+        _parameters = ParameterSetTranslation.For(lambda, context);
+        _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
 
-        private readonly ParameterSetTranslation _parameters;
-        private readonly CodeBlockTranslation _bodyTranslation;
-
-        public LambdaTranslation(LambdaExpression lambda, ITranslationContext context)
+        if (_bodyTranslation.IsMultiStatement == false)
         {
-            Type = lambda.Type;
-            _parameters = ParameterSetTranslation.For(lambda, context);
-            _bodyTranslation = context.GetCodeBlockTranslationFor(lambda.Body);
-
-            TranslationSize =
-                _parameters.TranslationSize +
-                _fatArrow.Length +
-                _bodyTranslation.TranslationSize;
-
-            FormattingSize = _parameters.FormattingSize + _bodyTranslation.FormattingSize;
-
-            if (_bodyTranslation.IsMultiStatement == false)
-            {
-                _bodyTranslation.WithoutTermination();
-            }
+            _bodyTranslation.WithoutTermination();
         }
+    }
 
-        public ExpressionType NodeType => ExpressionType.Lambda;
+    public ExpressionType NodeType => ExpressionType.Lambda;
 
-        public Type Type { get; }
+    public int TranslationLength =>
+        _parameters.TranslationLength +
+        _fatArrow.Length +
+        _bodyTranslation.TranslationLength;
 
-        public int TranslationSize { get; }
+    public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
 
-        public int FormattingSize { get; }
+    public void WriteTo(TranslationWriter writer)
+    {
+        _parameters.WriteTo(writer);
 
-        public bool IsMultiStatement => _bodyTranslation.IsMultiStatement;
+        writer.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
 
-        public int GetIndentSize()
-        {
-            return _parameters.GetIndentSize() +
-                   _bodyTranslation.GetIndentSize();
-        }
-
-        public int GetLineCount()
-        {
-            var parametersLineCount = _parameters.GetLineCount();
-            var bodyLineCount = _bodyTranslation.GetLineCount();
-
-            if (parametersLineCount == 1)
-            {
-                return bodyLineCount > 1 ? bodyLineCount : 1;
-            }
-
-            return bodyLineCount > 1
-                ? parametersLineCount + bodyLineCount - 1
-                : parametersLineCount;
-        }
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            _parameters.WriteTo(writer);
-
-            writer.WriteToTranslation(_bodyTranslation.HasBraces ? " =>" : _fatArrow);
-
-            _bodyTranslation.WriteTo(writer);
-        }
+        _bodyTranslation.WriteTo(writer);
     }
 }

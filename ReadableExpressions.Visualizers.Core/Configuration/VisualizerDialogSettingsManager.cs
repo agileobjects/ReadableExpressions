@@ -1,254 +1,318 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Configuration
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Core.Configuration;
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using Theming;
+using static VisualizerDialogSettingsConstants;
+
+public static class VisualizerDialogSettingsManager
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.IO;
-    using System.Linq;
-    using Theming;
-    using static VisualizerDialogSettingsConstants;
+    private static readonly string _settingsFilePath;
 
-    public static class VisualizerDialogSettingsManager
+    private static readonly string[] _newLines = { Environment.NewLine };
+    private static readonly char[] _colons = { ':' };
+
+    private static readonly object _saveLock = new();
+
+    static VisualizerDialogSettingsManager()
     {
-        private static readonly string _settingsFilePath;
-
-        private static readonly string[] _newLines = { Environment.NewLine };
-        private static readonly char[] _colons = { ':' };
-
-        private static readonly object _saveLock = new object();
-
-        static VisualizerDialogSettingsManager()
+        try
         {
-            var settingsFolderPath = Path.Combine(
+            var settingsRootPaths = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft", "VisualStudio");
+                Path.GetTempPath()
+            };
 
-            if (!Directory.Exists(settingsFolderPath))
+            var pathData = settingsRootPaths
+                .Where(rootPath => !string.IsNullOrEmpty(rootPath))
+                .Select((rootPath, i) =>
+                {
+                    var settingsFolderPath = Path
+                        .Combine(rootPath, "Microsoft", "VisualStudio");
+
+                    var settingsFilePath = Path
+                        .Combine(settingsFolderPath, "ReadableExpressions.yml");
+
+                    try
+                    {
+                        if (!Directory.Exists(settingsFolderPath))
+                        {
+                            Directory.CreateDirectory(settingsFolderPath);
+                        }
+
+                        return new
+                        {
+                            Index = i,
+                            Path = settingsFilePath,
+                            Exists = (bool?)File.Exists(settingsFilePath),
+                            CanAccess = true
+                        };
+                    }
+                    catch
+                    {
+                        return new
+                        {
+                            Index = i,
+                            Path = settingsFilePath,
+                            Exists = default(bool?),
+                            CanAccess = false
+                        };
+                    }
+                })
+                .ToList();
+
+            var foundSettings =
+                pathData.FirstOrDefault(_ => _.Exists == true);
+
+            if (foundSettings == null)
             {
-                Directory.CreateDirectory(settingsFolderPath);
+                _settingsFilePath =
+                    pathData.FirstOrDefault(_ => _.CanAccess)?.Path;
+
+                return;
             }
 
-            _settingsFilePath = Path.Combine(settingsFolderPath, "ReadableExpressions.yml");
+            _settingsFilePath = foundSettings.Path;
+
+            if (foundSettings.Index == 0 || !pathData[0].CanAccess)
+            {
+                return;
+            }
+
+            File.Copy(foundSettings.Path, pathData[0].Path);
+            _settingsFilePath = pathData[0].Path;
+            File.Delete(foundSettings.Path);
         }
-
-        public static bool TryLoad(out VisualizerDialogSettings settings)
+        catch
         {
-            try
-            {
-                if (!File.Exists(_settingsFilePath))
-                {
-                    settings = null;
-                    return false;
-                }
+            // Fallback to default settings
+        }
+    }
 
-                var settingsByName = File
-                    .ReadAllText(_settingsFilePath)
-                    .Split(_newLines, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(line => line.Split(_colons, count: 2))
-                    .ToDictionary(
-                        keyValue => keyValue.FirstOrDefault()?.Trim(),
-                        keyValue => keyValue.LastOrDefault()?.Substring(1));
-
-                settings = new VisualizerDialogSettings
-                {
-                    Theme = new VisualizerDialogTheme(),
-                    Font = new VisualizerDialogFontSettings(),
-                    Size = new VisualizerDialogSizeSettings()
-                };
-
-                SetValues(settings, settingsByName);
-                return true;
-            }
-            catch
+    public static bool TryLoad(out VisualizerDialogSettings settings)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(_settingsFilePath) ||
+               !File.Exists(_settingsFilePath))
             {
                 settings = null;
                 return false;
             }
+
+            var settingsByName = File
+                .ReadAllText(_settingsFilePath)
+                .Split(_newLines, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Split(_colons, count: 2))
+                .ToDictionary(
+                    keyValue => keyValue.FirstOrDefault()?.Trim(),
+                    keyValue => keyValue.LastOrDefault()?.Substring(1));
+
+            settings = new VisualizerDialogSettings
+            {
+                Theme = new VisualizerDialogTheme(),
+                Font = new VisualizerDialogFontSettings(),
+                Size = new VisualizerDialogSizeSettings()
+            };
+
+            SetValues(settings, settingsByName);
+            return true;
+        }
+        catch
+        {
+            settings = null;
+            return false;
+        }
+    }
+
+    private static void SetValues(
+        VisualizerDialogSettings settings,
+        IDictionary<string, string> settingsByName)
+    {
+        SetThemeValues(settings, settingsByName);
+        SetFontValues(settings, settingsByName);
+        SetSizeValues(settings, settingsByName);
+
+        if (settingsByName.TryGetValue(nameof(settings.Indent), out var value))
+        {
+            settings.Indent = value;
         }
 
-        private static void SetValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
+        if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out value))
         {
-            SetThemeValues(settings, settingsByName);
-            SetFontValues(settings, settingsByName);
-            SetSizeValues(settings, settingsByName);
-
-            if (settingsByName.TryGetValue(nameof(settings.Indent), out var value))
-            {
-                settings.Indent = value;
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.UseFullyQualifiedTypeNames), out value))
-            {
-                settings.UseFullyQualifiedTypeNames = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.UseExplicitTypeNames), out value))
-            {
-                settings.UseExplicitTypeNames = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.UseExplicitGenericParameters), out value))
-            {
-                settings.UseExplicitGenericParameters = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.DeclareOutputParametersInline), out value))
-            {
-                settings.DeclareOutputParametersInline = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.DiscardUnusedParameters), out value))
-            {
-                settings.DiscardUnusedParameters = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.ShowImplicitArrayTypes), out value))
-            {
-                settings.ShowImplicitArrayTypes = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.ShowLambdaParameterTypeNames), out value))
-            {
-                settings.ShowLambdaParameterTypeNames = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(nameof(settings.ShowQuotedLambdaComments), out value))
-            {
-                settings.ShowQuotedLambdaComments = IsTrue(value);
-            }
+            settings.UseFullyQualifiedTypeNames = IsTrue(value);
         }
 
-        private static bool IsTrue(string value)
-            => bool.TryParse(value, out var result) && result;
-
-        private static void SetThemeValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
+        if (settingsByName.TryGetValue(nameof(settings.UseExplicitTypeNames), out value))
         {
-            var defaultTheme = settings.Theme;
-
-            if (settingsByName.TryGetValue(ThemeName, out var value))
-            {
-                settings.Theme.Name = value;
-
-                switch (value)
-                {
-                    case "Light":
-                        defaultTheme = VisualizerDialogTheme.Light;
-                        break;
-
-                    case "Dark":
-                        defaultTheme = VisualizerDialogTheme.Dark;
-                        break;
-                }
-            }
-
-            settings.Theme.Background = settingsByName.TryGetValue(ThemeBackground, out value)
-                ? value : defaultTheme.Background;
-
-            settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
-                ? value : defaultTheme.Default;
-
-            settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value)
-                ? value : defaultTheme.Toolbar;
-
-            settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value)
-                ? value : defaultTheme.Menu;
-
-            settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
-
-            settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value)
-                ? value : defaultTheme.Keyword;
-
-            settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value)
-                ? value : defaultTheme.Variable;
-
-            settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value)
-                ? value : defaultTheme.TypeName;
-
-            settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value)
-                ? value : defaultTheme.InterfaceName;
-
-            settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
-                ? value : defaultTheme.CommandStatement;
-
-            settings.Theme.Text = settingsByName.TryGetValue(ThemeText, out value)
-                ? value : defaultTheme.Text;
-
-            settings.Theme.Numeric = settingsByName.TryGetValue(ThemeNumeric, out value)
-                ? value : defaultTheme.Numeric;
-
-            settings.Theme.MethodName = settingsByName.TryGetValue(ThemeMethodName, out value)
-                ? value : defaultTheme.MethodName;
-
-            settings.Theme.Comment = settingsByName.TryGetValue(ThemeComment, out value)
-                ? value : defaultTheme.Comment;
+            settings.UseExplicitTypeNames = IsTrue(value);
         }
 
-        private static void SetFontValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
+        if (settingsByName.TryGetValue(nameof(settings.UseExplicitGenericParameters), out value))
         {
-            if (settingsByName.TryGetValue(FontName, out var value))
-            {
-                settings.Font.Name = value.Trim();
-            }
+            settings.UseExplicitGenericParameters = IsTrue(value);
+        }
 
-            if (settingsByName.TryGetValue(FontSize, out value) &&
-                int.TryParse(value, out var fontSize))
+        if (settingsByName.TryGetValue(nameof(settings.DeclareOutputParametersInline), out value))
+        {
+            settings.DeclareOutputParametersInline = IsTrue(value);
+        }
+
+        if (settingsByName.TryGetValue(nameof(settings.DiscardUnusedParameters), out value))
+        {
+            settings.DiscardUnusedParameters = IsTrue(value);
+        }
+
+        if (settingsByName.TryGetValue(nameof(settings.ShowImplicitArrayTypes), out value))
+        {
+            settings.ShowImplicitArrayTypes = IsTrue(value);
+        }
+
+        if (settingsByName.TryGetValue(nameof(settings.ShowLambdaParameterTypeNames), out value))
+        {
+            settings.ShowLambdaParameterTypeNames = IsTrue(value);
+        }
+
+        if (settingsByName.TryGetValue(nameof(settings.ShowQuotedLambdaComments), out value))
+        {
+            settings.ShowQuotedLambdaComments = IsTrue(value);
+        }
+    }
+
+    private static bool IsTrue(string value)
+        => bool.TryParse(value, out var result) && result;
+
+    private static void SetThemeValues(
+        VisualizerDialogSettings settings,
+        IDictionary<string, string> settingsByName)
+    {
+        var defaultTheme = settings.Theme;
+
+        if (settingsByName.TryGetValue(ThemeName, out var value))
+        {
+            settings.Theme.Name = value;
+
+            switch (value)
             {
-                settings.Font.Size = fontSize;
+                case "Light":
+                    defaultTheme = VisualizerDialogTheme.Light;
+                    break;
+
+                case "Dark":
+                    defaultTheme = VisualizerDialogTheme.Dark;
+                    break;
             }
         }
 
-        private static void SetSizeValues(
-            VisualizerDialogSettings settings,
-            IDictionary<string, string> settingsByName)
+        settings.Theme.Background = settingsByName.TryGetValue(ThemeBackground, out value)
+            ? value : defaultTheme.Background;
+
+        settings.Theme.Default = settingsByName.TryGetValue(ThemeDefault, out value)
+            ? value : defaultTheme.Default;
+
+        settings.Theme.Toolbar = settingsByName.TryGetValue(ThemeToolbar, out value)
+            ? value : defaultTheme.Toolbar;
+
+        settings.Theme.Menu = settingsByName.TryGetValue(ThemeMenu, out value)
+            ? value : defaultTheme.Menu;
+
+        settings.Theme.MenuHighlight = settingsByName.TryGetValue(ThemeMenuHighlight, out value) ? value : defaultTheme.MenuHighlight;
+
+        settings.Theme.Keyword = settingsByName.TryGetValue(ThemeKeyword, out value)
+            ? value : defaultTheme.Keyword;
+
+        settings.Theme.Variable = settingsByName.TryGetValue(ThemeVariable, out value)
+            ? value : defaultTheme.Variable;
+
+        settings.Theme.TypeName = settingsByName.TryGetValue(ThemeTypeName, out value)
+            ? value : defaultTheme.TypeName;
+
+        settings.Theme.InterfaceName = settingsByName.TryGetValue(ThemeInterfaceName, out value)
+            ? value : defaultTheme.InterfaceName;
+
+        settings.Theme.CommandStatement = settingsByName.TryGetValue(ThemeCommandStatement, out value)
+            ? value : defaultTheme.CommandStatement;
+
+        settings.Theme.Text = settingsByName.TryGetValue(ThemeText, out value)
+            ? value : defaultTheme.Text;
+
+        settings.Theme.Numeric = settingsByName.TryGetValue(ThemeNumeric, out value)
+            ? value : defaultTheme.Numeric;
+
+        settings.Theme.MethodName = settingsByName.TryGetValue(ThemeMethodName, out value)
+            ? value : defaultTheme.MethodName;
+
+        settings.Theme.Comment = settingsByName.TryGetValue(ThemeComment, out value)
+            ? value : defaultTheme.Comment;
+    }
+
+    private static void SetFontValues(
+        VisualizerDialogSettings settings,
+        IDictionary<string, string> settingsByName)
+    {
+        if (settingsByName.TryGetValue(FontName, out var value))
         {
-            if (settingsByName.TryGetValue(SizeResizeToCode, out var value))
-            {
-                settings.Size.ResizeToMatchCode = IsTrue(value);
-            }
-
-            if (settingsByName.TryGetValue(SizeInitialWidth, out value) &&
-                int.TryParse(value, out var width))
-            {
-                settings.Size.InitialWidth = width;
-            }
-
-            if (settingsByName.TryGetValue(SizeInitialHeight, out value) &&
-                int.TryParse(value, out var height))
-            {
-                settings.Size.InitialHeight = height;
-            }
+            settings.Font.Name = value.Trim();
         }
 
-        public static void Save(VisualizerDialogSettings settings)
+        if (settingsByName.TryGetValue(FontSize, out value) &&
+            int.TryParse(value, out var fontSize))
         {
-            var saveWorker = new BackgroundWorker();
-            saveWorker.DoWork += Save;
-            saveWorker.RunWorkerAsync(settings);
+            settings.Font.Size = fontSize;
+        }
+    }
+
+    private static void SetSizeValues(
+        VisualizerDialogSettings settings,
+        IDictionary<string, string> settingsByName)
+    {
+        if (settingsByName.TryGetValue(SizeResizeToCode, out var value))
+        {
+            settings.Size.ResizeToMatchCode = IsTrue(value);
         }
 
-        private static void Save(object sender, DoWorkEventArgs args)
+        if (settingsByName.TryGetValue(SizeInitialWidth, out value) &&
+            int.TryParse(value, out var width))
         {
-            var settings = (VisualizerDialogSettings)args.Argument;
-
-            var serialized = Serialize(settings);
-
-            lock (_saveLock)
-            {
-                File.WriteAllText(_settingsFilePath, serialized);
-            }
+            settings.Size.InitialWidth = width;
         }
 
-        private static string Serialize(VisualizerDialogSettings settings)
+        if (settingsByName.TryGetValue(SizeInitialHeight, out value) &&
+            int.TryParse(value, out var height))
         {
-            var theme = settings.Theme;
+            settings.Size.InitialHeight = height;
+        }
+    }
 
-            return $@"
+    public static void Save(VisualizerDialogSettings settings)
+    {
+        var saveWorker = new BackgroundWorker();
+        saveWorker.DoWork += Save;
+        saveWorker.RunWorkerAsync(settings);
+    }
+
+    private static void Save(object sender, DoWorkEventArgs args)
+    {
+        var settings = (VisualizerDialogSettings)args.Argument;
+
+        var serialized = Serialize(settings);
+
+        lock (_saveLock)
+        {
+            File.WriteAllText(_settingsFilePath, serialized);
+        }
+    }
+
+    private static string Serialize(VisualizerDialogSettings settings)
+    {
+        var theme = settings.Theme;
+
+        return $@"
 {ThemeName}: {theme.Name}
 {ThemeBackground}: {theme.Background}
 {ThemeDefault}: {theme.Default}
@@ -278,6 +342,5 @@
 {nameof(settings.ShowImplicitArrayTypes)}: {settings.ShowImplicitArrayTypes}
 {nameof(settings.ShowLambdaParameterTypeNames)}: {settings.ShowLambdaParameterTypeNames}
 {nameof(settings.ShowQuotedLambdaComments)}: {settings.ShowQuotedLambdaComments}".TrimStart();
-        }
     }
 }

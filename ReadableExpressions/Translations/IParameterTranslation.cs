@@ -1,11 +1,10 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+internal interface IParameterTranslation : INodeTranslation
 {
-    internal interface IParameterTranslation : ITranslation
-    {
-        string Name { get; }
+    string Name { get; }
 
-        ITranslation WithTypeNames(ITranslationContext context);
+    INodeTranslation WithTypeNames(ITranslationContext context);
 
-        void WithoutTypeNames(ITranslationContext context);
-    }
+    void WithoutTypeNames(ITranslationContext context);
 }

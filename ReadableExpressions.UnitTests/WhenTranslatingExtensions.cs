@@ -135,7 +135,9 @@
             public override string ToString() => null!;
         }
 
-        internal class CustomTranslationExpression : Expression, ICustomTranslationExpression
+        internal class CustomTranslationExpression :
+            Expression,
+            ICustomTranslationExpression
         {
             public override ExpressionType NodeType => ExpressionType.Extension;
 
@@ -147,20 +149,20 @@
                 return this;
             }
 
-            public ITranslation GetTranslation(ITranslationContext context)
+            public INodeTranslation GetTranslation(ITranslationContext context)
             {
                 return new FixedValueTranslation(
                     NodeType,
                     ToString(),
-                    Type,
-                    TokenType.Default,
-                    context);
+                    TokenType.Default);
             }
 
             public override string ToString() => "Customiiiiiize";
         }
 
-        internal class TestCustomAnalysableExpression : Expression, ICustomAnalysableExpression
+        internal class TestCustomAnalysableExpression : 
+            Expression, 
+            ICustomAnalysableExpression
         {
             public TestCustomAnalysableExpression(params Expression[] expressions)
             {

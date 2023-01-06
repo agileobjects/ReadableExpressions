@@ -23,7 +23,6 @@
     public class WhenTranslatingMemberAccesses : TestClassBase
     {
         [Fact]
-
         public void ShouldTranslateAnArrayLengthExpression()
         {
             var getArrayLength = CreateLambda((string[] a) => a.Length);
@@ -31,6 +30,16 @@
             var translated = getArrayLength.ToReadableString();
 
             translated.ShouldBe("a => a.Length");
+        }
+
+        [Fact]
+        public void ShouldTranslateAConstantStringLengthExpression()
+        {
+            var getConstantLength = Property(Constant("Constant!"), "Length");
+            
+            var translated = getConstantLength.ToReadableString();
+
+            translated.ShouldBe("\"Constant!\".Length");
         }
 
         [Fact]

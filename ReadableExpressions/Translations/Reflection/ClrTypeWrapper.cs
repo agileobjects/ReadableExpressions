@@ -394,17 +394,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                 return true;
             }
 
-            switch (obj)
+            return obj switch
             {
-                case IType type:
-                    return Equals(type);
-
-                case Type clrType:
-                    return Equals(For(clrType));
-
-                default:
-                    return false;
-            }
+                IType type => Equals(type),
+                Type clrType => Equals(For(clrType)),
+                _ => false
+            };
         }
 
         /// <inheritdoc />
@@ -522,17 +517,12 @@ namespace AgileObjects.ReadableExpressions.Translations.Reflection
                     return true;
                 }
 
-                switch (obj)
+                return obj switch
                 {
-                    case IType type:
-                        return Equals(type);
-
-                    case Type clrType:
-                        return Equals(For(clrType));
-
-                    default:
-                        return false;
-                }
+                    IType type => Equals(type),
+                    Type clrType => Equals(For(clrType)),
+                    _ => false
+                };
             }
 
             public bool Equals(IType otherType) => AreEqual(this, otherType);

@@ -1,98 +1,87 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
 
-    internal static class ConditionTranslation
+internal static class ConditionTranslation
+{
+    public static INodeTranslation For(
+        Expression condition,
+        ITranslationContext context)
     {
-        public static ITranslation For(Expression condition, ITranslationContext context)
+        var conditionTranslation = context.GetTranslationFor(condition);
+
+        if (IsMultiLineBinary(condition, conditionTranslation))
         {
-            var conditionTranslation = context.GetTranslationFor(condition);
-
-            if (IsMultiLineBinary(condition, conditionTranslation))
-            {
-                return new MultiLineBinaryConditionTranslation((BinaryExpression)condition, conditionTranslation, context);
-            }
-
-            var conditionCodeBlockTranslation = new CodeBlockTranslation(conditionTranslation, context);
-
-            return conditionTranslation.IsMultiStatement()
-                ? conditionCodeBlockTranslation.WithSingleCodeBlockParameterFormatting()
-                : conditionCodeBlockTranslation;
+            return new MultiLineBinaryConditionTranslation(
+                (BinaryExpression)condition,
+                conditionTranslation,
+                context);
         }
 
-        private static bool IsMultiLineBinary(Expression condition, ITranslatable conditionTranslation)
-            => IsRelevantBinary(condition) && conditionTranslation.ExceedsLengthThreshold();
+        var conditionCodeBlockTranslation =
+            new CodeBlockTranslation(conditionTranslation, context);
 
-        private static bool IsRelevantBinary(Expression condition)
+        return conditionTranslation.IsMultiStatement()
+            ? conditionCodeBlockTranslation.WithSingleCodeBlockParameterFormatting()
+            : conditionCodeBlockTranslation;
+    }
+
+    private static bool IsMultiLineBinary(
+        Expression condition,
+        ITranslation conditionTranslation)
+    {
+        return IsRelevantBinary(condition) && conditionTranslation.WrapLine();
+    }
+
+    private static bool IsRelevantBinary(Expression condition)
+    {
+        return condition.NodeType switch
         {
-            switch (condition.NodeType)
-            {
-                case ExpressionType.And:
-                case ExpressionType.AndAlso:
-                case ExpressionType.Or:
-                case ExpressionType.OrElse:
-                    return true;
-            }
+            ExpressionType.And => true,
+            ExpressionType.AndAlso => true,
+            ExpressionType.Or => true,
+            ExpressionType.OrElse => true,
+            _ => false
+        };
+    }
 
-            return false;
+    private class MultiLineBinaryConditionTranslation : INodeTranslation
+    {
+        private readonly ITranslation _conditionTranslation;
+        private readonly ITranslationContext _context;
+        private readonly INodeTranslation _binaryConditionLeftTranslation;
+        private readonly string _binaryConditionOperator;
+        private readonly INodeTranslation _binaryConditionRightTranslation;
+
+        public MultiLineBinaryConditionTranslation(
+            BinaryExpression binaryCondition,
+            ITranslation conditionTranslation,
+            ITranslationContext context)
+        {
+            _conditionTranslation = conditionTranslation;
+            _context = context;
+            NodeType = binaryCondition.NodeType;
+            _binaryConditionLeftTranslation = For(binaryCondition.Left, context);
+            _binaryConditionOperator = BinaryTranslation.GetOperator(binaryCondition);
+            _binaryConditionRightTranslation = For(binaryCondition.Right, context);
         }
 
-        private class MultiLineBinaryConditionTranslation : ITranslation
+        public ExpressionType NodeType { get; }
+
+        public int TranslationLength => _conditionTranslation.TranslationLength;
+
+        public void WriteTo(TranslationWriter writer)
         {
-            private readonly ITranslationContext _context;
-            private readonly ITranslation _binaryConditionLeftTranslation;
-            private readonly string _binaryConditionOperator;
-            private readonly ITranslation _binaryConditionRightTranslation;
-
-            public MultiLineBinaryConditionTranslation(
-                BinaryExpression binaryCondition,
-                ITranslatable conditionTranslatable,
-                ITranslationContext context)
-            {
-                _context = context;
-                NodeType = binaryCondition.NodeType;
-                _binaryConditionLeftTranslation = For(binaryCondition.Left, context);
-                _binaryConditionOperator = BinaryTranslation.GetOperator(binaryCondition);
-                _binaryConditionRightTranslation = For(binaryCondition.Right, context);
-                TranslationSize = conditionTranslatable.TranslationSize;
-                FormattingSize = conditionTranslatable.FormattingSize;
-            }
-
-            public ExpressionType NodeType { get; }
-
-            public Type Type => typeof(bool);
-
-            public int TranslationSize { get; }
-
-            public int FormattingSize { get; }
-
-            public int GetIndentSize()
-            {
-                return _binaryConditionLeftTranslation.GetIndentSize() +
-                       _binaryConditionRightTranslation.GetIndentSize() + 
-                       _binaryConditionRightTranslation.GetLineCount() * _context.Settings.IndentLength;
-            }
-
-            public int GetLineCount()
-            {
-                return _binaryConditionLeftTranslation.GetLineCount() +
-                       _binaryConditionRightTranslation.GetLineCount();
-            }
-
-            public void WriteTo(TranslationWriter writer)
-            {
-                _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(writer, _context);
-                writer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
-                writer.WriteNewLineToTranslation();
-                writer.Indent();
-                _binaryConditionRightTranslation.WriteInParenthesesIfRequired(writer, _context);
-                writer.Unindent();
-            }
+            _binaryConditionLeftTranslation.WriteInParenthesesIfRequired(writer, _context);
+            writer.WriteToTranslation(_binaryConditionOperator.TrimEnd());
+            writer.WriteNewLineToTranslation();
+            writer.Indent();
+            _binaryConditionRightTranslation.WriteInParenthesesIfRequired(writer, _context);
+            writer.Unindent();
         }
     }
 }

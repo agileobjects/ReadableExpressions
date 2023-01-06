@@ -1,25 +1,20 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+/// <summary>
+/// Implementing classes will translate an Expression to a source-code string.
+/// </summary>
+public interface ITranslation
 {
-    using System;
-#if NET35
-    using Microsoft.Scripting.Ast;
-#else
-    using System.Linq.Expressions;
-#endif
+    /// <summary>
+    /// Gets the length of the translated Expression.
+    /// </summary>
+    int TranslationLength { get; }
 
     /// <summary>
-    /// Implementing classes will translate an Expression to a source-code string.
+    /// Writes the translated Expression to the given <paramref name="writer"/>.
     /// </summary>
-    public interface ITranslation : ITranslatable
-    {
-        /// <summary>
-        /// Gets the ExpressionType of the translated Expression.
-        /// </summary>
-        ExpressionType NodeType { get; }
-
-        /// <summary>
-        /// Gets the type of the translated Expression.
-        /// </summary>
-        Type Type { get; }
-    }
+    /// <param name="writer">
+    /// The <see cref="TranslationWriter"/> to which to write the translated Expression.
+    /// </param>
+    void WriteTo(TranslationWriter writer);
 }

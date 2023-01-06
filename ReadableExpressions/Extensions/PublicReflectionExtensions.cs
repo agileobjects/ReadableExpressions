@@ -31,20 +31,13 @@ namespace AgileObjects.ReadableExpressions.Extensions
                 .Concat(type.GetNonPublicStaticMembers())
                 .Project(member =>
                 {
-                    switch (member)
+                    return member switch
                     {
-                        case FieldInfo field:
-                            return new ClrFieldWrapper(field);
-
-                        case PropertyInfo property:
-                            return new ClrPropertyWrapper(property, Default);
-
-                        case MethodInfo method:
-                            return new ClrMethodWrapper(method, Default);
-
-                        default:
-                            return default(IMember);
-                    }
+                        FieldInfo field => new ClrFieldWrapper(field),
+                        PropertyInfo property => new ClrPropertyWrapper(property, Default),
+                        MethodInfo method => new ClrMethodWrapper(method, Default),
+                        _ => default(IMember)
+                    };
                 })
                 .Filter(m => m != null)
                 .ToList();

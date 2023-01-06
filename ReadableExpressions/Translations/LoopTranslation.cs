@@ -1,50 +1,36 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class LoopTranslation : ITranslation, IPotentialSelfTerminatingTranslatable
+internal class LoopTranslation : INodeTranslation, IPotentialSelfTerminatingTranslation
+{
+    private readonly INodeTranslation _loopBodyTranslation;
+
+    public LoopTranslation(LoopExpression loop, ITranslationContext context)
     {
-        private readonly ITranslation _loopBodyTranslation;
+        _loopBodyTranslation = context
+            .GetCodeBlockTranslationFor(loop.Body)
+            .WithTermination()
+            .WithBraces();
+    }
 
-        public LoopTranslation(LoopExpression loop, ITranslationContext context)
-        {
-            Type = loop.Type;
-            _loopBodyTranslation = context.GetCodeBlockTranslationFor(loop.Body).WithTermination().WithBraces();
-            TranslationSize = _loopBodyTranslation.TranslationSize + 10;
+    public ExpressionType NodeType => ExpressionType.Loop;
 
-            FormattingSize =
-                 context.GetControlStatementFormattingSize() + // <- for 'while'
-                 context.GetKeywordFormattingSize() + // <- for 'true'
-                _loopBodyTranslation.FormattingSize;
-        }
+    public int TranslationLength => _loopBodyTranslation.TranslationLength + 10;
 
-        public ExpressionType NodeType => ExpressionType.Loop;
+    public bool IsTerminated => true;
 
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public bool IsTerminated => true;
-
-        public int GetIndentSize() => _loopBodyTranslation.GetIndentSize();
-
-        public int GetLineCount() => _loopBodyTranslation.GetLineCount() + 1;
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            writer.WriteControlStatementToTranslation("while ");
-            writer.WriteToTranslation('(');
-            writer.WriteKeywordToTranslation("true");
-            writer.WriteToTranslation(')');
-            _loopBodyTranslation.WriteTo(writer);
-        }
+    public void WriteTo(TranslationWriter writer)
+    {
+        writer.WriteControlStatementToTranslation("while ");
+        writer.WriteToTranslation('(');
+        writer.WriteKeywordToTranslation("true");
+        writer.WriteToTranslation(')');
+        _loopBodyTranslation.WriteTo(writer);
     }
 }

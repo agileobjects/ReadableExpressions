@@ -1,18 +1,19 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
 
-    internal static class RuntimeVariablesTranslation
+internal static class RuntimeVariablesTranslation
+{
+    public static INodeTranslation For(
+        RuntimeVariablesExpression runtimeVariables,
+        ITranslationContext context)
     {
-        public static ITranslation For(RuntimeVariablesExpression runtimeVariables, ITranslationContext context)
-        {
-            return ParameterSetTranslation
-                .For(runtimeVariables.Variables, context)
-                .WithTypes(ExpressionType.RuntimeVariables, runtimeVariables.Type);
-        }
+        return ParameterSetTranslation
+            .For(runtimeVariables.Variables, context)
+            .WithNodeType(ExpressionType.RuntimeVariables);
     }
 }

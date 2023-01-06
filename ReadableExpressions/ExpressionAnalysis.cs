@@ -78,19 +78,14 @@
         /// <param name="expression">The Expression to analyse.</param>
         protected virtual void Analyse(Expression expression)
         {
-            switch (expression.NodeType)
+            ResultExpression = expression.NodeType switch
             {
-                case DebugInfo:
-                case Default:
-                case Parameter when ((ParameterExpression)expression).IsNamed():
-                case RuntimeVariables:
-                    ResultExpression = expression;
-                    break;
-
-                default:
-                    ResultExpression = VisitAndConvert(expression);
-                    break;
-            }
+                DebugInfo => expression,
+                Default => expression,
+                Parameter when ((ParameterExpression)expression).IsNamed() => expression,
+                RuntimeVariables => expression,
+                _ => VisitAndConvert(expression)
+            };
         }
 
         /// <summary>
@@ -997,20 +992,13 @@
 
         private MemberBinding VisitAndConvert(MemberBinding binding)
         {
-            switch (binding.BindingType)
+            return binding.BindingType switch
             {
-                case MemberBindingType.Assignment:
-                    return VisitAndConvert((MemberAssignment)binding);
-
-                case MemberBindingType.MemberBinding:
-                    return VisitAndConvert((MemberMemberBinding)binding);
-
-                case MemberBindingType.ListBinding:
-                    return VisitAndConvert((MemberListBinding)binding);
-
-                default:
-                    throw new NotSupportedException("Unable to analyze bindings of type " + binding.BindingType);
-            }
+                MemberBindingType.Assignment => VisitAndConvert((MemberAssignment)binding),
+                MemberBindingType.MemberBinding => VisitAndConvert((MemberMemberBinding)binding),
+                MemberBindingType.ListBinding => VisitAndConvert((MemberListBinding)binding),
+                _ => throw new NotSupportedException("Unable to analyze bindings of type " + binding.BindingType)
+            };
         }
 
         private MemberBinding VisitAndConvert(MemberAssignment assignment)
@@ -1186,16 +1174,12 @@
         /// </returns>
         protected virtual Expression VisitAndConvert(UnaryExpression unary)
         {
-            switch (unary.NodeType)
+            return unary.NodeType switch
             {
-                case Increment:
-                    return Expression.Add(unary.Operand, Expression.Constant(1));
-
-                case Decrement:
-                    return Expression.Subtract(unary.Operand, Expression.Constant(1));
-            }
-
-            return unary.Update(VisitAndConvert(unary.Operand));
+                Increment => Expression.Add(unary.Operand, Expression.Constant(1)),
+                Decrement => Expression.Subtract(unary.Operand, Expression.Constant(1)),
+                _ => unary.Update(VisitAndConvert(unary.Operand))
+            };
         }
 
         /// <summary>

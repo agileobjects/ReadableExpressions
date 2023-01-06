@@ -1,6 +1,8 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System;
+
+internal interface INullKeywordTranslation : INodeTranslation
 {
-    internal interface INullKeywordTranslation : ITranslation
-    {
-    }
+    Type NullType { get; }
 }

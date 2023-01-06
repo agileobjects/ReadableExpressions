@@ -1,118 +1,118 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System;
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Extensions;
+using Extensions;
 
-    internal class LabelTranslation :
-        ITranslation,
-        IPotentialSelfTerminatingTranslatable,
-        IPotentialGotoTranslatable
+internal class LabelTranslation :
+    INodeTranslation,
+    IPotentialSelfTerminatingTranslation,
+    IPotentialGotoTranslation
+{
+    private readonly string _labelName;
+    private readonly bool _labelIsNamed;
+    private readonly bool _labelHasNoValue;
+    private readonly ITranslation _labelValueTranslation;
+
+    private LabelTranslation(
+        LabelExpression label,
+        string labelName,
+        ITranslationContext context)
     {
-        private readonly string _labelName;
-        private readonly bool _labelIsNamed;
-        private readonly bool _labelHasNoValue;
-        private readonly ITranslatable _labelValueTranslation;
+        _labelName = labelName;
+        _labelHasNoValue = label.DefaultValue == null;
 
-        private LabelTranslation(
-            LabelExpression label,
-            string labelName,
-            ITranslationContext context)
+        if (_labelName != null)
         {
-            Type = label.Type;
-            _labelName = labelName;
-            _labelHasNoValue = label.DefaultValue == null;
+            _labelIsNamed = true;
+
+        }
+
+        if (HasGoto)
+        {
+            _labelValueTranslation = context
+                .GetCodeBlockTranslationFor(label.DefaultValue);
+        }
+    }
+
+    #region Factory Methods
+
+    public static INodeTranslation For(LabelExpression label, ITranslationContext context)
+    {
+        var labelName = GetLabelNamePart(label, context);
+
+        if (labelName == null && label.DefaultValue == null)
+        {
+            return new EmptyLabelTranslation();
+        }
+
+        return new LabelTranslation(label, labelName, context);
+    }
+
+    #endregion
+
+    private static string GetLabelNamePart(
+        LabelExpression label,
+        ITranslationContext context)
+    {
+        if (context.Analysis.IsReferencedByGoto(label.Target))
+        {
+            return label.Target.Name.IsNullOrWhiteSpace() ? null : label.Target.Name;
+        }
+
+        return null;
+    }
+
+    public ExpressionType NodeType => ExpressionType.Label;
+
+    public int TranslationLength
+    {
+        get
+        {
+            var translationLength = 0;
 
             if (_labelName != null)
             {
-                _labelIsNamed = true;
-                TranslationSize = _labelName.Length + 1 + Environment.NewLine.Length;
+                translationLength += _labelName.Length + 1 + Environment.NewLine.Length;
             }
 
-            if (_labelHasNoValue)
+            if (HasGoto)
             {
-                return;
+                translationLength += _labelValueTranslation.TranslationLength;
             }
 
-            _labelValueTranslation = context.GetCodeBlockTranslationFor(label.DefaultValue);
-            TranslationSize += _labelValueTranslation.TranslationSize;
-            FormattingSize = _labelValueTranslation.FormattingSize;
+            return translationLength;
         }
+    }
 
-        #region Factory Methods
+    public bool IsTerminated => true;
 
-        public static ITranslation For(LabelExpression label, ITranslationContext context)
+    public bool HasGoto => !_labelHasNoValue;
+
+    public void WriteTo(TranslationWriter writer)
+    {
+        if (_labelIsNamed)
         {
-            var labelName = GetLabelNamePart(label, context);
-
-            if (labelName == null && label.DefaultValue == null)
-            {
-                return new EmptyLabelTranslation(label);
-            }
-
-            return new LabelTranslation(label, labelName, context);
+            writer.WriteToTranslation(_labelName);
+            writer.WriteToTranslation(':');
         }
 
-        #endregion
-
-        private static string GetLabelNamePart(LabelExpression label, ITranslationContext context)
+        if (_labelHasNoValue)
         {
-            if (context.Analysis.IsReferencedByGoto(label.Target))
-            {
-                return label.Target.Name.IsNullOrWhiteSpace() ? null : label.Target.Name;
-            }
-
-            return null;
+            return;
         }
 
+        writer.WriteReturnToTranslation();
+        _labelValueTranslation.WriteTo(writer);
+        writer.WriteSemiColonToTranslation();
+    }
+
+    private class EmptyLabelTranslation : EmptyTranslation, INodeTranslation
+    {
         public ExpressionType NodeType => ExpressionType.Label;
-
-        public Type Type { get; }
-
-        public int TranslationSize { get; }
-
-        public int FormattingSize { get; }
-
-        public bool IsTerminated => true;
-        
-        public bool HasGoto => !_labelHasNoValue;
-
-        public int GetIndentSize() => _labelValueTranslation?.GetIndentSize() ?? 0;
-
-        public int GetLineCount() => _labelValueTranslation?.GetLineCount() ?? 1;
-
-        public void WriteTo(TranslationWriter writer)
-        {
-            if (_labelIsNamed)
-            {
-                writer.WriteToTranslation(_labelName);
-                writer.WriteToTranslation(':');
-            }
-
-            if (_labelHasNoValue)
-            {
-                return;
-            }
-
-            writer.WriteReturnToTranslation();
-            _labelValueTranslation.WriteTo(writer);
-            writer.WriteToTranslation(';');
-        }
-
-        private class EmptyLabelTranslation : EmptyTranslatable, ITranslation
-        {
-            public EmptyLabelTranslation(Expression label)
-            {
-                Type = label.Type;
-            }
-
-            public ExpressionType NodeType => ExpressionType.Label;
-
-            public Type Type { get; }
-        }
     }
 }

@@ -1,56 +1,54 @@
-﻿namespace AgileObjects.ReadableExpressions.Translations
-{
-    using System;
+﻿namespace AgileObjects.ReadableExpressions.Translations;
+
+using System;
 #if NET35
-    using Microsoft.Scripting.Ast;
+using Microsoft.Scripting.Ast;
 #else
-    using System.Linq.Expressions;
+using System.Linq.Expressions;
 #endif
-    using Formatting;
-    using NetStandardPolyfills;
+using Formatting;
+using NetStandardPolyfills;
 
-    internal static class DefaultValueTranslation
+internal static class DefaultValueTranslation
+{
+    public static INodeTranslation For(
+        Expression defaultExpression,
+        ITranslationContext context,
+        bool allowNullKeyword = true)
     {
-        public static ITranslation For(
-            Expression defaultExpression,
-            ITranslationContext context,
-            bool allowNullKeyword = true)
+        var type = defaultExpression.Type;
+
+        if (type == typeof(void))
         {
-            var type = defaultExpression.Type;
-
-            if (type == typeof(void))
-            {
-                return DefaultVoidTranslation.Instance;
-            }
-
-            if (allowNullKeyword && (type.FullName != null) && type.CanBeNull())
-            {
-                return new NullKeywordTranslation(type, context);
-            }
-
-            return new DefaultOperatorTranslation(type, context);
+            return DefaultVoidTranslation.Instance;
         }
 
-        private class DefaultVoidTranslation : EmptyTranslatable, ITranslation
+        if (allowNullKeyword && type.FullName != null && type.CanBeNull())
         {
-            public new static readonly ITranslation Instance = new DefaultVoidTranslation();
-
-            public ExpressionType NodeType => ExpressionType.Default;
-
-            public Type Type => typeof(void);
+            return new NullKeywordTranslation(type);
         }
 
-        private class NullKeywordTranslation : FixedValueTranslation, INullKeywordTranslation
+        return new DefaultOperatorTranslation(type, context);
+    }
+
+    private class DefaultVoidTranslation : EmptyTranslation, INodeTranslation
+    {
+        public new static readonly INodeTranslation Instance =
+            new DefaultVoidTranslation();
+
+        public ExpressionType NodeType => ExpressionType.Default;
+    }
+
+    private class NullKeywordTranslation :
+        FixedValueTranslation,
+        INullKeywordTranslation
+    {
+        public NullKeywordTranslation(Type nullType) :
+            base(ExpressionType.Default, "null", TokenType.Keyword)
         {
-            public NullKeywordTranslation(Type nullType, ITranslationContext context)
-                : base(
-                    ExpressionType.Default,
-                    "null",
-                    nullType,
-                    TokenType.Keyword,
-                    context)
-            {
-            }
+            NullType = nullType;
         }
+
+        public Type NullType { get; }
     }
 }
