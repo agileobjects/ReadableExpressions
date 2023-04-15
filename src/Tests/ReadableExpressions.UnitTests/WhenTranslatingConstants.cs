@@ -444,6 +444,39 @@ there!""");
         translated.ShouldBe("\"Escape: \\\"THIS\\\"!\"");
     }
 
+    // See https://github.com/agileobjects/ReadableExpressions/issues/119
+    [Fact]
+    public void ShouldTranslateAGuid()
+    {
+        var guid = Guid.NewGuid();
+        var guidConstant = Constant(guid, typeof(Guid));
+
+        var translated = guidConstant.ToReadableString();
+
+        translated.ShouldBe($"new Guid(\"{guid}\")");
+    }
+
+    [Fact]
+    public void ShouldTranslateANullableGuid()
+    {
+        var guid = Guid.NewGuid();
+        var guidConstant = Constant(guid, typeof(Guid?));
+
+        var translated = guidConstant.ToReadableString();
+
+        translated.ShouldBe($"new Guid(\"{guid}\")");
+    }
+
+    [Fact]
+    public void ShouldTranslateANullNullableGuid()
+    {
+        var guidConstant = Constant(null, typeof(Guid?));
+
+        var translated = guidConstant.ToReadableString();
+
+        translated.ShouldBe("null");
+    }
+
     [Fact]
     public void ShouldTranslateADefaultGuid()
     {

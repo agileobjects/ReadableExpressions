@@ -127,10 +127,10 @@ internal static class ConstantTranslation
 
             case NetStandardTypeCode.Object:
                 if (TryGetTypeTranslation(constant, context, out translation) ||
+                    TryGetGuidTranslation(constant, context, out translation) ||
                     LambdaConstantTranslation.TryCreate(constant, context, out translation) ||
                     TryGetSimpleArrayTranslation(constant, context, out translation) ||
                     TryGetRegexTranslation(constant, context, out translation) ||
-                    TryTranslateDefault<Guid>(constant, context, out translation) ||
                     TimeSpanConstantTranslation.TryCreate(constant, context, out translation))
                 {
                     return true;
@@ -168,6 +168,14 @@ internal static class ConstantTranslation
             return CannotTranslate(out translation);
         }
 
+        return TranslateDefault(constant, context, out translation);
+    }
+
+    private static bool TranslateDefault(
+        ConstantExpression constant,
+        ITranslationContext context,
+        out INodeTranslation translation)
+    {
         translation = DefaultValueTranslation.For(constant, context);
         return true;
     }
@@ -238,6 +246,32 @@ internal static class ConstantTranslation
         {
             translation = new TypeOfOperatorTranslation(
                 (Type)constant.Value,
+                context);
+
+            return true;
+        }
+
+        return CannotTranslate(out translation);
+    }
+
+    private static bool TryGetGuidTranslation(
+        ConstantExpression constant,
+        ITranslationContext context,
+        out INodeTranslation translation)
+    {
+        if (constant.Type.IsAssignableTo(typeof(Guid?)))
+        {
+            var guid = (Guid?)constant.Value;
+
+            if (guid == default(Guid))
+            {
+                return TranslateDefault(constant, context, out translation);
+            }
+
+            translation = NewingTranslation.For(
+                Expression.New(
+                    typeof(Guid).GetPublicInstanceConstructor(typeof(string)),
+                    Expression.Constant(guid.ToString(), typeof(string))),
                 context);
 
             return true;
