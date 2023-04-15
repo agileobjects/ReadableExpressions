@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{F0FCABC6-52C4-4670-AD28-7DC20B44B13D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AgileObjects.ReadableExpressions.Visualizers.Installer.Custom</RootNamespace>
+    <AssemblyName>ReadableExpressions.Visualizers.Installer.Custom</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.Deployment.WindowsInstaller">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\ClsCompliant.cs">
+      <Link>Properties\ClsCompliant.cs</Link>
+    </Compile>
+    <Compile Include="..\..\CommonVisualizerAssemblyInfo.cs">
+      <Link>Properties\CommonVisualizerAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="CoreAssemblies.cs" />
+    <Compile Include="Visualizer.cs" />
+    <Compile Include="VisualizerInstallerFactory.cs" />
+    <Compile Include="VisualizerInstallationActions.cs" />
+    <Compile Include="EmbeddedResourceExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VisualizerInstaller.cs" />
+    <Compile Include="VsixManifest.cs" />
+    <Compile Include="VsixManifestInstaller.cs" />
+    <Compile Include="VsPost2015Data.cs" />
+    <EmbeddedResource Include="extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs10.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs11.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs11.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs12.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs14.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs15.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs16.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs10.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs11.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs12.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs14.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs15.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.NetStandardPolyfills.dll">
+      <Link>AgileObjects.NetStandardPolyfills.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.dll">
+      <Link>AgileObjects.ReadableExpressions.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <Content Include="CustomAction.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Shared\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
+      <Project>{3a04a9a4-f0c8-4a49-a23d-f3bf6e39cb13}</Project>
+      <Name>ReadableExpressions.Visualizers.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Shared\ReadableExpressions.Visualizers.Dialog\ReadableExpressions.Visualizers.Dialog.csproj">
+      <Project>{1df26474-08fc-45bb-a0c3-7634bd0b6c0f}</Project>
+      <Name>ReadableExpressions.Visualizers.Dialog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Shared\ReadableExpressions.Visualizers.ObjectSource\ReadableExpressions.Visualizers.ObjectSource.csproj">
+      <Project>{93181e6e-3953-4711-affe-99aa62e5ab29}</Project>
+      <Name>ReadableExpressions.Visualizers.ObjectSource</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(WixCATargetsPath)" Condition=" '$(WixCATargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.CA.targets" Condition=" '$(WixCATargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.CA.targets') " />
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixCATargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3 build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+</Project>
