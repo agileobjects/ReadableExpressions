@@ -147,7 +147,8 @@ internal class StringConcatenationTranslation : INodeTranslation
         ITranslationContext context,
         out INodeTranslation concatTranslation)
     {
-        if (!IsStringConcatCall(methodCall))
+        if (context.Settings.ShowStringConcatMethodCalls ||
+           !IsStringConcatCall(methodCall))
         {
             concatTranslation = null;
             return false;

@@ -252,4 +252,16 @@ public class WhenTranslatingStringConcatenation : TestClassBase
 
         translated.ShouldBe("str1 + '\\0' + str2");
     }
+
+    [Fact]
+    public void ShouldTranslateAStringStringExplicitMethodCallAsACall()
+    {
+        var concat = CreateLambda((string str1, string str2)
+            => string.Concat(str1, str2));
+
+        var translated = concat.Body
+            .ToReadableString(stgs => stgs.ShowStringConcatMethodCalls);
+
+        translated.ShouldBe("string.Concat(str1, str2)");
+    }
 }
