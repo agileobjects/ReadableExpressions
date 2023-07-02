@@ -34,6 +34,9 @@
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TArg3, TReturn>> linqLambda)
             => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
+
+        protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TArg4, TReturn>(LinqExp.Expression<Func<TArg1, TArg2, TArg3, TArg4, TReturn>> linqLambda)
+            => LinqExpressionToDlrExpressionConverter.Convert(linqLambda);
 #else
         protected static LambdaExpression CreateLambda(Expression<Action> lambda) => lambda;
 
@@ -48,6 +51,8 @@
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TReturn>(Expression<Func<TArg1, TArg2, TReturn>> lambda) => lambda;
 
         protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TReturn>(Expression<Func<TArg1, TArg2, TArg3, TReturn>> lambda) => lambda;
+
+        protected static LambdaExpression CreateLambda<TArg1, TArg2, TArg3, TArg4, TReturn>(Expression<Func<TArg1, TArg2, TArg3, TArg4, TReturn>> lambda) => lambda;
 #endif
     }
 }

@@ -6,7 +6,9 @@ using Microsoft.Scripting.Ast;
 using System.Linq.Expressions;
 #endif
 
-internal class TranslationAdapter : INodeTranslation, IPotentialSelfTerminatingTranslation
+internal class TranslationAdapter :
+    INodeTranslation,
+    IPotentialSelfTerminatingTranslation
 {
     private readonly ITranslation _baseTranslation;
 

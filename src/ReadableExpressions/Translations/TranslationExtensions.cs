@@ -31,17 +31,29 @@ internal static class TranslationExtensions
     public static bool HasGoto(this ITranslation translation)
         => translation is IPotentialGotoTranslation { HasGoto: true };
 
+    public static bool IsParenthesized(this ITranslation translation)
+        => translation is IPotentialParenthesizedTranslation { Parenthesize: true };
+
     public static bool WrapLine(this ITranslation translation)
         => translation.TranslationLength > LineWrapThreshold;
 
     public static bool IsAssignment(this INodeTranslation translation)
         => AssignmentTranslation.IsAssignment(translation.NodeType);
 
-    public static bool IsBinary(this INodeTranslation translation)
-        => BinaryTranslation.IsBinary(translation.NodeType);
+    public static bool IsBinary(this ExpressionType nodeType)
+        => BinaryTranslation.IsBinary(nodeType);
 
-    public static INodeTranslation WithParentheses(this INodeTranslation translation)
-        => new WrappedTranslation("(", translation, ")");
+    public static bool IsCast(this INodeTranslation translation)
+        => translation.NodeType.IsCast();
+
+    public static bool IsCast(this ExpressionType nodeType)
+        => CastTranslation.IsCast(nodeType);
+
+    public static INodeTranslation WithParentheses(
+        this INodeTranslation translation)
+    {
+        return new WrappedTranslation("(", translation, ")");
+    }
 
     public static int TotalTranslationLength<TTranslatable>(
         this IList<TTranslatable> translatables,
@@ -96,24 +108,34 @@ internal static class TranslationExtensions
     }
 
     public static void WriteInParenthesesIfRequired(
-        this INodeTranslation translation,
+        this INodeTranslation nestedTranslation,
         TranslationWriter writer,
         ITranslationContext context)
     {
-        if (ShouldWriteInParentheses(translation))
+        if (ShouldWriteInParentheses(nestedTranslation))
         {
-            translation.WriteInParentheses(writer);
+            nestedTranslation.WriteInParentheses(writer);
             return;
         }
 
-        new CodeBlockTranslation(translation, context).WriteTo(writer);
+        new CodeBlockTranslation(nestedTranslation, context).WriteTo(writer);
     }
 
-    public static bool ShouldWriteInParentheses(this INodeTranslation translation)
+    public static bool ShouldWriteInParentheses(
+        this INodeTranslation nestedTranslation)
     {
-        return translation.NodeType == ExpressionType.Conditional ||
-               translation.IsBinary() || translation.IsAssignment() ||
-               CastTranslation.IsCast(translation.NodeType);
+        if (nestedTranslation.NodeType == ExpressionType.Conditional ||
+            nestedTranslation.IsAssignment() || nestedTranslation.IsCast())
+        {
+            return true;
+        }
+
+        if (nestedTranslation is IPotentialParenthesizedTranslation parenthesized)
+        {
+            return parenthesized.Parenthesize;
+        }
+
+        return nestedTranslation.NodeType.IsBinary();
     }
 
     public static void WriteNewToTranslation(this TranslationWriter writer)

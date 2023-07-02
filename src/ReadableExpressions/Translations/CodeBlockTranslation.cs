@@ -15,7 +15,8 @@ public class CodeBlockTranslation :
     INodeTranslation,
     IPotentialMultiStatementTranslatable,
     IPotentialSelfTerminatingTranslation,
-    IPotentialGotoTranslation
+    IPotentialGotoTranslation,
+    IPotentialParenthesizedTranslation
 {
     private readonly INodeTranslation _translation;
     private readonly bool _isEmptyTranslation;
@@ -82,6 +83,9 @@ public class CodeBlockTranslation :
     public bool IsTerminated => _ensureTerminated || _translation.IsTerminated();
 
     bool IPotentialGotoTranslation.HasGoto => _translation.HasGoto();
+
+    bool IPotentialParenthesizedTranslation.Parenthesize
+        => _translation.IsParenthesized();
 
     /// <summary>
     /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> will produce output
