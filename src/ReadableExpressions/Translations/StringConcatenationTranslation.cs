@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 #if NET35
 using Microsoft.Scripting.Ast;
 #else
@@ -172,9 +173,24 @@ internal class StringConcatenationTranslation : INodeTranslation
 
     private static bool IsStringConcatCall(MethodCallExpression methodCall)
     {
-        return methodCall.Method.IsStatic &&
-               methodCall.Method.DeclaringType == typeof(string) &&
-               methodCall.Method.Name == nameof(string.Concat);
+        var method = methodCall.Method;
+
+        return method.IsStatic &&
+               method.DeclaringType == typeof(string) &&
+               method.Name == nameof(string.Concat) &&
+               AreAllStrings(method.GetParameters());
+    }
+
+    private static bool AreAllStrings(IList<ParameterInfo> parameters)
+    {
+        if (parameters.Count == 1 &&
+            parameters[0].ParameterType.TryGetElementType(out var elementType) &&
+            elementType == typeof(string))
+        {
+            return true;
+        }
+
+        return parameters.All(p => p.ParameterType == typeof(string));
     }
 
     #endregion

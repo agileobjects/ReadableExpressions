@@ -187,12 +187,24 @@ public class WhenTranslatingStringConcatenation : TestClassBase
     [Fact]
     public void ShouldTranslateAnExplicitThreeObjectsConcatenation()
     {
-        var concat = CreateLambda((string str1, int i, long l)
-            => string.Concat(str1, i, l));
+        var concat = CreateLambda((string str, int i, long l)
+            => string.Concat(str, i, l));
 
         var translated = concat.Body.ToReadableString();
 
-        translated.ShouldBe("str1 + i + l");
+        translated.ShouldBe("string.Concat(str, i, l)");
+    }
+
+    // See https://github.com/agileobjects/ReadableExpressions/issues/116
+    [Fact]
+    public void ShouldTranslateAnExplicitThreeDoublesConcatenation()
+    {
+        var concat = CreateLambda(()
+            => string.Concat(1d, 1d + 1d, 3d));
+
+        var translated = concat.Body.ToReadableString();
+
+        translated.ShouldBe("string.Concat(1d, 2d, 3d)");
     }
 
     // See https://github.com/agileobjects/ReadableExpressions/issues/12
