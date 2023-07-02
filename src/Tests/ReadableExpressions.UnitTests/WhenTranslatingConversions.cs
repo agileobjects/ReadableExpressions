@@ -6,13 +6,15 @@ using System.IO;
 using Common;
 using NetStandardPolyfills;
 #if !NET35
+using System.Linq.Expressions;
 using Xunit;
 using static System.Linq.Expressions.Expression;
 #else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+using Microsoft.Scripting.Ast;
+using Fact = NUnit.Framework.TestAttribute;
+using static Microsoft.Scripting.Ast.Expression;
 
-    [NUnit.Framework.TestFixture]
+[NUnit.Framework.TestFixture]
 #endif
 public class WhenTranslatingConversions : TestClassBase
 {
@@ -153,5 +155,22 @@ public class WhenTranslatingConversions : TestClassBase
         var translated = stringToIntParseLambda.Body.ToReadableString();
 
         translated.ShouldBe("int.Parse(str)");
+    }
+
+    // https://github.com/agileobjects/ReadableExpressions/issues/117
+    [Fact]
+    public void ShouldTranslateExplicitUnaryConversionWithCustomStaticMethod()
+    {
+        var objectToBoolWithIsDbNullLambda = Lambda(
+            MakeUnary(
+                ExpressionType.Convert,
+                Default(typeof(object)),
+                typeof(bool),
+                typeof(Convert).GetMethod("IsDBNull")));
+
+        var translated = 
+            objectToBoolWithIsDbNullLambda.ToReadableString();
+
+        translated.ShouldBe("() => Convert.IsDBNull(null)");
     }
 }

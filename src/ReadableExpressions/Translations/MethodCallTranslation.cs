@@ -178,9 +178,6 @@ public static class MethodCallTranslation
     /// <summary>
     /// Creates an <see cref="INodeTranslation"/> for the given custom type <paramref name="castMethod"/>.
     /// </summary>
-    /// <param name="typeNameTranslation">
-    /// An <see cref="INodeTranslation"/> for the type to which the cast is being performed.
-    /// </param>
     /// <param name="castMethod">The <see cref="IMethod"/> for which to create the <see cref="INodeTranslation"/>.</param>
     /// <param name="castValue">An <see cref="INodeTranslation"/> for the value being cast.</param>
     /// <param name="context">
@@ -188,14 +185,16 @@ public static class MethodCallTranslation
     /// </param>
     /// <returns>An <see cref="INodeTranslation"/> for the given <paramref name="castMethod"/>.</returns>
     public static INodeTranslation ForCustomMethodCast(
-        INodeTranslation typeNameTranslation,
         IMethod castMethod,
         INodeTranslation castValue,
         ITranslationContext context)
     {
+        var castMethodSubjectTranslation =
+            context.GetTranslationFor(castMethod.DeclaringType);
+
         return new StandardMethodCallTranslation(
             Call,
-            typeNameTranslation,
+            castMethodSubjectTranslation,
             castMethod,
             new ParameterSetTranslation(castValue, context).WithParentheses(),
             context);
