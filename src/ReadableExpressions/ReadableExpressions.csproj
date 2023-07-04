@@ -26,10 +26,12 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Support for per-ExpressionType custom translation
-- Fixing multi-line lambda variable body translation, re: #111
-- Fixing string constant member access translation
-- Simplifying public translation interfaces
+    <PackageReleaseNotes>- Fixing `Guid` constant translation, re: #119
+- Fixing various `string` concatenation issues, re: #120, 123
+- Rendering string.Concat(Object) calls as method calls, not concatenation, re: #116
+- Fixing custom method conversion unary translation, re: #117
+- Including cast parentheses in cast index access subject, re: #122
+- Adding setting to translate all `string.Concat()` calls as method calls, not concatenation
     </PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>../../NuGet</PackageOutputPath>
