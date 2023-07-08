@@ -176,7 +176,7 @@ checked
 
             var translated = operationWithBrackets.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => (i1 / i2) * i1");
+            translated.ShouldBe("(i1, i2) => i1 / i2 * i1");
         }
 
         [Fact]

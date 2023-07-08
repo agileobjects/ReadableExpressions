@@ -8,51 +8,42 @@ using System.Linq.Expressions;
 using static System.Linq.Expressions.ExpressionType;
 #endif
 
-internal class BinaryTranslation : CheckedOperationTranslationBase, INodeTranslation
+internal class BinaryTranslation :
+    CheckedOperationTranslationBase,
+    INodeTranslation,
+    IPotentialParenthesizedTranslation
 {
     private readonly ITranslationContext _context;
     private readonly INodeTranslation _leftOperandTranslation;
     private readonly string _operator;
     private readonly INodeTranslation _rightOperandTranslation;
+    private bool _suppressParentheses;
 
     private BinaryTranslation(BinaryExpression binary, ITranslationContext context) :
-        base(IsCheckedBinary(binary.NodeType), "(", ")")
+        base(IsChecked(binary.NodeType), "(", ")")
     {
         _context = context;
         NodeType = binary.NodeType;
         _leftOperandTranslation = context.GetTranslationFor(binary.Left);
-        _operator = GetOperator(binary);
+        _operator = GetOperator(NodeType);
         _rightOperandTranslation = context.GetTranslationFor(binary.Right);
-    }
 
-    public static INodeTranslation For(
-        BinaryExpression binary,
-        ITranslationContext context)
-    {
-        switch (binary.NodeType)
+        if (_leftOperandTranslation is BinaryTranslation leftNestedBinary &&
+             HasComplimentaryOperator(leftNestedBinary))
         {
-            case Add:
-                if (binary.Type != typeof(string))
-                {
-                    break;
-                }
-
-                return StringConcatenationTranslation.ForAddition(binary, context);
-
-            case Equal:
-            case NotEqual:
-                if (StandaloneEqualityComparisonTranslation.TryGetTranslation(binary, context, out var translation))
-                {
-                    return translation;
-                }
-
-                break;
+            leftNestedBinary._suppressParentheses = true;
         }
 
-        return new BinaryTranslation(binary, context);
+        if (_rightOperandTranslation is BinaryTranslation rightNestedBinary &&
+             HasComplimentaryOperator(rightNestedBinary))
+        {
+            rightNestedBinary._suppressParentheses = true;
+        }
     }
 
-    private static bool IsCheckedBinary(ExpressionType nodeType)
+    #region Setup
+
+    private static bool IsChecked(ExpressionType nodeType)
     {
         return nodeType switch
         {
@@ -62,9 +53,6 @@ internal class BinaryTranslation : CheckedOperationTranslationBase, INodeTransla
             _ => false
         };
     }
-
-    public static string GetOperator(Expression expression)
-        => GetOperator(expression.NodeType);
 
     private static string GetOperator(ExpressionType nodeType)
     {
@@ -97,8 +85,63 @@ internal class BinaryTranslation : CheckedOperationTranslationBase, INodeTransla
         };
     }
 
+    private bool HasComplimentaryOperator(INodeTranslation otherBinary)
+    {
+        switch (otherBinary.NodeType)
+        {
+            case Add:
+            case AddChecked:
+            case Subtract:
+            case SubtractChecked:
+                return NodeType is Add or AddChecked or Subtract or SubtractChecked;
+
+            case Multiply:
+            case MultiplyChecked:
+            case Divide:
+                return NodeType is Multiply or MultiplyChecked or Divide;
+        }
+
+        return false;
+    }
+
+    #endregion
+
+    #region Factory Methods
+
+    public static INodeTranslation For(
+        BinaryExpression binary,
+        ITranslationContext context)
+    {
+        switch (binary.NodeType)
+        {
+            case Add:
+                if (binary.Type != typeof(string))
+                {
+                    break;
+                }
+
+                return StringConcatenationTranslation.ForAddition(binary, context);
+
+            case Equal:
+            case NotEqual:
+                if (StandaloneEqualityComparisonTranslation.TryGetTranslation(binary, context, out var translation))
+                {
+                    return translation;
+                }
+
+                break;
+        }
+
+        return new BinaryTranslation(binary, context);
+    }
+
+    #endregion
+
     public static bool IsBinary(ExpressionType nodeType)
         => GetOperator(nodeType) != null;
+
+    public static string GetOperator(Expression expression)
+        => GetOperator(expression.NodeType);
 
     public ExpressionType NodeType { get; }
 
@@ -114,6 +157,9 @@ internal class BinaryTranslation : CheckedOperationTranslationBase, INodeTransla
             return IsCheckedOperation ? translationLength + 10 : translationLength;
         }
     }
+
+    bool IPotentialParenthesizedTranslation.Parenthesize
+        => !_suppressParentheses;
 
     public void WriteTo(TranslationWriter writer)
     {

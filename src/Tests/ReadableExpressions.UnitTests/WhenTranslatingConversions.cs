@@ -1,144 +1,176 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
-{
-    using System;
-    using System.IO;
-    using Common;
-    using NetStandardPolyfills;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Common;
+using NetStandardPolyfills;
 #if !NET35
-    using Xunit;
-    using static System.Linq.Expressions.Expression;
+using System.Linq.Expressions;
+using Xunit;
+using static System.Linq.Expressions.Expression;
 #else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+using Microsoft.Scripting.Ast;
+using Fact = NUnit.Framework.TestAttribute;
+using static Microsoft.Scripting.Ast.Expression;
 
-    [NUnit.Framework.TestFixture]
+[NUnit.Framework.TestFixture]
 #endif
-    public class WhenTranslatingConversions : TestClassBase
+public class WhenTranslatingConversions : TestClassBase
+{
+    [Fact]
+    public void ShouldTranslateACastExpression()
     {
-        [Fact]
-        public void ShouldTranslateACastExpression()
-        {
-            var intToDouble = CreateLambda((int i) => (double)i);
+        var intToDouble = CreateLambda((int i) => (double)i);
 
-            var translated = intToDouble.ToReadableString();
+        var translated = intToDouble.ToReadableString();
 
-            translated.ShouldBe("i => (double)i");
-        }
+        translated.ShouldBe("i => (double)i");
+    }
 
-        [Fact]
-        public void ShouldTranslateACheckedCastExpression()
-        {
-            var intParameter = Parameter(typeof(int), "i");
-            var checkedCast = ConvertChecked(intParameter, typeof(short));
+    [Fact]
+    public void ShouldTranslateACheckedCastExpression()
+    {
+        var intParameter = Parameter(typeof(int), "i");
+        var checkedCast = ConvertChecked(intParameter, typeof(short));
 
-            var checkedCastLambda = Lambda<Func<int, short>>(checkedCast, intParameter);
+        var checkedCastLambda = Lambda<Func<int, short>>(checkedCast, intParameter);
 
-            var translated = checkedCastLambda.ToReadableString();
+        var translated = checkedCastLambda.ToReadableString();
 
-            translated.ShouldBe("i => (short)i");
-        }
+        translated.ShouldBe("i => (short)i");
+    }
 
-        [Fact]
-        public void ShouldTranslateACastToNullableExpression()
-        {
-            var longToNullable = CreateLambda((long l) => (long?)l);
+    [Fact]
+    public void ShouldTranslateACastToNullableExpression()
+    {
+        var longToNullable = CreateLambda((long l) => (long?)l);
 
-            var translated = longToNullable.ToReadableString();
+        var translated = longToNullable.ToReadableString();
 
-            translated.ShouldBe("l => (long?)l");
-        }
+        translated.ShouldBe("l => (long?)l");
+    }
 
-        [Fact]
-        public void ShouldUseParenthesisInCasting()
-        {
-            var castDateTimeHour = CreateLambda((object o) => ((DateTime)o).Hour);
+    [Fact]
+    public void ShouldUseParenthesisInCasting()
+    {
+        var castDateTimeHour = CreateLambda((object o) => ((DateTime)o).Hour);
 
-            var translated = castDateTimeHour.ToReadableString();
+        var translated = castDateTimeHour.ToReadableString();
 
-            translated.ShouldBe("o => ((DateTime)o).Hour");
-        }
+        translated.ShouldBe("o => ((DateTime)o).Hour");
+    }
 
-        [Fact]
-        public void ShouldTranslateANegationExpression()
-        {
-            var negator = CreateLambda((bool b) => !b);
+    // See https://github.com/agileobjects/ReadableExpressions/issues/122
+    [Fact]
+    public void ShouldUseParenthesisInACastMemberAccess()
+    {
+        var castDictionaryValueAccess = CreateLambda((object o)
+            => ((Dictionary<string, string>)o)["key"]);
 
-            var translated = negator.ToReadableString();
+        var translated =
+            castDictionaryValueAccess.Body.ToReadableString();
 
-            translated.ShouldBe("b => !b");
-        }
+        translated.ShouldBe("((Dictionary<string, string>)o)[\"key\"]");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnAsCastExpression()
-        {
-            var streamAsDisposable = CreateLambda((Stream stream) => stream as IDisposable);
+    [Fact]
+    public void ShouldTranslateANegationExpression()
+    {
+        var negator = CreateLambda((bool b) => !b);
 
-            var translated = streamAsDisposable.Body.ToReadableString();
+        var translated = negator.ToReadableString();
 
-            translated.ShouldBe("stream as IDisposable");
-        }
+        translated.ShouldBe("b => !b");
+    }
 
-        [Fact]
-        public void ShouldTranslateABoxingExpression()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var boxInt = Convert(intVariable, typeof(object));
+    [Fact]
+    public void ShouldTranslateAnAsCastExpression()
+    {
+        var streamAsDisposable = CreateLambda((Stream stream) => stream as IDisposable);
 
-            var translated = boxInt.ToReadableString();
+        var translated = streamAsDisposable.Body.ToReadableString();
 
-            translated.ShouldBe("i");
-        }
+        translated.ShouldBe("stream as IDisposable");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnUpcastClassToObjectExpression()
-        {
-            var streamVariable = Variable(typeof(Stream), "stream");
-            var upcastStreamToObject = Convert(streamVariable, typeof(object));
+    [Fact]
+    public void ShouldTranslateABoxingExpression()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var boxInt = Convert(intVariable, typeof(object));
 
-            var translated = upcastStreamToObject.ToReadableString();
+        var translated = boxInt.ToReadableString();
 
-            translated.ShouldBe("(object)stream");
-        }
+        translated.ShouldBe("i");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnUpcastStringToObjectExpression()
-        {
-            var stringVariable = Variable(typeof(string), "str");
-            var upcastStringToObject = Convert(stringVariable, typeof(object));
+    [Fact]
+    public void ShouldTranslateAnUpcastClassToObjectExpression()
+    {
+        var streamVariable = Variable(typeof(Stream), "stream");
+        var upcastStreamToObject = Convert(streamVariable, typeof(object));
 
-            var translated = upcastStringToObject.ToReadableString();
+        var translated = upcastStreamToObject.ToReadableString();
 
-            translated.ShouldBe("str");
-        }
+        translated.ShouldBe("(object)stream");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnUnboxingExpression()
-        {
-            var objectVariable = Variable(typeof(object), "o");
-            var unboxObjectToInt = Unbox(objectVariable, typeof(int));
+    [Fact]
+    public void ShouldTranslateAnUpcastStringToObjectExpression()
+    {
+        var stringVariable = Variable(typeof(string), "str");
+        var upcastStringToObject = Convert(stringVariable, typeof(object));
 
-            var translated = unboxObjectToInt.ToReadableString();
+        var translated = upcastStringToObject.ToReadableString();
 
-            translated.ShouldBe("(int)o");
-        }
+        translated.ShouldBe("str");
+    }
 
-        // https://github.com/agileobjects/ReadableExpressions/issues/20
-        [Fact]
-        public void ShouldTranslateConversionWithCustomStaticMethod()
-        {
-            var stringParameter = Parameter(typeof(string), "str");
-            var targetType = typeof(int);
+    [Fact]
+    public void ShouldTranslateAnUnboxingExpression()
+    {
+        var objectVariable = Variable(typeof(object), "o");
+        var unboxObjectToInt = Unbox(objectVariable, typeof(int));
 
-            var body = Convert(
-                stringParameter,
-                targetType,
-                targetType.GetPublicStaticMethod(nameof(int.Parse), stringParameter.Type));
+        var translated = unboxObjectToInt.ToReadableString();
 
-            var stringToIntParseLambda = Lambda<Func<string, int>>(body, stringParameter);
+        translated.ShouldBe("(int)o");
+    }
 
-            var translated = stringToIntParseLambda.Body.ToReadableString();
+    // https://github.com/agileobjects/ReadableExpressions/issues/20
+    [Fact]
+    public void ShouldTranslateConversionWithCustomStaticMethod()
+    {
+        var stringParameter = Parameter(typeof(string), "str");
+        var targetType = typeof(int);
 
-            translated.ShouldBe("int.Parse(str)");
-        }
+        var body = Convert(
+            stringParameter,
+            targetType,
+            targetType.GetPublicStaticMethod(nameof(int.Parse), stringParameter.Type));
+
+        var stringToIntParseLambda = Lambda<Func<string, int>>(body, stringParameter);
+
+        var translated = stringToIntParseLambda.Body.ToReadableString();
+
+        translated.ShouldBe("int.Parse(str)");
+    }
+
+    // https://github.com/agileobjects/ReadableExpressions/issues/117
+    [Fact]
+    public void ShouldTranslateExplicitUnaryConversionWithCustomStaticMethod()
+    {
+        var objectToBoolWithIsDbNullLambda = Lambda(
+            MakeUnary(
+                ExpressionType.Convert,
+                Default(typeof(object)),
+                typeof(bool),
+                typeof(Convert).GetMethod("IsDBNull")));
+
+        var translated = 
+            objectToBoolWithIsDbNullLambda.ToReadableString();
+
+        translated.ShouldBe("() => Convert.IsDBNull(null)");
     }
 }

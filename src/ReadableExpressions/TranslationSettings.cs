@@ -185,6 +185,22 @@ public class TranslationSettings : ITranslationSettings
     /// </summary>
     public bool ShowCapturedValues { get; private set; }
 
+    ITranslationSettings ITranslationSettings.ShowStringConcatMethodCalls
+    {
+        get
+        {
+            ShowStringConcatMethodCalls = true;
+            return this;
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether string.Concat() method calls with all-string arguments should
+    /// be translated as method calls, instead of as concatenations using the concatenation operator
+    /// (+).
+    /// </summary>
+    public bool ShowStringConcatMethodCalls { get; private set; }
+
     ITranslationSettings ITranslationSettings.AddTranslatorFor(
         ExpressionType nodeType,
         SourceCodeTranslationFactory translationFactory)

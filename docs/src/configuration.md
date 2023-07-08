@@ -57,6 +57,14 @@ string readable = myExpression
     .ToReadableString(c => c.ShowQuotedLambdaComments);
 ```
 
+To show `string.Concat()` method calls with all-string parameters as method calls
+instead of concatenations using the concatenation operator (+), use:
+
+```csharp
+string readable = myExpression
+    .ToReadableString(c => c.ShowStringConcatMethodCalls);
+```
+
 To define a custom factory for naming anonymous types, use:
 
 ```csharp

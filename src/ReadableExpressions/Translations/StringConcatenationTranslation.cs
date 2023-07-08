@@ -1,6 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 #if NET35
 using Microsoft.Scripting.Ast;
 #else
@@ -29,9 +31,21 @@ internal class StringConcatenationTranslation : INodeTranslation
         _operandCount = operandCount;
         _operandTranslations = new INodeTranslation[operandCount];
 
+        var operandTypes = new OperandType[operandCount];
+        var hasAllStringOperands = true;
+        var hasSingleToStringCall = true;
+        var firstToStringCallIndex = -1;
+
         for (var i = 0; i < operandCount; ++i)
         {
             var operand = operands[i];
+
+            if (operand.Type != typeof(string))
+            {
+                operandTypes[i] = OperandType.NonString;
+                hasAllStringOperands = false;
+                continue;
+            }
 
             if (operand.NodeType == Call)
             {
@@ -40,30 +54,92 @@ internal class StringConcatenationTranslation : INodeTranslation
                 if (methodCall.Method.Name == nameof(ToString) &&
                     methodCall.Arguments.None())
                 {
-                    operand = methodCall.GetSubject();
+                    operandTypes[i] = OperandType.ToStringCall;
+
+                    if (firstToStringCallIndex == -1)
+                    {
+                        firstToStringCallIndex = i;
+                        continue;
+                    }
+
+                    hasSingleToStringCall = false;
+                    continue;
                 }
             }
 
-            var operandTranslation = context.GetTranslationFor(operand);
+            operandTypes[i] = OperandType.String;
+        }
 
-            if (operand.Type != typeof(string) && operandTranslation.IsBinary())
+        for (var i = 0; i < operandCount; ++i)
+        {
+            var operand = operands[i];
+
+            if (hasAllStringOperands &&
+               (hasSingleToStringCall || i > firstToStringCallIndex) &&
+                operandTypes[i] == OperandType.ToStringCall)
             {
-                operandTranslation = operandTranslation.WithParentheses();
+                operand = ((MethodCallExpression)operand).GetSubject();
             }
 
-            _operandTranslations[i] = operandTranslation;
+            _operandTranslations[i] = context.GetTranslationFor(operand);
         }
     }
+
+    #region Factory Methods
 
     public static INodeTranslation ForAddition(
         BinaryExpression addition,
         ITranslationContext context)
     {
+        var flattenedOperands = FlattenOperands(addition).ToList();
+
         return new StringConcatenationTranslation(
             Add,
-            operandCount: 2,
-            new[] { addition.Left, addition.Right },
+            operandCount: flattenedOperands.Count,
+            flattenedOperands,
             context);
+    }
+
+    private static IEnumerable<Expression> FlattenOperands(
+        BinaryExpression binary)
+    {
+        foreach (var operand in FlattenOperands(binary.Left))
+        {
+            yield return operand;
+        }
+
+        foreach (var operand in FlattenOperands(binary.Right))
+        {
+            yield return operand;
+        }
+    }
+
+    private static IEnumerable<Expression> FlattenOperands(
+        Expression expression)
+    {
+        if (expression.NodeType.IsCast())
+        {
+            expression = expression.GetUnaryOperand();
+        }
+
+        if (!expression.NodeType.IsBinary())
+        {
+            yield return expression;
+            yield break;
+        }
+
+        var binary = (BinaryExpression)expression;
+
+        if (binary.NodeType != Add)
+        {
+            yield return expression;
+            yield break;
+        }
+
+        foreach (var operand in FlattenOperands(binary))
+        {
+            yield return operand;
+        }
     }
 
     public static bool TryCreateForConcatCall(
@@ -71,7 +147,8 @@ internal class StringConcatenationTranslation : INodeTranslation
         ITranslationContext context,
         out INodeTranslation concatTranslation)
     {
-        if (!IsStringConcatCall(methodCall))
+        if (context.Settings.ShowStringConcatMethodCalls ||
+           !IsStringConcatCall(methodCall))
         {
             concatTranslation = null;
             return false;
@@ -86,22 +163,42 @@ internal class StringConcatenationTranslation : INodeTranslation
             operandCount = operands.Count;
         }
 
-        concatTranslation =
-            new StringConcatenationTranslation(Call, operandCount, operands, context);
+        concatTranslation = new StringConcatenationTranslation(
+            Call,
+            operandCount,
+            operands,
+            context);
 
         return true;
     }
 
     private static bool IsStringConcatCall(MethodCallExpression methodCall)
     {
-        return methodCall.Method.IsStatic &&
-               methodCall.Method.DeclaringType == typeof(string) &&
-               methodCall.Method.Name == nameof(string.Concat);
+        var method = methodCall.Method;
+
+        return method.IsStatic &&
+               method.DeclaringType == typeof(string) &&
+               method.Name == nameof(string.Concat) &&
+               AreAllStrings(method.GetParameters());
     }
+
+    private static bool AreAllStrings(IList<ParameterInfo> parameters)
+    {
+        if (parameters.Count == 1 &&
+            parameters[0].ParameterType.TryGetElementType(out var elementType) &&
+            elementType == typeof(string))
+        {
+            return true;
+        }
+
+        return parameters.All(p => p.ParameterType == typeof(string));
+    }
+
+    #endregion
 
     public ExpressionType NodeType { get; }
 
-    public int TranslationLength 
+    public int TranslationLength
         => _operandTranslations.TotalTranslationLength(separator: " + ");
 
     public void WriteTo(TranslationWriter writer)
@@ -110,7 +207,7 @@ internal class StringConcatenationTranslation : INodeTranslation
         {
             var operandTranslation = _operandTranslations[i];
 
-            if (operandTranslation.NodeType == Conditional || 
+            if (operandTranslation.NodeType == Conditional ||
                 operandTranslation.IsAssignment())
             {
                 operandTranslation.WriteInParentheses(writer);
@@ -130,4 +227,6 @@ internal class StringConcatenationTranslation : INodeTranslation
             writer.WriteToTranslation(" + ");
         }
     }
+
+    private enum OperandType { String, ToStringCall, NonString }
 }

@@ -5,11 +5,11 @@ VisualStudioVersion = 17.5.33209.295
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{884A1D4E-7B9C-4411-A1E5-50B30F243FB1}"
 	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
+		..\.gitignore = ..\.gitignore
 		ClsCompliant.cs = ClsCompliant.cs
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
-		Directory.Build.props = Directory.Build.props
-		README.md = README.md
+		..\Directory.Build.props = ..\Directory.Build.props
+		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReadableExpressions.UnitTests", "Tests\ReadableExpressions.UnitTests\ReadableExpressions.UnitTests.csproj", "{A7BAC212-DA6C-4473-8043-006FF6967922}"

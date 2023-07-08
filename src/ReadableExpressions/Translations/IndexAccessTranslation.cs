@@ -12,12 +12,16 @@ internal class IndexAccessTranslation : INodeTranslation
 {
     private readonly INodeTranslation _subject;
     private readonly ParameterSetTranslation _parameters;
+    private readonly ITranslationContext _context;
 
     public IndexAccessTranslation(
         MethodCallExpression indexAccessCall,
         ParameterSetTranslation parameters,
         ITranslationContext context) :
-        this(context.GetTranslationFor(indexAccessCall.Object), parameters)
+        this(
+            context.GetTranslationFor(indexAccessCall.Object),
+            parameters,
+            context)
     {
         NodeType = ExpressionType.Call;
     }
@@ -33,7 +37,10 @@ internal class IndexAccessTranslation : INodeTranslation
     public IndexAccessTranslation(
         BinaryExpression arrayIndexAccess,
         ITranslationContext context) :
-        this(arrayIndexAccess.Left, new[] { arrayIndexAccess.Right }, context)
+        this(
+            arrayIndexAccess.Left,
+            new[] { arrayIndexAccess.Right },
+            context)
     {
         NodeType = ExpressionType.ArrayIndex;
     }
@@ -44,16 +51,19 @@ internal class IndexAccessTranslation : INodeTranslation
         ITranslationContext context) :
         this(
             context.GetTranslationFor(subject),
-            ParameterSetTranslation.For(arguments, context))
+            ParameterSetTranslation.For(arguments, context),
+            context)
     {
     }
 
     private IndexAccessTranslation(
         INodeTranslation subject,
-        ParameterSetTranslation parameters)
+        ParameterSetTranslation parameters,
+        ITranslationContext context)
     {
         _subject = subject;
         _parameters = parameters;
+        _context = context;
     }
 
     #region Factory Methods
@@ -93,7 +103,7 @@ internal class IndexAccessTranslation : INodeTranslation
 
     public void WriteTo(TranslationWriter writer)
     {
-        _subject.WriteTo(writer);
+        _subject.WriteInParenthesesIfRequired(writer, _context);
         writer.WriteToTranslation('[');
         _parameters.WithoutParentheses().WriteTo(writer);
         writer.WriteToTranslation(']');

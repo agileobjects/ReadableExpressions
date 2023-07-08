@@ -19,7 +19,7 @@ using static System.Linq.Expressions.ExpressionType;
 /// <summary>
 /// An <see cref="ITranslation"/> which translates a set of Expressions representing parameters.
 /// </summary>
-public class ParameterSetTranslation : ITranslation
+public class ParameterSetTranslation : IPotentialParenthesizedTranslation
 {
     private const int _splitArgumentsThreshold = 3;
     private const string _openAndCloseParentheses = "()";
@@ -359,6 +359,9 @@ public class ParameterSetTranslation : ITranslation
     /// empty set of parameters.
     /// </summary>
     public bool None => Count == 0;
+
+    bool IPotentialParenthesizedTranslation.Parenthesize
+        => _parenthesesMode != ParenthesesMode.Never;
 
     /// <summary>
     /// Gets the <see cref="INodeTranslation"/> at the given <paramref name="parameterIndex"/> in

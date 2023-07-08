@@ -55,7 +55,6 @@ internal static class CastTranslation
                     }
 
                     return MethodCallTranslation.ForCustomMethodCast(
-                        context.GetTranslationFor(cast.Type),
                         new ClrMethodWrapper(cast.Method, context),
                         castValueTranslation,
                         context);

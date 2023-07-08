@@ -62,6 +62,12 @@ public interface ITranslationSettings
     ITranslationSettings ShowCapturedValues { get; }
 
     /// <summary>
+    /// Show string.Concat() method calls with all-string arguments as method calls, instead of as
+    /// concatenations using the concatenation operator (+).
+    /// </summary>
+    ITranslationSettings ShowStringConcatMethodCalls { get; }
+
+    /// <summary>
     /// Use the given <paramref name="sourceCodeTranslationFactory"/> to translate Expressions with
     /// the given <paramref name="nodeType"/>.
     /// </summary>
