@@ -1,18 +1,15 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers
-{
-    using Dialog;
-    using Microsoft.VisualStudio.DebuggerVisualizers;
+﻿namespace AgileObjects.ReadableExpressions.Visualizers;
 
-    public class Vs16ExpressionVisualizer : DialogDebuggerVisualizer
+using Dialog;
+using Microsoft.VisualStudio.DebuggerVisualizers;
+
+public class Vs16ExpressionVisualizer : DialogDebuggerVisualizer
+{
+    protected override void Show(
+        IDialogVisualizerService windowService,
+        IVisualizerObjectProvider objectProvider)
     {
-        protected override void Show(
-            IDialogVisualizerService windowService,
-            IVisualizerObjectProvider objectProvider)
-        {
-            using (var dialog = new VisualizerDialog(objectProvider.GetObject))
-            {
-                windowService.ShowDialog(dialog);
-            }
-        }
+        windowService.ShowDialog(
+            new VisualizerDialog(objectProvider.GetObject));
     }
 }

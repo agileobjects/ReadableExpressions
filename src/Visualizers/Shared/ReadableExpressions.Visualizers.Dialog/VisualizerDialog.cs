@@ -1,340 +1,336 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog;
+
+using Configuration;
+using Controls;
+using Core;
+using Core.Configuration;
+using Core.Theming;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Windows.Forms;
+using Theming;
+using static DialogConstants;
+using static System.Windows.Forms.ScreenOrientation;
+using static System.Windows.Forms.SystemInformation;
+
+public class VisualizerDialog : Form
 {
-    using Configuration;
-    using Controls;
-    using Core;
-    using Core.Configuration;
-    using Core.Theming;
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.Linq;
-    using System.Windows.Forms;
-    using Theming;
-    using static DialogConstants;
-    using static System.Windows.Forms.ScreenOrientation;
-    using static System.Windows.Forms.SystemInformation;
+    private static readonly Size _dialogMinimumSize = new Size(530, 125);
 
-    public class VisualizerDialog : Form
+    private readonly Func<object> _translationFactory;
+    private readonly VisualizerDialogRenderer _renderer;
+    private readonly ToolStrip _menuStrip;
+    private readonly ToolStrip _toolbar;
+    private readonly List<Control> _themeableControls;
+    private readonly int _titleBarHeight;
+    private bool _autoSize;
+
+    public VisualizerDialog(Func<object> translationFactory)
     {
-        private static readonly Size _dialogMinimumSize = new Size(530, 125);
+        _translationFactory = translationFactory;
+        ColourTable = new VisualizerDialogColourTable(this);
+        _renderer = new VisualizerDialogRenderer(this);
+        _themeableControls = new List<Control>();
 
-        private readonly Func<object> _translationFactory;
-        private readonly VisualizerDialogRenderer _renderer;
-        private readonly ToolStrip _menuStrip;
-        private readonly ToolStrip _toolbar;
-        private readonly List<Control> _themeableControls;
-        private readonly int _titleBarHeight;
-        private bool _autoSize;
+        base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
+        StartPosition = FormStartPosition.CenterScreen;
+        MinimizeBox = false;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
 
-        public VisualizerDialog(Func<object> translationFactory)
+        var screenRectangle = RectangleToScreen(ClientRectangle);
+        _titleBarHeight = screenRectangle.Top - Top;
+
+        using (var graphics = CreateGraphics())
         {
-            _translationFactory = translationFactory;
-            ColourTable = new VisualizerDialogColourTable(this);
-            _renderer = new VisualizerDialogRenderer(this);
-            _themeableControls = new List<Control>();
+            WidthFactor = graphics.DpiX / 72;
+            HeightFactor = graphics.DpiY / 72;
+        }
 
-            base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
-            StartPosition = FormStartPosition.CenterScreen;
-            MinimizeBox = false;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        ViewModel = new TranslationViewModel();
 
-            var screenRectangle = RectangleToScreen(ClientRectangle);
-            _titleBarHeight = screenRectangle.Top - Top;
+        ToolTip = new ToolTip();
+        Viewer = AddViewer();
+        _menuStrip = AddMenuStrip();
+        _toolbar = AddToolbar();
 
-            using (var graphics = CreateGraphics())
+        SetViewerSizeLimits();
+        SetTranslation();
+
+        Application.Idle += LazyLoadMenus;
+
+        Shown += (sender, _) =>
+        {
+            var dialog = (VisualizerDialog)sender;
+            dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
+        };
+
+        Resize += (sender, _) => ((VisualizerDialog)sender).HandleResize();
+    }
+
+    internal TranslationViewModel ViewModel { get; }
+
+    internal VisualizerDialogColourTable ColourTable { get; }
+
+    internal VisualizerDialogSettings Settings => ViewModel.Settings;
+
+    internal VisualizerDialogTheme Theme
+    {
+        get => Settings.Theme;
+        private set => Settings.Theme = value;
+    }
+
+    internal float WidthFactor { get; }
+
+    internal float HeightFactor { get; }
+
+    internal VisualizerViewer Viewer { get; }
+
+    internal ToolTip ToolTip { get; }
+
+    private ToolStrip AddMenuStrip()
+    {
+        var optionsMenuItem = new VisualizerOptionsMenuItem(this);
+
+        var menuStrip = new ToolStrip(optionsMenuItem)
+        {
+            Dock = DockStyle.Top,
+            GripStyle = ToolStripGripStyle.Hidden,
+            AutoSize = true
+        };
+
+        RegisterThemeable(menuStrip);
+        Controls.Add(menuStrip);
+
+        return menuStrip;
+    }
+
+    private VisualizerViewer AddViewer()
+    {
+        var viewerPanel = new VisualizerViewerPanel(this);
+
+        Controls.Add(viewerPanel);
+
+        return viewerPanel.Viewer;
+    }
+
+    private ToolStrip AddToolbar()
+    {
+        var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
+        {
+            Alignment = ToolStripItemAlignment.Left
+        };
+
+        var copyButton = new ToolStripControlHost(new CopyButton(this))
+        {
+            Alignment = ToolStripItemAlignment.Right
+        };
+
+        var toolbar = new ToolStrip(feedbackButton, copyButton)
+        {
+            Dock = DockStyle.Bottom,
+            GripStyle = ToolStripGripStyle.Hidden,
+            AutoSize = true
+        };
+
+        RegisterThemeable(toolbar);
+        Controls.Add(toolbar);
+
+        return toolbar;
+    }
+
+    private void SetViewerSizeLimits()
+    {
+        Viewer.MinimumSize = _dialogMinimumSize;
+        Viewer.MaximumSize = GetViewerSizeBasedOn(MaximumSize);
+    }
+
+    private Size GetViewerSizeBasedOn(Size containerSize)
+    {
+        return new Size(
+            containerSize.Width - VerticalScrollBarWidth,
+            containerSize.Height - _titleBarHeight - _menuStrip.Height - _toolbar.Height);
+    }
+
+    public override bool AutoSize => _autoSize;
+
+    public override Size MaximumSize
+    {
+        get
+        {
+            var screenSize = Screen.GetWorkingArea(this).Size;
+
+            switch (SystemInformation.ScreenOrientation)
             {
-                WidthFactor = graphics.DpiX / 72;
-                HeightFactor = graphics.DpiY / 72;
-            }
+                case Angle90:
+                case Angle270:
+                    return new Size(screenSize.Height, screenSize.Width);
 
-            ViewModel = new TranslationViewModel();
-
-            ToolTip = AddToolTip();
-            Viewer = AddViewer();
-            _menuStrip = AddMenuStrip();
-            _toolbar = AddToolbar();
-
-            SetViewerSizeLimits();
-            SetTranslation();
-
-            Application.Idle += LazyLoadMenus;
-
-            Shown += (sender, _) =>
-            {
-                var dialog = (VisualizerDialog)sender;
-                dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
-            };
-
-            Resize += (sender, _) => ((VisualizerDialog)sender).HandleResize();
-        }
-
-        internal TranslationViewModel ViewModel { get; }
-
-        internal VisualizerDialogColourTable ColourTable { get; }
-
-        internal VisualizerDialogSettings Settings => ViewModel.Settings;
-
-        internal VisualizerDialogTheme Theme
-        {
-            get => Settings.Theme;
-            private set => Settings.Theme = value;
-        }
-
-        internal float WidthFactor { get; }
-
-        internal float HeightFactor { get; }
-
-        internal VisualizerViewer Viewer { get; }
-
-        internal ToolTip ToolTip { get; }
-
-        private ToolTip AddToolTip()
-        {
-            return new ToolTip();
-        }
-
-        private ToolStrip AddMenuStrip()
-        {
-            var optionsMenuItem = new VisualizerOptionsMenuItem(this);
-
-            var menuStrip = new ToolStrip(optionsMenuItem)
-            {
-                Dock = DockStyle.Top,
-                GripStyle = ToolStripGripStyle.Hidden,
-                AutoSize = true
-            };
-
-            RegisterThemeable(menuStrip);
-            Controls.Add(menuStrip);
-
-            return menuStrip;
-        }
-
-        private VisualizerViewer AddViewer()
-        {
-            var viewerPanel = new VisualizerViewerPanel(this);
-
-            Controls.Add(viewerPanel);
-
-            return viewerPanel.Viewer;
-        }
-
-        private ToolStrip AddToolbar()
-        {
-            var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
-            {
-                Alignment = ToolStripItemAlignment.Left
-            };
-
-            var copyButton = new ToolStripControlHost(new CopyButton(this))
-            {
-                Alignment = ToolStripItemAlignment.Right
-            };
-
-            var toolbar = new ToolStrip(feedbackButton, copyButton)
-            {
-                Dock = DockStyle.Bottom,
-                GripStyle = ToolStripGripStyle.Hidden,
-                AutoSize = true
-            };
-
-            RegisterThemeable(toolbar);
-            Controls.Add(toolbar);
-
-            return toolbar;
-        }
-
-        private void SetViewerSizeLimits()
-        {
-            Viewer.MinimumSize = _dialogMinimumSize;
-            Viewer.MaximumSize = GetViewerSizeBasedOn(MaximumSize);
-        }
-
-        private Size GetViewerSizeBasedOn(Size containerSize)
-        {
-            return new Size(
-                containerSize.Width - VerticalScrollBarWidth,
-                containerSize.Height - _titleBarHeight - _menuStrip.Height - _toolbar.Height);
-        }
-
-        public override bool AutoSize => _autoSize;
-
-        public override Size MaximumSize
-        {
-            get
-            {
-                var screenSize = Screen.GetWorkingArea(this).Size;
-
-                switch (SystemInformation.ScreenOrientation)
-                {
-                    case Angle90:
-                    case Angle270:
-                        return new Size(screenSize.Height, screenSize.Width);
-
-                    default:
-                        return screenSize;
-                }
+                default:
+                    return screenSize;
             }
         }
+    }
 
-        public override string Text => string.Empty;
+    public override string Text => string.Empty;
 
-        private void RegisterThemeable(ToolStrip toolStrip)
+    private void RegisterThemeable(ToolStrip toolStrip)
+    {
+        toolStrip.Renderer = _renderer;
+        RegisterThemeable((Control)toolStrip);
+    }
+
+    internal void RegisterThemeable(Control control)
+    {
+        ColourTable.ApplyTo(control);
+        _themeableControls.Add(control);
+    }
+
+    internal void UpdateTranslation()
+    {
+        var currentTranslation = ViewModel.Translation;
+
+        SetTranslation();
+
+        if (ViewModel.Translation != currentTranslation)
         {
-            toolStrip.Renderer = _renderer;
-            RegisterThemeable((Control)toolStrip);
+            Viewer.SetContent(ViewModel.Translation);
         }
+    }
 
-        internal void RegisterThemeable(Control control)
+    private void SetTranslation()
+    {
+        ViewModel.Translation = (string)_translationFactory.Invoke();
+
+        var rawText = ViewModel.TranslationRaw;
+        var font = Viewer.Font;
+        var textSize = TextRenderer.MeasureText(rawText, font);
+
+        var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
+        int height;
+
+        var sizeSettings = Settings.Size;
+        var saveNewSize = false;
+
+        if (sizeSettings.UseFixedSize &&
+            sizeSettings.InitialWidth.HasValue &&
+            sizeSettings.InitialHeight.HasValue)
         {
-            ColourTable.ApplyTo(control);
-            _themeableControls.Add(control);
-        }
-
-        internal void UpdateTranslation()
-        {
-            var currentTranslation = ViewModel.Translation;
-
-            SetTranslation();
-
-            if (ViewModel.Translation != currentTranslation)
+            if (sizeSettings.InitialWidth.Value > width)
             {
-                Viewer.SetContent(ViewModel.Translation);
-            }
-        }
-
-        private void SetTranslation()
-        {
-            ViewModel.Translation = (string)_translationFactory.Invoke();
-
-            var rawText = ViewModel.TranslationRaw;
-            var font = Viewer.Font;
-            var textSize = TextRenderer.MeasureText(rawText, font);
-
-            var width = textSize.Width + Viewer.Padding.Left + Viewer.Padding.Right + VerticalScrollBarWidth + 10;
-            int height;
-
-            var sizeSettings = Settings.Size;
-            var saveNewSize = false;
-
-            if (sizeSettings.UseFixedSize &&
-                sizeSettings.InitialWidth.HasValue &&
-                sizeSettings.InitialHeight.HasValue)
-            {
-                if (sizeSettings.InitialWidth.Value > width)
-                {
-                    width = sizeSettings.InitialWidth.Value;
-                }
-                else
-                {
-                    saveNewSize = true;
-                }
-
-                height = sizeSettings.InitialHeight.Value;
+                width = sizeSettings.InitialWidth.Value;
             }
             else
             {
-                height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
+                saveNewSize = true;
             }
 
-            SetViewerSize(new Size(width, height));
-
-            if (saveNewSize)
-            {
-                SaveNewSize();
-            }
+            height = sizeSettings.InitialHeight.Value;
+        }
+        else
+        {
+            height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
         }
 
-        internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
+        SetViewerSize(new Size(width, height));
+
+        if (saveNewSize)
         {
-            Theme = newTheme;
-
-            ColourTable.HandleThemeChanged();
-
-            foreach (var control in _themeableControls)
-            {
-                ColourTable.ApplyTo(control);
-            }
-
-            Viewer.SetTheme(newTheme);
-
-            Settings.Save();
-        }
-
-        protected override bool ProcessDialogKey(Keys keyData)
-        {
-            if ((ModifierKeys == Keys.None) && (keyData == Keys.Escape))
-            {
-                Close();
-                return true;
-            }
-
-            return base.ProcessDialogKey(keyData);
-        }
-
-        protected override void WndProc(ref Message m)
-        {
-            base.WndProc(ref m);
-
-            // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
-            if (m.Msg == SystemCommand)
-            {
-                var eventId = m.WParam.ToInt32() & 0xFFF0;
-
-                switch (eventId)
-                {
-                    case WindowMaximise:
-                    case WindowMinimise:
-                    case WindowToggle:
-                        HandleResize();
-                        break;
-                }
-            }
-        }
-
-        private void HandleResize()
-        {
-            SetViewerSize(GetViewerSizeBasedOn(Size));
             SaveNewSize();
         }
+    }
 
-        private void SaveNewSize()
+    internal void HandleThemeChanged(VisualizerDialogTheme newTheme)
+    {
+        Theme = newTheme;
+
+        ColourTable.HandleThemeChanged();
+
+        foreach (var control in _themeableControls)
         {
-            if (Settings.Size.UpdateFrom(this))
+            ColourTable.ApplyTo(control);
+        }
+
+        Viewer.SetTheme(newTheme);
+
+        Settings.Save();
+    }
+
+    protected override bool ProcessDialogKey(Keys keyData)
+    {
+        if ((ModifierKeys == Keys.None) && (keyData == Keys.Escape))
+        {
+            Close();
+            return true;
+        }
+
+        return base.ProcessDialogKey(keyData);
+    }
+
+    protected override void WndProc(ref Message m)
+    {
+        base.WndProc(ref m);
+
+        // See https://stackoverflow.com/questions/1295999/event-when-a-window-gets-maximized-un-maximized
+        if (m.Msg == SystemCommand)
+        {
+            var eventId = m.WParam.ToInt32() & 0xFFF0;
+
+            switch (eventId)
             {
-                Settings.Save();
+                case WindowMaximise:
+                case WindowMinimise:
+                case WindowToggle:
+                    HandleResize();
+                    break;
             }
         }
+    }
 
-        private void LazyLoadMenus(object sender, EventArgs args)
+    private void HandleResize()
+    {
+        SetViewerSize(GetViewerSizeBasedOn(Size));
+        SaveNewSize();
+    }
+
+    private void SaveNewSize()
+    {
+        if (Settings.Size.UpdateFrom(this))
         {
-            var lazyLoadMenus = _menuStrip.Items.OfType<ILazyMenuItem>();
+            Settings.Save();
+        }
+    }
 
-            foreach (var menu in lazyLoadMenus)
-            {
-                menu.Initialize();
-            }
+    private void LazyLoadMenus(object sender, EventArgs args)
+    {
+        var lazyLoadMenus = _menuStrip.Items.OfType<ILazyMenuItem>();
 
-            Application.Idle -= LazyLoadMenus;
+        foreach (var menu in lazyLoadMenus)
+        {
+            menu.Initialize();
         }
 
-        private void SetViewerSize(Size newSize)
-        {
-            _autoSize = true;
+        Application.Idle -= LazyLoadMenus;
+    }
 
-            Viewer.SetSize(newSize);
+    private void SetViewerSize(Size newSize)
+    {
+        _autoSize = true;
 
-            _autoSize = false;
-        }
+        Viewer.SetSize(newSize);
 
-        protected override void Dispose(bool disposing)
+        _autoSize = false;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
         {
             _themeableControls.Clear();
-
             ToolTip.Dispose();
-
-            base.Dispose(disposing);
         }
+
+        base.Dispose(disposing);
     }
 }
