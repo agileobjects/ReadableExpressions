@@ -1,55 +1,55 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls;
+
+using System.Windows.Forms;
+
+internal class VisualizerOptionsMenuItem : ToolStripMenuItem, ILazyMenuItem
 {
-    using System.Windows.Forms;
+    private readonly VisualizerDialog _dialog;
+    private bool _initialized;
 
-    internal class VisualizerOptionsMenuItem : ToolStripMenuItem, ILazyMenuItem
+    public VisualizerOptionsMenuItem(VisualizerDialog dialog) : 
+        base("Options")
     {
-        private readonly VisualizerDialog _dialog;
-        private bool _initialized;
+        _dialog = dialog;
+        ((ToolStripDropDownMenu)DropDown).ShowImageMargin = false;
 
-        public VisualizerOptionsMenuItem(VisualizerDialog dialog)
-            : base("Options")
-        {
-            _dialog = dialog;
-            ((ToolStripDropDownMenu)DropDown).ShowImageMargin = false;
+        dialog.RegisterThemeable(DropDown);
 
-            dialog.RegisterThemeable(DropDown);
-
-            DropDownOpening += (sender, args) =>
-                ((VisualizerOptionsMenuItem)sender).Populate();
-        }
-
-        public void Populate()
-        {
-            if (_initialized)
-            {
-                return;
-            }
-
-            _initialized = true;
-
-            DropDown.SuspendLayout();
-
-            DropDownItems.AddRange(new ToolStripItem[]
-            {
-                new ToolStripControlHost(new ThemeSelector(_dialog)),
-                new ToolStripControlHost(new FontSelector(_dialog)),
-                new ToolStripControlHost(new IndentSelector(_dialog)),
-                new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(_dialog)),
-                new ToolStripSeparator(),
-                new ToolStripControlHost(new FullyQualifiedTypeNamesOption(_dialog)),
-                new ToolStripControlHost(new ExplicitTypeNamesOption(_dialog)),
-                new ToolStripControlHost(new ExplicitGenericParamsOption(_dialog)),
-                new ToolStripControlHost(new DeclareOutParamsInlineOption(_dialog)),
-                new ToolStripControlHost(new DiscardUnusedParametersOption(_dialog)),
-                new ToolStripControlHost(new ImplicitArrayTypeNamesOption(_dialog)),
-                new ToolStripControlHost(new LambdaParameterTypeNamesOption(_dialog)),
-                new ToolStripControlHost(new QuotedLambdaCommentsOption(_dialog))
-            });
-
-            DropDown.ResumeLayout();
-        }
-
-        void ILazyMenuItem.Initialize() => Populate();
+        DropDownOpening += (sender, _) =>
+            ((VisualizerOptionsMenuItem)sender).Populate();
     }
+
+    public void Populate()
+    {
+        if (_initialized)
+        {
+            return;
+        }
+
+        _initialized = true;
+
+        DropDown.SuspendLayout();
+
+        DropDownItems.AddRange(new ToolStripItem[]
+        {
+            new ToolStripControlHost(new ThemeSelector(_dialog)),
+            new ToolStripControlHost(new FontSelector(_dialog)),
+            new ToolStripControlHost(new IndentSelector(_dialog)),
+            new ToolStripControlHost(new ResizeToMatchCodeSamplesOption(_dialog)),
+            new ToolStripSeparator(),
+            new ToolStripControlHost(new FullyQualifiedTypeNamesOption(_dialog)),
+            new ToolStripControlHost(new ExplicitTypeNamesOption(_dialog)),
+            new ToolStripControlHost(new ExplicitGenericParamsOption(_dialog)),
+            new ToolStripControlHost(new DeclareOutParamsInlineOption(_dialog)),
+            new ToolStripControlHost(new DiscardUnusedParametersOption(_dialog)),
+            new ToolStripControlHost(new StringConcatCallsOption(_dialog)),
+            new ToolStripControlHost(new ImplicitArrayTypeNamesOption(_dialog)),
+            new ToolStripControlHost(new LambdaParameterTypeNamesOption(_dialog)),
+            new ToolStripControlHost(new QuotedLambdaCommentsOption(_dialog))
+        });
+
+        DropDown.ResumeLayout();
+    }
+
+    void ILazyMenuItem.Initialize() => Populate();
 }

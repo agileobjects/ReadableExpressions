@@ -1,74 +1,95 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls;
+
+using System;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms;
+using Core.Theming;
+
+internal class VisualizerViewer : WebBrowser
 {
-    using System;
-    using System.Drawing;
-    using System.Runtime.InteropServices;
-    using System.Threading;
-    using System.Windows.Forms;
-    using Core.Theming;
+    private readonly Panel _parent;
+    private readonly VisualizerDialog _dialog;
+    private bool _initialised;
 
-    internal class VisualizerViewer : WebBrowser
+    public VisualizerViewer(Panel parent, VisualizerDialog dialog)
     {
-        private readonly Panel _parent;
-        private readonly VisualizerDialog _dialog;
-        private bool _initialised;
+        _parent = parent;
+        _dialog = dialog;
+        AllowNavigation = false;
 
-        public VisualizerViewer(Panel parent, VisualizerDialog dialog)
+        var font = _dialog.Settings.Font;
+        base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
+
+        Resize += (sender, _) =>
         {
-            _parent = parent;
-            _dialog = dialog;
-            AllowNavigation = false;
+            var viewer = (VisualizerViewer)sender;
+            viewer._parent.Size = viewer.Size;
+        };
 
-            var font = _dialog.Settings.Font;
-            base.Font = new Font(font.Name, font.Size, GraphicsUnit.Point);
+        dialog.RegisterThemeable(this);
+    }
 
-            Resize += (sender, _) =>
-            {
-                var viewer = (VisualizerViewer)sender;
-                viewer._parent.Size = viewer.Size;
-            };
+    public bool Uninitialised => !_initialised;
 
-            dialog.RegisterThemeable(this);
+    public void HandleShown(string translation)
+    {
+        if (_initialised)
+        {
+            return;
         }
 
-        public bool Uninitialised => !_initialised;
+        Retry(TrySetBrowserOptions);
 
-        public void HandleShown(string translation)
+        if (Retry(TrySetContent, translation))
         {
-            if (_initialised)
-            {
-                return;
-            }
-
-            if (!TrySetBrowserOptions())
-            {
-                Thread.Sleep(500);
-                TrySetBrowserOptions();
-            }
-
-            SetInitialContent(translation);
             _initialised = true;
         }
+    }
 
-        private bool TrySetBrowserOptions()
+    private static void Retry(Func<bool> action)
+        => Retry(act => act.Invoke(), action);
+
+    private static bool Retry<TArg>(
+        Func<TArg, bool> action,
+        TArg state = default)
+    {
+        var i = 0;
+
+        while (i < 5)
         {
-            try
+            if (action.Invoke(state))
             {
-                AllowWebBrowserDrop = false;
-                ScrollBarsEnabled = false;
                 return true;
             }
-            catch (COMException)
-            {
-                return false;
-            }
+
+            ++i;
+            Thread.Sleep(250);
         }
 
-        private void SetInitialContent(string translation)
-        {
-            var theme = _dialog.Theme;
+        return false;
+    }
 
-            var content = $@"
+    private bool TrySetBrowserOptions()
+    {
+        try
+        {
+            AllowWebBrowserDrop = false;
+            ScrollBarsEnabled = false;
+            return true;
+        }
+        catch (COMException)
+        {
+            return false;
+        }
+    }
+
+    private bool TrySetContent(string translation)
+    {
+        var theme = _dialog.Theme;
+
+        var content = $@"
 <html>
 <head>
 <style type=""text/css"">
@@ -178,62 +199,69 @@ body, pre {{
 </body>
 </html>".TrimStart();
 
+        try
+        {
             DocumentText = content;
+            return true;
         }
-
-        public string GetContentRaw() => TranslationElement.InnerText;
-
-        public void SetContent(string translation)
-            => TranslationElement.OuterHtml = GetTranslationElement(translation);
-
-        private static string GetTranslationElement(string translation)
-            => $"<pre id=\"translation\">{translation}</pre>";
-
-        private HtmlElement TranslationElement => Document!.GetElementById("translation");
-
-        public void SetTheme(VisualizerDialogTheme theme)
+        catch (COMException)
         {
-            var args = new object[]
-            {
-                theme.Background,
-                theme.Default,
-                theme.Keyword,
-                theme.Variable,
-                theme.TypeName,
-                theme.InterfaceName,
-                theme.CommandStatement,
-                theme.Text,
-                theme.Numeric,
-                theme.MethodName,
-                theme.Comment
-            };
-
-            Document!.InvokeScript("setTheme", args);
+            return false;
         }
+    }
 
-        public void SetFontFamily(Font newFont)
+    public string GetContentRaw() => TranslationElement.InnerText;
+
+    public void SetContent(string translation)
+        => TranslationElement.OuterHtml = GetTranslationElement(translation);
+
+    private static string GetTranslationElement(string translation)
+        => $"<pre id=\"translation\">{translation}</pre>";
+
+    private HtmlElement TranslationElement => Document!.GetElementById("translation");
+
+    public void SetTheme(VisualizerDialogTheme theme)
+    {
+        var args = new object[]
         {
-            Font = newFont;
-            Document!.InvokeScript("setFontFamily", new object[] { newFont.Name });
-        }
+            theme.Background,
+            theme.Default,
+            theme.Keyword,
+            theme.Variable,
+            theme.TypeName,
+            theme.InterfaceName,
+            theme.CommandStatement,
+            theme.Text,
+            theme.Numeric,
+            theme.MethodName,
+            theme.Comment
+        };
 
-        public void SetFontSize(int newFontSize)
-        {
-            Font = new Font(Font.Name, newFontSize, GraphicsUnit.Point);
-            Document!.InvokeScript("setFontSize", new object[] { newFontSize });
-        }
+        Document!.InvokeScript("setTheme", args);
+    }
 
-        public void SetSize(Size newSize)
-        {
-            var finalWidth = Math.Min(
-                Math.Max(newSize.Width, MinimumSize.Width),
-                MaximumSize.Width);
+    public void SetFontFamily(Font newFont)
+    {
+        Font = newFont;
+        Document!.InvokeScript("setFontFamily", new object[] { newFont.Name });
+    }
 
-            var finalHeight = Math.Min(
-                Math.Max(newSize.Height, MinimumSize.Height),
-                MaximumSize.Height);
+    public void SetFontSize(int newFontSize)
+    {
+        Font = new Font(Font.Name, newFontSize, GraphicsUnit.Point);
+        Document!.InvokeScript("setFontSize", new object[] { newFontSize });
+    }
 
-            Size = new Size(finalWidth, finalHeight);
-        }
+    public void SetSize(Size newSize)
+    {
+        var finalWidth = Math.Min(
+            Math.Max(newSize.Width, MinimumSize.Width),
+            MaximumSize.Width);
+
+        var finalHeight = Math.Min(
+            Math.Max(newSize.Height, MinimumSize.Height),
+            MaximumSize.Height);
+
+        Size = new Size(finalWidth, finalHeight);
     }
 }

@@ -1,18 +1,17 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers
-{
-    using Dialog;
-    using Microsoft.VisualStudio.DebuggerVisualizers;
+﻿namespace AgileObjects.ReadableExpressions.Visualizers;
 
-    public class Vs17ExpressionVisualizer : DialogDebuggerVisualizer
+using Dialog;
+using Microsoft.VisualStudio.DebuggerVisualizers;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+public class Vs17ExpressionVisualizer : DialogDebuggerVisualizer
+{
+    protected override void Show(
+        IDialogVisualizerService windowService,
+        IVisualizerObjectProvider objectProvider)
     {
-        protected override void Show(
-            IDialogVisualizerService windowService,
-            IVisualizerObjectProvider objectProvider)
-        {
-            using (var dialog = new VisualizerDialog(objectProvider.GetObject))
-            {
-                windowService.ShowDialog(dialog);
-            }
-        }
+        windowService.ShowDialog(
+            new VisualizerDialog(objectProvider.GetObject));
     }
 }
+#pragma warning restore CS0618
