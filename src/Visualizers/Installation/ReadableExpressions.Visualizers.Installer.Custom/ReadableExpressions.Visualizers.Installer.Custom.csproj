@@ -58,7 +58,7 @@
     <Compile Include="VisualizerInstaller.cs" />
     <Compile Include="VsixManifest.cs" />
     <Compile Include="VsixManifestInstaller.cs" />
-    <Compile Include="VsPost2015Data.cs" />
+    <Compile Include="Post2015VsInstallation.cs" />
     <EmbeddedResource Include="extension.vsixmanifest">
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -98,17 +98,23 @@
     <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs16.ObjectSource.dll</Link>
     </EmbeddedResource>
-    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.NetStandardPolyfills.dll">
-      <Link>AgileObjects.NetStandardPolyfills.dll</Link>
-    </EmbeddedResource>
-    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.dll">
-      <Link>AgileObjects.ReadableExpressions.dll</Link>
-    </EmbeddedResource>
     <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.dll</Link>
     </EmbeddedResource>
     <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll">
       <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.6.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.6.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.Visualizers.Vs17.6.ObjectSource.dll">
+      <Link>AgileObjects.ReadableExpressions.Visualizers.Vs17.6.ObjectSource.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.NetStandardPolyfills.dll">
+      <Link>AgileObjects.NetStandardPolyfills.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\..\VisualizerAssemblies\AgileObjects.ReadableExpressions.dll">
+      <Link>AgileObjects.ReadableExpressions.dll</Link>
     </EmbeddedResource>
     <Content Include="CustomAction.config" />
   </ItemGroup>

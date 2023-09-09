@@ -1,15 +1,15 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog;
 
-using Configuration;
-using Controls;
-using Core;
-using Core.Configuration;
-using Core.Theming;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using Configuration;
+using Controls;
+using Core;
+using Core.Configuration;
+using Core.Theming;
 using Theming;
 using static DialogConstants;
 using static System.Windows.Forms.ScreenOrientation;
@@ -325,7 +325,7 @@ public class VisualizerDialog : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (_themeableControls?.Any() == true)
         {
             _themeableControls.Clear();
             ToolTip.Dispose();

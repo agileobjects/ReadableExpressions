@@ -1,30 +1,38 @@
 namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom;
 
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Microsoft.Win32;
 
-internal class VsPost2015Data : IDisposable
+internal class Post2015VsInstallation : IDisposable
 {
-    private static readonly Dictionary<int, string> _vsVersionsByYear = Visualizer
+    private static readonly Dictionary<int, Version> _vsVersionsByYear = Visualizer
         .VsYearByVersionNumber
         .Select(kvp => new { Version = kvp.Key, Year = kvp.Value })
         .Where(_ => _.Year > 2015)
-        .ToDictionary(_ => _.Year, _ => _.Version + ".0");
+        .GroupBy(_ => _.Year)
+        .ToDictionary(yearGroup => yearGroup.Key, yearGroup => yearGroup
+            .Select(_ => _.Version)
+            .OrderBy(version => version)
+            .Last());
 
-    public VsPost2015Data(RegistryKey post2015Key)
+    private readonly Version _vsVersion;
+    private bool _hasVisualizer;
+
+    public Post2015VsInstallation(RegistryKey post2015Key)
     {
         RegistryKey = post2015Key;
 
         using (var capabilitiesKey = post2015Key.OpenSubKey("Capabilities"))
         {
             InstallDirectory = GetInstallPath(capabilitiesKey);
-            VsFullVersionNumber = GetVsFullVersion(capabilitiesKey, InstallDirectory);
+            _vsVersion = GetVsFullVersion(capabilitiesKey, InstallDirectory);
         }
 
-        IsValid = VsFullVersionNumber != null && InstallDirectory != null;
+        IsValid = _vsVersion != null && InstallDirectory != null;
     }
 
     #region Setup
@@ -55,7 +63,7 @@ internal class VsPost2015Data : IDisposable
         return Directory.Exists(installPath) ? installPath : null;
     }
 
-    private static string GetVsFullVersion(
+    private static Version GetVsFullVersion(
         RegistryKey capabilitiesKey,
         string installDirectory)
     {
@@ -69,13 +77,18 @@ internal class VsPost2015Data : IDisposable
                 ' ');
     }
 
-    private static string GetVsFullVersion(
+    private static Version GetVsFullVersion(
         string installPath,
         params char[] pathSplitCharacters)
     {
         if (string.IsNullOrWhiteSpace(installPath))
         {
             return null;
+        }
+
+        if (TryGetDevEnvVersion(installPath, out var version))
+        {
+            return version;
         }
 
         var vsYearNumber = installPath
@@ -92,15 +105,58 @@ internal class VsPost2015Data : IDisposable
             : null;
     }
 
+    private static bool TryGetDevEnvVersion(
+        string installPath,
+        out Version vsVersion)
+    {
+        try
+        {
+            var devEnvFileInfo =
+                new FileInfo(Path.Combine(installPath, "devenv.exe"));
+
+            if (!devEnvFileInfo.Exists)
+            {
+                vsVersion = null;
+                return false;
+            }
+
+            var versionInfo = FileVersionInfo
+                .GetVersionInfo(devEnvFileInfo.FullName);
+
+            vsVersion = new(versionInfo.FileMajorPart, versionInfo.FileMinorPart);
+            return true;
+        }
+        catch
+        {
+            vsVersion = null;
+            return false;
+        }
+    }
+
     #endregion
+
+    public bool IsValid { get; }
 
     public RegistryKey RegistryKey { get; }
 
-    public string VsFullVersionNumber { get; }
-
     public string InstallDirectory { get; }
 
-    public bool IsValid { get; }
+    public bool ShouldInstall(Version visualizerVsVersion)
+    {
+        if (_hasVisualizer)
+        {
+            return false;
+        }
+
+        if (_vsVersion.Major == visualizerVsVersion.Major &&
+            _vsVersion.Minor >= visualizerVsVersion.Minor)
+        {
+            _hasVisualizer = true;
+            return true;
+        }
+
+        return false;
+    }
 
     public void Dispose() => RegistryKey.Dispose();
 }
