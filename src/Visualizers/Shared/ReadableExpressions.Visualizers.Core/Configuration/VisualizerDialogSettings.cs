@@ -47,6 +47,8 @@
 
         public bool ShowQuotedLambdaComments { get; set; }
 
+        public bool ShowStringConcatCalls { get; set; }
+
         public void Save() => VisualizerDialogSettingsManager.Save(this);
     }
 }

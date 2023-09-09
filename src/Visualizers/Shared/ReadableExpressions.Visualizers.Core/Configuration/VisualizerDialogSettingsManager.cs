@@ -182,6 +182,11 @@ public static class VisualizerDialogSettingsManager
         {
             settings.ShowQuotedLambdaComments = IsTrue(value);
         }
+
+        if (settingsByName.TryGetValue(nameof(settings.ShowStringConcatCalls), out value))
+        {
+            settings.ShowStringConcatCalls = IsTrue(value);
+        }
     }
 
     private static bool IsTrue(string value)
@@ -341,6 +346,7 @@ public static class VisualizerDialogSettingsManager
 {nameof(settings.DiscardUnusedParameters)}: {settings.DiscardUnusedParameters}
 {nameof(settings.ShowImplicitArrayTypes)}: {settings.ShowImplicitArrayTypes}
 {nameof(settings.ShowLambdaParameterTypeNames)}: {settings.ShowLambdaParameterTypeNames}
-{nameof(settings.ShowQuotedLambdaComments)}: {settings.ShowQuotedLambdaComments}".TrimStart();
+{nameof(settings.ShowQuotedLambdaComments)}: {settings.ShowQuotedLambdaComments}
+{nameof(settings.ShowStringConcatCalls)}: {settings.ShowStringConcatCalls}".TrimStart();
     }
 }
