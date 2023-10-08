@@ -90,7 +90,7 @@ internal static class InternalExpressionExtensions
 
                 case Call:
                     var methodCall = (MethodCallExpression)expression;
-                    expression = methodCall.Object;
+                    expression = methodCall.GetSubject();
                     capturedMemberAccesses.Add(methodCall.Method);
                     continue;
 
