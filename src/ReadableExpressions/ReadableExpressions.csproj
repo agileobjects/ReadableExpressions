@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <FileVersion>4.1.0.0</FileVersion>
-    <VersionPrefix>4.1.0</VersionPrefix>
-    <Version>4.1.0</Version>
+    <AssemblyVersion>4.1.1.0</AssemblyVersion>
+    <FileVersion>4.1.1.0</FileVersion>
+    <VersionPrefix>4.1.1</VersionPrefix>
+    <Version>4.1.1</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
@@ -26,13 +26,8 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Fixing Guid constant translation, re: #119
-- Fixing various string concatenation issues, re: #120, 123
-- Rendering string.Concat(Object) calls as method calls, not concatenation, re: #116
-- Fixing custom method conversion unary translation, re: #117
-- Including cast parentheses in cast index access subject, re: #122
-- Removing some redundant parentheses in chained binary operations
-- Adding setting to translate all string.Concat() calls as method calls, not concatenation
+    <PackageReleaseNotes>- Fixing static method access when showing captured values re: #129
+- Translating enum comparisons as enum constants
     </PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>../../NuGet</PackageOutputPath>

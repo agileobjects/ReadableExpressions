@@ -1,10 +1,16 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
+using System;
 #if NET35
 using Microsoft.Scripting.Ast;
-using static Microsoft.Scripting.Ast.ExpressionType;
 #else
 using System.Linq.Expressions;
+#endif
+using Extensions;
+using NetStandardPolyfills;
+#if NET35
+using static Microsoft.Scripting.Ast.ExpressionType;
+#else
 using static System.Linq.Expressions.ExpressionType;
 #endif
 
@@ -124,15 +130,73 @@ internal class BinaryTranslation :
 
             case Equal:
             case NotEqual:
-                if (StandaloneEqualityComparisonTranslation.TryGetTranslation(binary, context, out var translation))
+                if (BoolEqualityComparisonTranslation.TryGetTranslation(binary, context, out var boolComparison))
                 {
-                    return translation;
+                    return boolComparison;
                 }
 
+                goto default;
+
+            default:
+                TryGetEnumComparisonExpression(ref binary);
                 break;
         }
 
         return new BinaryTranslation(binary, context);
+    }
+
+    public static void TryGetEnumComparisonExpression(
+        ref BinaryExpression comparison)
+    {
+        var leftOperandIsEnum =
+            IsEnumType(comparison.Left, out var leftExpression);
+
+        var rightOperandIsEnum =
+            IsEnumType(comparison.Right, out var rightExpression);
+
+        if (leftOperandIsEnum || rightOperandIsEnum)
+        {
+            var enumType = leftOperandIsEnum
+                ? leftExpression.Type : rightExpression.Type;
+
+            comparison = comparison.Update(
+                GetEnumValue(leftExpression, enumType),
+                comparison.Conversion,
+                GetEnumValue(rightExpression, enumType));
+        }
+    }
+
+    private static bool IsEnumType(
+        Expression expression,
+        out Expression enumExpression)
+    {
+        if (expression.NodeType.IsCast())
+        {
+            expression = expression.GetUnaryOperand();
+        }
+
+        if (expression.Type.GetNonNullableType().IsEnum())
+        {
+            enumExpression = expression;
+            return true;
+        }
+
+        enumExpression = expression;
+        return false;
+    }
+
+    private static Expression GetEnumValue(
+        Expression expression,
+        Type enumType)
+    {
+        if (expression.NodeType != Constant)
+        {
+            return expression;
+        }
+
+        var value = ((ConstantExpression)expression).Value;
+        var enumValue = Enum.Parse(enumType, value.ToString());
+        return Expression.Constant(enumValue, enumType);
     }
 
     #endregion
@@ -173,13 +237,13 @@ internal class BinaryTranslation :
     protected override bool IsMultiStatement()
         => _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
 
-    private class StandaloneEqualityComparisonTranslation : INodeTranslation
+    private class BoolEqualityComparisonTranslation : INodeTranslation
     {
         private readonly ITranslationContext _context;
         private readonly StandaloneBoolean _standaloneBoolean;
         private readonly INodeTranslation _operandTranslation;
 
-        private StandaloneEqualityComparisonTranslation(
+        private BoolEqualityComparisonTranslation(
             ExpressionType nodeType,
             Expression boolean,
             ExpressionType @operator,
@@ -199,7 +263,7 @@ internal class BinaryTranslation :
         {
             if (IsBooleanConstant(comparison.Right))
             {
-                translation = new StandaloneEqualityComparisonTranslation(
+                translation = new BoolEqualityComparisonTranslation(
                     comparison.NodeType,
                     comparison.Left,
                     comparison.NodeType,
@@ -211,7 +275,7 @@ internal class BinaryTranslation :
 
             if (IsBooleanConstant(comparison.Left))
             {
-                translation = new StandaloneEqualityComparisonTranslation(
+                translation = new BoolEqualityComparisonTranslation(
                     comparison.NodeType,
                     comparison.Right,
                     comparison.NodeType,

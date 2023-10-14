@@ -14,11 +14,11 @@ using System.Linq.Expressions;
 using Xunit;
 using static System.Linq.Expressions.Expression;
 #else
-    using Microsoft.Scripting.Ast;
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+using Microsoft.Scripting.Ast;
+using Fact = NUnit.Framework.TestAttribute;
+using static Microsoft.Scripting.Ast.Expression;
 
-    [NUnit.Framework.TestFixture]
+[NUnit.Framework.TestFixture]
 #endif
 public class WhenTranslatingMemberAccesses : TestClassBase
 {
@@ -350,7 +350,7 @@ public class WhenTranslatingMemberAccesses : TestClassBase
 
         // string.Join(string, string[]) in .NET 3.5 doesn't take a params array:
 #if NET35
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 string.Join(string.Empty, new[] { ""Value["", ""0"", ""]"" })";
 #else
         const string EXPECTED = @"
@@ -658,6 +658,20 @@ string.Join(
             .ToReadableString(stgs => stgs.ShowCapturedValues);
 
         translated.ShouldBe("helper.PublicInstance == 456");
+    }
+
+    // See https://github.com/agileobjects/ReadableExpressions/issues/129
+    [Fact]
+    public void ShouldHandleComplexTypeCollectionAccessWithCapturedValues()
+    {
+        var capturedLocalVariableLamda = CreateLambda(
+            (IEnumerable<PropertiesHelper> helpers) =>
+                helpers.First().PublicEnumInstance == OddNumber.One);
+
+        var translated = capturedLocalVariableLamda.Body
+            .ToReadableString(stgs => stgs.ShowCapturedValues);
+
+        translated.ShouldBe("helpers.First().PublicEnumInstance == OddNumber.One");
     }
 
     [Fact]
@@ -995,6 +1009,8 @@ internal class PropertiesHelper
     public static int PublicStatic { get; set; }
 
     public int PublicInstance { get; set; }
+
+    public OddNumber PublicEnumInstance { get; set; }
 
     internal static int NonPublicStatic { get; set; }
 
