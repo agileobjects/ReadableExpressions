@@ -235,6 +235,26 @@ there!""");
     }
 
     [Fact]
+    public void ShouldTranslateANullableEnumMember()
+    {
+        var enumConstant = Constant(OddNumber.One, typeof(OddNumber?));
+
+        var translated = enumConstant.ToReadableString();
+
+        translated.ShouldBe("OddNumber.One");
+    }
+
+    [Fact]
+    public void ShouldTranslateANullNullableEnumMember()
+    {
+        var nullEnumConstant = Constant(default(OddNumber?));
+
+        var translated = nullEnumConstant.ToReadableString();
+
+        translated.ShouldBe("null");
+    }
+
+    [Fact]
     public void ShouldTranslateADefaultFlagsEnumMember()
     {
         var flagsEnumConstant = Constant(BindingFlags.Default, typeof(BindingFlags));

@@ -187,7 +187,7 @@ internal class BinaryTranslation :
 
     private static Expression GetEnumValue(
         Expression expression,
-        Type enumType)
+        Type enumValueType)
     {
         if (expression.NodeType != Constant)
         {
@@ -195,8 +195,9 @@ internal class BinaryTranslation :
         }
 
         var value = ((ConstantExpression)expression).Value;
+        var enumType = enumValueType.GetNonNullableType();
         var enumValue = Enum.Parse(enumType, value.ToString());
-        return Expression.Constant(enumValue, enumType);
+        return Expression.Constant(enumValue, enumValueType);
     }
 
     #endregion

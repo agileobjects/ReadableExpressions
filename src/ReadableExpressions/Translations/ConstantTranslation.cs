@@ -34,11 +34,13 @@ internal static class ConstantTranslation
             return DefaultValueTranslation.For(constant, context);
         }
 
-        if (constant.Type.IsEnum())
+        var constantType = constant.Type.GetNonNullableType();
+
+        if (constantType.IsEnum() && constant.Value != null)
         {
-            return constant.Type.HasAttribute<FlagsAttribute>()
-                ? new FlagsEnumConstantTranslation(constant, context)
-                : new EnumConstantTranslation(constant, context);
+            return constantType.HasAttribute<FlagsAttribute>()
+                ? new FlagsEnumConstantTranslation(constant, constantType, context)
+                : new EnumConstantTranslation(constant, constantType, context);
         }
 
         if (TryTranslateFromTypeCode(constant, context, out var translation))
@@ -337,9 +339,9 @@ internal static class ConstantTranslation
 
         public FlagsEnumConstantTranslation(
             ConstantExpression constant,
+            Type enumType,
             ITranslationContext context)
         {
-            var enumType = constant.Type;
             _typeNameTranslation = context.GetTranslationFor(enumType);
 
             var enumValue = constant.Value;
@@ -416,9 +418,10 @@ internal static class ConstantTranslation
 
         public EnumConstantTranslation(
             ConstantExpression constant,
+            Type constantType,
             ITranslationContext context)
         {
-            _typeNameTranslation = context.GetTranslationFor(constant.Type);
+            _typeNameTranslation = context.GetTranslationFor(constantType);
             _enumMemberName = constant.Value.ToString();
         }
 

@@ -23,6 +23,17 @@ namespace AgileObjects.ReadableExpressions.UnitTests
         }
 
         [Fact]
+        public void ShouldTranslateAnEnumEqualityExpression()
+        {
+            var enumEqualsOne =
+                CreateLambda((OddNumber number) => number == OddNumber.One);
+
+            var translated = enumEqualsOne.ToReadableString();
+
+            translated.ShouldBe("number => number == OddNumber.One");
+        }
+
+        [Fact]
         public void ShouldTranslateALessThanExpression()
         {
             var firstLessThanSecond = CreateLambda((int i1, int i2) => i1 < i2);
@@ -70,6 +81,18 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             var translated = intsAreNotEqual.ToReadableString();
 
             translated.ShouldBe("(i1, i2) => i1 != i2");
+        }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/134
+        [Fact]
+        public void ShouldTranslateANullableEnumInequalityExpression()
+        {
+            var enumDoesNotEqualOne =
+                CreateLambda((OddNumber? number) => number != OddNumber.One);
+
+            var translated = enumDoesNotEqualOne.ToReadableString();
+
+            translated.ShouldBe("number => number != OddNumber.One");
         }
 
         [Fact]
