@@ -492,6 +492,18 @@ new StringBuilder(
 
             translated.ShouldBe("intStringValueTuple = (123, string.Empty)");
         }
+
+        // See https://github.com/agileobjects/ReadableExpressions/issues/135
+        [Fact]
+        public void ShouldTranslateAnExplicitParameterlessTripleValueTupleNewExpression()
+        {
+            Expression<Func<ValueTuple<int, int, int>>> newTripleTuple =
+                () => new();
+
+            var translated = newTripleTuple.ToReadableString();
+
+            translated.ShouldBe("() => new ValueTuple<int, int, int>()");
+        }
 #endif
     }
 

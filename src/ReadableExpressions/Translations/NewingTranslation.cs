@@ -43,9 +43,14 @@ internal class NewingTranslation : NewingTranslationBase, INodeTranslation
         }
 
 #if FEATURE_VALUE_TUPLE
-        if (newing.Type.IsValueTuple())
+        if (newing.Type.IsValueTuple() && newing.Arguments.Any())
         {
             return new ValueTupleNewingTranslation(newing, context);
+            //if ()
+            //{
+            //}
+
+            //return new DefaultOperatorTranslation(newing.Type, context);
         }
 #endif
         return new NewingTranslation(newing, context, omitParenthesesIfParameterless);

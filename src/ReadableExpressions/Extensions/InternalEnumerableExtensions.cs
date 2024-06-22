@@ -35,7 +35,7 @@
             this IList<T> items)
         {
             return items.Count != 0
-                ? new ReadOnlyCollection<T>(items)
+                ? new(items)
                 : Enumerable<T>.EmptyReadOnlyCollection;
         }
 
