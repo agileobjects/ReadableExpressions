@@ -25,14 +25,25 @@ internal class BinaryTranslation :
     private readonly INodeTranslation _rightOperandTranslation;
     private bool _suppressParentheses;
 
-    private BinaryTranslation(BinaryExpression binary, ITranslationContext context) :
-        base(IsChecked(binary.NodeType), "(", ")")
+    private BinaryTranslation(
+        BinaryExpression binary,
+        ITranslationContext context) :
+        this(binary.Left, binary.NodeType, binary.Right, context)
+    {
+    }
+
+    private BinaryTranslation(
+        Expression leftOperand,
+        ExpressionType nodeType,
+        Expression rightOperand,
+        ITranslationContext context) :
+        base(IsChecked(nodeType), "(", ")")
     {
         _context = context;
-        NodeType = binary.NodeType;
-        _leftOperandTranslation = context.GetTranslationFor(binary.Left);
+        NodeType = nodeType;
+        _leftOperandTranslation = context.GetTranslationFor(leftOperand);
         _operator = GetOperator(NodeType);
-        _rightOperandTranslation = context.GetTranslationFor(binary.Right);
+        _rightOperandTranslation = context.GetTranslationFor(rightOperand);
 
         if (_leftOperandTranslation is BinaryTranslation leftNestedBinary &&
              HasComplimentaryOperator(leftNestedBinary))
@@ -138,32 +149,45 @@ internal class BinaryTranslation :
                 goto default;
 
             default:
-                TryGetEnumComparisonExpression(ref binary);
+                var isEnumComparison = TryGetEnumComparisonExpression(
+                    binary,
+                    out var leftOperand,
+                    out var rightOperand);
+
+                if (isEnumComparison)
+                {
+                    return new BinaryTranslation(
+                        leftOperand,
+                        binary.NodeType,
+                        rightOperand,
+                        context);
+                }
+
                 break;
         }
 
         return new BinaryTranslation(binary, context);
     }
 
-    public static void TryGetEnumComparisonExpression(
-        ref BinaryExpression comparison)
+    private static bool TryGetEnumComparisonExpression(
+        BinaryExpression comparison,
+        out Expression leftOperand,
+        out Expression rightOperand)
     {
-        var leftOperandIsEnum =
-            IsEnumType(comparison.Left, out var leftExpression);
+        var leftOperandIsEnum = IsEnumType(comparison.Left, out leftOperand);
+        var rightOperandIsEnum = IsEnumType(comparison.Right, out rightOperand);
 
-        var rightOperandIsEnum =
-            IsEnumType(comparison.Right, out var rightExpression);
-
-        if (leftOperandIsEnum || rightOperandIsEnum)
+        if (!(leftOperandIsEnum || rightOperandIsEnum))
         {
-            var enumType = leftOperandIsEnum
-                ? leftExpression.Type : rightExpression.Type;
-
-            comparison = comparison.Update(
-                GetEnumValue(leftExpression, enumType),
-                comparison.Conversion,
-                GetEnumValue(rightExpression, enumType));
+            return false;
         }
+
+        var enumType = leftOperandIsEnum
+            ? leftOperand.Type : rightOperand.Type;
+
+        leftOperand = GetEnumValue(leftOperand, enumType);
+        rightOperand = GetEnumValue(rightOperand, enumType);
+        return true;
     }
 
     private static bool IsEnumType(
@@ -187,7 +211,7 @@ internal class BinaryTranslation :
 
     private static Expression GetEnumValue(
         Expression expression,
-        Type enumType)
+        Type enumValueType)
     {
         if (expression.NodeType != Constant)
         {
@@ -195,8 +219,9 @@ internal class BinaryTranslation :
         }
 
         var value = ((ConstantExpression)expression).Value;
+        var enumType = enumValueType.GetNonNullableType();
         var enumValue = Enum.Parse(enumType, value.ToString());
-        return Expression.Constant(enumValue, enumType);
+        return Expression.Constant(enumValue, enumValueType);
     }
 
     #endregion

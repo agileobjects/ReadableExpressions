@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>4.1.1.0</AssemblyVersion>
-    <FileVersion>4.1.1.0</FileVersion>
-    <VersionPrefix>4.1.1</VersionPrefix>
-    <Version>4.1.1</Version>
+    <AssemblyVersion>4.1.2.0</AssemblyVersion>
+    <FileVersion>4.1.2.0</FileVersion>
+    <VersionPrefix>4.1.2</VersionPrefix>
+    <Version>4.1.2</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
@@ -26,8 +26,10 @@
     <PackageIcon>./Icon.png</PackageIcon>
     <PackageTags>ExpressionTrees Debugging DebuggerVisualizers Linq DLR</PackageTags>
     <PackageProjectUrl>https://github.com/AgileObjects/ReadableExpressions</PackageProjectUrl>
-    <PackageReleaseNotes>- Fixing static method access when showing captured values re: #129
-- Translating enum comparisons as enum constants
+    <PackageReleaseNotes>- Fixing nullable enum translation, re: #134
+- Improving ShowCapturedValues capabilities to include captured Linq calls, re: #133
+- Fixing parameterless Value Tuple translation, re: #135
+- Fixing non-equality enum comparisons, re: #136
     </PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageOutputPath>../../NuGet</PackageOutputPath>

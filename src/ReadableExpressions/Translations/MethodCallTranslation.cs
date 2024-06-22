@@ -102,19 +102,22 @@ public static class MethodCallTranslation
                 context.GetTranslationFor(methodCall.Method.ReturnType));
         }
 
-        var methodCallTranslation = new StandardMethodCallTranslation(
+        var isCapturedCallResultValue = TryGetCapturedCallResultValue(
+            methodCall,
+            context,
+            out var callResultTranslation);
+
+        if (isCapturedCallResultValue)
+        {
+            return callResultTranslation;
+        }
+
+        return new StandardMethodCallTranslation(
             Call,
-            methodCall.GetSubjectTranslation(context),
+            methodCall,
             method,
             parameters,
             context);
-
-        if (context.Analysis.IsPartOfMethodCallChain(methodCall))
-        {
-            methodCallTranslation.AsPartOfMethodCallChain();
-        }
-
-        return methodCallTranslation;
     }
 
     /// <summary>
@@ -139,6 +142,28 @@ public static class MethodCallTranslation
     {
         return methodCall.Method.IsHideBySig &&
                methodCall.Method.GetProperty()?.GetIndexParameters().Any() == true;
+    }
+
+    private static bool TryGetCapturedCallResultValue(
+        MethodCallExpression methodCall,
+        ITranslationContext context,
+        out INodeTranslation resultTranslation)
+    {
+        var subject = methodCall.GetSubject();
+
+        if (subject.IsCapture(out var capturedSubject) &&
+            methodCall.Method.TryGetValue(capturedSubject.Object, out var callResult) &&
+            ConstantTranslation.TryCreateValueTranslation(
+                callResult,
+                methodCall.Type,
+                context,
+                out resultTranslation))
+        {
+            return true;
+        }
+
+        resultTranslation = null;
+        return false;
     }
 
     /// <summary>
@@ -256,7 +281,26 @@ public static class MethodCallTranslation
         private readonly ITranslationContext _context;
         private readonly INodeTranslation _subjectTranslation;
         private readonly MethodInvocationTranslation _methodInvocationTranslation;
-        private bool _isPartOfMethodCallChain;
+        private readonly bool _isPartOfMethodCallChain;
+
+        public StandardMethodCallTranslation(
+            ExpressionType nodeType,
+            MethodCallExpression methodCall,
+            IMethod method,
+            ParameterSetTranslation parameters,
+            ITranslationContext context) :
+            this(
+                nodeType,
+                methodCall.GetSubjectTranslation(context),
+                method,
+                parameters,
+                context)
+        {
+            if (context.Analysis.IsPartOfMethodCallChain(methodCall))
+            {
+                _isPartOfMethodCallChain = true;
+            }
+        }
 
         public StandardMethodCallTranslation(
             ExpressionType nodeType,
@@ -268,9 +312,7 @@ public static class MethodCallTranslation
             _context = context;
             NodeType = nodeType;
             _subjectTranslation = subjectTranslation;
-
-            _methodInvocationTranslation =
-                new MethodInvocationTranslation(method, parameters, context);
+            _methodInvocationTranslation = new(method, parameters, context);
         }
 
         public ExpressionType NodeType { get; }
@@ -279,8 +321,6 @@ public static class MethodCallTranslation
             _subjectTranslation.TranslationLength +
             ".".Length +
             _methodInvocationTranslation.TranslationLength;
-
-        public void AsPartOfMethodCallChain() => _isPartOfMethodCallChain = true;
 
         public void WriteTo(TranslationWriter writer)
         {
