@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>4.1.1.0</AssemblyVersion>
-    <FileVersion>4.1.1.0</FileVersion>
-    <VersionPrefix>4.1.1</VersionPrefix>
-    <Version>4.1.1</Version>
+    <AssemblyVersion>4.1.2.0</AssemblyVersion>
+    <FileVersion>4.1.2.0</FileVersion>
+    <VersionPrefix>4.1.2</VersionPrefix>
+    <Version>4.1.2</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
