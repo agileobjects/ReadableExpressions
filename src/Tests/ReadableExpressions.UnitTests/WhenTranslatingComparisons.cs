@@ -95,6 +95,18 @@ namespace AgileObjects.ReadableExpressions.UnitTests
             translated.ShouldBe("number => number != OddNumber.One");
         }
 
+        // See https://github.com/agileobjects/ReadableExpressions/issues/136
+        [Fact]
+        public void ShouldTranslateAnEnumLessThanExpression()
+        {
+            var enumLessThanThree = CreateLambda(
+                (ValueWrapper<OddNumber> number) => number.Value < OddNumber.Three);
+
+            var translated = enumLessThanThree.Body.ToReadableString();
+
+            translated.ShouldBe("number.Value < OddNumber.Three");
+        }
+
         [Fact]
         public void ShouldAbbreviateBooleanTrueComparisons()
         {
