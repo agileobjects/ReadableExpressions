@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore2</AssemblyName>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.Net7</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <WarningsAsErrors></WarningsAsErrors>
