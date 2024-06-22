@@ -33,15 +33,19 @@ internal class MemberAccessTranslation : INodeTranslation
     {
         bool translateSubject;
 
-        if (memberAccess.IsCapturedValue(out var capturedValue, out var isStatic))
+        if (memberAccess.IsCapture(out var capture))
         {
-            if (context.Settings.ShowCapturedValues)
+            if (context.Settings.ShowCapturedValues &&
+                ConstantTranslation.TryCreateValueTranslation(
+                    capture.Object,
+                    capture.Type,
+                    context,
+                    out var valueTranslation))
             {
-                return context.GetTranslationFor(
-                    Expression.Constant(capturedValue, memberAccess.Type));
+                return valueTranslation;
             }
 
-            translateSubject = isStatic;
+            translateSubject = capture.IsStatic;
         }
         else
         {
@@ -91,7 +95,7 @@ internal class MemberAccessTranslation : INodeTranslation
             {
                 return Expression.Constant(p.DefaultValue, p.ParameterType);
             }
-                
+
             return (Expression)Expression.Default(p.ParameterType);
         });
 

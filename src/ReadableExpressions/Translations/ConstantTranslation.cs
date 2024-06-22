@@ -29,33 +29,74 @@ internal static class ConstantTranslation
         ConstantExpression constant,
         ITranslationContext context)
     {
-        if (constant.Value == null)
-        {
-            return DefaultValueTranslation.For(constant, context);
-        }
+        var isValueConstant = TryCreateValueTranslation(
+            constant,
+            context,
+            out var translation,
+            out var constantValueType);
 
-        var constantType = constant.Type.GetNonNullableType();
-
-        if (constantType.IsEnum() && constant.Value != null)
-        {
-            return constantType.HasAttribute<FlagsAttribute>()
-                ? new FlagsEnumConstantTranslation(constant, constantType, context)
-                : new EnumConstantTranslation(constant, constantType, context);
-        }
-
-        if (TryTranslateFromTypeCode(constant, context, out var translation))
+        if (isValueConstant)
         {
             return translation;
         }
 
-        var valueType = constant.Value.GetType();
+        return context.GetTranslationFor(constantValueType).WithNodeType(Constant);
+    }
 
-        if (valueType.IsPrimitive() || valueType.IsValueType())
+    public static bool TryCreateValueTranslation(
+        object constant,
+        Type valueType,
+        ITranslationContext context,
+        out INodeTranslation valueTranslation)
+    {
+        return TryCreateValueTranslation(
+            Expression.Constant(constant, valueType),
+            context,
+            out valueTranslation,
+            out _);
+    }
+
+    private static bool TryCreateValueTranslation(
+        ConstantExpression constant,
+        ITranslationContext context,
+        out INodeTranslation valueTranslation,
+        out Type constantValueType)
+    {
+        if (constant.Value == null)
         {
-            return FixedValueTranslation(constant.Value);
+            valueTranslation = DefaultValueTranslation.For(constant, context);
+            constantValueType = null;
+            return true;
         }
 
-        return context.GetTranslationFor(valueType).WithNodeType(Constant);
+        var constantType = constant.Type.GetNonNullableType();
+
+        if (constantType.IsEnum())
+        {
+            valueTranslation = constantType.HasAttribute<FlagsAttribute>()
+                ? new FlagsEnumConstantTranslation(constant, constantType, context)
+                : new EnumConstantTranslation(constant, constantType, context);
+
+            constantValueType = null;
+            return true;
+        }
+
+        if (TryTranslateFromTypeCode(constant, context, out valueTranslation))
+        {
+            constantValueType = null;
+            return true;
+        }
+
+        constantValueType = constant.Value.GetType();
+
+        if (constantValueType.IsPrimitive() || constantValueType.IsValueType())
+        {
+            valueTranslation = FixedValueTranslation(constant.Value);
+            return true;
+        }
+
+        valueTranslation = null;
+        return false;
     }
 
     private static INodeTranslation FixedValueTranslation(

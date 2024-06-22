@@ -1,9 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions
 {
-#if FEATURE_VALUE_TUPLE
     using System;
-#endif
     using System.Collections.Generic;
+    using System.Linq;
     using System.Reflection;
     using NetStandardPolyfills;
     using Translations.Reflection;
@@ -49,16 +48,103 @@
         }
 
         public static object GetValue(this MemberInfo member, object subject)
+            => member.TryGetValue(subject, out var value) ? value : null;
+
+        public static Type GetMemberInfoType(this MemberInfo member)
+        {
+            return member switch
+            {
+                FieldInfo field => field.FieldType,
+                PropertyInfo property => property.PropertyType,
+                MethodInfo method => method.ReturnType,
+                _ => null
+            };
+        }
+
+        public static bool TryGetValue(
+            this MemberInfo member,
+            object subject,
+            out object value)
         {
             var hasSubject = subject != null;
 
-            return member switch
+            switch (member)
             {
-                FieldInfo field when hasSubject || field.IsStatic => field.GetValue(subject),
-                PropertyInfo property when hasSubject || property.IsStatic() => property.GetValue(subject,
-                    Enumerable<object>.EmptyArray),
-                _ => null
-            };
+                case FieldInfo field when hasSubject || field.IsStatic:
+                    value = field.GetValue(subject);
+                    break;
+
+                case PropertyInfo property when hasSubject || property.IsStatic():
+                    value = property.GetValue(subject, Enumerable<object>.EmptyArray);
+                    break;
+
+                case MethodInfo method when method.IsCallable(subject, out var parameters):
+                    value = method.Invoke(subject, parameters);
+                    break;
+
+                default:
+                    value = null;
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsCallable(
+            this MethodInfo method,
+            object subject,
+            out object[] parameters)
+        {
+            if (!method.IsPure())
+            {
+                parameters = null;
+                return false;
+            }
+
+            var parameterCount = method.GetParameters().Length;
+            var isParameterless = parameterCount == 0;
+
+            if (!method.IsStatic)
+            {
+                parameters = Enumerable<object>.EmptyArray;
+                return isParameterless && subject != null;
+            }
+
+            if (isParameterless)
+            {
+                parameters = Enumerable<object>.EmptyArray;
+                return true;
+            }
+
+            if (parameterCount == 1 && subject != null &&
+                method.IsExtensionMethod())
+            {
+                parameters = new[] { subject };
+                return true;
+            }
+
+            parameters = null;
+            return false;
+        }
+
+        private static bool IsPure(this MethodInfo method)
+        {
+            if (method.DeclaringType == typeof(Enumerable))
+            {
+                return method.Name switch
+                {
+                    nameof(Enumerable.Any) => true,
+                    nameof(Enumerable.First) => true,
+                    nameof(Enumerable.FirstOrDefault) => true,
+                    nameof(Enumerable.Last) => true,
+                    nameof(Enumerable.LastOrDefault) => true,
+                    _ => false
+                };
+            }
+
+            return method
+                .GetCustomAttributes(inherit: false)
+                .Any(attr => attr.GetType().Name == "PureAttribute");
         }
 
 #if FEATURE_VALUE_TUPLE

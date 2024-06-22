@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 #endif
 using System.Reflection;
 using NetStandardPolyfills;
+using Translations;
 #if NET35
 using static Microsoft.Scripting.Ast.ExpressionType;
 #else
@@ -69,13 +70,10 @@ internal static class InternalExpressionExtensions
     public static bool IsReturnable(this BlockExpression block)
         => block.HasReturnType() && block.Result.IsReturnable();
 
-    public static bool IsCapturedValue(
-        this Expression expression,
-        out object capturedValue,
-        out bool isStatic)
+    public static bool IsCapture(this Expression expression, out Capture capture)
     {
-        capturedValue = null;
-        isStatic = false;
+        capture = new();
+
         var capturedMemberAccesses = new List<MemberInfo>();
 
         while (true)
@@ -102,14 +100,15 @@ internal static class InternalExpressionExtensions
                         return false;
                     }
 
-                    var declaringType = capturedMemberAccesses.LastOrDefault()?.DeclaringType;
+                    var declaringType = capturedMemberAccesses
+                        .LastOrDefault()?.DeclaringType;
 
                     if (captureConstant.Type != declaringType)
                     {
                         return false;
                     }
 
-                    capturedValue = captureConstant.Value;
+                    capture.Object = captureConstant.Value;
                     break;
 
                 case Convert:
@@ -117,7 +116,7 @@ internal static class InternalExpressionExtensions
                     continue;
 
                 case null:
-                    isStatic = true;
+                    capture.IsStatic = true;
                     break;
 
                 default:
@@ -131,9 +130,10 @@ internal static class InternalExpressionExtensions
 
             for (var i = capturedMemberAccesses.Count - 1; i >= 0; --i)
             {
-                capturedValue = capturedMemberAccesses[i].GetValue(capturedValue);
+                capture.Object = capturedMemberAccesses[i].GetValue(capture.Object);
             }
 
+            capture.Type = capturedMemberAccesses[0].GetMemberInfoType();
             return true;
         }
     }

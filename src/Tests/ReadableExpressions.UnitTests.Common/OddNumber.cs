@@ -2,6 +2,7 @@
 {
     public enum OddNumber
     {
-        One = 1
+        One = 1,
+        Three = 3
     }
 }

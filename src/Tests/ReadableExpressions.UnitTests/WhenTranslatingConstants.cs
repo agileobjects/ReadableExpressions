@@ -612,7 +612,7 @@ there!""");
 
         var translated = lambdaConstant.ToReadableString();
 
-        const string EXPECTED = @"num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
+        const string EXPECTED = "num => Enumerable.Range(num, 10).Select(i => new { Index = i }).Sum(d => d.Index)";
 
         translated.ShouldBe(EXPECTED.TrimStart());
     }
