@@ -95,6 +95,28 @@ public class WhenTranslatingConversions : TestClassBase
     }
 
     [Fact]
+    public void ShouldTranslateAnIsTypeExpression()
+    {
+        var objectIsDisposable = CreateLambda((object o) => o is IDisposable);
+
+        var translated = objectIsDisposable.Body.ToReadableString();
+
+        translated.ShouldBe("o is IDisposable");
+    }
+
+    // See https://github.com/agileobjects/ReadableExpressions/issues/142
+    [Fact]
+    public void ShouldTranslateAnIsTypeExpressionOperand()
+    {
+        var intValueAndIsTypeChecks =
+            CreateLambda((int i, object o) => i == 1 && o is string);
+
+        var translated = intValueAndIsTypeChecks.Body.ToReadableString();
+
+        translated.ShouldBe("(i == 1) && (o is string)");
+    }
+
+    [Fact]
     public void ShouldTranslateABoxingExpression()
     {
         var intVariable = Variable(typeof(int), "i");
@@ -168,7 +190,7 @@ public class WhenTranslatingConversions : TestClassBase
                 typeof(bool),
                 typeof(Convert).GetMethod("IsDBNull")));
 
-        var translated = 
+        var translated =
             objectToBoolWithIsDbNullLambda.ToReadableString();
 
         translated.ShouldBe("() => Convert.IsDBNull(null)");

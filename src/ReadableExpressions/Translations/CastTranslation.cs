@@ -129,11 +129,20 @@ internal static class CastTranslation
     {
         return nodeType switch
         {
-            ExpressionType.Convert => true,
-            ConvertChecked => true,
             TypeAs => true,
             TypeIs => true,
             Unbox => true,
+            _ when IsConversion(nodeType) => true,
+            _ => false
+        };
+    }
+
+    public static bool IsConversion(ExpressionType nodeType)
+    {
+        return nodeType switch
+        {
+            ExpressionType.Convert => true,
+            ConvertChecked => true,
             _ => false
         };
     }
