@@ -49,6 +49,9 @@ internal static class TranslationExtensions
     public static bool IsCast(this ExpressionType nodeType)
         => CastTranslation.IsCast(nodeType);
 
+    public static bool IsConversion(this ExpressionType nodeType)
+        => CastTranslation.IsConversion(nodeType);
+
     public static INodeTranslation WithParentheses(
         this INodeTranslation translation)
     {

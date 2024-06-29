@@ -194,7 +194,7 @@ internal class BinaryTranslation :
         Expression expression,
         out Expression enumExpression)
     {
-        if (expression.NodeType.IsCast())
+        if (expression.NodeType.IsConversion())
         {
             expression = expression.GetUnaryOperand();
         }
