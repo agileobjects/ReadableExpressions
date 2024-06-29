@@ -1,28 +1,27 @@
-﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls
+﻿namespace AgileObjects.ReadableExpressions.Visualizers.Dialog.Controls;
+
+using System.Windows.Forms;
+
+internal class CopyButton : Button
 {
-    using System.Windows.Forms;
+    private readonly VisualizerDialog _dialog;
 
-    internal class CopyButton : Button
+    public CopyButton(VisualizerDialog dialog)
     {
-        private readonly VisualizerDialog _dialog;
+        _dialog = dialog;
 
-        public CopyButton(VisualizerDialog dialog)
+        base.Text = "Copy";
+
+        Margin = new(2);
+
+        dialog.RegisterThemeable(this);
+
+        Click += (sender, _) =>
         {
-            _dialog = dialog;
+            var copyButton = (CopyButton)sender;
+            var unformatted = copyButton._dialog.Viewer.GetContentRaw();
 
-            base.Text = "Copy";
-
-            Margin = new Padding(2);
-
-            dialog.RegisterThemeable(this);
-
-            Click += (sender, args) =>
-            {
-                var copyButton = (CopyButton)sender;
-                var unformatted = copyButton._dialog.Viewer.GetContentRaw();
-
-                Clipboard.SetText(unformatted);
-            };
-        }
+            Clipboard.SetText(unformatted);
+        };
     }
 }

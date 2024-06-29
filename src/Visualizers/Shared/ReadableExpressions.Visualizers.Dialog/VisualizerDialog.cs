@@ -120,14 +120,21 @@ public class VisualizerDialog : Form
         var feedbackButton = new ToolStripControlHost(new FeedbackButton(this))
         {
             Alignment = ToolStripItemAlignment.Left
+
         };
 
+        var closeButton = new ToolStripControlHost(new CloseButton(this))
+        {
+            Alignment = ToolStripItemAlignment.Right,
+            Padding = new(8, 0, 0, 0)
+        };
+        
         var copyButton = new ToolStripControlHost(new CopyButton(this))
         {
             Alignment = ToolStripItemAlignment.Right
         };
 
-        var toolbar = new ToolStrip(feedbackButton, copyButton)
+        var toolbar = new ToolStrip(feedbackButton, closeButton, copyButton)
         {
             Dock = DockStyle.Bottom,
             GripStyle = ToolStripGripStyle.Hidden,
