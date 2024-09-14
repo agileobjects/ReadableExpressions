@@ -119,6 +119,9 @@
     <Content Include="CustomAction.config" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\Shared\ReadableExpressions.Visualizers.Core\ReadableExpressions.Visualizers.Core.csproj">
       <Project>{3a04a9a4-f0c8-4a49-a23d-f3bf6e39cb13}</Project>
       <Name>ReadableExpressions.Visualizers.Core</Name>

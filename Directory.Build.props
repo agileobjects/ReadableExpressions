@@ -9,7 +9,7 @@
     <NeutralResourcesLanguage>en</NeutralResourcesLanguage>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/AgileObjects/ReadableExpressions</RepositoryUrl>
-    <NoWarn>0649;1701;1702</NoWarn>
+    <NoWarn>$(NoWarn);CS0649;CS1701;CS1702</NoWarn>
   </PropertyGroup>
 
 </Project>
