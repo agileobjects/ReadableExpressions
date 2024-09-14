@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Configuration;
@@ -17,22 +18,23 @@ using static System.Windows.Forms.SystemInformation;
 
 public class VisualizerDialog : Form
 {
-    private static readonly Size _dialogMinimumSize = new Size(530, 125);
+    private static readonly Size _dialogMinimumSize = new(530, 125);
 
-    private readonly Func<object> _translationFactory;
+    private readonly Func<object> _translationPathFactory;
     private readonly VisualizerDialogRenderer _renderer;
     private readonly ToolStrip _menuStrip;
     private readonly ToolStrip _toolbar;
     private readonly List<Control> _themeableControls;
     private readonly int _titleBarHeight;
+    private string _translationPath;
     private bool _autoSize;
 
-    public VisualizerDialog(Func<object> translationFactory)
+    public VisualizerDialog(Func<object> translationPathFactory)
     {
-        _translationFactory = translationFactory;
-        ColourTable = new VisualizerDialogColourTable(this);
-        _renderer = new VisualizerDialogRenderer(this);
-        _themeableControls = new List<Control>();
+        _translationPathFactory = translationPathFactory;
+        ColourTable = new(this);
+        _renderer = new(this);
+        _themeableControls = new();
 
         base.Text = "ReadableExpressions v" + VersionNumber.FileVersion;
         StartPosition = FormStartPosition.CenterScreen;
@@ -48,9 +50,9 @@ public class VisualizerDialog : Form
             HeightFactor = graphics.DpiY / 72;
         }
 
-        ViewModel = new TranslationViewModel();
+        ViewModel = new();
 
-        ToolTip = new ToolTip();
+        ToolTip = new();
         Viewer = AddViewer();
         _menuStrip = AddMenuStrip();
         _toolbar = AddToolbar();
@@ -60,13 +62,8 @@ public class VisualizerDialog : Form
 
         Application.Idle += LazyLoadMenus;
 
-        Shown += (sender, _) =>
-        {
-            var dialog = (VisualizerDialog)sender;
-            dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
-        };
-
-        Resize += (sender, _) => ((VisualizerDialog)sender).HandleResize();
+        Shown += HandleShown;
+        Resize += HandleResize;
     }
 
     internal TranslationViewModel ViewModel { get; }
@@ -88,6 +85,15 @@ public class VisualizerDialog : Form
     internal VisualizerViewer Viewer { get; }
 
     internal ToolTip ToolTip { get; }
+
+    private static void HandleShown(object sender, EventArgs _)
+    {
+        var dialog = (VisualizerDialog)sender;
+        dialog.Viewer.HandleShown(dialog.ViewModel.Translation);
+    }
+
+    private static void HandleResize(object sender, EventArgs _)
+        => ((VisualizerDialog)sender).HandleResize();
 
     private ToolStrip AddMenuStrip()
     {
@@ -128,7 +134,7 @@ public class VisualizerDialog : Form
             Alignment = ToolStripItemAlignment.Right,
             Padding = new(8, 0, 0, 0)
         };
-        
+
         var copyButton = new ToolStripControlHost(new CopyButton(this))
         {
             Alignment = ToolStripItemAlignment.Right
@@ -155,7 +161,7 @@ public class VisualizerDialog : Form
 
     private Size GetViewerSizeBasedOn(Size containerSize)
     {
-        return new Size(
+        return new(
             containerSize.Width - VerticalScrollBarWidth,
             containerSize.Height - _titleBarHeight - _menuStrip.Height - _toolbar.Height);
     }
@@ -172,7 +178,7 @@ public class VisualizerDialog : Form
             {
                 case Angle90:
                 case Angle270:
-                    return new Size(screenSize.Height, screenSize.Width);
+                    return new(screenSize.Height, screenSize.Width);
 
                 default:
                     return screenSize;
@@ -208,7 +214,13 @@ public class VisualizerDialog : Form
 
     private void SetTranslation()
     {
-        ViewModel.Translation = (string)_translationFactory.Invoke();
+        _translationPath = (string)_translationPathFactory.Invoke();
+
+        var translation = File.Exists(_translationPath)
+            ? File.ReadAllText(_translationPath)
+            : _translationPath;
+
+        ViewModel.Translation = translation;
 
         var rawText = ViewModel.TranslationRaw;
         var font = Viewer.Font;
@@ -240,7 +252,7 @@ public class VisualizerDialog : Form
             height = textSize.Height + Viewer.Padding.Top + Viewer.Padding.Bottom + font.Height;
         }
 
-        SetViewerSize(new Size(width, height));
+        SetViewerSize(new(width, height));
 
         if (saveNewSize)
         {
@@ -266,7 +278,7 @@ public class VisualizerDialog : Form
 
     protected override bool ProcessDialogKey(Keys keyData)
     {
-        if ((ModifierKeys == Keys.None) && (keyData == Keys.Escape))
+        if (ModifierKeys == Keys.None && keyData == Keys.Escape)
         {
             Close();
             return true;
@@ -318,7 +330,7 @@ public class VisualizerDialog : Form
             menu.Initialize();
         }
 
-        Application.Idle -= LazyLoadMenus;
+
     }
 
     private void SetViewerSize(Size newSize)
@@ -338,6 +350,29 @@ public class VisualizerDialog : Form
             ToolTip.Dispose();
         }
 
+        if (_translationPath != null)
+        {
+            try
+            {
+                if (File.Exists(_translationPath))
+                {
+                    File.Delete(_translationPath);
+                }
+            }
+            catch
+            {
+                // Can't do anything about it...
+            }
+        }
+
+        RemoveEventHandlers();
         base.Dispose(disposing);
+    }
+
+    private void RemoveEventHandlers()
+    {
+        Shown -= HandleShown;
+        Resize -= HandleResize;
+        Application.Idle -= LazyLoadMenus;
     }
 }
