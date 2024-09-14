@@ -5,7 +5,7 @@
     <AssemblyName>AgileObjects.ReadableExpressions.UnitTests.NetCore2</AssemblyName>
     <RootNamespace>AgileObjects.ReadableExpressions.UnitTests</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsAsErrors></WarningsAsErrors>
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
