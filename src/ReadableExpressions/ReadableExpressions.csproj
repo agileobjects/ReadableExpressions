@@ -14,10 +14,10 @@
     <NetStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard1.0' ">1.6.1</NetStandardImplicitPackageVersion>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
 
-    <AssemblyVersion>4.1.4.0</AssemblyVersion>
-    <FileVersion>4.1.4.0</FileVersion>
-    <VersionPrefix>4.1.4</VersionPrefix>
-    <Version>4.1.4</Version>
+    <AssemblyVersion>4.1.3.0</AssemblyVersion>
+    <FileVersion>4.1.3.0</FileVersion>
+    <VersionPrefix>4.1.3</VersionPrefix>
+    <Version>4.1.3</Version>
 
     <PackageId>AgileObjects.ReadableExpressions</PackageId>
     <Title>AgileObjects.ReadableExpressions</Title>
@@ -43,7 +43,7 @@
 
   <ItemGroup>
     <None Include="../../docs/Icon.png" Pack="true" PackagePath="./" />
-    <None Include="../../README.md" Pack="true" PackagePath="./"/>
+    <None Include="../../README.md" Pack="true" PackagePath="./" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net40' ">
@@ -80,7 +80,7 @@
 
   <ItemGroup>
     <PackageReference Include="AgileObjects.NetStandardPolyfills" Version="1.6.0" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition=" '$(TargetFramework)' == 'net40' ">
