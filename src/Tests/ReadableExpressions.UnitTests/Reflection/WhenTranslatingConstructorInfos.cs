@@ -1,263 +1,257 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Reflection
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Reflection;
-    using Common;
-    using NetStandardPolyfills;
-#if !NET35
-    using Xunit;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Reflection;
 
-    [NUnit.Framework.TestFixture]
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+#if NET35
+[NUnitTestFixture]
 #endif
-    public class WhenTranslatingConstructorInfos
+public class WhenTranslatingConstructorInfos
+{
+    [Fact]
+    public void ShouldTranslateANullCtorInfo()
     {
-        [Fact]
-        public void ShouldTranslateANullCtorInfo()
-        {
-            var translated = default(ConstructorInfo).ToReadableString();
+        var translated = default(ConstructorInfo).ToReadableString();
 
-            translated.ShouldBe("[Constructor not found]");
-        }
+        translated.ShouldBe("[Constructor not found]");
+    }
 
-        [Fact]
-        public void ShouldTranslateAParameterlessCtorInfo()
-        {
-            var ctor = typeof(Helper)
-                .GetPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateAParameterlessCtorInfo()
+    {
+        var ctor = typeof(Helper)
+            .GetPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper()");
-        }
+        translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnAbstractClassParameterlessCtorInfo()
-        {
-            var ctor = typeof(AbstractHelper)
-                .GetNonPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateAnAbstractClassParameterlessCtorInfo()
+    {
+        var ctor = typeof(AbstractHelper)
+            .GetNonPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("protected WhenTranslatingConstructorInfos.AbstractHelper()");
-        }
+        translated.ShouldBe("protected WhenTranslatingConstructorInfos.AbstractHelper()");
+    }
 
-        [Fact]
-        public void ShouldTranslateASealedClassParameterlessCtorInfo()
-        {
-            var ctor = typeof(SealedInternalHelper)
-                .GetNonPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateASealedClassParameterlessCtorInfo()
+    {
+        var ctor = typeof(SealedInternalHelper)
+            .GetNonPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("internal WhenTranslatingConstructorInfos.SealedInternalHelper()");
-        }
+        translated.ShouldBe("internal WhenTranslatingConstructorInfos.SealedInternalHelper()");
+    }
 
-        [Fact]
-        public void ShouldTranslateASingleParameterCtorInfo()
-        {
-            var ctor = typeof(Helper)
-                .GetPublicInstanceConstructor(typeof(int));
+    [Fact]
+    public void ShouldTranslateASingleParameterCtorInfo()
+    {
+        var ctor = typeof(Helper)
+            .GetPublicInstanceConstructor(typeof(int));
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            const string EXPECTED =
-@"public WhenTranslatingConstructorInfos.Helper
+        const string EXPECTED =
+            @"public WhenTranslatingConstructorInfos.Helper
 (
     int value
 )";
-            translated.ShouldBe(EXPECTED);
-        }
+        translated.ShouldBe(EXPECTED);
+    }
 
-        [Fact]
-        public void ShouldTranslateATwoParameterCtorInfo()
-        {
-            var ctor = typeof(Helper)
-                .GetPublicInstanceConstructor(typeof(DateTime), typeof(int));
+    [Fact]
+    public void ShouldTranslateATwoParameterCtorInfo()
+    {
+        var ctor = typeof(Helper)
+            .GetPublicInstanceConstructor(typeof(DateTime), typeof(int));
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            const string EXPECTED =
-@"public WhenTranslatingConstructorInfos.Helper
+        const string EXPECTED =
+            @"public WhenTranslatingConstructorInfos.Helper
 (
     DateTime date,
     int days
 )";
-            translated.ShouldBe(EXPECTED);
-        }
+        translated.ShouldBe(EXPECTED);
+    }
 
-        [Fact]
-        public void ShouldTranslateAStaticCtorInfo()
-        {
-            var ctor = typeof(Helper).GetStaticConstructor();
+    [Fact]
+    public void ShouldTranslateAStaticCtorInfo()
+    {
+        var ctor = typeof(Helper).GetStaticConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("static WhenTranslatingConstructorInfos.Helper()");
-        }
+        translated.ShouldBe("static WhenTranslatingConstructorInfos.Helper()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnOpenGenericCtorInfo()
-        {
-            var ctor = typeof(Helper<>)
-                .GetPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateAnOpenGenericCtorInfo()
+    {
+        var ctor = typeof(Helper<>)
+            .GetPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T>()");
-        }
+        translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T>()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAClosedGenericCtorInfo()
-        {
-            var ctor = typeof(Helper<Dictionary<int, string>>)
-                .GetPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateAClosedGenericCtorInfo()
+    {
+        var ctor = typeof(Helper<Dictionary<int, string>>)
+            .GetPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<Dictionary<int, string>>()");
-        }
+        translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<Dictionary<int, string>>()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAParameterlessTwoOpenGenericsCtorInfo()
-        {
-            var ctor = typeof(Helper<,>)
-                .GetPublicInstanceConstructor();
+    [Fact]
+    public void ShouldTranslateAParameterlessTwoOpenGenericsCtorInfo()
+    {
+        var ctor = typeof(Helper<,>)
+            .GetPublicInstanceConstructor();
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T1, T2>()");
-        }
+        translated.ShouldBe("public WhenTranslatingConstructorInfos.Helper<T1, T2>()");
+    }
 
-        [Fact]
-        public void ShouldTranslateAThreeParametersTwoGenericsCtorInfo()
-        {
-            var ctor = typeof(Helper<DateTime, TimeSpan>)
-                .GetPublicInstanceConstructor(typeof(int), typeof(Func<int, DateTime>), typeof(TimeSpan));
+    [Fact]
+    public void ShouldTranslateAThreeParametersTwoGenericsCtorInfo()
+    {
+        var ctor = typeof(Helper<DateTime, TimeSpan>)
+            .GetPublicInstanceConstructor(typeof(int), typeof(Func<int, DateTime>), typeof(TimeSpan));
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            const string EXPECTED =
-@"public WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>
+        const string EXPECTED =
+            @"public WhenTranslatingConstructorInfos.Helper<DateTime, TimeSpan>
 (
     int value,
     Func<int, DateTime> func,
     TimeSpan value2
 )";
-            translated.ShouldBe(EXPECTED);
-        }
+        translated.ShouldBe(EXPECTED);
+    }
 
-        [Fact]
-        public void ShouldTranslateAnOutParameter()
-        {
-            var ctor = typeof(Helper)
-                .GetPublicInstanceConstructor(typeof(DateTime).MakeByRefType());
+    [Fact]
+    public void ShouldTranslateAnOutParameter()
+    {
+        var ctor = typeof(Helper)
+            .GetPublicInstanceConstructor(typeof(DateTime).MakeByRefType());
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            const string EXPECTED =
-@"public WhenTranslatingConstructorInfos.Helper
+        const string EXPECTED =
+            @"public WhenTranslatingConstructorInfos.Helper
 (
     out DateTime value
 )";
-            translated.ShouldBe(EXPECTED);
-        }
+        translated.ShouldBe(EXPECTED);
+    }
 
-        [Fact]
-        public void ShouldTranslateARefParameter()
-        {
-            var ctor = typeof(Helper)
-                .GetPublicInstanceConstructor(typeof(object).MakeByRefType());
+    [Fact]
+    public void ShouldTranslateARefParameter()
+    {
+        var ctor = typeof(Helper)
+            .GetPublicInstanceConstructor(typeof(object).MakeByRefType());
 
-            var translated = ctor.ToReadableString();
+        var translated = ctor.ToReadableString();
 
-            const string EXPECTED =
-@"public WhenTranslatingConstructorInfos.Helper
+        const string EXPECTED =
+            @"public WhenTranslatingConstructorInfos.Helper
 (
     ref object value
 )";
-            translated.ShouldBe(EXPECTED);
-        }
-
-        #region Helper Classes
-
-        // ReSharper disable UnusedMember.Local
-        private class Helper
-        {
-            public Helper()
-            {
-                Console.WriteLine("Constructed!");
-            }
-
-            public Helper(out DateTime value)
-            {
-                value = DateTime.Now;
-            }
-
-            public Helper(ref object value)
-            {
-                Console.WriteLine(value);
-            }
-
-            public Helper(int value)
-            {
-                Console.WriteLine(value);
-            }
-
-            public Helper(DateTime date, int days)
-            {
-                Console.WriteLine(date);
-                Console.WriteLine(days);
-            }
-
-            static Helper()
-            {
-                Console.WriteLine("Static Constructed!");
-            }
-        }
-
-        private class Helper<T>
-        {
-            public Helper()
-            {
-                Console.WriteLine(typeof(T));
-            }
-        }
-
-        private class Helper<T1, T2>
-        {
-            public Helper()
-            {
-                Console.WriteLine("Constructed!");
-            }
-
-            public Helper(int value, Func<int, T1> func, T2 value2)
-            {
-                Console.WriteLine(value);
-                Console.WriteLine(func(value));
-                Console.WriteLine(value2);
-            }
-        }
-
-        private abstract class AbstractHelper
-        {
-            protected AbstractHelper()
-            {
-                Console.WriteLine("Constructed!");
-            }
-        }
-
-        private sealed class SealedInternalHelper
-        {
-            internal SealedInternalHelper()
-            {
-                Console.WriteLine("Constructed!");
-            }
-        }
-        // ReSharper restore UnusedMember.Local
-
-        #endregion
+        translated.ShouldBe(EXPECTED);
     }
+
+    #region Helper Classes
+
+    // ReSharper disable UnusedMember.Local
+    private class Helper
+    {
+        public Helper()
+        {
+            Console.WriteLine("Constructed!");
+        }
+
+        public Helper(out DateTime value)
+        {
+            value = DateTime.Now;
+        }
+
+        public Helper(ref object value)
+        {
+            Console.WriteLine(value);
+        }
+
+        public Helper(int value)
+        {
+            Console.WriteLine(value);
+        }
+
+        public Helper(DateTime date, int days)
+        {
+            Console.WriteLine(date);
+            Console.WriteLine(days);
+        }
+
+        static Helper()
+        {
+            Console.WriteLine("Static Constructed!");
+        }
+    }
+
+    private class Helper<T>
+    {
+        public Helper()
+        {
+            Console.WriteLine(typeof(T));
+        }
+    }
+
+    private class Helper<T1, T2>
+    {
+        public Helper()
+        {
+            Console.WriteLine("Constructed!");
+        }
+
+        public Helper(int value, Func<int, T1> func, T2 value2)
+        {
+            Console.WriteLine(value);
+            Console.WriteLine(func(value));
+            Console.WriteLine(value2);
+        }
+    }
+
+    private abstract class AbstractHelper
+    {
+        protected AbstractHelper()
+        {
+            Console.WriteLine("Constructed!");
+        }
+    }
+
+    private sealed class SealedInternalHelper
+    {
+        internal SealedInternalHelper()
+        {
+            Console.WriteLine("Constructed!");
+        }
+    }
+    // ReSharper restore UnusedMember.Local
+
+    #endregion
 }

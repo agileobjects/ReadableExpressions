@@ -1,22 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests.Translations;
 
 using System.Linq;
-using Common;
 using ReadableExpressions.Extensions;
 using ReadableExpressions.Translations;
 using ReadableExpressions.Translations.Reflection;
-#if !NET35
-using System.Linq.Expressions;
-using Xunit;
-#else
-using Microsoft.Scripting.Ast;
-using Fact = NUnit.Framework.TestAttribute;
-#endif
-
-using static Common.TestTranslationSettings;
+using static TestTranslationSettings;
 
 #if NET35
-[NUnit.Framework.TestFixture]
+[NUnitTestFixture]
 #endif
 public class WhenTranslatingMethodCalls : TestClassBase
 {

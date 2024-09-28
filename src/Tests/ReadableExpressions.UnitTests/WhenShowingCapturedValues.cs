@@ -2,13 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Common;
-#if !NET35
-using Xunit;
-#else
-using Fact = NUnit.Framework.TestAttribute;
 
-[NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
 public class WhenShowingCapturedValues : TestClassBase
 {

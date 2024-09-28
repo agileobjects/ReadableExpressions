@@ -1,20 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.UnitTests;
 
 using System.Linq;
-#if !NET35
-using System.Linq.Expressions;
-#else
-using Microsoft.Scripting.Ast;
-#endif
-using Common;
-#if !NET35
-using Xunit;
-using static System.Linq.Expressions.Expression;
-#else
-using Fact = NUnit.Framework.TestAttribute;
-using static Microsoft.Scripting.Ast.Expression;
 
-[NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
 public class WhenUsingCustomTranslations : TestClassBase
 {

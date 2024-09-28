@@ -219,7 +219,19 @@ internal class BinaryTranslation :
         }
 
         var value = ((ConstantExpression)expression).Value;
+
+        if (value == null)
+        {
+            return expression;
+        }
+
         var enumType = enumValueType.GetNonNullableType();
+
+        if (expression.Type.GetNonNullableType() == enumType)
+        {
+            return expression;
+        }
+
         var enumValue = Enum.Parse(enumType, value.ToString());
         return Expression.Constant(enumValue, enumValueType);
     }

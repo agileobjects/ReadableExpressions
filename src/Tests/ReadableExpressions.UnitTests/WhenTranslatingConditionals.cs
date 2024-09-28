@@ -1,58 +1,51 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
+﻿namespace AgileObjects.ReadableExpressions.UnitTests;
+
+using System;
+using System.Linq;
+#if !NET35
+using System.Collections.Generic;
+using static Issue22;
+using static Issue22.InheritanceTests;
+#endif
+
+#if NET35
+[NUnitTestFixture]
+#endif
+public class WhenTranslatingConditionals : TestClassBase
 {
-    using System;
-    using System.Linq;
-#if !NET35
-    using System.Collections.Generic;
-#endif
-    using Common;
-    using NetStandardPolyfills;
-#if !NET35
-    using Xunit;
-    using static System.Linq.Expressions.Expression;
-    using static Issue22;
-    using static Issue22.InheritanceTests;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
-
-    [NUnit.Framework.TestFixture]
-#endif
-    public class WhenTranslatingConditionals : TestClassBase
+    [Fact]
+    public void ShouldTranslateASingleLineIfStatement()
     {
-        [Fact]
-        public void ShouldTranslateASingleLineIfStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var one = Constant(1);
-            var intVariableLessThanOne = LessThan(intVariable, one);
-            var writeLessThan = CreateLambda(() => Console.Write("Less than"));
-            var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeLessThan.Body);
+        var intVariable = Variable(typeof(int), "i");
+        var one = Constant(1);
+        var intVariableLessThanOne = LessThan(intVariable, one);
+        var writeLessThan = CreateLambda(() => Console.Write("Less than"));
+        var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeLessThan.Body);
 
-            var translated = ifLessThanOneThenWrite.ToReadableString();
+        var translated = ifLessThanOneThenWrite.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i < 1)
 {
     Console.Write(""Less than"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAShortCircuitingIfStatement()
-        {
-            var oneCastToDouble = Convert(Constant(1), typeof(double?));
+    [Fact]
+    public void ShouldTranslateAShortCircuitingIfStatement()
+    {
+        var oneCastToDouble = Convert(Constant(1), typeof(double?));
 
-            var ifTrueOne = IfThen(Constant(true), oneCastToDouble);
+        var ifTrueOne = IfThen(Constant(true), oneCastToDouble);
 
-            var nullDouble = Constant(null, typeof(double?));
+        var nullDouble = Constant(null, typeof(double?));
 
-            var block = Block(ifTrueOne, nullDouble);
+        var block = Block(ifTrueOne, nullDouble);
 
-            var translated = block.ToReadableString();
+        var translated = block.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (true)
 {
     return (double?)1;
@@ -60,97 +53,97 @@ if (true)
 
 return null;";
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAnIfStatementWithAConditional()
-        {
-            var guidVariable = Variable(typeof(Guid), "guid");
-            var defaultGuid = Default(typeof(Guid));
-            var guidNotDefault = NotEqual(guidVariable, defaultGuid);
-            var guidEmpty = Field(null, typeof(Guid), "Empty");
-            var guidNotEmpty = NotEqual(guidVariable, guidEmpty);
-            var falseConstant = Constant(false);
-            var guidNotEmptyOrFalse = Condition(guidNotDefault, guidNotEmpty, falseConstant);
-            var writeGuidFun = CreateLambda(() => Console.Write("GUID FUN!"));
-            var ifNotEmptyThenWrite = IfThen(guidNotEmptyOrFalse, writeGuidFun.Body);
+    [Fact]
+    public void ShouldTranslateAnIfStatementWithAConditional()
+    {
+        var guidVariable = Variable(typeof(Guid), "guid");
+        var defaultGuid = Default(typeof(Guid));
+        var guidNotDefault = NotEqual(guidVariable, defaultGuid);
+        var guidEmpty = Field(null, typeof(Guid), "Empty");
+        var guidNotEmpty = NotEqual(guidVariable, guidEmpty);
+        var falseConstant = Constant(false);
+        var guidNotEmptyOrFalse = Condition(guidNotDefault, guidNotEmpty, falseConstant);
+        var writeGuidFun = CreateLambda(() => Console.Write("GUID FUN!"));
+        var ifNotEmptyThenWrite = IfThen(guidNotEmptyOrFalse, writeGuidFun.Body);
 
-            var translated = ifNotEmptyThenWrite.ToReadableString();
+        var translated = ifNotEmptyThenWrite.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if ((guid != default(Guid)) ? guid != Guid.Empty : false)
 {
     Console.Write(""GUID FUN!"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAMultipleLineIfStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var one = Constant(1);
-            var intVariableLessThanOne = LessThan(intVariable, one);
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var writeThere = CreateLambda(() => Console.WriteLine("There"));
-            var writeBlock = Block(writeHello.Body, writeThere.Body);
-            var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeBlock);
+    [Fact]
+    public void ShouldTranslateAMultipleLineIfStatement()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var one = Constant(1);
+        var intVariableLessThanOne = LessThan(intVariable, one);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var writeThere = CreateLambda(() => Console.WriteLine("There"));
+        var writeBlock = Block(writeHello.Body, writeThere.Body);
+        var ifLessThanOneThenWrite = IfThen(intVariableLessThanOne, writeBlock);
 
-            var translated = ifLessThanOneThenWrite.ToReadableString();
+        var translated = ifLessThanOneThenWrite.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i < 1)
 {
     Console.WriteLine(""Hello"");
     Console.WriteLine(""There"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAMultipleClauseIfStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var one = Constant(1);
-            var intVariableLessThanOne = LessThan(intVariable, one);
-            var intVariableMoreThanOne = GreaterThan(intVariable, one);
-            var intVariableInRange = AndAlso(intVariableLessThanOne, intVariableMoreThanOne);
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var ifLessThanOneThenWrite = IfThen(intVariableInRange, writeHello.Body);
+    [Fact]
+    public void ShouldTranslateAMultipleClauseIfStatement()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var one = Constant(1);
+        var intVariableLessThanOne = LessThan(intVariable, one);
+        var intVariableMoreThanOne = GreaterThan(intVariable, one);
+        var intVariableInRange = AndAlso(intVariableLessThanOne, intVariableMoreThanOne);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var ifLessThanOneThenWrite = IfThen(intVariableInRange, writeHello.Body);
 
-            var translated = ifLessThanOneThenWrite.ToReadableString();
+        var translated = ifLessThanOneThenWrite.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if ((i < 1) && (i > 1))
 {
     Console.WriteLine(""Hello"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAMultipleLineIfStatementTest()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var one = Constant(1);
-            var intVariableLessThanOne = LessThan(intVariable, one);
-            var returnLabel = Label(typeof(bool), "Return");
-            var returnTrue = Return(returnLabel, Constant(true));
-            var ifLessThanOneReturnTrue = IfThen(intVariableLessThanOne, returnTrue);
-            var five = Constant(5);
-            var intVariableMoreThanFive = GreaterThan(intVariable, five);
-            var returnMoreThanFive = Label(returnLabel, intVariableMoreThanFive);
-            var testBlock = Block(ifLessThanOneReturnTrue, returnMoreThanFive);
+    [Fact]
+    public void ShouldTranslateAMultipleLineIfStatementTest()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var one = Constant(1);
+        var intVariableLessThanOne = LessThan(intVariable, one);
+        var returnLabel = Label(typeof(bool), "Return");
+        var returnTrue = Return(returnLabel, Constant(true));
+        var ifLessThanOneReturnTrue = IfThen(intVariableLessThanOne, returnTrue);
+        var five = Constant(5);
+        var intVariableMoreThanFive = GreaterThan(intVariable, five);
+        var returnMoreThanFive = Label(returnLabel, intVariableMoreThanFive);
+        var testBlock = Block(ifLessThanOneReturnTrue, returnMoreThanFive);
 
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var writeVariable = Variable(writeHello.Type, "write");
-            var assignWrite = Assign(writeVariable, writeHello);
-            var ifTestPassesThenWrite = IfThen(testBlock, assignWrite);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var writeVariable = Variable(writeHello.Type, "write");
+        var assignWrite = Assign(writeVariable, writeHello);
+        var ifTestPassesThenWrite = IfThen(testBlock, assignWrite);
 
-            var translated = ifTestPassesThenWrite.ToReadableString();
+        var translated = ifTestPassesThenWrite.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if ({
         if (i < 1)
         {
@@ -162,22 +155,22 @@ if ({
 {
     write = () => Console.WriteLine(""Hello"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAnIfElseStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var one = Constant(1);
-            var intVariableLessThanOne = LessThan(intVariable, one);
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
-            var writeHelloOrGoodbye = IfThenElse(intVariableLessThanOne, writeHello.Body, writeGoodbye.Body);
+    [Fact]
+    public void ShouldTranslateAnIfElseStatement()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var one = Constant(1);
+        var intVariableLessThanOne = LessThan(intVariable, one);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
+        var writeHelloOrGoodbye = IfThenElse(intVariableLessThanOne, writeHello.Body, writeGoodbye.Body);
 
-            var translated = writeHelloOrGoodbye.ToReadableString();
+        var translated = writeHelloOrGoodbye.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i < 1)
 {
     Console.WriteLine(""Hello"");
@@ -186,23 +179,23 @@ else
 {
     Console.WriteLine(""Goodbye"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAnIfElseIfStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var intEqualsOne = Equal(intVariable, Constant(1));
-            var intEqualsTwo = Equal(intVariable, Constant(2));
-            var writeOne = CreateLambda(() => Console.WriteLine("One"));
-            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
-            var ifTwoWriteTwo = IfThen(intEqualsTwo, writeTwo.Body);
-            var writeOneOrTwo = IfThenElse(intEqualsOne, writeOne.Body, ifTwoWriteTwo);
+    [Fact]
+    public void ShouldTranslateAnIfElseIfStatement()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var intEqualsOne = Equal(intVariable, Constant(1));
+        var intEqualsTwo = Equal(intVariable, Constant(2));
+        var writeOne = CreateLambda(() => Console.WriteLine("One"));
+        var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+        var ifTwoWriteTwo = IfThen(intEqualsTwo, writeTwo.Body);
+        var writeOneOrTwo = IfThenElse(intEqualsOne, writeOne.Body, ifTwoWriteTwo);
 
-            var translated = writeOneOrTwo.ToReadableString();
+        var translated = writeOneOrTwo.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i == 1)
 {
     Console.WriteLine(""One"");
@@ -211,24 +204,24 @@ else if (i == 2)
 {
     Console.WriteLine(""Two"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateMultipleLineVoidIfElseStatements()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var zero = Constant(0);
-            var intVariableEqualsZero = Equal(intVariable, zero);
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
-            var helloThenGoodbye = Block(writeHello.Body, writeGoodbye.Body);
-            var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body);
-            var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
+    [Fact]
+    public void ShouldTranslateMultipleLineVoidIfElseStatements()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var zero = Constant(0);
+        var intVariableEqualsZero = Equal(intVariable, zero);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
+        var helloThenGoodbye = Block(writeHello.Body, writeGoodbye.Body);
+        var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body);
+        var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
 
-            var translated = writeHelloAndGoodbye.ToReadableString();
+        var translated = writeHelloAndGoodbye.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i == 0)
 {
     Console.WriteLine(""Hello"");
@@ -239,24 +232,24 @@ else
     Console.WriteLine(""Goodbye"");
     Console.WriteLine(""Hello"");
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAMultipleLineNonVoidIfElseStatements()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var zero = Constant(0);
-            var intVariableEqualsZero = Equal(intVariable, zero);
-            var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
-            var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
-            var helloThenGoodbye = Block(writeHello.Body, writeGoodbye.Body, intVariable);
-            var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body, intVariable);
-            var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
+    [Fact]
+    public void ShouldTranslateAMultipleLineNonVoidIfElseStatements()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var zero = Constant(0);
+        var intVariableEqualsZero = Equal(intVariable, zero);
+        var writeHello = CreateLambda(() => Console.WriteLine("Hello"));
+        var writeGoodbye = CreateLambda(() => Console.WriteLine("Goodbye"));
+        var helloThenGoodbye = Block(writeHello.Body, writeGoodbye.Body, intVariable);
+        var goodbyeThenHello = Block(writeGoodbye.Body, writeHello.Body, intVariable);
+        var writeHelloAndGoodbye = IfThenElse(intVariableEqualsZero, helloThenGoodbye, goodbyeThenHello);
 
-            var translated = writeHelloAndGoodbye.ToReadableString();
+        var translated = writeHelloAndGoodbye.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i == 0)
 {
     Console.WriteLine(""Hello"");
@@ -270,60 +263,60 @@ Console.WriteLine(""Hello"");
 
 return i;
 ";
-            translated.ShouldBe(EXPECTED.Trim());
-        }
+        translated.ShouldBe(EXPECTED.Trim());
+    }
 
-        [Fact]
-        public void ShouldNotWrapSingleExpressionTernaryConditionsInParentheses()
-        {
-            var ternary = Condition(
-                Constant(false),
-                Constant(1),
-                Constant(2));
+    [Fact]
+    public void ShouldNotWrapSingleExpressionTernaryConditionsInParentheses()
+    {
+        var ternary = Condition(
+            Constant(false),
+            Constant(1),
+            Constant(2));
 
-            var translated = ternary.ToReadableString();
+        var translated = ternary.ToReadableString();
 
-            translated.ShouldBe("false ? 1 : 2");
-        }
+        translated.ShouldBe("false ? 1 : 2");
+    }
 
-        [Fact]
-        public void ShouldNotWrapMethodCallTernaryConditionsInParentheses()
-        {
-            var method = typeof(MethodCallHelper).GetPublicInstanceMethod("MultipleParameterMethod");
+    [Fact]
+    public void ShouldNotWrapMethodCallTernaryConditionsInParentheses()
+    {
+        var method = typeof(MethodCallHelper).GetPublicInstanceMethod("MultipleParameterMethod");
 
-            var methodCall = Call(
-                Variable(typeof(MethodCallHelper), "helper"),
-                method,
-                Constant("hello"),
-                Constant(123));
+        var methodCall = Call(
+            Variable(typeof(MethodCallHelper), "helper"),
+            method,
+            Constant("hello"),
+            Constant(123));
 
-            var ternary = Condition(
-                methodCall,
-                Constant(1),
-                Constant(2));
+        var ternary = Condition(
+            methodCall,
+            Constant(1),
+            Constant(2));
 
-            var translated = ternary.ToReadableString();
+        var translated = ternary.ToReadableString();
 
-            translated.ShouldBe("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2");
-        }
+        translated.ShouldBe("helper.MultipleParameterMethod(\"hello\", 123) ? 1 : 2");
+    }
 
-        [Fact]
-        public void ShouldTranslateASwitchStatement()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var writeOne = CreateLambda(() => Console.WriteLine("One"));
-            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
-            var writeThree = CreateLambda(() => Console.WriteLine("Three"));
+    [Fact]
+    public void ShouldTranslateASwitchStatement()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var writeOne = CreateLambda(() => Console.WriteLine("One"));
+        var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+        var writeThree = CreateLambda(() => Console.WriteLine("Three"));
 
-            var switchStatement = Switch(
-                intVariable,
-                SwitchCase(writeOne.Body, Constant(1)),
-                SwitchCase(writeTwo.Body, Constant(2)),
-                SwitchCase(writeThree.Body, Constant(3)));
+        var switchStatement = Switch(
+            intVariable,
+            SwitchCase(writeOne.Body, Constant(1)),
+            SwitchCase(writeTwo.Body, Constant(2)),
+            SwitchCase(writeThree.Body, Constant(3)));
 
-            var translated = switchStatement.ToReadableString();
+        var translated = switchStatement.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 switch (i)
 {
     case 1:
@@ -338,25 +331,25 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateASwitchStatementWithMultipleCaseTestValues()
-        {
-            var intVariable = Variable(typeof(int), "i");
+    [Fact]
+    public void ShouldTranslateASwitchStatementWithMultipleCaseTestValues()
+    {
+        var intVariable = Variable(typeof(int), "i");
 
-            var writeOneOrTwo = CreateLambda(() => Console.WriteLine("One or Two"));
-            var writeOneOrTwoCase = SwitchCase(writeOneOrTwo.Body, Constant(1), Constant(2));
+        var writeOneOrTwo = CreateLambda(() => Console.WriteLine("One or Two"));
+        var writeOneOrTwoCase = SwitchCase(writeOneOrTwo.Body, Constant(1), Constant(2));
 
-            var writeThree = CreateLambda(() => Console.WriteLine("Three"));
-            var writeThreeCase = SwitchCase(writeThree.Body, Constant(3));
+        var writeThree = CreateLambda(() => Console.WriteLine("Three"));
+        var writeThreeCase = SwitchCase(writeThree.Body, Constant(3));
 
-            var switchStatement = Switch(intVariable, writeOneOrTwoCase, writeThreeCase);
+        var switchStatement = Switch(intVariable, writeOneOrTwoCase, writeThreeCase);
 
-            var translated = switchStatement.ToReadableString();
+        var translated = switchStatement.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 switch (i)
 {
     case 1:
@@ -368,29 +361,29 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateASwitchStatementWithADefault()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var writeOne = CreateLambda(() => Console.WriteLine("One"));
-            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
-            var writeThree = CreateLambda(() => Console.WriteLine("Three"));
+    [Fact]
+    public void ShouldTranslateASwitchStatementWithADefault()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var writeOne = CreateLambda(() => Console.WriteLine("One"));
+        var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+        var writeThree = CreateLambda(() => Console.WriteLine("Three"));
 
-            var writeOneTwoThree = Block(writeOne.Body, writeTwo.Body, writeThree.Body);
+        var writeOneTwoThree = Block(writeOne.Body, writeTwo.Body, writeThree.Body);
 
-            var switchStatement = Switch(
-                intVariable,
-                writeOneTwoThree,
-                SwitchCase(writeOne.Body, Constant(1)),
-                SwitchCase(writeTwo.Body, Constant(2)),
-                SwitchCase(writeThree.Body, Constant(3)));
+        var switchStatement = Switch(
+            intVariable,
+            writeOneTwoThree,
+            SwitchCase(writeOne.Body, Constant(1)),
+            SwitchCase(writeTwo.Body, Constant(2)),
+            SwitchCase(writeThree.Body, Constant(3)));
 
-            var translated = switchStatement.ToReadableString();
+        var translated = switchStatement.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 switch (i)
 {
     case 1:
@@ -411,28 +404,28 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateASwitchStatementWithMultiLineCases()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var writeOne = CreateLambda(() => Console.WriteLine("One"));
-            var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
-            var writeThree = CreateLambda(() => Console.WriteLine("Three"));
+    [Fact]
+    public void ShouldTranslateASwitchStatementWithMultiLineCases()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var writeOne = CreateLambda(() => Console.WriteLine("One"));
+        var writeTwo = CreateLambda(() => Console.WriteLine("Two"));
+        var writeThree = CreateLambda(() => Console.WriteLine("Three"));
 
-            var writeOneTwo = Block(writeOne.Body, writeTwo.Body);
-            var writeTwoThree = Block(writeTwo.Body, writeThree.Body);
+        var writeOneTwo = Block(writeOne.Body, writeTwo.Body);
+        var writeTwoThree = Block(writeTwo.Body, writeThree.Body);
 
-            var switchStatement = Switch(
-                intVariable,
-                SwitchCase(writeOneTwo, Constant(12)),
-                SwitchCase(writeTwoThree, Constant(23)));
+        var switchStatement = Switch(
+            intVariable,
+            SwitchCase(writeOneTwo, Constant(12)),
+            SwitchCase(writeTwoThree, Constant(23)));
 
-            var translated = switchStatement.ToReadableString();
+        var translated = switchStatement.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 switch (i)
 {
     case 12:
@@ -445,32 +438,32 @@ switch (i)
         Console.WriteLine(""Three"");
         break;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateASwitchStatementWithReturns()
-        {
-            var returnTarget = Label(typeof(string), "Return");
+    [Fact]
+    public void ShouldTranslateASwitchStatementWithReturns()
+    {
+        var returnTarget = Label(typeof(string), "Return");
 
-            var switchCases = Enumerable.Range(0, 5).Select(i => SwitchCase(
-                Return(returnTarget, Constant(i.ToString())),
-                Constant(i))).ToArray();
+        var switchCases = Enumerable.Range(0, 5).Select(i => SwitchCase(
+            Return(returnTarget, Constant(i.ToString())),
+            Constant(i))).ToArray();
 
-            switchCases[1] = SwitchCase(
-                Throw(New(typeof(NotSupportedException).GetPublicInstanceConstructor(Type.EmptyTypes))),
-                Constant(1));
+        switchCases[1] = SwitchCase(
+            Throw(New(typeof(NotSupportedException).GetPublicInstanceConstructor(Type.EmptyTypes))),
+            Constant(1));
 
-            var @switch = Switch(
-                Constant(3),
-                Return(returnTarget, Constant("Nope")),
-                switchCases);
+        var @switch = Switch(
+            Constant(3),
+            Return(returnTarget, Constant("Nope")),
+            switchCases);
 
-            var switchBlock = Block(@switch, Label(returnTarget, Constant(string.Empty)));
+        var switchBlock = Block(@switch, Label(returnTarget, Constant(string.Empty)));
 
-            var translated = switchBlock.ToReadableString();
+        var translated = switchBlock.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 switch (3)
 {
     case 0:
@@ -493,23 +486,23 @@ switch (3)
 }
 
 return """";";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldIncludeReturnKeywordsForConstantsAndCasts()
-        {
-            var nullLong = Constant(null, typeof(long?));
+    [Fact]
+    public void ShouldIncludeReturnKeywordsForConstantsAndCasts()
+    {
+        var nullLong = Constant(null, typeof(long?));
 
-            var writeOne = CreateLambda(() => Console.WriteLine("One!"));
-            var oneCastToLong = Convert(Constant(1), typeof(long?));
-            var elseBlock = Block(writeOne.Body, writeOne.Body, oneCastToLong);
+        var writeOne = CreateLambda(() => Console.WriteLine("One!"));
+        var oneCastToLong = Convert(Constant(1), typeof(long?));
+        var elseBlock = Block(writeOne.Body, writeOne.Body, oneCastToLong);
 
-            var nullOrOne = IfThenElse(Constant(true), nullLong, elseBlock);
+        var nullOrOne = IfThenElse(Constant(true), nullLong, elseBlock);
 
-            var translated = nullOrOne.ToReadableString();
+        var translated = nullOrOne.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (true)
 {
     return null;
@@ -520,140 +513,140 @@ Console.WriteLine(""One!"");
 
 return (long?)1;";
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldBreakLongMultipleConditionsOntoMultipleLines()
-        {
-            var intVariable1 = Variable(typeof(int), "thisVariableHasALongName");
-            var intVariable2 = Variable(typeof(int), "thisOtherVariableHasALongNameToo");
-            var int1IsGreaterThanInt2 = GreaterThan(intVariable1, intVariable2);
-            var int1IsNotEqualToInt2 = NotEqual(intVariable1, intVariable2);
+    [Fact]
+    public void ShouldBreakLongMultipleConditionsOntoMultipleLines()
+    {
+        var intVariable1 = Variable(typeof(int), "thisVariableHasALongName");
+        var intVariable2 = Variable(typeof(int), "thisOtherVariableHasALongNameToo");
+        var int1IsGreaterThanInt2 = GreaterThan(intVariable1, intVariable2);
+        var int1IsNotEqualToInt2 = NotEqual(intVariable1, intVariable2);
 
-            var intIsInRange = AndAlso(int1IsGreaterThanInt2, int1IsNotEqualToInt2);
-            var writeYo = CreateLambda(() => Console.WriteLine("Yo!"));
-            var ifInRangeWriteYo = IfThen(intIsInRange, writeYo.Body);
+        var intIsInRange = AndAlso(int1IsGreaterThanInt2, int1IsNotEqualToInt2);
+        var writeYo = CreateLambda(() => Console.WriteLine("Yo!"));
+        var ifInRangeWriteYo = IfThen(intIsInRange, writeYo.Body);
 
 
-            var translated = ifInRangeWriteYo.ToReadableString();
+        var translated = ifInRangeWriteYo.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if ((thisVariableHasALongName > thisOtherVariableHasALongNameToo) &&
     (thisVariableHasALongName != thisOtherVariableHasALongNameToo))
 {
     Console.WriteLine(""Yo!"");
 }";
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAssignmentOutcomeTests()
-        {
-            var intVariable = Variable(typeof(int), "i");
-            var intValue = Constant(123);
-            var intAssignment = Assign(intVariable, intValue);
-            var intDefault = Default(typeof(int));
-            var assignmentResultNotDefault = NotEqual(intAssignment, intDefault);
-            var doNothing = Default(typeof(void));
-            var ifNotdefaultDoNothing = IfThen(assignmentResultNotDefault, doNothing);
+    [Fact]
+    public void ShouldTranslateAssignmentOutcomeTests()
+    {
+        var intVariable = Variable(typeof(int), "i");
+        var intValue = Constant(123);
+        var intAssignment = Assign(intVariable, intValue);
+        var intDefault = Default(typeof(int));
+        var assignmentResultNotDefault = NotEqual(intAssignment, intDefault);
+        var doNothing = Default(typeof(void));
+        var ifNotdefaultDoNothing = IfThen(assignmentResultNotDefault, doNothing);
 
-            var translated = ifNotdefaultDoNothing.ToReadableString();
+        var translated = ifNotdefaultDoNothing.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if ((i = 123) != default(int))
 {
 }";
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        // See https://github.com/agileobjects/ReadableExpressions/issues/22
-        [Fact]
-        public void ShouldTranslateEnumComparisonTests()
-        {
-            var flagParameter = Parameter(typeof(bool), "flag");
-            var one = Constant(Test.One);
-            var two = Constant(Test.Two);
-            var oneOrTwo = Condition(flagParameter, one, two);
-            var oneOrTwoEqualsTwo = Equal(oneOrTwo, two);
-            var testLambda = Lambda<Func<bool, bool>>(oneOrTwoEqualsTwo, flagParameter);
+    // See https://github.com/agileobjects/ReadableExpressions/issues/22
+    [Fact]
+    public void ShouldTranslateEnumComparisonTests()
+    {
+        var flagParameter = Parameter(typeof(bool), "flag");
+        var one = Constant(Test.One);
+        var two = Constant(Test.Two);
+        var oneOrTwo = Condition(flagParameter, one, two);
+        var oneOrTwoEqualsTwo = Equal(oneOrTwo, two);
+        var testLambda = Lambda<Func<bool, bool>>(oneOrTwoEqualsTwo, flagParameter);
 
-            var translated = testLambda.ToReadableString();
+        var translated = testLambda.ToReadableString();
 
-            translated.ShouldBe("flag => (flag ? Test.One : Test.Two) == Test.Two");
-        }
+        translated.ShouldBe("flag => (flag ? Test.One : Test.Two) == Test.Two");
+    }
 
 #if !NET35
-        [Fact]
-        public void ShouldTranslateConditionalWithConditionalTest()
-        {
-            var dataContext = Parameter(typeof(IDataContext), "dctx");
-            var dataReader = Parameter(typeof(IDataReader), "rd");
+    [Fact]
+    public void ShouldTranslateConditionalWithConditionalTest()
+    {
+        var dataContext = Parameter(typeof(IDataContext), "dctx");
+        var dataReader = Parameter(typeof(IDataReader), "rd");
 
-            var ldr = Variable(typeof(SqLiteDataReader), "ldr");
+        var ldr = Variable(typeof(SqLiteDataReader), "ldr");
 
-            var onEntityCreatedMethod = typeof(TableContext)
-                .GetPublicStaticMethod(nameof(TableContext.OnEntityCreated));
+        var onEntityCreatedMethod = typeof(TableContext)
+            .GetPublicStaticMethod(nameof(TableContext.OnEntityCreated));
 
-            var mapperBody = Block(
-                new[] { ldr },
-                Assign(ldr, Convert(dataReader, typeof(SqLiteDataReader))),
-                Condition(
-                    Equal(
-                        Condition(
-                            Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(0)),
-                            Constant(TypeCodeEnum.Base),
-                            Convert(
-                                Call(ldr, nameof(SqLiteDataReader.GetInt32), null, Constant(0)),
-                                typeof(TypeCodeEnum))),
-                        Constant(TypeCodeEnum.A1)),
-                    Convert(
+        var mapperBody = Block(
+            new[] { ldr },
+            Assign(ldr, Convert(dataReader, typeof(SqLiteDataReader))),
+            Condition(
+                Equal(
+                    Condition(
+                        Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(0)),
+                        Constant(TypeCodeEnum.Base),
                         Convert(
-                            Call(
-                                onEntityCreatedMethod,
-                                dataContext,
-                                MemberInit(
-                                    New(typeof(InheritanceA1)),
-                                    Bind(
-                                        typeof(InheritanceA1).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
-                                        Condition(
-                                            Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(1)),
-                                            Constant(Guid.Empty),
-                                            Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Constant(1))))
-                                )
-                            ),
-                            typeof(InheritanceA1)),
-                        typeof(InheritanceA)),
+                            Call(ldr, nameof(SqLiteDataReader.GetInt32), null, Constant(0)),
+                            typeof(TypeCodeEnum))),
+                    Constant(TypeCodeEnum.A1)),
+                Convert(
                     Convert(
-                        Convert(
-                            Call(
-                                onEntityCreatedMethod,
-                                dataContext,
-                                MemberInit(
-                                    New(typeof(InheritanceA2)),
-                                    Bind(
-                                        typeof(InheritanceA2).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
-                                        Condition(
-                                            Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(1)),
-                                            Constant(Guid.Empty),
-                                            Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Constant(1))))
-                                )
-                            ),
-                            typeof(InheritanceA2)),
-                        typeof(InheritanceA))));
+                        Call(
+                            onEntityCreatedMethod,
+                            dataContext,
+                            MemberInit(
+                                New(typeof(InheritanceA1)),
+                                Bind(
+                                    typeof(InheritanceA1).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
+                                    Condition(
+                                        Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(1)),
+                                        Constant(Guid.Empty),
+                                        Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Constant(1))))
+                            )
+                        ),
+                        typeof(InheritanceA1)),
+                    typeof(InheritanceA)),
+                Convert(
+                    Convert(
+                        Call(
+                            onEntityCreatedMethod,
+                            dataContext,
+                            MemberInit(
+                                New(typeof(InheritanceA2)),
+                                Bind(
+                                    typeof(InheritanceA2).GetPublicInstanceProperty(nameof(InheritanceBase.GuidValue)),
+                                    Condition(
+                                        Call(ldr, nameof(SqLiteDataReader.IsDbNull), null, Constant(1)),
+                                        Constant(Guid.Empty),
+                                        Call(ldr, nameof(SqLiteDataReader.GetGuid), null, Constant(1))))
+                            )
+                        ),
+                        typeof(InheritanceA2)),
+                    typeof(InheritanceA))));
 
-            var mapper = Lambda<Func<IDataContext, IDataReader, InheritanceA>>(
-                mapperBody,
-                dataContext,
-                dataReader);
+        var mapper = Lambda<Func<IDataContext, IDataReader, InheritanceA>>(
+            mapperBody,
+            dataContext,
+            dataReader);
 
-            var body = Invoke(mapper, dataContext, dataReader);
+        var body = Invoke(mapper, dataContext, dataReader);
 
-            var lambda = Lambda<Func<IDataContext, IDataReader, InheritanceA>>(body, dataContext, dataReader);
+        var lambda = Lambda<Func<IDataContext, IDataReader, InheritanceA>>(body, dataContext, dataReader);
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 (dctx, rd) => ((dctx, rd) =>
 {
     var ldr = (Issue22.SqLiteDataReader)rd;
@@ -675,90 +668,89 @@ if ((i = 123) != default(int))
             }));
 }).Invoke(dctx, rd)";
 
-            var translated = lambda.ToReadableString();
+        var translated = lambda.ToReadableString();
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 #endif
-    }
+}
 
-    #region Helpers
+#region Helpers
 
-    internal class MethodCallHelper
+internal class MethodCallHelper
+{
+    public bool MultipleParameterMethod(string stringValue, int intValue)
     {
-        public bool MultipleParameterMethod(string stringValue, int intValue)
-        {
-            return true;
-        }
+        return true;
     }
+}
 
-    internal enum Test { One, Two };
+internal enum Test { One, Two };
 
 #if !NET35
-    internal static class Issue22
+internal static class Issue22
+{
+    public interface IDataContext
     {
-        public interface IDataContext
+    }
+
+    public interface IDataReader
+    {
+    }
+
+    public class SqLiteDataReader : IDataReader
+    {
+        public bool IsDbNull(int idx) => default(bool);
+
+        public int GetInt32(int idx) => default(int);
+
+        public Guid GetGuid(int idx) => default(Guid);
+    }
+
+    public static class InheritanceTests
+    {
+        public enum TypeCodeEnum
+        {
+            Base,
+            A,
+            A1,
+            A2,
+        }
+
+        public abstract class InheritanceBase
+        {
+            public Guid GuidValue { get; set; }
+        }
+
+        public abstract class InheritanceA : InheritanceBase
+        {
+            public List<InheritanceB> Bs { get; set; }
+        }
+
+        public class InheritanceB : InheritanceBase
         {
         }
 
-        public interface IDataReader
+        public class InheritanceA2 : InheritanceA
         {
         }
 
-        public class SqLiteDataReader : IDataReader
+        public class InheritanceA1 : InheritanceA
         {
-            public bool IsDbNull(int idx) => default(bool);
-
-            public int GetInt32(int idx) => default(int);
-
-            public Guid GetGuid(int idx) => default(Guid);
-        }
-
-        public static class InheritanceTests
-        {
-            public enum TypeCodeEnum
-            {
-                Base,
-                A,
-                A1,
-                A2,
-            }
-
-            public abstract class InheritanceBase
-            {
-                public Guid GuidValue { get; set; }
-            }
-
-            public abstract class InheritanceA : InheritanceBase
-            {
-                public List<InheritanceB> Bs { get; set; }
-            }
-
-            public class InheritanceB : InheritanceBase
-            {
-            }
-
-            public class InheritanceA2 : InheritanceA
-            {
-            }
-
-            public class InheritanceA1 : InheritanceA
-            {
-            }
-        }
-
-        public class TableContext
-        {
-            public static object OnEntityCreated(IDataContext context, object entity) => entity;
-        }
-
-        public enum Test
-        {
-            One,
-            Two
         }
     }
+
+    public class TableContext
+    {
+        public static object OnEntityCreated(IDataContext context, object entity) => entity;
+    }
+
+    public enum Test
+    {
+        One,
+        Two
+    }
+}
 #endif
 
-    #endregion
-}
+#endregion

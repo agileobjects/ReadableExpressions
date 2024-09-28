@@ -6,19 +6,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using Common;
 using Common.Vb;
-using NetStandardPolyfills;
-#if !NET35
-using System.Linq.Expressions;
-using Xunit;
-using static System.Linq.Expressions.Expression;
-#else
-using Microsoft.Scripting.Ast;
-using Fact = NUnit.Framework.TestAttribute;
-using static Microsoft.Scripting.Ast.Expression;
 
-[NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
 public class WhenTranslatingMemberAccesses : TestClassBase
 {

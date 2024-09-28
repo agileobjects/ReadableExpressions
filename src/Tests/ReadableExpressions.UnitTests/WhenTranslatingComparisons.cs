@@ -1,165 +1,170 @@
-namespace AgileObjects.ReadableExpressions.UnitTests
-{
-    using Common;
-#if !NET35
-    using Xunit;
-    using static System.Linq.Expressions.Expression;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+namespace AgileObjects.ReadableExpressions.UnitTests;
 
-    [NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
-    public class WhenTranslatingComparisons : TestClassBase
+public class WhenTranslatingComparisons : TestClassBase
+{
+    [Fact]
+    public void ShouldTranslateAnEqualityExpression()
     {
-        [Fact]
-        public void ShouldTranslateAnEqualityExpression()
-        {
-            var intsAreEqual = CreateLambda((int i1, int i2) => i1 == i2);
+        var intsAreEqual = CreateLambda((int i1, int i2) => i1 == i2);
 
-            var translated = intsAreEqual.ToReadableString();
+        var translated = intsAreEqual.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 == i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 == i2");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnEnumEqualityExpression()
-        {
-            var enumEqualsOne =
-                CreateLambda((OddNumber number) => number == OddNumber.One);
+    [Fact]
+    public void ShouldTranslateAnEnumEqualityExpression()
+    {
+        var enumEqualsOne =
+            CreateLambda((OddNumber number) => number == OddNumber.One);
 
-            var translated = enumEqualsOne.ToReadableString();
+        var translated = enumEqualsOne.ToReadableString();
 
-            translated.ShouldBe("number => number == OddNumber.One");
-        }
+        translated.ShouldBe("number => number == OddNumber.One");
+    }
 
-        [Fact]
-        public void ShouldTranslateALessThanExpression()
-        {
-            var firstLessThanSecond = CreateLambda((int i1, int i2) => i1 < i2);
+    [Fact]
+    public void ShouldTranslateALessThanExpression()
+    {
+        var firstLessThanSecond = CreateLambda((int i1, int i2) => i1 < i2);
 
-            var translated = firstLessThanSecond.ToReadableString();
+        var translated = firstLessThanSecond.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 < i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 < i2");
+    }
 
-        [Fact]
-        public void ShouldTranslateALessThanOrEqualExpression()
-        {
-            var firstLessThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 <= i2);
+    [Fact]
+    public void ShouldTranslateALessThanOrEqualExpression()
+    {
+        var firstLessThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 <= i2);
 
-            var translated = firstLessThanOrEqualToSecond.ToReadableString();
+        var translated = firstLessThanOrEqualToSecond.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 <= i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 <= i2");
+    }
 
-        [Fact]
-        public void ShouldTranslateAGreaterThanOrEqualExpression()
-        {
-            var firstGreaterThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 >= i2);
+    [Fact]
+    public void ShouldTranslateAGreaterThanOrEqualExpression()
+    {
+        var firstGreaterThanOrEqualToSecond = CreateLambda((int i1, int i2) => i1 >= i2);
 
-            var translated = firstGreaterThanOrEqualToSecond.ToReadableString();
+        var translated = firstGreaterThanOrEqualToSecond.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 >= i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 >= i2");
+    }
 
-        [Fact]
-        public void ShouldTranslateAGreaterThanExpression()
-        {
-            var firstGreaterThanSecond = CreateLambda((int i1, int i2) => i1 > i2);
+    [Fact]
+    public void ShouldTranslateAGreaterThanExpression()
+    {
+        var firstGreaterThanSecond = CreateLambda((int i1, int i2) => i1 > i2);
 
-            var translated = firstGreaterThanSecond.ToReadableString();
+        var translated = firstGreaterThanSecond.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 > i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 > i2");
+    }
 
-        [Fact]
-        public void ShouldTranslateAnInequalityExpression()
-        {
-            var intsAreNotEqual = CreateLambda((int i1, int i2) => i1 != i2);
+    [Fact]
+    public void ShouldTranslateAnInequalityExpression()
+    {
+        var intsAreNotEqual = CreateLambda((int i1, int i2) => i1 != i2);
 
-            var translated = intsAreNotEqual.ToReadableString();
+        var translated = intsAreNotEqual.ToReadableString();
 
-            translated.ShouldBe("(i1, i2) => i1 != i2");
-        }
+        translated.ShouldBe("(i1, i2) => i1 != i2");
+    }
 
-        // See https://github.com/agileobjects/ReadableExpressions/issues/134
-        [Fact]
-        public void ShouldTranslateANullableEnumInequalityExpression()
-        {
-            var enumDoesNotEqualOne =
-                CreateLambda((OddNumber? number) => number != OddNumber.One);
+    // See https://github.com/agileobjects/ReadableExpressions/issues/134
+    [Fact]
+    public void ShouldTranslateANullableEnumInequalityExpression()
+    {
+        var enumDoesNotEqualOne =
+            CreateLambda((OddNumber? number) => number != OddNumber.One);
 
-            var translated = enumDoesNotEqualOne.ToReadableString();
+        var translated = enumDoesNotEqualOne.ToReadableString();
 
-            translated.ShouldBe("number => number != OddNumber.One");
-        }
+        translated.ShouldBe("number => number != OddNumber.One");
+    }
 
-        // See https://github.com/agileobjects/ReadableExpressions/issues/136
-        [Fact]
-        public void ShouldTranslateAnEnumLessThanExpression()
-        {
-            var enumLessThanThree = CreateLambda(
-                (ValueWrapper<OddNumber> number) => number.Value < OddNumber.Three);
+    // See https://github.com/agileobjects/ReadableExpressions/issues/147
+    [Fact]
+    public void ShouldTranslateANullableEnumEqualsNullExpression()
+    {
+        var enumIsNull = Equal(
+            Parameter(typeof(OddNumber?), "number"),
+            Constant(null, typeof(object)));
 
-            var translated = enumLessThanThree.Body.ToReadableString();
+        var translated = enumIsNull.ToReadableString();
 
-            translated.ShouldBe("number.Value < OddNumber.Three");
-        }
+        translated.ShouldBe("number == null");
+    }
 
-        [Fact]
-        public void ShouldAbbreviateBooleanTrueComparisons()
-        {
-            var boolVariable = Variable(typeof(bool), "couldBe");
-            var boolIsTrue = Equal(boolVariable, Constant(true));
+    // See https://github.com/agileobjects/ReadableExpressions/issues/136
+    [Fact]
+    public void ShouldTranslateAnEnumLessThanExpression()
+    {
+        var enumLessThanThree = CreateLambda(
+            (ValueWrapper<OddNumber> number) => number.Value < OddNumber.Three);
 
-            var translated = boolIsTrue.ToReadableString();
+        var translated = enumLessThanThree.Body.ToReadableString();
 
-            translated.ShouldBe("couldBe");
-        }
+        translated.ShouldBe("number.Value < OddNumber.Three");
+    }
 
-        [Fact]
-        public void ShouldAbbreviateBooleanFalseComparisons()
-        {
-            var boolVariable = Variable(typeof(bool), "couldBe");
-            var boolIsFalse = Equal(Constant(false), boolVariable);
+    [Fact]
+    public void ShouldAbbreviateBooleanTrueComparisons()
+    {
+        var boolVariable = Variable(typeof(bool), "couldBe");
+        var boolIsTrue = Equal(boolVariable, Constant(true));
 
-            var translated = boolIsFalse.ToReadableString();
+        var translated = boolIsTrue.ToReadableString();
 
-            translated.ShouldBe("!couldBe");
-        }
+        translated.ShouldBe("couldBe");
+    }
 
-        [Fact]
-        public void ShouldAbbreviateNotBooleanTrueComparisons()
-        {
-            var boolVariable = Variable(typeof(bool), "couldBe");
-            var boolIsNotTrue = NotEqual(Constant(true), boolVariable);
+    [Fact]
+    public void ShouldAbbreviateBooleanFalseComparisons()
+    {
+        var boolVariable = Variable(typeof(bool), "couldBe");
+        var boolIsFalse = Equal(Constant(false), boolVariable);
 
-            var translated = boolIsNotTrue.ToReadableString();
+        var translated = boolIsFalse.ToReadableString();
 
-            translated.ShouldBe("!couldBe");
-        }
+        translated.ShouldBe("!couldBe");
+    }
 
-        [Fact]
-        public void ShouldAbbreviateNotBooleanFalseComparisons()
-        {
-            var boolVariable = Variable(typeof(bool), "couldBe");
-            var boolIsNotFalse = NotEqual(boolVariable, Constant(false));
+    [Fact]
+    public void ShouldAbbreviateNotBooleanTrueComparisons()
+    {
+        var boolVariable = Variable(typeof(bool), "couldBe");
+        var boolIsNotTrue = NotEqual(Constant(true), boolVariable);
 
-            var translated = boolIsNotFalse.ToReadableString();
+        var translated = boolIsNotTrue.ToReadableString();
 
-            translated.ShouldBe("couldBe");
-        }
+        translated.ShouldBe("!couldBe");
+    }
 
-        [Fact]
-        public void ShouldAbbreviateDefaultBooleanComparisons()
-        {
-            var boolVariable = Variable(typeof(bool), "couldBe");
-            var boolIsFalse = Equal(Default(typeof(bool)), boolVariable);
+    [Fact]
+    public void ShouldAbbreviateNotBooleanFalseComparisons()
+    {
+        var boolVariable = Variable(typeof(bool), "couldBe");
+        var boolIsNotFalse = NotEqual(boolVariable, Constant(false));
 
-            var translated = boolIsFalse.ToReadableString();
+        var translated = boolIsNotFalse.ToReadableString();
 
-            translated.ShouldBe("!couldBe");
-        }
+        translated.ShouldBe("couldBe");
+    }
+
+    [Fact]
+    public void ShouldAbbreviateDefaultBooleanComparisons()
+    {
+        var boolVariable = Variable(typeof(bool), "couldBe");
+        var boolIsFalse = Equal(Default(typeof(bool)), boolVariable);
+
+        var translated = boolIsFalse.ToReadableString();
+
+        translated.ShouldBe("!couldBe");
     }
 }

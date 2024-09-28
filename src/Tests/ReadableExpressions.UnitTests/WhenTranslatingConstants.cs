@@ -7,15 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Common;
-#if !NET35
-using Xunit;
-using static System.Linq.Expressions.Expression;
-#else
-using Fact = NUnit.Framework.TestAttribute;
-using static Microsoft.Scripting.Ast.Expression;
 
-[NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
 public class WhenTranslatingConstants : TestClassBase
 {
@@ -569,7 +563,7 @@ there!""");
     [Fact]
     public void ShouldTranslateAnActionWithMultipleNestedGenericParameters()
     {
-        Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>> genericAction = fileInfo => { };
+        Action<Generic<GenericOne<int>, GenericTwo<long>, GenericTwo<long>>> genericAction = _ => { };
 
         var actionConstant = Constant(genericAction);
 

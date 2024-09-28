@@ -1,50 +1,42 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
-{
-    using Common;
-#if !NET35
-    using Xunit;
-    using static System.Linq.Expressions.Expression;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests;
 
-    [NUnit.Framework.TestFixture]
+#if NET35
+[NUnitTestFixture]
 #endif
-    public class WhenTranslatingVariableNames : TestClassBase
+public class WhenTranslatingVariableNames : TestClassBase
+{
+    // See https://github.com/agileobjects/ReadableExpressions/issues/21
+    [Fact]
+    public void ShouldNameAnUnnamedVariable()
     {
-        // See https://github.com/agileobjects/ReadableExpressions/issues/21
-        [Fact]
-        public void ShouldNameAnUnnamedVariable()
-        {
-            var intVariable = Variable(typeof(int));
-            var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
+        var intVariable = Variable(typeof(int));
+        var assignDefaultToInt = Assign(intVariable, Default(typeof(int)));
 
-            var translated = assignDefaultToInt.ToReadableString();
+        var translated = assignDefaultToInt.ToReadableString();
 
-            translated.ShouldBe("@int = default(int)");
-        }
+        translated.ShouldBe("@int = default(int)");
+    }
 
-        // See https://github.com/agileobjects/ReadableExpressions/issues/100
-        [Fact]
-        public void ShouldNameARootUnnamedVariable()
-        {
-            var intVariable = Variable(typeof(int));
+    // See https://github.com/agileobjects/ReadableExpressions/issues/100
+    [Fact]
+    public void ShouldNameARootUnnamedVariable()
+    {
+        var intVariable = Variable(typeof(int));
 
-            var translated = intVariable.ToReadableString();
+        var translated = intVariable.ToReadableString();
 
-            translated.ShouldBe("@int");
-        }
+        translated.ShouldBe("@int");
+    }
 
-        [Fact]
-        public void ShouldNameAnUnnamedParameter()
-        {
-            var stringParameter = Parameter(typeof(string), string.Empty);
-            var stringVariable = Variable(typeof(string), "  ");
-            var assignVariableToParameter = Assign(stringVariable, stringParameter);
+    [Fact]
+    public void ShouldNameAnUnnamedParameter()
+    {
+        var stringParameter = Parameter(typeof(string), string.Empty);
+        var stringVariable = Variable(typeof(string), "  ");
+        var assignVariableToParameter = Assign(stringVariable, stringParameter);
 
-            var translated = assignVariableToParameter.ToReadableString();
+        var translated = assignVariableToParameter.ToReadableString();
 
-            translated.ShouldBe("string1 = string2");
-        }
+        translated.ShouldBe("string1 = string2");
     }
 }

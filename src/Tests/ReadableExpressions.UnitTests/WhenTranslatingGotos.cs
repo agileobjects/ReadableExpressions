@@ -1,53 +1,47 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests
-{
-    using System;
-    using Common;
-#if !NET35
-    using Xunit;
-    using static System.Linq.Expressions.Expression;
-#else
-    using Fact = NUnit.Framework.TestAttribute;
-    using static Microsoft.Scripting.Ast.Expression;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests;
 
-    [NUnit.Framework.TestFixture]
+using System;
+
+#if NET35
+[NUnitTestFixture]
 #endif
-    public class WhenTranslatingGotos : TestClassBase
+public class WhenTranslatingGotos : TestClassBase
+{
+    [Fact]
+    public void ShouldTranslateGotoStatements()
     {
-        [Fact]
-        public void ShouldTranslateGotoStatements()
-        {
-            var labelTargetOne = Label(typeof(void), "One");
-            var labelOne = Label(labelTargetOne);
-            var writeOne = CreateLambda(() => Console.Write("One"));
-            var gotoOne = Goto(labelTargetOne);
+        var labelTargetOne = Label(typeof(void), "One");
+        var labelOne = Label(labelTargetOne);
+        var writeOne = CreateLambda(() => Console.Write("One"));
+        var gotoOne = Goto(labelTargetOne);
 
-            var labelTargetTwo = Label(typeof(void), "Two");
-            var labelTwo = Label(labelTargetTwo);
-            var writeTwo = CreateLambda(() => Console.Write("Two"));
-            var gotoTwo = Goto(labelTargetTwo);
+        var labelTargetTwo = Label(typeof(void), "Two");
+        var labelTwo = Label(labelTargetTwo);
+        var writeTwo = CreateLambda(() => Console.Write("Two"));
+        var gotoTwo = Goto(labelTargetTwo);
 
-            var intVariable = Variable(typeof(int), "i");
-            var intEqualsOne = Equal(intVariable, Constant(1));
-            var intEqualsTwo = Equal(intVariable, Constant(2));
+        var intVariable = Variable(typeof(int), "i");
+        var intEqualsOne = Equal(intVariable, Constant(1));
+        var intEqualsTwo = Equal(intVariable, Constant(2));
 
-            var ifTwoGotoTwo = IfThen(intEqualsTwo, gotoTwo);
-            var gotoOneOrTwo = IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
+        var ifTwoGotoTwo = IfThen(intEqualsTwo, gotoTwo);
+        var gotoOneOrTwo = IfThenElse(intEqualsOne, gotoOne, ifTwoGotoTwo);
 
-            var writeNeither = CreateLambda(() => Console.Write("Neither"));
-            var returnFromBlock = Return(Label());
+        var writeNeither = CreateLambda(() => Console.Write("Neither"));
+        var returnFromBlock = Return(Label());
 
-            var block = Block(
-                gotoOneOrTwo,
-                writeNeither.Body,
-                returnFromBlock,
-                labelOne,
-                writeOne.Body,
-                labelTwo,
-                writeTwo.Body);
+        var block = Block(
+            gotoOneOrTwo,
+            writeNeither.Body,
+            returnFromBlock,
+            labelOne,
+            writeOne.Body,
+            labelTwo,
+            writeTwo.Body);
 
-            var translated = block.ToReadableString();
+        var translated = block.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i == 1)
 {
     goto One;
@@ -66,27 +60,27 @@ Console.Write(""One"");
 Two:
 Console.Write(""Two"");
 ";
-            translated.ShouldBe(EXPECTED.Trim());
-        }
+        translated.ShouldBe(EXPECTED.Trim());
+    }
 
-        [Fact]
-        public void ShouldFormatGotoTargetLabels()
-        {
-            var labelTargetOne = Label(typeof(void), "One");
-            var labelOne = Label(labelTargetOne);
-            var gotoOne = Goto(labelTargetOne);
+    [Fact]
+    public void ShouldFormatGotoTargetLabels()
+    {
+        var labelTargetOne = Label(typeof(void), "One");
+        var labelOne = Label(labelTargetOne);
+        var gotoOne = Goto(labelTargetOne);
 
-            var labelTargetTwo = Label(typeof(void), "Two");
-            var labelTwo = Label(labelTargetTwo);
-            var gotoTwo = Goto(labelTargetTwo);
+        var labelTargetTwo = Label(typeof(void), "Two");
+        var labelTwo = Label(labelTargetTwo);
+        var gotoTwo = Goto(labelTargetTwo);
 
-            var gotoBlock = Block(labelOne, gotoTwo, labelTwo, gotoOne);
+        var gotoBlock = Block(labelOne, gotoTwo, labelTwo, gotoOne);
 
-            var ifTrueGoto = IfThen(Constant(true), gotoBlock);
+        var ifTrueGoto = IfThen(Constant(true), gotoBlock);
 
-            var translated = ifTrueGoto.ToReadableString();
+        var translated = ifTrueGoto.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (true)
 {
     One:
@@ -95,28 +89,28 @@ if (true)
     Two:
     goto One;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAGotoReturnStatement()
-        {
-            var returnTarget = Label(typeof(int), "Return");
+    [Fact]
+    public void ShouldTranslateAGotoReturnStatement()
+    {
+        var returnTarget = Label(typeof(int), "Return");
 
-            var numberParameter = Parameter(typeof(string), "i");
-            var numberEqualsOne = Equal(numberParameter, Constant("One"));
-            var returnOne = Goto(returnTarget, Constant(1));
-            var ifOneReturnOne = IfThen(numberEqualsOne, returnOne);
+        var numberParameter = Parameter(typeof(string), "i");
+        var numberEqualsOne = Equal(numberParameter, Constant("One"));
+        var returnOne = Goto(returnTarget, Constant(1));
+        var ifOneReturnOne = IfThen(numberEqualsOne, returnOne);
 
-            var returnLabel = Label(returnTarget, Constant(0));
-            var gotoBlock = Block(ifOneReturnOne, returnLabel);
+        var returnLabel = Label(returnTarget, Constant(0));
+        var gotoBlock = Block(ifOneReturnOne, returnLabel);
 
-            var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
-            gotoLambda.Compile();
+        var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
+        gotoLambda.Compile();
 
-            var translated = gotoLambda.ToReadableString();
+        var translated = gotoLambda.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 i =>
 {
     if (i == ""One"")
@@ -126,31 +120,31 @@ i =>
 
     return 0;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAReturnStatementWithAValue()
-        {
-            var returnTarget = Label(typeof(int));
+    [Fact]
+    public void ShouldTranslateAReturnStatementWithAValue()
+    {
+        var returnTarget = Label(typeof(int));
 
-            var returnOne = Return(returnTarget, Constant(1));
-            var returnTwo = Return(returnTarget, Constant(2));
+        var returnOne = Return(returnTarget, Constant(1));
+        var returnTwo = Return(returnTarget, Constant(2));
 
-            var numberParameter = Parameter(typeof(string), "i");
-            var numberEqualsOne = Equal(numberParameter, Constant("One"));
+        var numberParameter = Parameter(typeof(string), "i");
+        var numberEqualsOne = Equal(numberParameter, Constant("One"));
 
-            var ifOneReturnOneElseTwo = IfThenElse(numberEqualsOne, returnOne, returnTwo);
+        var ifOneReturnOneElseTwo = IfThenElse(numberEqualsOne, returnOne, returnTwo);
 
-            var returnLabel = Label(returnTarget, Constant(0));
-            var gotoBlock = Block(ifOneReturnOneElseTwo, returnLabel);
+        var returnLabel = Label(returnTarget, Constant(0));
+        var gotoBlock = Block(ifOneReturnOneElseTwo, returnLabel);
 
-            var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
-            gotoLambda.Compile();
+        var gotoLambda = Lambda<Func<string, int>>(gotoBlock, numberParameter);
+        gotoLambda.Compile();
 
-            var translated = gotoLambda.ToReadableString();
+        var translated = gotoLambda.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 i =>
 {
     if (i == ""One"")
@@ -164,27 +158,27 @@ i =>
 
     return 0;
 }";
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldNotIncludeLabelNamesWithoutAGoto()
-        {
-            var returnLabelTarget = Label(typeof(bool), "ReturnTarget");
+    [Fact]
+    public void ShouldNotIncludeLabelNamesWithoutAGoto()
+    {
+        var returnLabelTarget = Label(typeof(bool), "ReturnTarget");
 
-            var intVariable = Variable(typeof(int), "i");
-            var variableLessThanOne = LessThan(intVariable, Constant(1));
-            var returnTrue = Return(returnLabelTarget, Constant(true));
+        var intVariable = Variable(typeof(int), "i");
+        var variableLessThanOne = LessThan(intVariable, Constant(1));
+        var returnTrue = Return(returnLabelTarget, Constant(true));
 
-            var ifLessThanOneReturnTrue = IfThen(variableLessThanOne, returnTrue);
+        var ifLessThanOneReturnTrue = IfThen(variableLessThanOne, returnTrue);
 
-            var testBlock = Block(
-                ifLessThanOneReturnTrue,
-                Label(returnLabelTarget, Constant(false)));
+        var testBlock = Block(
+            ifLessThanOneReturnTrue,
+            Label(returnLabelTarget, Constant(false)));
 
-            var translated = testBlock.ToReadableString();
+        var translated = testBlock.ToReadableString();
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 if (i < 1)
 {
     return true;
@@ -192,33 +186,33 @@ if (i < 1)
 
 return false;";
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateAReturnStatementWithABlock()
-        {
-            var returnLabelTarget = Label(typeof(int));
+    [Fact]
+    public void ShouldTranslateAReturnStatementWithABlock()
+    {
+        var returnLabelTarget = Label(typeof(int));
 
-            var intVariable = Variable(typeof(int), "i");
-            var variableInit = Assign(intVariable, Constant(0));
-            var variablePlusOne = Add(intVariable, Constant(1));
-            var variableAdditionOne = Assign(intVariable, variablePlusOne);
-            var variablePlusTwo = Add(intVariable, Constant(2));
-            var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
+        var intVariable = Variable(typeof(int), "i");
+        var variableInit = Assign(intVariable, Constant(0));
+        var variablePlusOne = Add(intVariable, Constant(1));
+        var variableAdditionOne = Assign(intVariable, variablePlusOne);
+        var variablePlusTwo = Add(intVariable, Constant(2));
+        var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
 
-            var variableBlock = Block(
-                new[] { intVariable },
-                variableInit,
-                variableAdditionOne,
-                variableAdditionTwo,
-                intVariable);
+        var variableBlock = Block(
+            new[] { intVariable },
+            variableInit,
+            variableAdditionOne,
+            variableAdditionTwo,
+            intVariable);
 
-            var returnVariableBlock = Return(returnLabelTarget, variableBlock);
+        var returnVariableBlock = Return(returnLabelTarget, variableBlock);
 
-            var returnBlock = Block(returnVariableBlock);
+        var returnBlock = Block(returnVariableBlock);
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 return 
 {
     var i = 0;
@@ -228,34 +222,34 @@ return
     return i;
 };";
 
-            var translated = returnBlock.ToReadableString();
+        var translated = returnBlock.ToReadableString();
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
+    }
 
-        [Fact]
-        public void ShouldTranslateALabelWithABlockDefaultValue()
-        {
-            var returnLabelTarget = Label(typeof(int), "Return");
+    [Fact]
+    public void ShouldTranslateALabelWithABlockDefaultValue()
+    {
+        var returnLabelTarget = Label(typeof(int), "Return");
 
-            var intVariable = Variable(typeof(int), "i");
-            var variableInit = Assign(intVariable, Constant(0));
-            var variablePlusOne = Add(intVariable, Constant(1));
-            var variableAdditionOne = Assign(intVariable, variablePlusOne);
-            var variablePlusTwo = Add(intVariable, Constant(2));
-            var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
+        var intVariable = Variable(typeof(int), "i");
+        var variableInit = Assign(intVariable, Constant(0));
+        var variablePlusOne = Add(intVariable, Constant(1));
+        var variableAdditionOne = Assign(intVariable, variablePlusOne);
+        var variablePlusTwo = Add(intVariable, Constant(2));
+        var variableAdditionTwo = Assign(intVariable, variablePlusTwo);
 
-            var variableBlock = Block(variableAdditionTwo, intVariable);
+        var variableBlock = Block(variableAdditionTwo, intVariable);
 
-            var returnVariableBlock = Label(returnLabelTarget, variableBlock);
+        var returnVariableBlock = Label(returnLabelTarget, variableBlock);
 
-            var returnBlock = Block(
-                new[] { intVariable },
-                variableInit,
-                variableAdditionOne,
-                returnVariableBlock);
+        var returnBlock = Block(
+            new[] { intVariable },
+            variableInit,
+            variableAdditionOne,
+            returnVariableBlock);
 
-            const string EXPECTED = @"
+        const string EXPECTED = @"
 var i = 0;
 i = i + 1;
 
@@ -265,9 +259,8 @@ return
 
     return i;
 };";
-            var translated = returnBlock.ToReadableString();
+        var translated = returnBlock.ToReadableString();
 
-            translated.ShouldBe(EXPECTED.TrimStart());
-        }
+        translated.ShouldBe(EXPECTED.TrimStart());
     }
 }

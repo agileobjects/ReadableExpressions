@@ -1,61 +1,53 @@
-﻿namespace AgileObjects.ReadableExpressions.UnitTests.Extensions
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Common;
-    using NetStandardPolyfills;
-    using ReadableExpressions.Extensions;
-#if !NET35
-    using System.Linq.Expressions;
-    using Xunit;
-#else
-    using Microsoft.Scripting.Ast;
-    using Fact = NUnit.Framework.TestAttribute;
+﻿namespace AgileObjects.ReadableExpressions.UnitTests.Extensions;
 
-    [NUnit.Framework.TestFixture]
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using ReadableExpressions.Extensions;
+
+#if NET35
+[NUnitTestFixture]
 #endif
-    public class WhenGettingAParentExpressionNode : TestClassBase
+public class WhenGettingAParentExpressionNode : TestClassBase
+{
+    [Fact]
+    public void ShouldReturnAMemberAccessParent()
     {
-        [Fact]
-        public void ShouldReturnAMemberAccessParent()
-        {
-            var personViewModelName = CreateLambda((Type t) => t.Name);
+        var personViewModelName = CreateLambda((Type t) => t.Name);
 
-            var namePropertyParent = personViewModelName.Body.GetParentOrNull() as ParameterExpression;
+        var namePropertyParent = personViewModelName.Body.GetParentOrNull() as ParameterExpression;
 
-            namePropertyParent.ShouldNotBeNull().Name.ShouldBe("t");
-        }
+        namePropertyParent.ShouldNotBeNull().Name.ShouldBe("t");
+    }
 
-        [Fact]
-        public void ShouldReturnANestedMemberAccessParent()
-        {
-            var typeNameLength = CreateLambda((Type t) => t.Name.Length);
+    [Fact]
+    public void ShouldReturnANestedMemberAccessParent()
+    {
+        var typeNameLength = CreateLambda((Type t) => t.Name.Length);
 
-            var typeNameLengthParent = typeNameLength.Body.GetParentOrNull() as MemberExpression;
+        var typeNameLengthParent = typeNameLength.Body.GetParentOrNull() as MemberExpression;
 
-            typeNameLengthParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
-        }
+        typeNameLengthParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
+    }
 
-        [Fact]
-        public void ShouldReturnAMemberMethodCallParent()
-        {
-            var typeNameSubstring = CreateLambda((Type t) => t.Name.Substring(0, 3));
+    [Fact]
+    public void ShouldReturnAMemberMethodCallParent()
+    {
+        var typeNameSubstring = CreateLambda((Type t) => t.Name.Substring(0, 3));
 
-            var typeNameSubstringParent = typeNameSubstring.Body.GetParentOrNull() as MemberExpression;
+        var typeNameSubstringParent = typeNameSubstring.Body.GetParentOrNull() as MemberExpression;
 
-            typeNameSubstringParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
-        }
+        typeNameSubstringParent.ShouldNotBeNull().Member.Name.ShouldBe("Name");
+    }
 
-        [Fact]
-        public void ShouldReturnAnExtensionMethodCallParent()
-        {
-            var typesToArray = CreateLambda((IEnumerable<Type> ts) => ts.ToArray());
+    [Fact]
+    public void ShouldReturnAnExtensionMethodCallParent()
+    {
+        var typesToArray = CreateLambda((IEnumerable<Type> ts) => ts.ToArray());
 
-            var typesToArrayPropertyParent = typesToArray.Body.GetParentOrNull() as ParameterExpression;
+        var typesToArrayPropertyParent = typesToArray.Body.GetParentOrNull() as ParameterExpression;
 
-            typesToArrayPropertyParent.ShouldNotBeNull();
-            typesToArrayPropertyParent.Name.ShouldBe("ts");
-        }
+        typesToArrayPropertyParent.ShouldNotBeNull();
+        typesToArrayPropertyParent!.Name.ShouldBe("ts");
     }
 }
