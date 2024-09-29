@@ -1,16 +1,13 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
 using System.Collections.Generic;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Reflection;
 using Extensions;
 using Initialisations;
 
-internal class AnonymousTypeNewingTranslation : NewingTranslationBase, INodeTranslation
+internal class AnonymousTypeNewingTranslation :
+    NewingTranslationBase,
+    INodeTranslation
 {
     private readonly string _typeName;
     private readonly IInitializerSetTranslation _initializers;
@@ -45,8 +42,8 @@ internal class AnonymousTypeNewingTranslation : NewingTranslationBase, INodeTran
             new AnonymousTypeInitializerTranslationSet(this, initializers, context);
     }
 
-    public int TranslationLength
-        => "new ".Length + _typeName.Length + _initializers.TranslationLength;
+    public int TranslationLength => 
+        "new ".Length + _typeName.Length + _initializers.TranslationLength;
 
     public void WriteTo(TranslationWriter writer)
     {

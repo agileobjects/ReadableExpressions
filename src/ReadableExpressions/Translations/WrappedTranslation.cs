@@ -1,11 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
-
 internal class WrappedTranslation :
     INodeTranslation,
     IPotentialSelfTerminatingTranslation
@@ -26,8 +20,8 @@ internal class WrappedTranslation :
 
     public ExpressionType NodeType => _translation.NodeType;
 
-    public int TranslationLength
-        => _prefix.Length + _translation.TranslationLength + _suffix.Length;
+    public int TranslationLength => 
+        _prefix.Length + _translation.TranslationLength + _suffix.Length;
 
     public bool IsTerminated => _translation.IsTerminated();
 

@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 /// <summary>
@@ -37,8 +32,8 @@ public abstract class UnaryOperatorTranslationBase : INodeTranslation
     public virtual ExpressionType NodeType => ExpressionType.Extension;
 
     /// <inheritdoc />
-    public int TranslationLength
-        => _operator.Length + "()".Length + _operandTranslation.TranslationLength;
+    public int TranslationLength => 
+        _operator.Length + "()".Length + _operandTranslation.TranslationLength;
 
     /// <inheritdoc />
     public virtual void WriteTo(TranslationWriter writer)

@@ -1,18 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
 using System;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 using NetStandardPolyfills;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 
 internal class BinaryTranslation :
     CheckedOperationTranslationBase,
@@ -238,11 +229,11 @@ internal class BinaryTranslation :
 
     #endregion
 
-    public static bool IsBinary(ExpressionType nodeType)
-        => GetOperator(nodeType) != null;
+    public static bool IsBinary(ExpressionType nodeType) => 
+        GetOperator(nodeType) != null;
 
-    public static string GetOperator(Expression expression)
-        => GetOperator(expression.NodeType);
+    public static string GetOperator(Expression expression) => 
+        GetOperator(expression.NodeType);
 
     public ExpressionType NodeType { get; }
 
@@ -259,8 +250,8 @@ internal class BinaryTranslation :
         }
     }
 
-    bool IPotentialParenthesizedTranslation.Parenthesize
-        => !_suppressParentheses;
+    bool IPotentialParenthesizedTranslation.Parenthesize => 
+        !_suppressParentheses;
 
     public void WriteTo(TranslationWriter writer)
     {
@@ -271,8 +262,8 @@ internal class BinaryTranslation :
         WriteClosingCheckedIfNecessary(writer, isMultiStatementChecked);
     }
 
-    protected override bool IsMultiStatement()
-        => _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
+    protected override bool IsMultiStatement() => 
+        _leftOperandTranslation.IsMultiStatement() || _rightOperandTranslation.IsMultiStatement();
 
     private class BoolEqualityComparisonTranslation : INodeTranslation
     {
@@ -289,7 +280,7 @@ internal class BinaryTranslation :
         {
             _context = context;
             NodeType = nodeType;
-            _standaloneBoolean = new StandaloneBoolean(boolean, @operator, comparison);
+            _standaloneBoolean = new(boolean, @operator, comparison);
             _operandTranslation = context.GetTranslationFor(_standaloneBoolean.Expression);
         }
 

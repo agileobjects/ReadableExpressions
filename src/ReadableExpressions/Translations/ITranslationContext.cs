@@ -1,11 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
-
 /// <summary>
 /// Implementing classes will provide information about an Expression translation's context.
 /// </summary>

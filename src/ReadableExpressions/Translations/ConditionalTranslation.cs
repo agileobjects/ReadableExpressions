@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 internal static class ConditionalTranslation
@@ -39,8 +34,8 @@ internal static class ConditionalTranslation
               !conditional.HasReturnType();
     }
 
-    public static bool IsTernary(this Expression conditional)
-        => conditional.HasReturnType();
+    public static bool IsTernary(this Expression conditional) => 
+        conditional.HasReturnType();
 
     private abstract class ConditionalTranslationBase :
         INodeTranslation,
@@ -139,8 +134,8 @@ internal static class ConditionalTranslation
 
         public bool IsTerminated => true;
 
-        public override void WriteTo(TranslationWriter writer)
-            => WriteIfStatement(writer);
+        public override void WriteTo(TranslationWriter writer) => 
+            WriteIfStatement(writer);
     }
 
     private class TernaryTranslation : ConditionalTranslationBase
@@ -261,8 +256,8 @@ internal static class ConditionalTranslation
                 context);
         }
 
-        private static bool IsElseIf(ConditionalExpression conditional)
-            => conditional.IfFalse.NodeType == ExpressionType.Conditional;
+        private static bool IsElseIf(ConditionalExpression conditional) => 
+            conditional.IfFalse.NodeType == ExpressionType.Conditional;
 
         public bool IsTerminated => true;
 

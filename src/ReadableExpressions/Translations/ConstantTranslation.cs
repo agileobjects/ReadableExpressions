@@ -3,24 +3,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Text.RegularExpressions;
 using Extensions;
 using Formatting;
 using Initialisations;
 using NetStandardPolyfills;
+#if NET35
+using LinqLambda = System.Linq.Expressions.LambdaExpression;
+#endif
 using static System.Convert;
 using static System.Globalization.CultureInfo;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-using LinqLambda = System.Linq.Expressions.LambdaExpression;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 using static Formatting.TokenType;
 
 internal static class ConstantTranslation
@@ -265,7 +258,7 @@ internal static class ConstantTranslation
             Numeric);
     }
 
-    private static readonly char[] _newlineCharacters = { '\r', '\n' };
+    private static readonly char[] _newlineCharacters = ['\r', '\n'];
 
     private static string GetStringConstant(
         ConstantExpression constant,
@@ -424,8 +417,8 @@ internal static class ConstantTranslation
 
         #region Setup
 
-        private static long GetLongValue(object enumValue)
-            => (long)ChangeType(enumValue, typeof(long));
+        private static long GetLongValue(object enumValue) => 
+            (long)ChangeType(enumValue, typeof(long));
 
         #endregion
 
@@ -473,8 +466,8 @@ internal static class ConstantTranslation
             ".".Length +
             _enumMemberName.Length;
 
-        public void WriteTo(TranslationWriter writer)
-            => writer.WriteEnumValue(_typeNameTranslation, _enumMemberName);
+        public void WriteTo(TranslationWriter writer) => 
+            writer.WriteEnumValue(_typeNameTranslation, _enumMemberName);
     }
 
     private static void WriteEnumValue(
@@ -608,8 +601,8 @@ internal static class ConstantTranslation
 
         public bool IsTerminated => true;
 
-        public void WriteTo(TranslationWriter writer)
-            => _lambdaTranslation.WriteTo(writer);
+        public void WriteTo(TranslationWriter writer) => 
+            _lambdaTranslation.WriteTo(writer);
     }
 
     private class TimeSpanConstantTranslation : INodeTranslation

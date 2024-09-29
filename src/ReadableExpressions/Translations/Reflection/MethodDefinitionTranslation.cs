@@ -66,7 +66,7 @@ public class MethodDefinitionTranslation : ITranslation
         }
 
         _returnTypeTranslation =
-            new TypeNameTranslation(method.ReturnType, settings);
+            new(method.ReturnType, settings);
 
         _methodName = method.Name;
 
@@ -77,7 +77,7 @@ public class MethodDefinitionTranslation : ITranslation
         if (includeDeclaringType && method.DeclaringType != null)
         {
             _declaringTypeNameTranslation =
-                new TypeNameTranslation(method.DeclaringType, settings);
+                new(method.DeclaringType, settings);
 
             translationLength += _declaringTypeNameTranslation.TranslationLength;
         }

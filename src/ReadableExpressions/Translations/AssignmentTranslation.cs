@@ -1,16 +1,7 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 
 internal class AssignmentTranslation :
     CheckedOperationTranslationBase,
@@ -123,8 +114,8 @@ internal class AssignmentTranslation :
             : valueBlock.WithBraces();
     }
 
-    public static bool IsAssignment(ExpressionType nodeType)
-        => GetOperatorOrNull(nodeType) != null;
+    public static bool IsAssignment(ExpressionType nodeType) => 
+        GetOperatorOrNull(nodeType) != null;
 
     public ExpressionType NodeType { get; }
 
@@ -143,8 +134,8 @@ internal class AssignmentTranslation :
 
     public bool IsTerminated => _valueTranslation.IsTerminated();
 
-    protected override bool IsMultiStatement()
-        => _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
+    protected override bool IsMultiStatement() => 
+        _targetTranslation.IsMultiStatement() || _valueTranslation.IsMultiStatement();
 
     public void WriteTo(TranslationWriter writer)
     {

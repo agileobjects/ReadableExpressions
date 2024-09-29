@@ -25,7 +25,7 @@ public class TranslationWriter : ITranslationQuery
     {
         _formatter = formatter ?? NullTranslationFormatter.Instance;
         _indent = indent;
-        _content = new StringBuilder(1_000);
+        _content = new(1_000);
     }
 
     #region ITranslationQuery
@@ -312,7 +312,7 @@ public class TranslationWriter : ITranslationQuery
     /// <summary>
     /// Retrieves the written translation string.
     /// </summary>
-    /// <returns>The written translation string</returns>
-    public string GetContent()
-        => _content.Length > 0 ? _content.ToString() : null;
+    /// <returns>The written translation string, or null if there is no translated content.</returns>
+    public string GetContent() => 
+        _content.Length > 0 ? _content.ToString() : null;
 }

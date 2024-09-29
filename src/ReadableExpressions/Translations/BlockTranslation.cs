@@ -2,20 +2,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 using static System.Environment;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-using static Microsoft.Scripting.Ast.GotoExpressionKind;
-#else
-using static System.Linq.Expressions.ExpressionType;
-using static System.Linq.Expressions.GotoExpressionKind;
-#endif
+using static ExpressionType;
+using static GotoExpressionKind;
 
 internal class BlockTranslation :
     INodeTranslation,
@@ -389,14 +379,14 @@ internal class BlockTranslation :
 
         public Expression Expression { get; }
 
-        public virtual int TranslationLength
-            => _statementTranslation.TranslationLength + 1;
+        public virtual int TranslationLength => 
+            _statementTranslation.TranslationLength + 1;
 
-        public bool IsMultiStatement
-            => _isMultiStatement ??= _statementTranslation.IsMultiStatement();
+        public bool IsMultiStatement => 
+            _isMultiStatement ??= _statementTranslation.IsMultiStatement();
 
-        public bool IsTerminal
-            => NodeType == Throw || (NodeType == ExpressionType.Goto && ((GotoExpression)Expression).Kind == Return);
+        public bool IsTerminal => 
+            NodeType == Throw || (NodeType == ExpressionType.Goto && ((GotoExpression)Expression).Kind == Return);
 
         public bool DoNotTerminate { private get; set; }
 
@@ -414,7 +404,8 @@ internal class BlockTranslation :
 
         public void WriteReturnKeyword() => _writeReturnKeyword = true;
 
-        public virtual bool HasGoto => _writeReturnKeyword || _statementTranslation.HasGoto();
+        public virtual bool HasGoto => 
+            _writeReturnKeyword || _statementTranslation.HasGoto();
 
         public void WriteTo(TranslationWriter writer)
         {
@@ -447,8 +438,8 @@ internal class BlockTranslation :
             }
         }
 
-        private bool UseFinalBlankLine
-            => _suppressBlankLineAfter == false && WriteBlankLineAfter();
+        private bool UseFinalBlankLine => 
+            _suppressBlankLineAfter == false && WriteBlankLineAfter();
 
         public virtual bool WriteBlankLineAfter()
         {

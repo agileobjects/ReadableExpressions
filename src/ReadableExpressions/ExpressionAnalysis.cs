@@ -3,17 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 using static Translations.AssignmentTranslation;
 
 /// <summary>
@@ -68,8 +59,8 @@ public class ExpressionAnalysis
     /// </summary>
     protected BlockExpression CurrentBlock => _currentExpressionScope?.GetCurrentBlockOrNull();
 
-    private ExpressionScope CurrentExpressionScope
-        => _currentExpressionScope ??= new ExpressionScope();
+    private ExpressionScope CurrentExpressionScope => 
+        _currentExpressionScope ??= new();
 
     /// <summary>
     /// Analyses the given <paramref name="expression"/>, setting <see cref="ResultExpression"/>
@@ -193,8 +184,8 @@ public class ExpressionAnalysis
     /// True if the given <paramref name="labelTarget"/> is referenced by a <see cref="GotoExpression"/>,
     /// otherwise false.
     /// </returns>
-    public bool IsReferencedByGoto(LabelTarget labelTarget)
-        => _namedLabelTargets?.Contains(labelTarget) == true;
+    public bool IsReferencedByGoto(LabelTarget labelTarget) => 
+        _namedLabelTargets?.Contains(labelTarget) == true;
 
     /// <summary>
     /// Determines if the given <paramref name="cast"/> is nested inside another cast
@@ -218,8 +209,8 @@ public class ExpressionAnalysis
     /// True if the given <paramref name="goto"/> goes to the final statement in a block,
     /// otherwise false.
     /// </returns>
-    public bool GoesToReturnLabel(GotoExpression @goto)
-        => _gotoReturnGotos?.Contains(@goto) == true;
+    public bool GoesToReturnLabel(GotoExpression @goto) => 
+        _gotoReturnGotos?.Contains(@goto) == true;
 
     /// <summary>
     /// Determines if the given <paramref name="methodCall"/> is part of a chain of multiple
@@ -230,8 +221,8 @@ public class ExpressionAnalysis
     /// True if the given <paramref name="methodCall"/> is part of a chain of multiple method calls,
     /// otherwise false.
     /// </returns>
-    public bool IsPartOfMethodCallChain(MethodCallExpression methodCall)
-        => _chainedMethodCalls?.Contains(methodCall) == true;
+    public bool IsPartOfMethodCallChain(MethodCallExpression methodCall) => 
+        _chainedMethodCalls?.Contains(methodCall) == true;
 
     /// <summary>
     /// Determines if the given <paramref name="methodCallArgument"/> can be converted to a
@@ -276,12 +267,12 @@ public class ExpressionAnalysis
         return Array.IndexOf(variablesOfType, variable, 0) + 1;
     }
 
-    private Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType
-        => _unnamedVariablesByType ??= _currentExpressionScope?.AllVariables
-                                           .Where(variable => InternalStringExtensions.IsNullOrWhiteSpace(variable.Name))
-                                           .GroupBy(variable => variable.Type)
-                                           .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
-                                       EmptyDictionary<Type, ParameterExpression[]>.Instance;
+    private Dictionary<Type, ParameterExpression[]> UnnamedVariablesByType => 
+        _unnamedVariablesByType ??= _currentExpressionScope?.AllVariables
+           .Where(variable => variable.Name.IsNullOrWhiteSpace())
+           .GroupBy(variable => variable.Type)
+           .ToDictionary(grp => grp.Key, grp => grp.ToArray()) ??
+            EmptyDictionary<Type, ParameterExpression[]>.Instance;
 
     /// <summary>
     /// Visits the given <paramref name="expression"/>, returning a converted Expression if
@@ -548,8 +539,8 @@ public class ExpressionAnalysis
     /// True if the current assignment of the given <paramref name="variable"/> being evaluated
     /// can include a joined declaration of the variable, otherwise false.
     /// </returns>
-    protected virtual bool HasBeenJoinAssigned(ParameterExpression variable)
-        => CurrentExpressionScope.IsJoinedAssignmentVariable(variable);
+    protected virtual bool HasBeenJoinAssigned(ParameterExpression variable) => 
+        CurrentExpressionScope.IsJoinedAssignmentVariable(variable);
 
     /// <summary>
     /// Visits the given <paramref name="block"/>, returning a replacement Expression if
@@ -641,8 +632,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="comment"/>, or the given
     /// CommentExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(CommentExpression comment)
-        => comment;
+    protected virtual Expression VisitAndConvert(CommentExpression comment) => 
+        comment;
 
     /// <summary>
     /// Visits the given <paramref name="constant"/>, returning a replacement Expression if
@@ -653,8 +644,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="constant"/>, or the given
     /// ConstantExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(ConstantExpression constant)
-        => constant;
+    protected virtual Expression VisitAndConvert(ConstantExpression constant) => 
+        constant;
 
     /// <summary>
     /// Visits the given <paramref name="dynamic"/>, returning a replacement Expression if
@@ -665,8 +656,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="dynamic"/>, or the given
     /// DynamicExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(DynamicExpression dynamic)
-        => dynamic.Update(VisitAndConvert(dynamic.Arguments));
+    protected virtual Expression VisitAndConvert(DynamicExpression dynamic) => 
+        dynamic.Update(VisitAndConvert(dynamic.Arguments));
 
     /// <summary>
     /// Visits the given <paramref name="goto"/>, returning a replacement Expression if
@@ -815,8 +806,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="loop"/>, or the given
     /// LoopExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(LoopExpression loop)
-        => loop.Update(loop.BreakLabel, loop.ContinueLabel, VisitAndConvert(loop.Body));
+    protected virtual Expression VisitAndConvert(LoopExpression loop) => 
+        loop.Update(loop.BreakLabel, loop.ContinueLabel, VisitAndConvert(loop.Body));
 
     /// <summary>
     /// Visits the given <paramref name="memberAccess"/>, returning a replacement Expression if
@@ -827,8 +818,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="memberAccess"/>, or the given
     /// CommentExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(MemberExpression memberAccess)
-        => memberAccess.Update(VisitAndConvert(memberAccess.Expression));
+    protected virtual Expression VisitAndConvert(MemberExpression memberAccess) => 
+        memberAccess.Update(VisitAndConvert(memberAccess.Expression));
 
     /// <summary>
     /// Visits the given <paramref name="methodCall"/>, returning a replacement Expression if
@@ -847,7 +838,7 @@ public class ExpressionAnalysis
 
             if (methodCallChain.Length > 1)
             {
-                _chainedMethodCalls ??= new List<MethodCallExpression>();
+                _chainedMethodCalls ??= [];
 
                 if (methodCallChain.Length > 2)
                 {
@@ -878,7 +869,7 @@ public class ExpressionAnalysis
                     continue;
 
                 case Lambda when argument.CanBeConvertedToMethodGroup():
-                    (_methodGroupLambdas ??= new()).Add(argument);
+                    (_methodGroupLambdas ??= []).Add(argument);
 
                     if (arguments == methodCall.Arguments)
                     {
@@ -919,8 +910,8 @@ public class ExpressionAnalysis
     /// A NewExpression to replace the given <paramref name="newing"/>, or the given
     /// NewExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(NewExpression newing)
-        => newing.Update(VisitAndConvert(newing.Arguments));
+    protected virtual Expression VisitAndConvert(NewExpression newing) => 
+        newing.Update(VisitAndConvert(newing.Arguments));
 
     private IEnumerable<ElementInit> VisitAndConvert(IList<ElementInit> elementInits)
     {
@@ -1001,14 +992,14 @@ public class ExpressionAnalysis
         };
     }
 
-    private MemberBinding VisitAndConvert(MemberAssignment assignment)
-        => assignment.Update(VisitAndConvert(assignment.Expression));
+    private MemberBinding VisitAndConvert(MemberAssignment assignment) => 
+        assignment.Update(VisitAndConvert(assignment.Expression));
 
-    private MemberBinding VisitAndConvert(MemberMemberBinding binding)
-        => binding.Update(VisitAndConvert(binding.Bindings));
+    private MemberBinding VisitAndConvert(MemberMemberBinding binding) => 
+        binding.Update(VisitAndConvert(binding.Bindings));
 
-    private MemberBinding VisitAndConvert(MemberListBinding listBinding)
-        => listBinding.Update(VisitAndConvert(listBinding.Initializers));
+    private MemberBinding VisitAndConvert(MemberListBinding listBinding) => 
+        listBinding.Update(VisitAndConvert(listBinding.Initializers));
 
     /// <summary>
     /// Visits the given <paramref name="newArray"/>, returning a replacement Expression if
@@ -1019,8 +1010,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="newArray"/>, or the given
     /// NewArrayExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(NewArrayExpression newArray)
-        => newArray.Update(VisitAndConvert(newArray.Expressions));
+    protected virtual Expression VisitAndConvert(NewArrayExpression newArray) => 
+        newArray.Update(VisitAndConvert(newArray.Expressions));
 
     /// <summary>
     /// Visits the given <paramref name="variable"/>, returning a replacement ParameterExpression
@@ -1031,8 +1022,8 @@ public class ExpressionAnalysis
     /// A ParameterExpression to replace the given <paramref name="variable"/>, or the given
     /// ParameterExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(ParameterExpression variable)
-        => Visit(variable);
+    protected virtual Expression VisitAndConvert(ParameterExpression variable) => 
+        Visit(variable);
 
     private ParameterExpression Visit(ParameterExpression variable)
     {
@@ -1045,8 +1036,8 @@ public class ExpressionAnalysis
         return ReevaluateDeclaration(variable);
     }
 
-    private ParameterExpression ReevaluateDeclaration(ParameterExpression variable)
-        => CurrentExpressionScope.ReevaluateDeclaration(variable);
+    private ParameterExpression ReevaluateDeclaration(ParameterExpression variable) => 
+        CurrentExpressionScope.ReevaluateDeclaration(variable);
 
     /// <summary>
     /// Visits the given <paramref name="runtimeVariables"/>, returning a replacement Expression
@@ -1057,8 +1048,11 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="runtimeVariables"/>, or the given
     /// RuntimeVariablesExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(RuntimeVariablesExpression runtimeVariables)
-        => runtimeVariables.Update(VisitAndConvert(runtimeVariables.Variables));
+    protected virtual Expression VisitAndConvert(
+        RuntimeVariablesExpression runtimeVariables)
+    {
+        return runtimeVariables.Update(VisitAndConvert(runtimeVariables.Variables));
+    }
 
     /// <summary>
     /// Visits the given <paramref name="switch"/>, returning a replacement Expression if
@@ -1160,8 +1154,8 @@ public class ExpressionAnalysis
     /// An Expression to replace the given <paramref name="typing"/>, or the given
     /// TypeBinaryExpression if no replacement is required.
     /// </returns>
-    protected virtual Expression VisitAndConvert(TypeBinaryExpression typing)
-        => typing.Update(VisitAndConvert(typing.Expression));
+    protected virtual Expression VisitAndConvert(TypeBinaryExpression typing) => 
+        typing.Update(VisitAndConvert(typing.Expression));
 
     /// <summary>
     /// Visits the given <paramref name="unary"/>, returning a replacement Expression if
@@ -1191,8 +1185,11 @@ public class ExpressionAnalysis
     /// A ParameterExpression collection to replace the given <paramref name="parameters"/>, or
     /// the given collection if no replacement is required.
     /// </returns>
-    protected IList<ParameterExpression> VisitAndConvert(IList<ParameterExpression> parameters)
-        => VisitAndConvert(parameters, Visit);
+    protected IList<ParameterExpression> VisitAndConvert(
+        IList<ParameterExpression> parameters)
+    {
+        return VisitAndConvert(parameters, Visit);
+    }
 
     /// <summary>
     /// Visits the given <paramref name="expressions"/>, returning a replacement Expression
@@ -1203,8 +1200,8 @@ public class ExpressionAnalysis
     /// An Expression collection to replace the given <paramref name="expressions"/>, or the
     /// given collection if no replacement is required.
     /// </returns>
-    protected IList<Expression> VisitAndConvert(IList<Expression> expressions)
-        => VisitAndConvert(expressions, VisitAndConvert);
+    protected IList<Expression> VisitAndConvert(IList<Expression> expressions) => 
+        VisitAndConvert(expressions, VisitAndConvert);
 
     /// <summary>
     /// Visits the given <paramref name="expressions"/>, returning a replacement
@@ -1235,7 +1232,8 @@ public class ExpressionAnalysis
                     var updatedExpression = visitor.Invoke(expression);
 
                     return expression != updatedExpression
-                        ? new[] { updatedExpression } : expressions;
+                        ? [updatedExpression]
+                        : expressions;
                 }
 
             default:
@@ -1356,15 +1354,15 @@ public class ExpressionAnalysis
     /// <summary>
     /// Exits the current scope.
     /// </summary>
-    public void ExitScope()
-        => _currentExpressionScope = _previousExpressionScope ?? _currentExpressionScope?.Parent;
+    public void ExitScope() => 
+        _currentExpressionScope = _previousExpressionScope ?? _currentExpressionScope?.Parent;
 
-    private void PushScope(LambdaExpression lambda)
-        => _currentExpressionScope = new ExpressionScope(lambda, CurrentExpressionScope);
+    private void PushScope(LambdaExpression lambda) => 
+        _currentExpressionScope = new(lambda, CurrentExpressionScope);
 
-    private void PushScope(BlockExpression block)
-        => _currentExpressionScope = new ExpressionScope(block, CurrentExpressionScope);
+    private void PushScope(BlockExpression block) => 
+        _currentExpressionScope = new(block, CurrentExpressionScope);
 
-    private void PushScope(object scopeObject)
-        => _currentExpressionScope = new ExpressionScope(scopeObject, CurrentExpressionScope);
+    private void PushScope(object scopeObject) => 
+        _currentExpressionScope = new(scopeObject, CurrentExpressionScope);
 }

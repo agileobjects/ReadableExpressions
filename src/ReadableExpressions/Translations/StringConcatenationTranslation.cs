@@ -3,17 +3,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 
 internal class StringConcatenationTranslation : INodeTranslation
 {
@@ -114,8 +105,7 @@ internal class StringConcatenationTranslation : INodeTranslation
         }
     }
 
-    private static IEnumerable<Expression> FlattenOperands(
-        Expression expression)
+    private static IEnumerable<Expression> FlattenOperands(Expression expression)
     {
         if (expression.NodeType.IsCast())
         {
@@ -198,8 +188,8 @@ internal class StringConcatenationTranslation : INodeTranslation
 
     public ExpressionType NodeType { get; }
 
-    public int TranslationLength
-        => _operandTranslations.TotalTranslationLength(separator: " + ");
+    public int TranslationLength => 
+        _operandTranslations.TotalTranslationLength(separator: " + ");
 
     public void WriteTo(TranslationWriter writer)
     {

@@ -2,27 +2,18 @@
 
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Reflection;
 using NetStandardPolyfills;
 using Translations;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 
 internal static class InternalExpressionExtensions
 {
-    public static bool IsNamed(this ParameterExpression parameter)
-        => !parameter.Name.IsNullOrWhiteSpace();
+    public static bool IsNamed(this ParameterExpression parameter) => 
+        !parameter.Name.IsNullOrWhiteSpace();
 
-    public static bool HasReturnType(this Expression expression)
-        => expression.Type != typeof(void);
+    public static bool HasReturnType(this Expression expression) => 
+        expression.Type != typeof(void);
 
     public static bool IsReturnable(this Expression expression)
     {
@@ -67,8 +58,8 @@ internal static class InternalExpressionExtensions
         return false;
     }
 
-    public static bool IsReturnable(this BlockExpression block)
-        => block.HasReturnType() && block.Result.IsReturnable();
+    public static bool IsReturnable(this BlockExpression block) => 
+        block.HasReturnType() && block.Result.IsReturnable();
 
     public static bool IsCapture(this Expression expression, out Capture capture)
     {
@@ -160,8 +151,8 @@ internal static class InternalExpressionExtensions
         };
     }
 
-    public static Expression GetUnaryOperand(this Expression unary)
-        => ((UnaryExpression)unary).Operand;
+    public static Expression GetUnaryOperand(this Expression unary) => 
+        ((UnaryExpression)unary).Operand;
 
     public static bool CanBeConvertedToMethodGroup(this Expression argument)
     {

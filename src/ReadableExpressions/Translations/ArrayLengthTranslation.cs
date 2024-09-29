@@ -1,15 +1,9 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
-
 internal class ArrayLengthTranslation : INodeTranslation
 {
     private const string _length = ".Length";
-    private static readonly int _lengthPropertyLength = _length.Length;
+    private const int _lengthPropertyLength = 7;
 
     private readonly INodeTranslation _operand;
 

@@ -2,11 +2,6 @@
 
 using System.Collections.Generic;
 using NetStandardPolyfills;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 
 internal class IndexAccessTranslation : INodeTranslation
 {
@@ -39,7 +34,7 @@ internal class IndexAccessTranslation : INodeTranslation
         ITranslationContext context) :
         this(
             arrayIndexAccess.Left,
-            new[] { arrayIndexAccess.Right },
+           [arrayIndexAccess.Right],
             context)
     {
         NodeType = ExpressionType.ArrayIndex;
@@ -98,8 +93,8 @@ internal class IndexAccessTranslation : INodeTranslation
 
     public ExpressionType NodeType { get; }
 
-    public int TranslationLength
-        => _subject.TranslationLength + _parameters.TranslationLength + "[]".Length;
+    public int TranslationLength => 
+        _subject.TranslationLength + _parameters.TranslationLength + "[]".Length;
 
     public void WriteTo(TranslationWriter writer)
     {

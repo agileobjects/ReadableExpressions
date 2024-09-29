@@ -2,11 +2,6 @@
 
 using System;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 using Reflection;
 

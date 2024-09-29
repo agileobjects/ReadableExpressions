@@ -1,11 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
-
 /// <summary>
 /// Implementing custom Expression classes will provide their own <see cref="INodeTranslation"/> for
 /// use during an Expression translation.

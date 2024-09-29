@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 internal static class GotoTranslation
@@ -74,8 +69,8 @@ internal static class GotoTranslation
 
         public ExpressionType NodeType => ExpressionType.Goto;
 
-        public int TranslationLength
-            => "goto ".Length + _labelName.Length + ";".Length;
+        public int TranslationLength => 
+            "goto ".Length + _labelName.Length + ";".Length;
 
         public bool IsTerminated => true;
 
@@ -102,8 +97,8 @@ internal static class GotoTranslation
 
         public ExpressionType NodeType => ExpressionType.Goto;
 
-        public int TranslationLength
-            => _returnValueTranslation.TranslationLength + "return ".Length;
+        public int TranslationLength => 
+            _returnValueTranslation.TranslationLength + "return ".Length;
 
         public bool HasGoto => true;
 

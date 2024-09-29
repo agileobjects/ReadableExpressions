@@ -1,11 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations.Reflection;
 
 using System.Collections.Generic;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Reflection;
 using Extensions;
 #if NETSTANDARD1_0
@@ -36,7 +31,7 @@ public class PropertyDefinitionTranslation : INodeTranslation
         PropertyInfo property,
         MethodInfo accessor,
         TranslationSettings settings) :
-        this(property, new[] { accessor }, settings)
+        this(property, [accessor], settings)
     {
     }
 

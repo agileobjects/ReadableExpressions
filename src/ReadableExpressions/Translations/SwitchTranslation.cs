@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 internal class SwitchTranslation :
@@ -185,6 +180,6 @@ internal class SwitchTranslation :
         WriteCaseBody(_defaultCaseTranslation, writer);
     }
 
-    private static bool WriteBreak(ITranslation caseTranslation)
-        => !caseTranslation.HasGoto();
+    private static bool WriteBreak(ITranslation caseTranslation) => 
+        !caseTranslation.HasGoto();
 }

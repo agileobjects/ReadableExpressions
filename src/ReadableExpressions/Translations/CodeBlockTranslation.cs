@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 /// <summary>
@@ -84,8 +79,8 @@ public class CodeBlockTranslation :
 
     bool IPotentialGotoTranslation.HasGoto => _translation.HasGoto();
 
-    bool IPotentialParenthesizedTranslation.Parenthesize
-        => _translation.IsParenthesized();
+    bool IPotentialParenthesizedTranslation.Parenthesize => 
+        _translation.IsParenthesized();
 
     /// <summary>
     /// Gets a value indicating if this <see cref="CodeBlockTranslation"/> will produce output
@@ -251,6 +246,6 @@ public class CodeBlockTranslation :
         return false;
     }
 
-    private bool EnsureTerminated()
-        => _ensureTerminated && _translation.IsTerminated() == false;
+    private bool EnsureTerminated() => 
+        _ensureTerminated && _translation.IsTerminated() == false;
 }

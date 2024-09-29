@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 internal class StringFactoryTranslation : INodeTranslation
@@ -28,8 +23,8 @@ internal class StringFactoryTranslation : INodeTranslation
 
     public int TranslationLength => GetTranslation()?.Length ?? 0;
 
-    public void WriteTo(TranslationWriter writer)
-        => writer.WriteToTranslation(GetTranslation());
+    public void WriteTo(TranslationWriter writer) =>
+        writer.WriteToTranslation(GetTranslation());
 
     private string GetTranslation()
     {

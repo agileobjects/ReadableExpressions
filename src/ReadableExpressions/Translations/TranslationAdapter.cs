@@ -1,11 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
-
 internal class TranslationAdapter :
     INodeTranslation,
     IPotentialSelfTerminatingTranslation
@@ -26,6 +20,6 @@ internal class TranslationAdapter :
 
     public bool IsTerminated => _baseTranslation.IsTerminated();
 
-    public void WriteTo(TranslationWriter writer)
-        => _baseTranslation.WriteTo(writer);
+    public void WriteTo(TranslationWriter writer) =>
+        _baseTranslation.WriteTo(writer);
 }

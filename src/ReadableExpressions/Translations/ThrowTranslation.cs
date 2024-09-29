@@ -1,10 +1,5 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 
 internal class ThrowTranslation : INodeTranslation, IPotentialGotoTranslation
@@ -29,8 +24,8 @@ internal class ThrowTranslation : INodeTranslation, IPotentialGotoTranslation
 
     public ExpressionType NodeType => ExpressionType.Throw;
 
-    public int TranslationLength
-        => _throw.Length + (_thrownItemTranslation?.TranslationLength ?? 0);
+    public int TranslationLength => 
+        _throw.Length + (_thrownItemTranslation?.TranslationLength ?? 0);
 
     public bool HasGoto => true;
 

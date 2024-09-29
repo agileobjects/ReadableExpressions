@@ -2,21 +2,12 @@
 
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Reflection;
 using Extensions;
 using Formatting;
 using NetStandardPolyfills;
 using Reflection;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 using static StringConcatenationTranslation;
 
 /// <summary>

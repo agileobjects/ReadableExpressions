@@ -1,11 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Extensions;
 
 using System;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Translations;
 using Translations.Reflection;
 
@@ -26,7 +21,7 @@ public static class PublicTranslationContextExtensions
         this ITranslationContext context,
         Expression expression)
     {
-        return new CodeBlockTranslation(context.GetTranslationFor(expression), context);
+        return new(context.GetTranslationFor(expression), context);
     }
 
     /// <summary>
@@ -41,7 +36,7 @@ public static class PublicTranslationContextExtensions
         this ITranslationContext context,
         Type type)
     {
-        return new TypeNameTranslation(type, context.Settings);
+        return new(type, context.Settings);
     }
 
     /// <summary>
@@ -56,6 +51,6 @@ public static class PublicTranslationContextExtensions
         this ITranslationContext context,
         IType type)
     {
-        return new TypeNameTranslation(type, context.Settings);
+        return new(type, context.Settings);
     }
 }

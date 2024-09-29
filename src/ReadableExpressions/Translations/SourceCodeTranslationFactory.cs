@@ -1,11 +1,6 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
 using System;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 
 /// <summary>
 /// Defines a function to translate a given <paramref name="expression"/> to a source-code string.

@@ -3,18 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 using Reflection;
-#if NET35
-using static Microsoft.Scripting.Ast.ExpressionType;
-#else
-using static System.Linq.Expressions.ExpressionType;
-#endif
+using static ExpressionType;
 
 /// <summary>
 /// An <see cref="ITranslation"/> which translates a set of Expressions representing parameters.
@@ -46,7 +37,7 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
             context,
             hasSingleParameter: true);
 
-        _parameterTranslations = new[] { parameterTranslation };
+        _parameterTranslations = [parameterTranslation];
         Count = 1;
     }
 
@@ -360,8 +351,8 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
     /// </summary>
     public bool None => Count == 0;
 
-    bool IPotentialParenthesizedTranslation.Parenthesize
-        => _parenthesesMode != ParenthesesMode.Never;
+    bool IPotentialParenthesizedTranslation.Parenthesize => 
+        _parenthesesMode != ParenthesesMode.Never;
 
     /// <summary>
     /// Gets the <see cref="INodeTranslation"/> at the given <paramref name="parameterIndex"/> in
@@ -519,12 +510,7 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
         return Count > _splitArgumentsThreshold || this.WrapLine();
     }
 
-    private enum ParenthesesMode
-    {
-        Auto,
-        Always,
-        Never
-    }
+    private enum ParenthesesMode { Auto, Always, Never }
 
     private abstract class KeywordParameterTranslationBase : IParameterTranslation
     {
@@ -605,11 +591,11 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
             AddParameterTranslationSize();
         }
 
-        private void SubtractParameterTranslationSize()
-            => _translationSize -= _wrappedParameterTranslation.TranslationLength;
+        private void SubtractParameterTranslationSize() => 
+            _translationSize -= _wrappedParameterTranslation.TranslationLength;
 
-        private void AddParameterTranslationSize()
-            => _translationSize += _wrappedParameterTranslation.TranslationLength;
+        private void AddParameterTranslationSize() => 
+            _translationSize += _wrappedParameterTranslation.TranslationLength;
     }
 
     private class DiscardedParameterTranslation : KeywordParameterTranslationBase
@@ -633,8 +619,8 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
 
         public override string Name => _discard;
 
-        public override int TranslationLength
-            => base.TranslationLength + _discard.Length;
+        public override int TranslationLength => 
+            base.TranslationLength + _discard.Length;
 
         protected override void WriteTo(
             TranslationWriter writer,
@@ -660,8 +646,8 @@ public class ParameterSetTranslation : IPotentialParenthesizedTranslation
         {
         }
 
-        public override int TranslationLength
-            => base.TranslationLength + _out.Length;
+        public override int TranslationLength => 
+            base.TranslationLength + _out.Length;
     }
 
     private class OutParameterTranslation : KeywordParameterTranslationBase

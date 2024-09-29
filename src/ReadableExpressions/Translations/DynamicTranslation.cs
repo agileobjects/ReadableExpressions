@@ -5,11 +5,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using System.Text.RegularExpressions;
 using Extensions;
 using Formatting;
@@ -282,11 +277,11 @@ internal static class DynamicTranslation
 
             public IMethod GetGenericMethodDefinition() => null;
 
-            public ReadOnlyCollection<IGenericParameter> GetGenericArguments()
-                => Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
+            public ReadOnlyCollection<IGenericParameter> GetGenericArguments() => 
+                Enumerable<IGenericParameter>.EmptyReadOnlyCollection;
 
-            public ReadOnlyCollection<IParameter> GetParameters()
-                => Enumerable<IParameter>.EmptyReadOnlyCollection;
+            public ReadOnlyCollection<IParameter> GetParameters() => 
+                Enumerable<IParameter>.EmptyReadOnlyCollection;
 
             public IType Type => ReturnType;
 

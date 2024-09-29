@@ -1,13 +1,8 @@
 ﻿namespace AgileObjects.ReadableExpressions.Translations;
 
-using System.Collections.Generic;
-#if NET35
-using Microsoft.Scripting.Ast;
-#else
-using System.Linq.Expressions;
-#endif
 using Extensions;
 using Formatting;
+using System.Collections.Generic;
 using static TranslationConstants;
 
 internal static class TranslationExtensions
@@ -25,32 +20,32 @@ internal static class TranslationExtensions
         return translation is IPotentialMultiStatementTranslatable { IsMultiStatement: true };
     }
 
-    public static bool IsTerminated(this ITranslation translation)
-        => translation is IPotentialSelfTerminatingTranslation { IsTerminated: true };
+    public static bool IsTerminated(this ITranslation translation) =>
+        translation is IPotentialSelfTerminatingTranslation { IsTerminated: true };
 
-    public static bool HasGoto(this ITranslation translation)
-        => translation is IPotentialGotoTranslation { HasGoto: true };
+    public static bool HasGoto(this ITranslation translation) =>
+        translation is IPotentialGotoTranslation { HasGoto: true };
 
-    public static bool IsParenthesized(this ITranslation translation)
-        => translation is IPotentialParenthesizedTranslation { Parenthesize: true };
+    public static bool IsParenthesized(this ITranslation translation) =>
+        translation is IPotentialParenthesizedTranslation { Parenthesize: true };
 
-    public static bool WrapLine(this ITranslation translation)
-        => translation.TranslationLength > LineWrapThreshold;
+    public static bool WrapLine(this ITranslation translation) =>
+        translation.TranslationLength > LineWrapThreshold;
 
-    public static bool IsAssignment(this INodeTranslation translation)
-        => AssignmentTranslation.IsAssignment(translation.NodeType);
+    public static bool IsAssignment(this INodeTranslation translation) =>
+        AssignmentTranslation.IsAssignment(translation.NodeType);
 
-    public static bool IsBinary(this ExpressionType nodeType)
-        => BinaryTranslation.IsBinary(nodeType);
+    public static bool IsBinary(this ExpressionType nodeType) =>
+        BinaryTranslation.IsBinary(nodeType);
 
-    public static bool IsCast(this INodeTranslation translation)
-        => translation.NodeType.IsCast();
+    public static bool IsCast(this INodeTranslation translation) =>
+        translation.NodeType.IsCast();
 
-    public static bool IsCast(this ExpressionType nodeType)
-        => CastTranslation.IsCast(nodeType);
+    public static bool IsCast(this ExpressionType nodeType) =>
+        CastTranslation.IsCast(nodeType);
 
-    public static bool IsConversion(this ExpressionType nodeType)
-        => CastTranslation.IsConversion(nodeType);
+    public static bool IsConversion(this ExpressionType nodeType) =>
+        CastTranslation.IsConversion(nodeType);
 
     public static INodeTranslation WithParentheses(
         this INodeTranslation translation)
@@ -141,11 +136,11 @@ internal static class TranslationExtensions
         return nestedTranslation.NodeType.IsBinary();
     }
 
-    public static void WriteNewToTranslation(this TranslationWriter writer)
-        => writer.WriteKeywordToTranslation("new ");
+    public static void WriteNewToTranslation(this TranslationWriter writer) =>
+        writer.WriteKeywordToTranslation("new ");
 
-    public static void WriteReturnToTranslation(this TranslationWriter writer)
-        => writer.WriteControlStatementToTranslation("return ");
+    public static void WriteReturnToTranslation(this TranslationWriter writer) =>
+        writer.WriteControlStatementToTranslation("return ");
 
     public static void WriteControlStatementToTranslation(
         this TranslationWriter writer,
@@ -154,9 +149,6 @@ internal static class TranslationExtensions
         writer.WriteToTranslation(statement, TokenType.ControlStatement);
     }
 
-    public static void WriteSemiColonToTranslation(
-        this TranslationWriter writer)
-    {
+    public static void WriteSemiColonToTranslation(this TranslationWriter writer) =>
         writer.WriteToTranslation(';');
-    }
 }

@@ -1,9 +1,9 @@
 ﻿#if FEATURE_VALUE_TUPLE
 namespace AgileObjects.ReadableExpressions.Translations;
 
-using System.Linq.Expressions;
-
-internal class ValueTupleNewingTranslation : NewingTranslationBase, INodeTranslation
+internal class ValueTupleNewingTranslation :
+    NewingTranslationBase,
+    INodeTranslation
 {
     public ValueTupleNewingTranslation(
         NewExpression newing,
