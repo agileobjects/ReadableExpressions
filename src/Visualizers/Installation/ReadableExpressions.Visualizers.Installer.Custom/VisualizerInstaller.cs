@@ -1,11 +1,10 @@
 ﻿namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom
 {
+    using Microsoft.Win32;
     using System;
     using System.IO;
-    using Microsoft.Win32;
-    using static System.StringComparison;
 
-    internal class VisualizerInstaller
+    internal sealed class VisualizerInstaller
     {
         private readonly Action<string> _logger;
         private readonly VsixManifestInstaller _vsixManifestInstaller;
@@ -30,7 +29,7 @@
             _visualizer = visualizer;
             VsId = _visualizer.VsYear.ToString();
 
-            var indexOfIde = vsInstallDirectory.IndexOf("IDE", OrdinalIgnoreCase);
+            var indexOfIde = vsInstallDirectory.StartIndexOfIde();
             var pathToCommon7 = vsInstallDirectory.Substring(0, indexOfIde);
 
             _visualizersDirectory = Path.Combine(pathToCommon7, "Packages", "Debugger", "Visualizers");

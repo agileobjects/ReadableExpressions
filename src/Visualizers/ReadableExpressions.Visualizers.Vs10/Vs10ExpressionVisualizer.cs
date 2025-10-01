@@ -3,7 +3,7 @@
 using Dialog;
 using Microsoft.VisualStudio.DebuggerVisualizers;
 
-public class Vs10ExpressionVisualizer : DialogDebuggerVisualizer
+public sealed class Vs10ExpressionVisualizer : DialogDebuggerVisualizer
 {
     protected override void Show(
         IDialogVisualizerService windowService,

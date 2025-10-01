@@ -4,9 +4,9 @@ using System;
 using Dialog;
 using Microsoft.VisualStudio.DebuggerVisualizers;
 
-public sealed class Vs17ExpressionVisualizer : DialogDebuggerVisualizer
+public sealed class Vs18ExpressionVisualizer : DialogDebuggerVisualizer
 {
-    public Vs17ExpressionVisualizer() : base(FormatterPolicy.Json)
+    public Vs18ExpressionVisualizer() : base(FormatterPolicy.Json)
     {
     }
 
