@@ -1,13 +1,13 @@
 namespace AgileObjects.ReadableExpressions.Visualizers.Installer.Custom;
 
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using Microsoft.Win32;
 
-internal class Post2015VsInstallation : IDisposable
+internal sealed class Post2015VsInstallation : IDisposable
 {
     private static readonly Dictionary<int, Version> _vsVersionsByYear = Visualizer
         .VsYearByVersionNumber
@@ -46,14 +46,14 @@ internal class Post2015VsInstallation : IDisposable
             return null;
         }
 
-        var indexOfIde = installPath.IndexOf("IDE", StringComparison.OrdinalIgnoreCase);
+        var endIndexOfIde = installPath.EndIndexOfIde();
 
-        if (indexOfIde == -1)
+        if (endIndexOfIde == -1)
         {
             return null;
         }
 
-        installPath = installPath.Substring(0, indexOfIde + "IDE".Length);
+        installPath = installPath.Substring(0, endIndexOfIde);
 
         if (installPath.StartsWith("@", StringComparison.Ordinal))
         {

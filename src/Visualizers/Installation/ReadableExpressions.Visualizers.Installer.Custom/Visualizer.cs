@@ -7,9 +7,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using static System.StringComparison;
-using static EmbeddedResourceExtensions;
+using static InstallationExtensions;
 
-internal class Visualizer
+internal sealed class Visualizer
 {
     private static readonly Assembly _thisAssembly = typeof(Visualizer).Assembly;
 
@@ -25,7 +25,8 @@ internal class Visualizer
         [new(15, 0)] = 2017,
         [new(16, 0)] = 2019,
         [new(17, 0)] = 2022,
-        [new(17, 6)] = 2022
+        [new(17, 6)] = 2022,
+        [new(18, 0)] = 2026
     };
 
     private readonly Action<string> _logger;
